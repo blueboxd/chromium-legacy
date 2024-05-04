@@ -348,8 +348,6 @@ void DrawingBuffer::SetIsInHiddenPage(bool hidden) {
 
 void DrawingBuffer::SetHdrMetadata(const gfx::HDRMetadata& hdr_metadata) {
   hdr_metadata_ = hdr_metadata;
-  if (layer_)
-    layer_->SetHdrMetadata(hdr_metadata_);
 }
 
 void DrawingBuffer::SetFilterQuality(
@@ -526,6 +524,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
       viz::SinglePlaneFormat::kRGBA_8888,
       viz::TransferableResource::ResourceSource::kDrawingBuffer);
   out_resource->color_space = back_color_buffer_->color_space;
+  out_resource->hdr_metadata = hdr_metadata_;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
   // mailbox is released (and while the release callback is running). It also
@@ -627,6 +626,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
         color_buffer_for_mailbox->is_overlay_candidate,
         viz::TransferableResource::ResourceSource::kDrawingBuffer);
     out_resource->color_space = color_buffer_for_mailbox->color_space;
+    out_resource->hdr_metadata = hdr_metadata_;
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).
     auto func = base::BindOnce(&DrawingBuffer::NotifyMailboxReleasedGpu,
@@ -792,8 +792,20 @@ scoped_refptr<CanvasResource> DrawingBuffer::ExportLowLatencyCanvasResource(
   resource.format = color_buffer->format;
   resource.is_overlay_candidate = color_buffer->is_overlay_candidate;
   resource.color_space = color_buffer->color_space;
+  resource.hdr_metadata = hdr_metadata_;
   resource.resource_source =
       viz::TransferableResource::ResourceSource::kDrawingBuffer;
+
+  if (contents_changed_ && !using_swap_chain_) {
+    // Restart SharedImage access on the single SharedImage to ensure a write
+    // fence is generated on the shared image to guarantee display reads this
+    // frame completely. Display may still read parts of subsequent frames,
+    // which is okay.
+    gl_->EndSharedImageAccessDirectCHROMIUM(color_buffer->texture_id);
+    gl_->BeginSharedImageAccessDirectCHROMIUM(
+        color_buffer->texture_id,
+        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  }
 
   return ExternalCanvasResource::Create(
       resource, viz::ReleaseCallback(), context_provider_->GetWeakPtr(),
@@ -1188,7 +1200,6 @@ cc::Layer* DrawingBuffer::CcLayer() {
       layer_->SetPremultipliedAlpha(requested_alpha_type_ !=
                                     kUnpremul_SkAlphaType);
     }
-    layer_->SetHdrMetadata(hdr_metadata_);
     layer_->SetNearestNeighbor(filter_quality_ ==
                                cc::PaintFlags::FilterQuality::kNone);
 
@@ -1995,14 +2006,16 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
         scoped_refptr<gpu::ClientSharedImage> client_shared_image;
         if (disallow_gmb) {
           client_shared_image = sii->CreateSharedImage(
-              color_buffer_format_, size, color_space_, origin,
-              back_buffer_alpha_type, usage | additional_usage_flags,
-              "WebGLDrawingBuffer", gpu::kNullSurfaceHandle);
+              {color_buffer_format_, size, color_space_, origin,
+               back_buffer_alpha_type, usage | additional_usage_flags,
+               "WebGLDrawingBuffer"},
+              gpu::kNullSurfaceHandle);
         } else {
           client_shared_image = sii->CreateSharedImage(
-              color_buffer_format_, size, color_space_, origin,
-              back_buffer_alpha_type, usage | additional_usage_flags,
-              "WebGLDrawingBuffer", gpu::kNullSurfaceHandle, buffer_usage);
+              {color_buffer_format_, size, color_space_, origin,
+               back_buffer_alpha_type, usage | additional_usage_flags,
+               "WebGLDrawingBuffer"},
+              gpu::kNullSurfaceHandle, buffer_usage);
         }
         if (client_shared_image) {
           created_mappable_si = true;
@@ -2040,10 +2053,10 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
         back_buffer_alpha_type = kUnpremul_SkAlphaType;
       }
 
-      back_buffer_shared_image =
-          sii->CreateSharedImage(color_buffer_format_, size, color_space_,
-                                 origin, back_buffer_alpha_type, usage,
-                                 "WebGLDrawingBuffer", gpu::kNullSurfaceHandle);
+      back_buffer_shared_image = sii->CreateSharedImage(
+          {color_buffer_format_, size, color_space_, origin,
+           back_buffer_alpha_type, usage, "WebGLDrawingBuffer"},
+          gpu::kNullSurfaceHandle);
       CHECK(back_buffer_shared_image);
     }
   }

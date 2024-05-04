@@ -13,10 +13,12 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/frame_resource.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/stateless/stateless_device.h"
 
 namespace media {
+using DequeueCB = base::RepeatingCallback<void(media::Buffer)>;
 
 // V4L2 has two similar queues. Capitalized OUTPUT (for compressed frames)
 // and CAPTURE (for uncompressed frames) are the designation that the V4L2
@@ -36,6 +38,7 @@ class MEDIA_GPU_EXPORT BaseQueue {
   bool StartStreaming();
   bool StopStreaming();
   uint32_t FreeBufferCount() const { return free_buffer_indices_.size(); }
+  void ArmBufferMonitor(DequeueCB cb);
 
  protected:
   bool AllocateBuffers(uint32_t num_planes, size_t num_buffers);
@@ -53,6 +56,9 @@ class MEDIA_GPU_EXPORT BaseQueue {
   // will be used more often than if it was a ring buffer. Using a set
   // enforces the elements be unique.
   std::set<uint32_t> free_buffer_indices_;
+
+  // Workers that block and wait for buffers to be ready to be dequeued.
+  scoped_refptr<base::SequencedTaskRunner> queue_task_runner_;
 };
 
 class MEDIA_GPU_EXPORT InputQueue : public BaseQueue {
@@ -88,43 +94,43 @@ class MEDIA_GPU_EXPORT OutputQueue : public BaseQueue {
   OutputQueue(scoped_refptr<StatelessDevice> device);
   ~OutputQueue() override;
 
-  // Drivers can support multiple raw formats. ChromeOS would like to use
-  // specific formats. |NegotiateFormat| chooses the raw format that satisfies
-  // both requirements.
+  // Drivers can support multiple decode formats. ChromeOS would like to
+  // use specific formats. |NegotiateFormat| chooses the decode format
+  // that satisfies both requirements.
   bool NegotiateFormat();
 
-  // Allocate and prepare the buffers that will store the decoded raw frames.
+  // Allocate and prepare the buffers that will store the decoded frames.
   bool PrepareBuffers(size_t num_buffers) override;
 
   // After a buffer has been used it needs to be returned to the pool of
   // available buffers. The client tracks using buffers using |frame_id|.
   bool QueueBufferByFrameID(uint64_t frame_id);
 
-  // Return the raw frame format chosen by |NegotiateFormat|
+  // Return the decoded frame format chosen by |NegotiateFormat|
   Fourcc GetQueueFormat() const { return buffer_format_.fourcc; }
 
-  // Return the resolution of the raw frames.
+  // Return the resolution of the decoded frames.
   gfx::Size GetVideoResolution() const { return buffer_format_.resolution; }
 
   // Record buffers that have finished decoded and have been dequeued so that
   // they can later be referenced.
   void RegisterDequeuedBuffer(Buffer& buffer);
 
-  // Retrieve a |VideoFrame| by |frame_id| that has already been decoded and
+  // Retrieve a |FrameResource| by |frame_id| that has already been decoded and
   // dequeued. Returns |nullptr| if there isn't a corresponding frame that has
   // been dequeued yet.
-  scoped_refptr<VideoFrame> GetVideoFrame(uint64_t frame_id);
+  scoped_refptr<FrameResource> GetFrame(uint64_t frame_id);
 
  private:
-  // Create |VideoFrame| by exporting the dmabuf backing the buffer.
-  scoped_refptr<VideoFrame> CreateVideoFrame(const Buffer& buffer);
+  // Create |FrameResource| by exporting the dmabuf backing the buffer.
+  scoped_refptr<FrameResource> CreateFrame(const Buffer& buffer);
 
   std::string Description() override;
 
   BufferFormat buffer_format_;
 
-  // Vector to hold |VideoFrame|s for the life of the queue.
-  std::vector<scoped_refptr<VideoFrame>> video_frames_;
+  // Vector to hold |FrameResource|s for the life of the queue.
+  std::vector<scoped_refptr<FrameResource>> frames_;
 
   // A mapping from frame id to buffer buffer index. Once a frame is decoded it
   // placed in this map. The frame id to buffer index mapping is how the input

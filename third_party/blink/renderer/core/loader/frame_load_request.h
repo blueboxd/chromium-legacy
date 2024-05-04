@@ -103,14 +103,14 @@ struct CORE_EXPORT FrameLoadRequest {
     triggering_event_info_ = info;
   }
 
-  mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
-  TakeInitiatorPolicyContainerKeepAliveHandle() {
-    return std::move(initiator_policy_container_keep_alive_handle_);
+  mojo::PendingRemote<mojom::blink::NavigationStateKeepAliveHandle>
+  TakeInitiatorNavigationStateKeepAliveHandle() {
+    return std::move(initiator_navigation_state_keep_alive_handle_);
   }
-  void SetInitiatorPolicyContainerKeepAliveHandle(
-      mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+  void SetInitiatorNavigationStateKeepAliveHandle(
+      mojo::PendingRemote<mojom::blink::NavigationStateKeepAliveHandle>
           handle) {
-    initiator_policy_container_keep_alive_handle_ = std::move(handle);
+    initiator_navigation_state_keep_alive_handle_ = std::move(handle);
   }
 
   std::unique_ptr<SourceLocation> TakeSourceLocation() {
@@ -134,9 +134,7 @@ struct CORE_EXPORT FrameLoadRequest {
   }
 
   // The javascript world in which this request initiated.
-  const scoped_refptr<const DOMWrapperWorld>& JavascriptWorld() const {
-    return world_;
-  }
+  const DOMWrapperWorld* JavascriptWorld() const { return world_; }
 
   // The BlobURLToken that should be used when fetching the resource. This
   // is needed for blob URLs, because the blob URL might be revoked before the
@@ -234,7 +232,7 @@ struct CORE_EXPORT FrameLoadRequest {
       mojom::blink::TriggeringEventInfo::kNotFromEvent;
   Element* source_element_ = nullptr;
   ShouldSendReferrer should_send_referrer_;
-  scoped_refptr<const DOMWrapperWorld> world_;
+  const DOMWrapperWorld* world_ = nullptr;
   scoped_refptr<base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>
       blob_url_token_;
   base::TimeTicks input_start_time_;
@@ -245,8 +243,8 @@ struct CORE_EXPORT FrameLoadRequest {
       picture_in_picture_window_options_;
   std::optional<blink::Impression> impression_;
   std::optional<LocalFrameToken> initiator_frame_token_;
-  mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
-      initiator_policy_container_keep_alive_handle_;
+  mojo::PendingRemote<mojom::blink::NavigationStateKeepAliveHandle>
+      initiator_navigation_state_keep_alive_handle_;
   std::unique_ptr<SourceLocation> source_location_;
   KURL requestor_base_url_;
 

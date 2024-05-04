@@ -4,12 +4,12 @@
 
 import 'chrome://personalization/strings.m.js';
 
-import {SeaPenInputQueryElement, SeaPenPaths, SeaPenRecentWallpapersElement, SeaPenRouterElement, SeaPenTemplateQueryElement, SeaPenTemplatesElement, SeaPenTermsOfServiceDialogElement} from 'chrome://personalization/js/personalization_app.js';
+import {SeaPenImagesElement, SeaPenInputQueryElement, SeaPenPaths, SeaPenRecentWallpapersElement, SeaPenRouterElement, SeaPenTemplateQueryElement, SeaPenTemplatesElement, SeaPenTermsOfServiceDialogElement, SeaPenZeroStateSvgElement, setTransitionsEnabled, WallpaperGridItemElement} from 'chrome://personalization/js/personalization_app.js';
 import {SeaPenQuery} from 'chrome://resources/ash/common/sea_pen/sea_pen.mojom-webui.js';
 import {SeaPenTemplateId} from 'chrome://resources/ash/common/sea_pen/sea_pen_generated.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
@@ -37,6 +37,9 @@ suite('SeaPenRouterElementTest', function() {
     const mocks = baseSetup();
     personalizationStore = mocks.personalizationStore;
     seaPenProvider = mocks.seaPenProvider;
+
+    // Disables page transition by default.
+    setTransitionsEnabled(false);
   });
 
   teardown(async () => {
@@ -81,15 +84,67 @@ suite('SeaPenRouterElementTest', function() {
         routerElement = initElement(SeaPenRouterElement, {
           basePath: '/base',
         });
-        routerElement.goToRoute(SeaPenPaths.ROOT, {seaPenTemplateId: 'Query'});
+        routerElement.goToRoute(
+            SeaPenPaths.RESULTS, {seaPenTemplateId: 'Query'});
         await waitAfterNextRender(routerElement);
 
         assertTrue(
             !!routerElement.shadowRoot!.querySelector(
                 SeaPenInputQueryElement.is),
             'input query element shown on root');
+
+        const seaPenImagesElement =
+            routerElement.shadowRoot!.querySelector(SeaPenImagesElement.is);
+        assertTrue(
+            !!seaPenImagesElement, 'sea-pen-images shown on result page');
+
+        assertTrue(
+            !!seaPenImagesElement.shadowRoot!.querySelector(
+                SeaPenZeroStateSvgElement.is),
+            'zero state svg is shown after selecting free form template from root');
       });
 
+  test(
+      'shows zero state svg when a template is selected from root',
+      async () => {
+        routerElement = initElement(SeaPenRouterElement, {
+          basePath: '/base',
+        });
+        routerElement.goToRoute(SeaPenPaths.ROOT);
+        await waitAfterNextRender(routerElement);
+
+        const seaPenTemplatesElement =
+            routerElement.shadowRoot!.querySelector(SeaPenTemplatesElement.is);
+        assertTrue(!!seaPenTemplatesElement, 'sea-pen-templates shown on root');
+
+        const templates = seaPenTemplatesElement.shadowRoot!.querySelectorAll<
+            WallpaperGridItemElement>(
+            `${WallpaperGridItemElement.is}[data-sea-pen-image]:not([hidden])`);
+        assertEquals(8, templates.length, 'there are 8 templates');
+
+        templates[2]!.click();
+        await waitAfterNextRender(routerElement);
+
+        // Navigates to result page and shows zero state svg element.
+        assertEquals(
+            '/base/results',
+            routerElement.shadowRoot?.querySelector('iron-location')?.path,
+            'navigates to result page');
+        assertEquals(
+            'seaPenTemplateId=2',
+            routerElement.shadowRoot?.querySelector('iron-location')?.query,
+            'query as selected template id');
+
+        const seaPenImagesElement =
+            routerElement.shadowRoot!.querySelector(SeaPenImagesElement.is);
+        assertTrue(
+            !!seaPenImagesElement, 'sea-pen-images shown on result page');
+
+        assertTrue(
+            !!seaPenImagesElement.shadowRoot!.querySelector(
+                SeaPenZeroStateSvgElement.is),
+            'zero state svg is shown after selecting a template from root');
+      });
   test('remove thumbnail images when templateId changes', async () => {
     personalizationStore.setReducersEnabled(true);
     routerElement = initElement(SeaPenRouterElement, {basePath: '/base'});
@@ -112,17 +167,26 @@ suite('SeaPenRouterElementTest', function() {
     // breadcrumb dropdown.
     routerElement.goToRoute(
         SeaPenPaths.RESULTS,
-        {seaPenTemplateId: SeaPenTemplateId.kTranslucent.toString()});
-    await flushTasks();
+        {seaPenTemplateId: SeaPenTemplateId.kCharacters.toString()});
+    await waitAfterNextRender(routerElement);
 
     assertEquals(
         null, personalizationStore.data.wallpaper.seaPen.thumbnails,
         'thumbnails removed after routing');
+
+    const seaPenImagesElement =
+        routerElement.shadowRoot!.querySelector(SeaPenImagesElement.is);
+    assertTrue(!!seaPenImagesElement);
+
+    assertTrue(
+        !!seaPenImagesElement.shadowRoot!.querySelector(
+            SeaPenZeroStateSvgElement.is),
+        'zero state svg is shown after a template is switched');
   });
 
   test('update template query when templateId changes', async () => {
     routerElement = initElement(SeaPenRouterElement, {basePath: '/base'});
-    const initialTemplate = SeaPenTemplateId.kMineral;
+    const initialTemplate = SeaPenTemplateId.kCharacters;
     const finalTemplate = SeaPenTemplateId.kFlower;
     routerElement.goToRoute(
         SeaPenPaths.RESULTS, {seaPenTemplateId: initialTemplate.toString()});
@@ -222,4 +286,18 @@ suite('SeaPenRouterElementTest', function() {
             routerElement.shadowRoot?.querySelector('iron-location')?.path,
             'path remains the same');
       });
+
+  test('supports transition animation', async () => {
+    const routerElement = initElement(SeaPenRouterElement, {basePath: '/base'});
+    setTransitionsEnabled(true);
+    await waitAfterNextRender(routerElement);
+
+    // Forces transition to execute.
+    await routerElement.goToRoute(SeaPenPaths.RESULTS);
+    await waitAfterNextRender(routerElement);
+
+    const seaPenImages =
+        routerElement.shadowRoot!.querySelector('sea-pen-images');
+    assertTrue(!!seaPenImages, 'sea-pen-images now exists');
+  });
 });

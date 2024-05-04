@@ -286,13 +286,13 @@ void FragmentBuilder::PropagateFromFragment(
     const auto& child_style = child.Style();
     if (child.IsCSSBox() && child_style.GetPosition() == EPosition::kRelative) {
       if (IsHorizontalWritingMode(Style().GetWritingMode())) {
-        if (child_style.UsedTop().IsPercentOrCalc() ||
-            child_style.UsedBottom().IsPercentOrCalc()) {
+        if (child_style.Top().IsPercentOrCalc() ||
+            child_style.Bottom().IsPercentOrCalc()) {
           has_descendant_that_depends_on_percentage_block_size_ = true;
         }
       } else {
-        if (child_style.UsedLeft().IsPercentOrCalc() ||
-            child_style.UsedRight().IsPercentOrCalc()) {
+        if (child_style.Left().IsPercentOrCalc() ||
+            child_style.Right().IsPercentOrCalc()) {
           has_descendant_that_depends_on_percentage_block_size_ = true;
         }
       }
@@ -320,10 +320,9 @@ void FragmentBuilder::PropagateFromFragment(
 
   // Collect any (block) break tokens, but skip break tokens for fragmentainers,
   // as they should only escape a fragmentation context at the discretion of the
-  // fragmentation context. Also skip this if there's a pre-set break token, or
-  // if we're only to add break tokens manually.
+  // fragmentation context. Also skip this if there's a pre-set break token.
   if (has_block_fragmentation_ && !child.IsFragmentainerBox() &&
-      !break_token_ && !should_add_break_tokens_manually_) {
+      !break_token_) {
     const BreakToken* child_break_token = child.GetBreakToken();
     switch (child.Type()) {
       case PhysicalFragment::kFragmentBox:

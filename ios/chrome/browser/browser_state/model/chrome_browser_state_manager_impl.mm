@@ -151,6 +151,8 @@ base::FilePath ChromeBrowserStateManagerImpl::GetLastUsedBrowserStateDir(
     const base::FilePath& user_data_dir) {
   PrefService* local_state = GetApplicationContext()->GetLocalState();
   DCHECK(local_state);
+  // TODO(crbug.com/325921947): Remove use of this key, kBrowserStatesLastActive
+  // should be used.
   std::string last_used_browser_state_name =
       local_state->GetString(prefs::kBrowserStateLastUsed);
   if (last_used_browser_state_name.empty()) {
@@ -175,6 +177,26 @@ ChromeBrowserStateManagerImpl::GetLoadedBrowserStates() {
     loaded_browser_states.push_back(pair.second.get());
   }
   return loaded_browser_states;
+}
+
+void ChromeBrowserStateManagerImpl::LoadBrowserStates() {
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+  DCHECK(local_state);
+  base::Value::List last_active_browser_states =
+      local_state->GetList(prefs::kBrowserStatesLastActive).Clone();
+
+  // If there is no last active browser state load the default one.
+  if (last_active_browser_states.size() == 0) {
+    last_active_browser_states.Append(kIOSChromeInitialBrowserState);
+  }
+
+  for (const base::Value& browser_state_dir : last_active_browser_states) {
+    if (!browser_state_dir.is_string()) {
+      continue;
+    }
+    GetBrowserState(
+        GetUserDataDir().AppendASCII(browser_state_dir.GetString()));
+  }
 }
 
 void ChromeBrowserStateManagerImpl::DoFinalInit(

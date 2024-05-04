@@ -72,10 +72,10 @@ using PasswordSuggestionBottomSheetExitReason::kShowPasswordManager;
             browserState, ServiceAccessType::EXPLICIT_ACCESS);
 
     self.reauthModule =
-        ScopedPasswordSuggestionBottomSheetReauthModuleOverride::instance
-            ? ScopedPasswordSuggestionBottomSheetReauthModuleOverride::instance
-                  ->module
-            : [[ReauthenticationModule alloc] init];
+        ScopedPasswordSuggestionBottomSheetReauthModuleOverride::Get();
+    if (!self.reauthModule) {
+      self.reauthModule = [[ReauthenticationModule alloc] init];
+    }
     self.mediator = [[PasswordSuggestionBottomSheetMediator alloc]
           initWithWebStateList:webStateList
                  faviconLoader:IOSChromeFaviconLoaderFactory::
@@ -104,6 +104,8 @@ using PasswordSuggestionBottomSheetExitReason::kShowPasswordManager;
     return;
   }
 
+  self.viewController.parentViewControllerHeight =
+      self.baseViewController.view.frame.size.height;
   __weak __typeof(self) weakSelf = self;
   [self.baseViewController presentViewController:self.viewController
                                         animated:YES

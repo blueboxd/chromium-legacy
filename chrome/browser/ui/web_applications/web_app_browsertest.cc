@@ -26,6 +26,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
@@ -130,7 +131,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/metrics/structured/event_logging_features.h"
-#include "chrome/browser/metrics/structured/test/test_structured_metrics_recorder.h"
+#include "components/metrics/structured/test/test_structured_metrics_recorder.h"
 #include "ui/views/test/dialog_test.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
@@ -723,10 +724,12 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
   const webapps::AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
   NavigateViaLinkClickToURLAndWait(app_browser, app_url);
+  ui_test_utils::WaitForBrowserSetLastActive(app_browser);
   ASSERT_TRUE(app_browser->app_controller());
 
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 2u);
   Browser* browser2 = CreateBrowser(app_browser->profile());
+  ui_test_utils::WaitForBrowserSetLastActive(browser2);
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 3u);
 
   TabStripModel* model2 = browser2->tab_strip_model();
@@ -734,6 +737,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
   EXPECT_EQ(model2->count(), 2);
   model2->SelectPreviousTab();
   EXPECT_EQ(model2->active_index(), 0);
+  ui_test_utils::WaitForBrowserSetLastActive(browser2);
 
   NavigateParams param(app_browser, GURL("http://www.google.com/"),
                        ui::PAGE_TRANSITION_LINK);
@@ -741,6 +745,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
   param.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
   ui_test_utils::NavigateToURL(&param);
+  ui_test_utils::WaitForBrowserSetLastActive(browser2);
 
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 3u);
   EXPECT_EQ(model2->count(), 3);
@@ -1031,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutMenuOptionsForCrashedTab) {
   ASSERT_TRUE(tab_contents->IsCrashed());
 
   EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kDisabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kDisabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
 }
 
 // Tests that an installed PWA is not used when out of scope by one path level.
@@ -1147,6 +1152,16 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserCrOSEventsTest,
 
   base::Time before_install_time = base::Time::Now();
   NavigateViaLinkClickToURLAndWait(browser(), GetUrlWithScreenshots());
+
+  // Wait until the screenshots are in the app banner manager.
+  webapps::AppBannerManager* app_banner_manager =
+      webapps::AppBannerManager::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(base::test::RunUntil([&]() {
+    std::optional<webapps::WebAppBannerData> banner_data =
+        app_banner_manager->GetCurrentWebAppBannerData();
+    return banner_data.has_value() && !banner_data->screenshots.empty();
+  })) << "Screenshots were never loaded for current tab.";
 
   // Wait for the detailed install dialog to show up post install, and accept
   // it.
@@ -1671,6 +1686,10 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, RunOnOsLoginMetrics) {
   base::RunLoop run_loop;
   provider->scheduler().SetRunOnOsLoginMode(
       app_id, RunOnOsLoginMode::kWindowed, base::BindLambdaForTesting([&]() {
+        // Unregister happens before register.
+        EXPECT_THAT(
+            tester.GetAllSamples("WebApp.RunOnOsLogin.Unregistration.Result"),
+            BucketsAre(base::Bucket(true, 1)));
         EXPECT_THAT(
             tester.GetAllSamples("WebApp.RunOnOsLogin.Registration.Result"),
             BucketsAre(base::Bucket(true, 1)));
@@ -1684,7 +1703,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, RunOnOsLoginMetrics) {
   EXPECT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
       profile(), app_id, provider->registrar_unsafe().GetAppShortName(app_id)));
   EXPECT_THAT(tester.GetAllSamples("WebApp.RunOnOsLogin.Unregistration.Result"),
-              BucketsAre(base::Bucket(true, 1)));
+              BucketsAre(base::Bucket(true, 2)));
 }
 #endif
 
@@ -1701,28 +1720,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentLastBrowserTab) {
   EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
 }
 
-class WebAppBrowserTestUpdateShortcutResult
-    : public WebAppBrowserTest,
-      public ::testing::WithParamInterface<OsIntegrationSubManagersState> {
- public:
-  WebAppBrowserTestUpdateShortcutResult() {
-    if (GetParam() == OsIntegrationSubManagersState::kSaveStateToDB) {
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{features::kOsIntegrationSubManagers, {{"stage", "write_config"}}}},
-          /*disabled_features=*/{});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {features::kOsIntegrationSubManagers});
-    }
-  }
+using WebAppBrowserTestUpdateShortcutResult = WebAppBrowserTest;
 
-  ~WebAppBrowserTestUpdateShortcutResult() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_P(WebAppBrowserTestUpdateShortcutResult, UpdateShortcut) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTestUpdateShortcutResult, UpdateShortcut) {
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
@@ -1739,8 +1739,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTestUpdateShortcutResult, UpdateShortcut) {
       webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
       browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
       base::BindOnce(test::TestAcceptDialogCallback),
-      install_future.GetCallback(),
-      /*use_fallback=*/false);
+      install_future.GetCallback(), FallbackBehavior::kCraftedManifestOnly);
 
   const webapps::AppId& app_id = install_future.Get<0>();
   EXPECT_EQ(provider->registrar_unsafe().GetAppShortName(app_id),
@@ -1752,40 +1751,12 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTestUpdateShortcutResult, UpdateShortcut) {
   }
 
   base::HistogramTester tester;
-  base::test::TestFuture<Result> result;
-
-  base::ConcurrentCallbacks<Result> concurrent;
-  provider->os_integration_manager().UpdateShortcuts(
-      app_id, "Manifest test app", concurrent.CreateCallback());
-  provider->os_integration_manager().Synchronize(
-      app_id, base::BindOnce(concurrent.CreateCallback(), Result::kOk));
-  std::move(concurrent)
-      .Done(base::BindOnce(
-          [&](base::OnceCallback<void(Result)> result_callback,
-              std::vector<Result> final_results) {
-            DCHECK_EQ(2u, final_results.size());
-            Result final_result = Result::kOk;
-            if (final_results[0] == Result::kError ||
-                final_results[1] == Result::kError) {
-              final_result = Result::kError;
-            }
-            std::move(result_callback).Run(final_result);
-          },
-          result.GetCallback()));
-
-  ASSERT_TRUE(result.Wait());
-  EXPECT_THAT(result.Get(), testing::Eq(Result::kOk));
-
-  bool can_create_shortcuts = provider->os_integration_manager()
-                                  .shortcut_manager_for_testing()
-                                  .CanCreateShortcuts();
-  if (can_create_shortcuts) {
-    EXPECT_THAT(tester.GetAllSamples("WebApp.Shortcuts.Update.Result"),
-                BucketsAre(base::Bucket(true, 1)));
-  } else {
-    EXPECT_THAT(tester.GetAllSamples("WebApp.Shortcuts.Update.Result"),
-                testing::IsEmpty());
-  }
+  base::test::TestFuture<void> test_future;
+  provider->os_integration_manager().Synchronize(app_id,
+                                                 test_future.GetCallback());
+  ASSERT_TRUE(test_future.Wait());
+  EXPECT_THAT(tester.GetAllSamples("WebApp.Shortcuts.Update.Result"),
+              BucketsAre(base::Bucket(true, 1)));
 
   base::test::TestFuture<std::unique_ptr<ShortcutInfo>> shortcut_future;
   provider->os_integration_manager().GetShortcutInfoForApp(
@@ -1797,13 +1768,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTestUpdateShortcutResult, UpdateShortcut) {
   test::UninstallAllWebApps(profile());
   EXPECT_FALSE(provider->registrar_unsafe().IsInstalled(app_id));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppBrowserTestUpdateShortcutResult,
-    ::testing::Values(OsIntegrationSubManagersState::kSaveStateToDB,
-                      OsIntegrationSubManagersState::kDisabled),
-    test::GetOsIntegrationSubManagersTestName);
 
 // Tests that reparenting a display: browser app tab results in a minimal-ui
 // app window.
@@ -1822,9 +1786,12 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentDisplayBrowserApp) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(tab_contents->GetLastCommittedURL(), app_url);
 
+  ui_test_utils::BrowserChangeObserver new_app_browser_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kEnabled);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_OPEN_IN_PWA_WINDOW));
+  ui_test_utils::WaitForBrowserSetLastActive(new_app_browser_observer.Wait());
 
   Browser* const app_browser = BrowserList::GetInstance()->GetLastActive();
   ASSERT_EQ(app_browser->app_controller()->app_id(), app_id);

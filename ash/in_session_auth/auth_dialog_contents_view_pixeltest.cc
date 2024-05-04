@@ -41,8 +41,11 @@ class AuthDialogContentsViewPixelTest
       public testing::WithParamInterface<bool> {
  public:
   AuthDialogContentsViewPixelTest() {
-    scoped_features_.InitWithFeatureState(chromeos::features::kJelly,
-                                          GetParam());
+    scoped_features_.InitWithFeatureStates(
+        {{chromeos::features::kJelly, GetParam()},
+         {::features::kChromeRefresh2023, true},
+         {::features::kChromeRefreshSecondary2023, true},
+         {::features::kChromeRefresh2023NTB, true}});
   }
 
   AuthDialogContentsViewPixelTest(const AuthDialogContentsViewPixelTest&) =
@@ -202,13 +205,13 @@ TEST_P(AuthDialogContentsViewPixelTest, FixedPinAndThemeChange) {
 
   // Verify the UI.
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "pin6", /*revision_number=*/4, widget.get()));
+      "pin6", /*revision_number=*/5, widget.get()));
 
   SwitchToLightMode();
 
   // Verify the UI.
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "pin6_light", /*revision_number=*/4, widget.get()));
+      "pin6_light", /*revision_number=*/5, widget.get()));
 }
 
 TEST_P(AuthDialogContentsViewPixelTest, FingerprintAndThemeChange) {

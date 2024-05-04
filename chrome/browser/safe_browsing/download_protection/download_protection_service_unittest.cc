@@ -2488,19 +2488,10 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
               std::move(callback).Run(false);
             });
 
-    int expect_count;
-    if (base::FeatureList::IsEnabled(kSafeBrowsingOnUIThread)) {
-      expect_count = 1;
-    } else {
-      // Expects that MockDownloadItem will go out of scope while asynchronous
-      // processing is checking allowlist, and thus will return after allowlist
-      // check rather than continuing to process the download, since
-      // OnDownloadDestroyed will be called to terminate the processing.
-      expect_count = 0;
-    }
+    int expect_count = 1;
 
     // Note 'AtMost' is used because on Mac timing differences make the mocks
-    // not reached when kSafeBrowsingOnUIThread is enabled.
+    // not reached.
     EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
         .Times(AtMost(expect_count));
     EXPECT_CALL(*binary_feature_extractor_.get(),
@@ -3030,7 +3021,7 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */, absl::nullopt /* content_transfer_reason */);
+      {} /* expected_scan_id */, std::nullopt /* content_transfer_reason */);
 
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(1, sb_service_->download_report_count());
@@ -3148,7 +3139,7 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */, absl::nullopt /* content_transfer_method */);
+      {} /* expected_scan_id */, std::nullopt /* content_transfer_method */);
 
   download_service_->ReportDelayedBypassEvent(
       &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING);
@@ -3212,7 +3203,7 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */, absl::nullopt /* content_transfer_method */);
+      {} /* expected_scan_id */, std::nullopt /* content_transfer_method */);
 
   download_service_->ReportDelayedBypassEvent(
       &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
@@ -3915,16 +3906,14 @@ TEST_F(DownloadProtectionServiceTest,
       /*final_path_literal=*/FILE_PATH_LITERAL("a.exe"));
   item->browser_context = profile1;
 
-  if (base::FeatureList::IsEnabled(kSafeBrowsingOnUIThread)) {
-    // Note 'AtMost' is used below because on Mac timing differences make the
-    // mocks not reached.
-    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-        .Times(AtMost(1));
-    EXPECT_CALL(*binary_feature_extractor_.get(),
-                ExtractImageFeatures(
-                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-        .Times(AtMost(1));
-  }
+  // Note 'AtMost' is used below because on Mac timing differences make the
+  // mocks not reached.
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(AtMost(1));
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+      .Times(AtMost(1));
 
   RunLoop run_loop;
   download_service_->CheckFileSystemAccessWrite(

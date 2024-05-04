@@ -534,6 +534,13 @@ public final class ChromePreferenceKeys {
             new KeyPrefix("Chrome.HomeModules.ModuleType.*");
 
     /**
+     * The number at the end should be consistent with {@link
+     * org.chromium.chrome.browser.magic_stack.ModuleDelegate.ModuleType}
+     */
+    public static final KeyPrefix HOME_MODULES_FRESHNESS_COUNT =
+            new KeyPrefix("Chrome.HomeModules.FreshnessCount.*");
+
+    /**
      * Save the timestamp of the last time that we record metrics on whether user enables the price
      * tracking annotations.
      */
@@ -577,7 +584,12 @@ public final class ChromePreferenceKeys {
     public static final String PRICE_TRACKING_USER_MANAGED_NOTIFICATIONS_TIMESTAMPS =
             "Chrome.PriceTracking.UserManagedNotificationsTimestamps";
 
-    public static final String PRIVACY_METRICS_IN_SAMPLE = "in_metrics_sample";
+    /** Is this client in a metrics reporting group. */
+    public static final String PRIVACY_IN_SAMPLE_FOR_METRICS = "in_metrics_sample";
+
+    /** Is this client in the crash reporting group. */
+    public static final String PRIVACY_IN_SAMPLE_FOR_CRASHES =
+            "Chrome.Privacy.InSampleForCrashReporting";
 
     /**
      * This is deprecated and is going to be removed in the future (See https://crbug.com/1320040).
@@ -923,6 +935,7 @@ public final class ChromePreferenceKeys {
                 FIRST_RUN_SKIPPED_BY_POLICY,
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
                 HOME_MODULES_MODULE_TYPE.pattern(),
+                HOME_MODULES_FRESHNESS_COUNT.pattern(),
                 HOMEPAGE_CUSTOM_GURL,
                 HOMEPAGE_LOCATION_POLICY_GURL,
                 HOMEPAGE_USE_CHROME_NTP,
@@ -982,6 +995,7 @@ public final class ChromePreferenceKeys {
                 PRICE_TRACKING_PRICE_WELCOME_MESSAGE_CARD_SHOW_COUNT,
                 PRICE_TRACKING_TRACK_PRICES_ON_TABS,
                 PRICE_TRACKING_USER_MANAGED_NOTIFICATIONS_TIMESTAMPS,
+                PRIVACY_IN_SAMPLE_FOR_CRASHES,
                 PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER,
                 PRIVACY_METRICS_REPORTING_PERMITTED_BY_POLICY,
                 PROMO_IS_DISMISSED.pattern(),

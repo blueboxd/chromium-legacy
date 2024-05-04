@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -25,6 +24,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/headless/headless_mode_browsertest.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/headless/command_handler/headless_command_handler.h"
 #include "components/headless/command_handler/headless_command_switches.h"
 #include "components/headless/test/bitmap_utils.h"
@@ -36,6 +36,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
@@ -132,10 +133,10 @@ class HeadlessModeCommandBrowserTestWithTempDir
 
 // DumpDom command tests ----------------------------------------------
 
-class HeadlessModeDumpDomCommandBrowserTest
+class HeadlessModeDumpDomCommandBrowserTestBase
     : public HeadlessModeCommandBrowserTest {
  public:
-  HeadlessModeDumpDomCommandBrowserTest() = default;
+  HeadlessModeDumpDomCommandBrowserTestBase() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessModeCommandBrowserTest::SetUpCommandLine(command_line);
@@ -149,13 +150,27 @@ class HeadlessModeDumpDomCommandBrowserTest
   CaptureStdOut capture_stdout_;
 };
 
+class HeadlessModeDumpDomCommandBrowserTest
+    : public HeadlessModeDumpDomCommandBrowserTestBase,
+      public testing::WithParamInterface<bool> {
+ public:
+  HeadlessModeDumpDomCommandBrowserTest() = default;
+
+ private:
+  bool IsIncognito() override { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         HeadlessModeDumpDomCommandBrowserTest,
+                         ::testing::Bool());
+
 // TODO(crbug.com/1440917): Reenable once deflaked.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_HeadlessDumpDom DISABLED_HeadlessDumpDom
 #else
 #define MAYBE_HeadlessDumpDom HeadlessDumpDom
 #endif
-IN_PROC_BROWSER_TEST_F(HeadlessModeDumpDomCommandBrowserTest,
+IN_PROC_BROWSER_TEST_P(HeadlessModeDumpDomCommandBrowserTest,
                        MAYBE_HeadlessDumpDom) {
   ASSERT_THAT(ProcessCommands(),
               testing::Eq(HeadlessCommandHandler::Result::kSuccess));
@@ -171,12 +186,12 @@ IN_PROC_BROWSER_TEST_F(HeadlessModeDumpDomCommandBrowserTest,
 }
 
 class HeadlessModeDumpDomCommandBrowserTestWithTimeoutBase
-    : public HeadlessModeDumpDomCommandBrowserTest {
+    : public HeadlessModeDumpDomCommandBrowserTestBase {
  public:
   HeadlessModeDumpDomCommandBrowserTestWithTimeoutBase() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    HeadlessModeDumpDomCommandBrowserTest::SetUpCommandLine(command_line);
+    HeadlessModeDumpDomCommandBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kTimeout,
                                     base::ToString(timeout().InMilliseconds()));
   }
@@ -318,8 +333,9 @@ IN_PROC_BROWSER_TEST_P(
                     "div><scriptsrc=\"./script.js\"></script></body></html>"));
   }
 }
+
 HEADLESS_MODE_COMMAND_BROWSER_TEST_WITH_TARGET_URL(
-    HeadlessModeDumpDomCommandBrowserTest,
+    HeadlessModeDumpDomCommandBrowserTestBase,
     DumpDomWithBeforeUnloadPreventDefault,
     "/before_unload_prevent_default.html") {
   // Make sure that 'beforeunload' that prevents default action does not stall
@@ -336,6 +352,17 @@ class HeadlessModeScreenshotCommandBrowserTest
  public:
   HeadlessModeScreenshotCommandBrowserTest() = default;
 
+#if BUILDFLAG(IS_WIN)
+  void SetUp() override {
+    // Use software compositing instead of GL which causes blank screenshots on
+    // Windows, especially under ASAN. See https://crbug.com/1442606 and
+    // https://crbug.com/328195816.
+    UseSoftwareCompositing();
+
+    HeadlessModeCommandBrowserTestWithTempDir::SetUp();
+  }
+#endif
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessModeCommandBrowserTestWithTempDir::SetUpCommandLine(command_line);
 
@@ -349,14 +376,8 @@ class HeadlessModeScreenshotCommandBrowserTest
   base::FilePath screenshot_filename_;
 };
 
-// TODO(crbug.com/1442606): Disabled due to flakiness on Windows ASAN.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_HeadlessScreenshot DISABLED_HeadlessScreenshot
-#else
-#define MAYBE_HeadlessScreenshot HeadlessScreenshot
-#endif
 IN_PROC_BROWSER_TEST_F(HeadlessModeScreenshotCommandBrowserTest,
-                       MAYBE_HeadlessScreenshot) {
+                       HeadlessScreenshot) {
   ASSERT_THAT(ProcessCommands(),
               testing::Eq(HeadlessCommandHandler::Result::kSuccess));
 
@@ -372,6 +393,73 @@ IN_PROC_BROWSER_TEST_F(HeadlessModeScreenshotCommandBrowserTest,
   // Expect a centered blue rectangle on white background.
   EXPECT_TRUE(CheckColoredRect(bitmap, SkColorSetRGB(0x00, 0x00, 0xff),
                                SkColorSetRGB(0xff, 0xff, 0xff)));
+}
+
+class HeadlessModeScreenshotCommandWithWindowSizeBrowserTest
+    : public HeadlessModeScreenshotCommandBrowserTest {
+ public:
+  HeadlessModeScreenshotCommandWithWindowSizeBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessModeScreenshotCommandBrowserTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(::switches::kWindowSize, "2345,1234");
+    command_line->AppendSwitchASCII(::switches::kForceDeviceScaleFactor, "1");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessModeScreenshotCommandWithWindowSizeBrowserTest,
+                       HeadlessScreenshotWithWindowSize) {
+  ASSERT_THAT(ProcessCommands(),
+              testing::Eq(HeadlessCommandHandler::Result::kSuccess));
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  std::string png_data;
+  ASSERT_TRUE(base::ReadFileToString(screenshot_filename_, &png_data))
+      << screenshot_filename_;
+
+  SkBitmap bitmap;
+  ASSERT_TRUE(DecodePNG(png_data, &bitmap));
+
+  EXPECT_EQ(bitmap.width(), 2345);
+  EXPECT_EQ(bitmap.height(), 1234);
+
+  // Expect a centered blue rectangle on white background.
+  EXPECT_TRUE(CheckColoredRect(bitmap, SkColorSetRGB(0x00, 0x00, 0xff),
+                               SkColorSetRGB(0xff, 0xff, 0xff)));
+}
+
+class HeadlessModeScreenshotCommandWithBackgroundBrowserTest
+    : public HeadlessModeScreenshotCommandBrowserTest {
+ public:
+  HeadlessModeScreenshotCommandWithBackgroundBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessModeScreenshotCommandBrowserTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(switches::kDefaultBackgroundColor,
+                                    "ff0000");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessModeScreenshotCommandWithBackgroundBrowserTest,
+                       HeadlessScreenshotWithBackground) {
+  ASSERT_THAT(ProcessCommands(),
+              testing::Eq(HeadlessCommandHandler::Result::kSuccess));
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  std::string png_data;
+  ASSERT_TRUE(base::ReadFileToString(screenshot_filename_, &png_data))
+      << screenshot_filename_;
+
+  SkBitmap bitmap;
+  ASSERT_TRUE(DecodePNG(png_data, &bitmap));
+
+  // Expect a centered blue rectangle on red background.
+  EXPECT_TRUE(CheckColoredRect(bitmap, SkColorSetRGB(0x00, 0x00, 0xff),
+                               SkColorSetRGB(0xff, 0x00, 0x00)));
 }
 
 // PrintToPDF command tests -------------------------------------------

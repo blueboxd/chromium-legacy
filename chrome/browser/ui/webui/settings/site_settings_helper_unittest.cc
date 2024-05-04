@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 
 #include "base/check_deref.h"
+#include "base/containers/to_vector.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/to_vector.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -43,6 +43,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/site_engagement/content/site_engagement_score.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -610,7 +611,7 @@ TEST_F(SiteSettingsHelperTest, CookieExceptions) {
   // Convert the test cases, and the returned dictionary, into tuples for
   // unordered comparison, as the order of exception is not relevant.
   std::vector<std::tuple<std::string, std::string, std::string>> expected =
-      base::test::ToVector(test_cases, [&](const auto& test_case) {
+      base::ToVector(test_cases, [&](const auto& test_case) {
         // make_tuple as we've some temporary rvalues.
         return std::make_tuple(
             test_case.primary_pattern,
@@ -623,7 +624,7 @@ TEST_F(SiteSettingsHelperTest, CookieExceptions) {
       });
 
   std::vector<std::tuple<std::string, std::string, std::string>> actual =
-      base::test::ToVector(exceptions, [](const auto& exception) {
+      base::ToVector(exceptions, [](const auto& exception) {
         const base::Value::Dict& dict = exception.GetDict();
         return std::make_tuple(*dict.FindString(kOrigin),
                                *dict.FindString(kEmbeddingOrigin),
@@ -875,7 +876,7 @@ TEST_F(SiteSettingsHelperTest, ShowAutograntedRWSPermissions) {
       HostContentSettingsMapFactory::GetForProfile(&profile);
   content_settings::ContentSettingConstraints constraint;
   constraint.set_session_model(
-      content_settings::SessionModel::NonRestorableUserSession);
+      content_settings::mojom::SessionModel::NON_RESTORABLE_USER_SESSION);
   constexpr char kToplevelURL[] = "https://firstparty.com";
   constexpr char kEmbeddedURL[] = "https://embedded.com";
   map->SetContentSettingDefaultScope(GURL(kEmbeddedURL), GURL(kToplevelURL),
@@ -904,7 +905,7 @@ TEST_F(SiteSettingsHelperTest, HideAutograntedRWSPermissions) {
       HostContentSettingsMapFactory::GetForProfile(&profile);
   content_settings::ContentSettingConstraints constraint;
   constraint.set_session_model(
-      content_settings::SessionModel::NonRestorableUserSession);
+      content_settings::mojom::SessionModel::NON_RESTORABLE_USER_SESSION);
   constexpr char kToplevelURL[] = "https://firstparty.com";
   constexpr char kEmbeddedURL[] = "https://embedded.com";
   map->SetContentSettingDefaultScope(GURL(kEmbeddedURL), GURL(kToplevelURL),
@@ -918,6 +919,50 @@ TEST_F(SiteSettingsHelperTest, HideAutograntedRWSPermissions) {
       /*incognito=*/false, &exceptions);
   EXPECT_TRUE(exceptions.empty());
 }
+
+TEST_F(SiteSettingsHelperTest, AutomaticFullscreenVisibility) {
+  TestingProfile profile;
+  base::test::ScopedFeatureList feature_list{
+      features::kAutomaticFullscreenContentSetting};
+  const ContentSettingsType type = ContentSettingsType::AUTOMATIC_FULLSCREEN;
+
+  // Automatic Fullscreen is visible for non-origin-specific lists.
+  auto types = GetVisiblePermissionCategories();
+  EXPECT_TRUE(base::ranges::any_of(types, [](auto& t) { return t == type; }));
+
+  constexpr char kDefault[] = "https://www.default.com:443";
+  constexpr char kAllowed[] = "https://www.allowed.com:443";
+
+  // Automatic Fullscreen is not visible for sites with the default BLOCK value.
+  std::string source;
+  auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  ContentSetting content_setting =
+      GetContentSettingForOrigin(&profile, map, GURL(kDefault), type, &source);
+  EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kDefault), source);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
+  types = GetVisiblePermissionCategories(kDefault, &profile);
+  EXPECT_FALSE(base::ranges::any_of(types, [](auto& t) { return t == type; }));
+
+  // Simulate allowing Automatic Fullscreen through enterprise policy.
+  auto policy_provider = std::make_unique<content_settings::MockProvider>();
+  policy_provider->SetWebsiteSetting(
+      ContentSettingsPattern::FromString(kAllowed),
+      ContentSettingsPattern::FromString(kAllowed), type,
+      base::Value(CONTENT_SETTING_ALLOW), /*constraints=*/{},
+      content_settings::PartitionKey::GetDefaultForTesting());
+  policy_provider->set_read_only(true);
+  content_settings::TestUtils::OverrideProvider(
+      map, std::move(policy_provider), HostContentSettingsMap::POLICY_PROVIDER);
+
+  // Automatic Fullscreen is visible for origins with non-default values.
+  content_setting =
+      GetContentSettingForOrigin(&profile, map, GURL(kAllowed), type, &source);
+  EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kPolicy), source);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, content_setting);
+  types = GetVisiblePermissionCategories(kAllowed, &profile);
+  EXPECT_TRUE(base::ranges::any_of(types, [](auto& t) { return t == type; }));
+}
+
 namespace {
 
 constexpr char kUsbPolicySetting[] = R"(
@@ -1318,6 +1363,11 @@ class SiteSettingsHelperIsolatedWebAppTest : public testing::Test {
 
   Profile* profile() { return &testing_profile_; }
 
+  const GURL kAppUrl{
+      "isolated-app://"
+      "berugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic"};
+  const std::string kAppName = "test IWA Name";
+
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile testing_profile_;
@@ -1329,11 +1379,6 @@ class SiteSettingsHelperIsolatedWebAppTest : public testing::Test {
 
 TEST_F(SiteSettingsHelperIsolatedWebAppTest,
        IsolatedWebAppsUseAppNameAsDisplayName) {
-  const GURL kAppUrl(
-      "isolated-app://"
-      "berugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic");
-  const std::string kAppName("test IWA Name");
-
   const std::string kUsbChooserGroupName(
       ContentSettingsTypeToGroupName(ContentSettingsType::USB_CHOOSER_DATA));
   const std::string& kPolicySource =
@@ -1371,6 +1416,23 @@ TEST_F(SiteSettingsHelperIsolatedWebAppTest,
         /*source=*/kPreferenceSource,
         /*incognito=*/false);
   }
+}
+
+TEST_F(SiteSettingsHelperIsolatedWebAppTest, AutomaticFullscreenVisibility) {
+  base::test::ScopedFeatureList feature_list{
+      features::kAutomaticFullscreenContentSetting};
+  const ContentSettingsType type = ContentSettingsType::AUTOMATIC_FULLSCREEN;
+  InstallIsolatedWebApp(kAppUrl, kAppName);
+
+  // Automatic Fullscreen is visible for IWAs, even with default BLOCK values.
+  std::string source;
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  ContentSetting content_setting =
+      GetContentSettingForOrigin(profile(), map, kAppUrl, type, &source);
+  EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kDefault), source);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
+  const auto types = GetVisiblePermissionCategories(kAppUrl.spec(), profile());
+  EXPECT_TRUE(base::ranges::any_of(types, [](auto& t) { return t == type; }));
 }
 
 }  // namespace site_settings

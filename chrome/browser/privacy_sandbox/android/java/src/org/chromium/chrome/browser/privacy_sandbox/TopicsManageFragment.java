@@ -8,13 +8,19 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 
-import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modaldialog.SimpleModalDialogController;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -28,6 +34,8 @@ public class TopicsManageFragment extends PrivacySandboxSettingsBaseFragment {
     private PreferenceCategory mTopicsCategory;
 
     private Dialog mConfirmationDialog;
+
+    private Supplier<ModalDialogManager> mModalDialogManagerSupplier;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle bundle, @Nullable String s) {
@@ -47,6 +55,16 @@ public class TopicsManageFragment extends PrivacySandboxSettingsBaseFragment {
                                         getContext(), this::onLearnMoreClicked))));
 
         populateTopics();
+        RecordUserAction.record("Settings.PrivacySandbox.Topics.Manage.PageOpened");
+    }
+
+    /**
+     * Sets Supplier for {@lnk ModalDialogManager} used to display {@link
+     * AutofillDeleteCreditCardConfirmationDialog}.
+     */
+    public void setModalDialogManagerSupplier(
+            @NonNull Supplier<ModalDialogManager> modalDialogManagerSupplier) {
+        mModalDialogManagerSupplier = modalDialogManagerSupplier;
     }
 
     private void populateTopics() {
@@ -67,8 +85,7 @@ public class TopicsManageFragment extends PrivacySandboxSettingsBaseFragment {
             return handleBlockTopic(topicPreference);
         }
         PrivacySandboxBridge.setTopicAllowed(topicPreference.getTopic(), true);
-        // When a topic is unblocked, display the snackbar if it's not in active topics.
-        maybeDisplaySnackbar(topicPreference.getTopic());
+        RecordUserAction.record("Settings.PrivacySandbox.Topics.Manage.TopicEnabled");
         return true;
     }
 
@@ -78,47 +95,58 @@ public class TopicsManageFragment extends PrivacySandboxSettingsBaseFragment {
         List<Topic> childTopics = PrivacySandboxBridge.getChildTopicsCurrentlyAssigned(topic);
         if (childTopics.isEmpty()) {
             PrivacySandboxBridge.setTopicAllowed(topic, false);
+            RecordUserAction.record("Settings.PrivacySandbox.Topics.Manage.TopicBlocked");
             return true;
         }
         // There are assigned child topics - display a confirmation prompt.
-        mConfirmationDialog =
-                new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_BrowserUI_AlertDialog)
-                        .setTitle(
-                                getString(
-                                        R.string.settings_manage_topics_dialog_clank_title,
-                                        topic.getName()))
-                        .setMessage(
-                                getString(
-                                        R.string.settings_manage_topics_dialog_clank_body,
-                                        topic.getName()))
-                        .setPositiveButton(
-                                R.string.continue_button,
-                                (dialog, which) -> {
-                                    PrivacySandboxBridge.setTopicAllowed(topic, false);
-                                })
-                        .setNegativeButton(
-                                R.string.cancel,
-                                (dialog, which) -> {
-                                    preference.setChecked(true);
-                                    mConfirmationDialog = null;
-                                })
-                        .show();
+        assert mModalDialogManagerSupplier != null;
+        ModalDialogManager modalDialogManager = mModalDialogManagerSupplier.get();
+        assert modalDialogManager != null;
+        ModalDialogProperties.Controller dialogController =
+                new SimpleModalDialogController(
+                        modalDialogManager,
+                        dismissalCause -> {
+                            if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
+                                PrivacySandboxBridge.setTopicAllowed(topic, false);
+                                RecordUserAction.record(
+                                        "Settings.PrivacySandbox.Topics.Manage.TopicBlockingConfirmed");
+                            } else {
+                                preference.setChecked(true);
+                                RecordUserAction.record(
+                                        "Settings.PrivacySandbox.Topics.Manage.TopicBlockingCanceled");
+                            }
+                        });
+        PropertyModel dialog =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, dialogController)
+                        .with(
+                                ModalDialogProperties.TITLE,
+                                getContext()
+                                        .getString(
+                                                R.string.settings_manage_topics_dialog_clank_title,
+                                                topic.getName()))
+                        .with(
+                                ModalDialogProperties.MESSAGE_PARAGRAPH_1,
+                                getContext()
+                                        .getString(
+                                                R.string.settings_manage_topics_dialog_clank_body,
+                                                topic.getName()))
+                        .with(
+                                ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                getContext().getString(R.string.settings_topics_page_block_topic))
+                        .with(
+                                ModalDialogProperties.BUTTON_STYLES,
+                                ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE)
+                        .with(
+                                ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
+                                getContext().getString(R.string.cancel))
+                        .build();
+        modalDialogManager.showDialog(dialog, ModalDialogManager.ModalDialogType.APP);
         return true;
     }
 
-    private void maybeDisplaySnackbar(Topic topic) {
-        var currentTopics = new HashSet<Topic>(PrivacySandboxBridge.getCurrentTopTopics());
-        if (currentTopics.contains(topic)) return;
-        showSnackbar(
-                R.string.settings_unblock_topic_toast_body,
-                null,
-                Snackbar.TYPE_ACTION,
-                Snackbar.UMA_PRIVACY_SANDBOX_ADD_INTEREST,
-                R.string.settings_unblock_topic_toast_button_text,
-                /* multiLine= */ true);
-    }
-
     private void onLearnMoreClicked(View view) {
+        RecordUserAction.record("Settings.PrivacySandbox.Topics.Manage.LearnMoreClicked");
         openUrlInCct(PrivacySandboxSettingsFragment.HELP_CENTER_URL);
     }
 }

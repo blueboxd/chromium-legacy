@@ -10,10 +10,10 @@
 #include <clocale>
 #include <limits>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
@@ -232,7 +232,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
     void OnDestruct() override { bindings_->OnFrameDestroyed(); }
 
    private:
-    const raw_ptr<TestRunnerBindings, ExperimentalRenderer> bindings_;
+    const raw_ptr<TestRunnerBindings> bindings_;
   };
 
   explicit TestRunnerBindings(TestRunner* test_runner,
@@ -338,7 +338,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetEffectiveConnectionType(const std::string& connection_type);
   void SetFilePathForMockFileDialog(const std::string& path);
   void SetMockSpellCheckerEnabled(bool enabled);
-  void SetImagesAllowed(bool allowed);
   void SetIsolatedWorldInfo(int world_id,
                             v8::Local<v8::Value> security_origin,
                             v8::Local<v8::Value> content_security_policy);
@@ -346,6 +345,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMockScreenOrientation(const std::string& orientation);
   void SetPOSIXLocale(const std::string& locale);
   void SetMainWindowHidden(bool hidden);
+  void SetFrameWindowHidden(bool hidden);
   void SetWindowRect(const gin::Dictionary& rect);
   void SetPermission(const std::string& name,
                      const std::string& value,
@@ -370,6 +370,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                    v8::Local<v8::Function> callback);
   void SetWillSendRequestClearHeader(const std::string& header);
   void SetWillSendRequestClearReferrer();
+  void SetRphRegistrationMode(gin::Arguments* args);
   void SimulateBrowserWindowFocus(bool value);
   void NavigateSecondaryWindow(const std::string& url);
   void InspectSecondaryWindow();
@@ -417,9 +418,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   // Observer for the |frame_| the TestRunningBindings is bound to.
   TestRunnerBindingsRenderFrameObserver frame_observer_;
 
-  raw_ptr<TestRunner, ExperimentalRenderer> runner_;
-  raw_ptr<WebFrameTestProxy, ExperimentalRenderer> frame_;
-  const raw_ptr<SpellCheckClient, ExperimentalRenderer> spell_check_;
+  raw_ptr<TestRunner, DanglingUntriaged> runner_;
+  raw_ptr<WebFrameTestProxy, DanglingUntriaged> frame_;
+  const raw_ptr<SpellCheckClient, DanglingUntriaged> spell_check_;
   TestPreferences prefs_;
   std::unique_ptr<AppBannerService> app_banner_service_;
 
@@ -476,7 +477,7 @@ void TestRunnerBindings::Install(TestRunner* test_runner,
         R"(if (!window.testRunner._wpt_reftest_setup) {
           window.testRunner._wpt_reftest_setup = true;
 
-          window.addEventListener('load', function() {
+          function observeRefTestFinished() {
             if (window.assert_equals) // In case of a testharness test.
               return;
             window.testRunner.waitUntilDone();
@@ -504,6 +505,15 @@ void TestRunnerBindings::Install(TestRunner* test_runner,
               target.dispatchEvent(event);
             } else {
               document.fonts.ready.then(() => window.testRunner.notifyDone());
+            }
+          };
+
+          window.addEventListener('load', () => {
+            if (document.prerendering) {
+              document.addEventListener('prerenderingchange',
+                  observeRefTestFinished);
+            } else {
+              observeRefTestFinished();
             }
           });
         })")));
@@ -745,7 +755,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setMockSpellCheckerEnabled",
                  &TestRunnerBindings::SetMockSpellCheckerEnabled)
       .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
-      .SetMethod("setImagesAllowed", &TestRunnerBindings::SetImagesAllowed)
       .SetMethod("setIsolatedWorldInfo",
                  &TestRunnerBindings::SetIsolatedWorldInfo)
       .SetMethod("setJavaScriptCanAccessClipboard",
@@ -757,9 +766,15 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // Calls setlocale(LC_ALL, ...) for a specified locale.
       .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
       // Hide or show the main window. Watch for the |document.visibilityState|
-      // to change in order to wait for the side effects of calling this.
+      // on the primary window's Document to change in order to wait for the
+      // side effects of calling this.
       .SetMethod("setMainWindowHidden",
                  &TestRunnerBindings::SetMainWindowHidden)
+      // Hide or show the window displaying this frame. Watch for the
+      // |document.visibilityState| to change in order to wait for the side
+      // effects of calling this.
+      .SetMethod("setFrameWindowHidden",
+                 &TestRunnerBindings::SetFrameWindowHidden)
       .SetMethod("setWindowRect", &TestRunnerBindings::SetWindowRect)
       // Sets the permission's |name| to |value| for a given {origin, embedder}
       // tuple. Sends a message to the WebTestPermissionManager in order for it
@@ -773,6 +788,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setPrintingForFrame",
                  &TestRunnerBindings::SetPrintingForFrame)
       .SetMethod("setPrintingSize", &TestRunnerBindings::SetPrintingSize)
+      .SetMethod("setRphRegistrationMode",
+                 &TestRunnerBindings::SetRphRegistrationMode)
       .SetMethod("setScrollbarPolicy", &TestRunnerBindings::NotImplemented)
       .SetMethod("setShouldGeneratePixelResults",
                  &TestRunnerBindings::SetShouldGeneratePixelResults)
@@ -1332,6 +1349,15 @@ void TestRunnerBindings::SetMainWindowHidden(bool hidden) {
   frame_->GetWebTestControlHostRemote()->SetMainWindowHidden(hidden);
 }
 
+void TestRunnerBindings::SetFrameWindowHidden(bool hidden) {
+  if (!frame_) {
+    return;
+  }
+
+  frame_->GetWebTestControlHostRemote()->SetFrameWindowHidden(
+      frame_->GetWebFrame()->GetLocalFrameToken(), hidden);
+}
+
 void TestRunnerBindings::SetWindowRect(const gin::Dictionary& bounds) {
   if (!frame_) {
     return;
@@ -1651,13 +1677,6 @@ void TestRunnerBindings::SetCaretBrowsingEnabled() {
   }
   blink::WebView* web_view = GetWebFrame()->View();
   web_view->GetSettings()->SetCaretBrowsingEnabled(true);
-}
-
-void TestRunnerBindings::SetImagesAllowed(bool allowed) {
-  if (!frame_) {
-    return;
-  }
-  runner_->SetImagesAllowed(allowed, *frame_);
 }
 
 void TestRunnerBindings::SetStorageAllowed(bool allowed) {
@@ -2408,6 +2427,36 @@ void TestRunnerBindings::GoToOffset(int offset) {
   frame_->GetWebTestControlHostRemote()->GoToOffset(offset);
 }
 
+void TestRunnerBindings::SetRphRegistrationMode(gin::Arguments* args) {
+  if (!frame_) {
+    return;
+  }
+
+  if (args->Length() != 1) {
+    args->ThrowTypeError("setRphRegistrationMode expects 1 argument");
+    return;
+  }
+
+  std::string arg;
+  if (!args->GetNext(&arg)) {
+    args->ThrowError();
+    return;
+  }
+
+  auto mode = mojom::WebTestControlHost::AutoResponseMode::kNone;
+  if (arg == "autoAccept") {
+    mode = mojom::WebTestControlHost::AutoResponseMode::kAutoAccept;
+  } else if (arg == "autoReject") {
+    mode = mojom::WebTestControlHost::AutoResponseMode::kAutoReject;
+  } else if (arg != "none") {
+    args->ThrowTypeError(
+        "setRphRegistrationMode called with an invalid 'mode' argument");
+    return;
+  }
+
+  frame_->GetWebTestControlHostRemote()->SetRegisterProtocolHandlerMode(mode);
+}
+
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {}
 
 // This class helps track active main windows and when the `blink::WebView` is
@@ -2418,11 +2467,11 @@ class TestRunner::MainWindowTracker : public blink::WebViewObserver {
       : blink::WebViewObserver(view), test_runner_(test_runner) {}
 
   void OnDestruct() override {
-    EraseIf(test_runner_->main_windows_, base::MatchesUniquePtr(this));
+    std::erase_if(test_runner_->main_windows_, base::MatchesUniquePtr(this));
   }
 
  private:
-  const raw_ptr<TestRunner, ExperimentalRenderer> test_runner_;
+  const raw_ptr<TestRunner> test_runner_;
 };
 
 TestRunner::WorkQueue::WorkQueue(TestRunner* controller)
@@ -2911,7 +2960,7 @@ void TestRunner::RemoveLoadingFrame(blink::WebLocalFrame* frame) {
   // flakiness due to inconsistent state management across renderers.
   // See https://crbug.com/1100223 for details.
 
-  base::Erase(loading_frames_, frame);
+  std::erase(loading_frames_, frame);
   if (!loading_frames_.empty())
     return;
 
@@ -2961,6 +3010,7 @@ void TestRunner::OnFrameReactivated(WebFrameTestProxy& frame) {
     return;
 
   DCHECK(frame.IsMainFrame());
+  DCHECK(!frame.GetWebFrame()->GetDocument().IsPrerendering());
 
   if (frame.GetWebFrame()->IsLoading()) {
     AddLoadingFrame(frame.GetWebFrame());
@@ -3074,6 +3124,11 @@ bool TestRunner::ShouldDumpNavigationPolicy() const {
 
 WebFrameTestProxy* TestRunner::FindInProcessMainWindowMainFrame() {
   for (WebFrameTestProxy* main_frame : main_frames_) {
+    // Prerendering frames are marked as being in the main window but
+    // expect the active main frame from this method.
+    if (main_frame->GetWebFrame()->GetDocument().IsPrerendering()) {
+      continue;
+    }
     if (IsFrameInMainWindow(main_frame->GetWebFrame()))
       return main_frame;
   }
@@ -3410,11 +3465,6 @@ void TestRunner::DumpUserGestureInFrameLoadCallbacks(
 
 void TestRunner::DumpTitleChanges(WebFrameTestProxy& source) {
   web_test_runtime_flags_.set_dump_title_changes(true);
-  OnWebTestRuntimeFlagsChanged(source);
-}
-
-void TestRunner::SetImagesAllowed(bool allowed, WebFrameTestProxy& source) {
-  web_test_runtime_flags_.set_images_allowed(allowed);
   OnWebTestRuntimeFlagsChanged(source);
 }
 

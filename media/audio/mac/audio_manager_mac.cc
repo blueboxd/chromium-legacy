@@ -429,7 +429,7 @@ static bool GetOutputDeviceChannelsAndLayout(AudioUnit audio_unit,
     return true;
   }
 
-  for (int i = 0; i < ChannelLayout::CHANNEL_LAYOUT_MAX; i++) {
+  for (int i = 0; i <= ChannelLayout::CHANNEL_LAYOUT_MAX; i++) {
     ChannelLayout layout = static_cast<ChannelLayout>(i);
     if (ChannelLayoutToChannelCount(layout) != *channels) {
       continue;
@@ -948,19 +948,9 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
     hardware_channel_layout = CHANNEL_LAYOUT_STEREO;
   }
 
-  // Use the input channel count and channel layout if possible.  Let OSX take
-  // care of remapping the channels; this lets user specified channel layouts
-  // work correctly.
-  int output_channels = input_params.channels();
-  ChannelLayout output_channel_layout = input_params.channel_layout();
-  if (!has_valid_input_params || output_channels > hardware_channels) {
-    output_channels = hardware_channels;
-    output_channel_layout = hardware_channel_layout;
-  }
-
   AudioParameters params(
       AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      {output_channel_layout, output_channels}, hardware_sample_rate,
+      {hardware_channel_layout, hardware_channels}, hardware_sample_rate,
       buffer_size,
       AudioParameters::HardwareCapabilities(
           GetMinAudioBufferSizeMacOS(limits::kMinAudioBufferSize,

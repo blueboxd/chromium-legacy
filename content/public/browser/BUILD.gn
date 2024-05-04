@@ -95,6 +95,7 @@ source_set("browser_sources") {
     "browsing_instance_id.h",
     "browsing_topics_site_data_manager.h",
     "cdm_registry.h",
+    "cdm_storage_data_model.h",
     "certificate_request_result_type.h",
     "child_process_data.cc",
     "child_process_data.h",
@@ -152,6 +153,10 @@ source_set("browser_sources") {
     "devtools_manager_delegate.h",
     "devtools_network_transaction_factory.h",
     "devtools_socket_factory.h",
+    "digital_identity_provider.cc",
+    "digital_identity_provider.h",
+    "dips_delegate.cc",
+    "dips_delegate.h",
     "disallow_activation_reason.h",
     "document_picture_in_picture_window_controller.h",
     "document_ref.cc",
@@ -731,6 +736,9 @@ if (is_android) {
   }
   java_cpp_enum("bluetooth_chooser_event_javagen") {
     sources = [ "bluetooth_chooser.h" ]
+  }
+  java_cpp_enum("digital_identity_enum") {
+    sources = [ "digital_identity_provider.h" ]
   }
 }
 

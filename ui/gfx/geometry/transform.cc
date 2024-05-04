@@ -8,8 +8,8 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/numerics/angle_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/clamp_float_geometry.h"
@@ -32,7 +32,7 @@ namespace {
 const double kEpsilon = std::numeric_limits<float>::epsilon();
 
 double TanDegrees(double degrees) {
-  return std::tan(DegToRad(degrees));
+  return std::tan(base::DegToRad(degrees));
 }
 
 inline bool ApproximatelyZero(double x, double tolerance) {
@@ -487,7 +487,7 @@ bool Transform::GetInverse(Transform* transform) const {
 Transform Transform::GetCheckedInverse() const {
   Transform inverse;
   if (!GetInverse(&inverse))
-    NOTREACHED() << ToString() << " is not invertible";
+    DUMP_WILL_BE_NOTREACHED_NORETURN() << ToString() << " is not invertible";
   return inverse;
 }
 
@@ -496,6 +496,39 @@ Transform Transform::InverseOrIdentity() const {
   bool invertible = GetInverse(&inverse);
   DCHECK(invertible || inverse.IsIdentity());
   return inverse;
+}
+
+bool Transform::Preserves2dAffine() const {
+  if (LIKELY(!full_matrix_)) {
+    return true;
+  }
+
+  // The first two columns of row 2 allow the x and y axis to skew in the z
+  // direction. We also check there is no z translation. We can ignore the z
+  // scale component since it cannot affect coordinates where z = 0.
+  const bool is_flat_ignore_z = gfx::AllTrue(gfx::Double4{
+                                                 matrix_.rc(2, 0),
+                                                 matrix_.rc(2, 1),
+                                                 0,
+                                                 matrix_.rc(2, 3),
+                                             } == gfx::Double4{0, 0, 0, 0});
+
+  // We must ensure that the x and y perspective components are 0 since they can
+  // affect the affine-ness of the x/y plane. We can ignore the z perspective
+  // component since it does not affect values on the x/y plane.
+  const bool has_no_perspective_ignore_z =
+      gfx::AllTrue(gfx::Double4{
+                       matrix_.rc(3, 0),
+                       matrix_.rc(3, 1),
+                       0,
+                       matrix_.rc(3, 3),
+                   } == gfx::Double4{0, 0, 0, 1});
+
+  if (is_flat_ignore_z && has_no_perspective_ignore_z) {
+    return true;
+  }
+
+  return false;
 }
 
 bool Transform::Preserves2dAxisAlignment() const {

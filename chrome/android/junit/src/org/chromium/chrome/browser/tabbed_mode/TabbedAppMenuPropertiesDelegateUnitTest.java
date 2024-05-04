@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
@@ -98,7 +99,10 @@ import java.util.List;
     ChromeFeatureList.WEB_FEED,
     UiAccessibilityFeatures.START_SURFACE_ACCESSIBILITY_CHECK
 })
-@DisableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
+@DisableFeatures({
+    ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS,
+    ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI
+})
 public class TabbedAppMenuPropertiesDelegateUnitTest {
     // Constants defining flags that determines multi-window menu items visibility.
     private static final boolean TAB_M = true; // multiple tabs
@@ -192,7 +196,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         when(mTabModelFilter.getTabModel()).thenReturn(mTabModel);
         when(mTabModel.getProfile()).thenReturn(mProfile);
         jniMocker.mock(ManagedBrowserUtilsJni.TEST_HOOKS, mManagedBrowserUtilsJniMock);
-        Profile.setLastUsedProfileForTesting(mProfile);
+        ProfileManager.setLastUsedProfileForTesting(mProfile);
         jniMocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeJniMock);
         OfflinePageUtils.setInstanceForTesting(mOfflinePageUtils);
         when(mIdentityService.getSigninManager(any(Profile.class))).thenReturn(mSigninManager);
@@ -221,7 +225,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
                                 mDecorView,
                                 mAppMenuDelegate,
                                 mLayoutStateProviderSupplier,
-                                null,
                                 mBookmarkModelSupplier,
                                 mFeedLauncher,
                                 mDialogManager,
@@ -365,6 +368,18 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
 
         Menu menu2 = createMenuForMultiWindow();
         assertTrue(isMenuVisible(menu2, R.id.manage_all_windows_menu_id));
+    }
+
+    @Test
+    @EnableFeatures({ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI})
+    public void testPageMenuItems_universalInstall() {
+        setUpMocksForPageMenu();
+        Menu menu = createMenuForMultiWindow();
+        assertTrue(isMenuVisible(menu, R.id.universal_install));
+
+        assertFalse(isMenuVisible(menu, R.id.add_to_homescreen_id));
+        assertFalse(isMenuVisible(menu, R.id.install_webapp_id));
+        assertFalse(isMenuVisible(menu, R.id.open_webapk_id));
     }
 
     @Test

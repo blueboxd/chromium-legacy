@@ -455,12 +455,12 @@ String HTMLTextAreaElement::Value() const {
 void HTMLTextAreaElement::setValueForBinding(const String& value) {
   String old_value = this->Value();
   bool was_autofilled = IsAutofilled();
+  bool value_changed = old_value != value;
   SetValue(value, TextFieldEventBehavior::kDispatchNoEvent,
            TextControlSetValueSelection::kSetSelectionToEnd,
-           !was_autofilled || value != old_value
-               ? WebAutofillState::kNotFilled
-               : WebAutofillState::kAutofilled);
-  if (Page* page = GetDocument().GetPage()) {
+           was_autofilled && !value_changed ? WebAutofillState::kAutofilled
+                                            : WebAutofillState::kNotFilled);
+  if (Page* page = GetDocument().GetPage(); page && value_changed) {
     page->GetChromeClient().JavaScriptChangedValue(*this, old_value,
                                                    was_autofilled);
   }
@@ -693,19 +693,24 @@ void HTMLTextAreaElement::SetPlaceholderVisibility(bool visible) {
   is_placeholder_visible_ = visible;
 }
 
-TextControlInnerEditorElement* HTMLTextAreaElement::EnsureInnerEditorElement()
-    const {
-  return InnerEditorElement();
+void HTMLTextAreaElement::CreateInnerEditorElementIfNecessary() const {
+  // HTMLTextArea immediately creates the inner-editor, so this function should
+  // never be called.
+  NOTREACHED();
 }
 
-void HTMLTextAreaElement::UpdatePlaceholderText() {
+bool HTMLTextAreaElement::IsInnerEditorValueEmpty() const {
+  return InnerEditorValue().empty();
+}
+
+HTMLElement* HTMLTextAreaElement::UpdatePlaceholderText() {
   HTMLElement* placeholder = PlaceholderElement();
   const String placeholder_text = GetPlaceholderValue();
   const bool is_suggested_value = !SuggestedValue().empty();
   if (!is_suggested_value && !FastHasAttribute(html_names::kPlaceholderAttr)) {
     if (placeholder)
       UserAgentShadowRoot()->RemoveChild(placeholder);
-    return;
+    return nullptr;
   }
   if (!placeholder) {
     auto* new_element = MakeGarbageCollected<HTMLDivElement>(GetDocument());
@@ -729,6 +734,7 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
   // https://html.spec.whatwg.org/multipage/form-elements.html#attr-textarea-placeholder
   ReplaceCRWithNewLine(normalized_value);
   placeholder->setTextContent(normalized_value);
+  return placeholder;
 }
 
 String HTMLTextAreaElement::GetPlaceholderValue() const {

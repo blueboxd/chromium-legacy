@@ -88,7 +88,8 @@ constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_SCANOUT |
-    SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_VIDEO_DECODE |
+    SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
+    SHARED_IMAGE_USAGE_VIDEO_DECODE |
     SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
     SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU | SHARED_IMAGE_USAGE_CPU_UPLOAD |
     SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
@@ -336,7 +337,8 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
 
   if ((usage & gpu::SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE) &&
       format.is_single_plane()) {
-    DCHECK(usage & gpu::SHARED_IMAGE_USAGE_WEBGPU);
+    DCHECK(usage &
+           (SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE));
     // WebGPU can use RGBA_8888 and RGBA_16 for STORAGE_BINDING.
 
     if (format == viz::SinglePlaneFormat::kRGBA_8888 ||
@@ -357,7 +359,8 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
     }
   }
   // D3D doesn't support mappable+default shared resource or YUV textures.
-  const bool has_webgpu_usage = usage & SHARED_IMAGE_USAGE_WEBGPU;
+  const bool has_webgpu_usage = usage & (SHARED_IMAGE_USAGE_WEBGPU_READ |
+                                         SHARED_IMAGE_USAGE_WEBGPU_WRITE);
   const bool has_gl_usage = HasGLES2ReadOrWriteUsage(usage);
   const bool needs_shared_handle =
       has_webgpu_usage ||
@@ -642,6 +645,10 @@ D3DImageBackingFactory::CreateSharedImageGMBs(
     backing->SetCleared();
   }
   return backing;
+}
+
+SharedImageBackingType D3DImageBackingFactory::GetBackingType() {
+  return SharedImageBackingType::kD3D;
 }
 
 }  // namespace gpu

@@ -272,9 +272,6 @@ CHAR_LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_SECURITY_KEY" desc="Label for a category of notifications that tells the user that they can sign in on a different computer by using this device [CHAR_LIMIT=32]">
         Sign-in verifications
       </message>
-      <message name="IDS_NOTIFICATION_CATEGORY_FEATURE_GUIDE" desc="Label for a category of notifications that is used to promote features in chrome to improve user engagement and browsing experience [CHAR_LIMIT=32]">
-        Chrome tips
-      </message>
       <message name="IDS_NOTIFICATION_CATEGORY_BLUETOOTH" desc="Label for bluetooth-related notifications, within a list of notification categories. [CHAR_LIMIT=32]">
         Bluetooth
       </message>
@@ -306,6 +303,28 @@ CHAR_LIMIT guidelines:
       </message>
       <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_SUMMARY" desc="Message of Google activity controls preference in signed in accounts settings screen">
         Control how your browsing history is used to personalize Search and more
+      </message>
+      <message name="IDS_SIGN_IN_PERSONALIZE_GOOGLE_SERVICES_TITLE" desc="Title of 'Personalize Google services' preference in signed in accounts settings screen">
+        Personalize Google services
+      </message>
+      <message name="IDS_SIGN_IN_PERSONALIZE_GOOGLE_SERVICES_SUMMARY" desc="Message of 'Personalize Google services' preference in signed in accounts settings screen">
+        Control how your synced history can be used to personalize other Google services
+      </message>
+      <!-- Personalized Google services preferences-->
+      <message name="IDS_PERSONALIZED_GOOGLE_SERVICES_SUMMARY" desc="Summary of 'Personalize Google services' settings screen">
+        To get the most personalized experience, include Chrome in Web &amp; App Activity and linked Google services
+      </message>
+      <message name="IDS_PERSONALIZED_GOOGLE_SERVICES_WAA_TITLE" desc="Title of 'Web &amp; App activity' preference in 'Personalize Google services' settings screen">
+        Web &amp; App Activity
+      </message>
+      <message name="IDS_PERSONALIZED_GOOGLE_SERVICES_WAA_SUMMARY" desc="Summary of 'Web &amp; App activity' preference in 'Personalize Google services' settings screen">
+        Include Chrome history if you want to add it to the Web &amp; App Activity in your Google Account
+      </message>
+      <message name="IDS_PERSONALIZED_GOOGLE_SERVICES_LINKED_SERVICES_TITLE" desc="Title of 'Linked Google services' preference in 'Personalize Google services' settings screen">
+        Linked Google services
+      </message>
+      <message name="IDS_PERSONALIZED_GOOGLE_SERVICES_LINKED_SERVICES_SUMMARY" desc="Summary of 'Linked Google services' preference in 'Personalize Google services' settings screen">
+        Link Chrome and other Google services if you want them to share data with each other
       </message>
       <!-- Unified consent preferences -->
       <message name="IDS_SIGN_OUT_AND_TURN_OFF_SYNC" desc="The text for a preferences row that for signs out the user and turns off sync.">
@@ -526,9 +545,6 @@ CHAR_LIMIT guidelines:
       <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_BILLING_ADDRESS" desc="Label for a spinner input field containing a list of billing addresses for a credit card. [CHAR_LIMIT=32]">
         Billing address
       </message>
-      <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chrome instance.">
-         Copied to Chrome
-      </message>
       <message name="IDS_AUTOFILL_PAYMENTS_AUTHENTICATOR_SELECTION_DIALOG_FOOTER" desc="Footer for the dialog where the user selects an authenticator from a list of options.">
         Not seeing your current info? Please contact your bank to update it.
       </message>
@@ -572,6 +588,16 @@ CHAR_LIMIT guidelines:
       <message name="IDS_AUTOFILL_DELETE_SAVED_CVCS_CONFIRMATION_DIALOG_DELETE_BUTTON_LABEL" desc="Label shown on the button that the user clicks on to delete their saved CVCs.">
         Delete
       </message>
+      <message name="IDS_AUTOFILL_IBAN_EDITOR_NICKNAME" desc="Label for text input field containing the nickname for IBAN shown in the add/edit IBAN form. [CHAR_LIMIT=25]">
+        Nickname
+      </message>
+      <message name="IDS_AUTOFILL_IBAN_EDITOR_VALUE" desc="Label for text input field containing IBAN value shown in the add/edit IBAN form.">
+        IBAN
+      </message>
+      <message name="IDS_AUTOFILL_IBAN_EDITOR_LOCAL_SAVE_FOOTER" desc="Footer informing users that the IBAN will be saved locally, shown in the add/edit IBAN form.">
+        This IBAN will be saved to this device only
+      </message>
+
 
        <!-- Payment Request section preview strings -->
        <message name="IDS_PAYMENT_REQUEST_PAYMENT_METHODS_PREVIEW" desc="This is a snippet of a payment method a user has saved to Chrome, plus an indication of the number of additional payment methods the user has saved.
@@ -766,7 +792,7 @@ CHAR_LIMIT guidelines:
         We’re changing how passwords are saved on this device
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_SUBTITLE" desc="The subtitle of the password migration warning sheet." formatter_data="android_java">
-        Right now, passwords saved on this device cannot be used across Chrome channels. After Chrome 121, passwords saved on your device for Chrome and <ph name="CHROME_CHANNEL">%1$s<ex>Chrome Dev</ex></ph> will be merged and can be used in both apps.
+        Right now, passwords saved on this device cannot be used across Chrome channels. After Chrome 125, passwords saved on your device for Chrome and <ph name="CHROME_CHANNEL">%1$s<ex>Chrome Dev</ex></ph> will be merged and can be used in both apps.
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_ACKNOWLEDGE" desc="The text on the button that acknowledges the password migration warning.">
         Got it
@@ -1227,6 +1253,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_CLEAR_FORM_DATA_TITLE" desc="Title for Clear Form Data in Clear Browsing Data preference">
         Autofill form data
       </message>
+      <message name="IDS_CLEAR_TABS_TITLE" desc="Title for Clear Tabs in Clear Browsing Data preference">
+        Tabs on this device
+      </message>
       <message name="IDS_CLEAR_BROWSING_DATA_PROGRESS_TITLE" desc='Title for the progress dialog used when waiting for "clear browsing data" to complete.'>
         Clearing browsing data
       </message>
@@ -1274,6 +1303,9 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_OPEN_CLEAR_BROWSING_DATA_DIALOG_BUTTON" desc="Title of the button that will open the clear browsing data dialog.">
         Clear browsing data…
+      </message>
+      <message name="IDS_OPEN_FULL_CHROME_HISTORY" desc="Title of the button that will open the full history in Chrome browser from CCT history page.">
+              Open full Chrome history
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_BASIC_TAB_TITLE" desc="The title of the tab showing the basic clear browsing data options.">
         Basic
@@ -1469,6 +1501,11 @@ Your Google account may have other forms of browsing history like searches and a
         Manage third-party cookies and tracking protections
       </message>
 
+      <!-- IP protection -->
+      <message name="IDS_IP_PROTECTION_TITLE" desc="IP Protection preference item title." translateable="false">
+        Hide your IP address
+      </message>
+
       <!-- Safety check -->
       <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR_LIMIT=32]">
         Safety check
@@ -1482,11 +1519,14 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SAFETY_CHECK_UPDATES_TITLE" desc="Title for the updates section.">
         Updates
       </message>
-      <message name="IDS_SAFETY_CHECK_PASSWORDS_TITLE" desc="Title for the passwords check for the local passwords stored on user's device only.">
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_TITLE" desc="Title for the passwords check for all passwords saved by the user.">
         Passwords
       </message>
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_LOCAL_TITLE" desc="Title for the passwords check for the local passwords stored on user's device only.">
+        Passwords saved to this device
+      </message>
       <message name="IDS_SAFETY_CHECK_PASSWORDS_ACCOUNT_TITLE" desc="Title for the passwords check for the synced passwords stored in the user's account store.">
-        Passwords saved on <ph name="USERNAME">%1$s<ex>elisa.becket@gmail.com</ex></ph>.
+        Passwords saved to <ph name="USERNAME">%1$s<ex>elisa.becket@gmail.com</ex></ph>.
       </message>
       <message name="IDS_SAFETY_CHECK_BUTTON" desc="Text for the button to start Safety check.">
         Check now
@@ -2108,6 +2148,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SIGN_IN_MANAGED_ACCOUNT_DESCRIPTION" desc="Description for signing in to managed accounts">
         You are signing in with an account managed by <ph name="MANAGED_DOMAIN">%1$s<ex>Google</ex></ph> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.
       </message>
+      <message name="IDS_MANAGED_SIGNIN_WITH_USER_POLICY_SUBTITLE" desc="The subtitle of the Sign in with a managed account dialog when user policies are enabled.">
+        Your organization, <ph name="MANAGED_DOMAIN">%1$s<ex>Google</ex></ph>, manages the account you're signing in to and how Chrome can be used. Your administrator can set up or restrict certain features.
+      </message>
       <message name="IDS_SYNC_YOUR_BOOKMARKS" desc="Title for the prompt to signin and enable sync to sync their bookmarks">
         Sync your bookmarks
       </message>
@@ -2227,6 +2270,9 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
       </message>
       <message name="IDS_SYNC_IMPORT_DATA_PROMPT" desc="Prompt for the user to choose how they want to handle their existing sync data">
          You have bookmarks, history, passwords, and other settings from <ph name ="FROM_ACCOUNT">%1$s<ex>johndoe@old.com</ex></ph>.
+      </message>
+      <message name="IDS_SYNC_IMPORT_DATA_PROMPT_WITHOUT_PASSWORDS" desc="Prompt for the user to choose how they want to handle their existing sync data. Similar to IDS_SYNC_IMPORT_DATA_PROMPT but without mentioning passwords.">
+         You have bookmarks, history, and other settings from <ph name ="FROM_ACCOUNT">%1$s<ex>johndoe@old.com</ex></ph>.
       </message>
       <message name="IDS_SYNC_IMPORT_EXISTING_DATA" desc="Option to import existing data to the newly selected sync account">
         Combine my data
@@ -2349,11 +2395,42 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
       <message name="IDS_IDENTITY_ERROR_CARD_BUTTON_PASSPHRASE_REQUIRED" desc="Button label for passphrase required error.">
         Enter passphrase
       </message>
-      <message name="IDS_IDENTITY_ERROR_CARD_BUTTON_CLIENT_OUT_OF_DATE" desc="Button label for client out-of-date error.">
+      <message name="IDS_IDENTITY_ERROR_CARD_BUTTON_CLIENT_OUT_OF_DATE" desc="Button label for client out-of-date error. Also used for error message button.">
         Update
       </message>
-      <message name="IDS_IDENTITY_ERROR_CARD_BUTTON_VERIFY" desc="Button label for all errors requiring re-auth (auth error, degreaded recoverability, encryption error)">
+      <message name="IDS_IDENTITY_ERROR_CARD_BUTTON_VERIFY" desc="Button label for all errors requiring re-auth (auth error, degreaded recoverability, encryption error). Also used for error message and notification title.">
         Verify it’s you
+      </message>
+
+      <!-- Identity error message and notification strings -->
+      <message name="IDS_IDENTITY_ERROR_MESSAGE_BODY" desc="Error message/notification to resolve passphrase required error, sync encryption error, auth error, outdated client error.">
+        Keep using the Chrome data in your Google Account
+      </message>
+      <message name="IDS_IDENTITY_ERROR_MESSAGE_BODY_SYNC_RETRIEVE_KEYS_FOR_PASSWORDS" desc="Error message/notification to resolve sync encryption error, required to resume syncing passwords.">
+        Keep using the passwords in your Google Account
+      </message>
+      <message name="IDS_IDENTITY_ERROR_MESSAGE_BODY_SYNC_RECOVERABILITY_DEGRADED_FOR_EVERYTHING" desc="Error message/notification to resolve sync degraded recoverability, for users that have chosen to encrypt all sync data.">
+        Make sure you can always use the Chrome data in your Google Account
+      </message>
+      <message name="IDS_IDENTITY_ERROR_MESSAGE_BODY_SYNC_RECOVERABILITY_DEGRADED_FOR_PASSWORDS" desc="Error message/notification to resolve sync degraded recoverability, for users that have chosen to encrypt only passwords.">
+        Make sure you can always use the passwords in your Google Account
+      </message>
+      <message name="IDS_IDENTITY_ERROR_MESSAGE_TITLE_PASSPHRASE_REQUIRED" desc="Error message/notification title for passphrase required error.">
+        Enter your passphrase
+      </message>
+      <message name="IDS_IDENTITY_ERROR_MESSAGE_TITLE_CLIENT_OUT_OF_DATE" desc="Error message/notification title for client out-of-date error.">
+        Update Chrome
+      </message>
+      <message name="IDS_IDENTITY_ERROR_MESSAGE_BUTTON_PASSPHRASE_REQUIRED" desc="Error message button label for passphrase required error.">
+        Enter
+      </message>
+      <message name="IDS_IDENTITY_ERROR_MESSAGE_BUTTON_VERIFY" desc="Error message button label for all errors requiring re-auth (auth error, degraded recoverability, encryption error)">
+        Verify
+      </message>
+
+      <!-- Accessibility strings for identity error visual cues -->
+      <message name="IDS_ACCESSIBILITY_ACCOUNT_MANAGEMENT_ROW_ACCOUNT_ERROR" desc="Accessibility string for alert icon in the account management row in the settings and for the alert icon in the error card on the accounts page, in case of identity error.">
+        Google Account error
       </message>
 
       <!-- Tab switcher -->
@@ -2440,6 +2517,10 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
 
       <message name="IDS_MENU_LISTEN_TO_THIS_PAGE" desc="Menu item for making the browser read out the page's text in spoken audio form. [CHAR_LIMIT=27]">
         Listen to this page
+      </message>
+
+      <message name="IDS_MENU_LISTEN_TO_THIS_PAGE_IPH" desc="The in-product-help message that encourages users to use the Listen to this Page feature in the app menu">
+        You can listen to this page
       </message>
 
       <message name="IDS_MENU_PRINT" desc="Menu item for printing the current page. [CHAR_LIMIT=27]">
@@ -3146,11 +3227,20 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_DIALOG_TITLE" desc="The title for the dialog that shows the list of accounts on the device and asks the user to select one of these accounts. [CHAR_LIMIT=27]">
         Choose an account
       </message>
-      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DESCRIPTION_WITH_EMAIL" is_accessibility_with_no_ui="true" desc="The content description for the account picker. Opens the 'Choose an account' dialog.">
-        Choose an account. Currently selected <ph name="EMAIL">%1$s<ex>john.doe@example.com</ex></ph>.
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DESCRIPTION_WITH_NAME_AND_EMAIL" is_accessibility_with_no_ui="true" desc="The content description for the account picker. Opens the 'Choose an account' dialog.">
+        <ph name="NAME">%1$s<ex>John Doe</ex></ph>, <ph name="EMAIL">%2$s<ex>john.doe@example.com</ex></ph> currently selected. Choose an account.
       </message>
-      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The content description for the account picker. Opens the 'Choose an account' dialog. Used when the user's email cannot be displayed.">
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DESCRIPTION_WITH_EMAIL" is_accessibility_with_no_ui="true" desc="The content description for the account picker. Opens the 'Choose an account' dialog. Used when the user's name is not available.">
+        <ph name="EMAIL">%1$s<ex>john.doe@example.com</ex></ph> currently selected. Choose an account.
+      </message>
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DESCRIPTION_WITH_NAME" is_accessibility_with_no_ui="true" desc="The content description for the account picker. Opens the 'Choose an account' dialog. Used when the user's email cannot be displayed.">
+        <ph name="NAME">%1$s<ex>John Doe</ex></ph> currently selected. Choose an account.
+      </message>
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DESCRIPTION_WITHOUT_NAME_OR_EMAIL" is_accessibility_with_no_ui="true" desc="The content description for the account picker. Opens the 'Choose an account' dialog. Used when the user's name and email cannot be displayed.">
         Choose an account.
+      </message>
+      <message name="IDS_SIGNIN_ACCOUNT_LABEL_FOR_NON_SELECTED_ACCOUNT" is_accessibility_with_no_ui="true" desc="The content description for each account in the expanded account picker. Names the account that will be selected.">
+        <ph name="NAME">%1$s<ex>John Doe</ex></ph>, <ph name="EMAIL">%2$s<ex>john.doe@example.com</ex></ph>.
       </message>
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_BOTTOM_SHEET_TITLE_FOR_SEND_TAB_TO_SELF" desc="The title for the bottom sheet that shows the list of accounts on the device and asks the user to select one of these accounts, when send-tab-to-self triggered the UI. [CHAR_LIMIT=27]">
         Sign in to Chrome
@@ -3277,8 +3367,14 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
       <message name="IDS_N_MINUTES_AGO" desc="A number of minutes in the past. [ICU Syntax]">
         {MINUTES, plural, =1 {# minute ago} other {# minutes ago}}
       </message>
+      <message name="IDS_N_MINUTES_AGO_NARROW" desc="A number of minutes in the past, made narrow to save space, and unit-like to avoid different plural form unless necessary. [ICU Syntax]">
+        {MINUTES, plural, =1 {# min ago} other {# min ago}}
+      </message>
       <message name="IDS_N_HOURS_AGO" desc="A number of hours in the past. [ICU Syntax]">
         {HOURS, plural, =1 {# hour ago} other {# hours ago}}
+      </message>
+      <message name="IDS_N_HOURS_AGO_NARROW" desc="A number of hours in the past, made narrow to save space, and unit-like to avoid different plural form unless necessary. [ICU Syntax]">
+        {HOURS, plural, =1 {# hr ago} other {# hr ago}}
       </message>
       <message name="IDS_N_DAYS_AGO" desc="A number of days in the past. [ICU Syntax]">
         {DAYS, plural, =1 {# day ago} other {# days ago}}
@@ -3483,38 +3579,6 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
         Explore content to follow
       </message>
 
-      <!-- Feature notification guide -->
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_NOTIFICATION_TITLE" desc="Notification title text educating user about tips and tricks in chrome.">
-        Chrome tips
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_NOTIFICATION_MESSAGE_DEFAULT_BROWSER" desc="Notification body text educating user about setting chrome as default browser.">
-        Learn how to set Chrome as your default
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_NOTIFICATION_MESSAGE_SIGN_IN" desc="Notification body text educating user about signing in into chrome.">
-        To get your Google stuff across devices, sign in
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_NOTIFICATION_MESSAGE_INCOGNITO_TAB" desc="Notification body text educating user about incognito tab in chrome.">
-        To browse privately on this device, try out Incognito
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_NOTIFICATION_MESSAGE_NTP_SUGGESTION_CARD" desc="Notification body text educating user about discovering suggested articles in chrome new tab page.">
-        Discover new content on Chrome’s homepage
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_NOTIFICATION_MESSAGE_VOICE_SEARCH" desc="Notification body text educating user about voice search in chrome.">
-        You can use your voice to search in Chrome
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_TOOLTIP_MESSAGE_INCOGNITO_TAB" desc="Tooltip text educating user about using incognito tab in chrome.">
-        To open a new Incognito tab, open the menu
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_TOOLTIP_MESSAGE_NTP_SUGGESTION_CARD" desc="Tooltip text educating user about discovering suggested articles in chrome new tab page.">
-        Scroll down to see suggested articles
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_TOOLTIP_MESSAGE_VOICE_SEARCH" desc="Tooltip text educating user about voice search in chrome.">
-        To search with your voice, tap the microphone
-      </message>
-      <message name="IDS_FEATURE_NOTIFICATION_GUIDE_TOOLTIP_MESSAGE_SIGN_IN" desc="Tooltip text educating user about signing in into chrome.">
-        Sign in to Chrome with your Google Account
-      </message>
-
       <!-- Toolbar button strings -->
       <message name="IDS_OPEN_TABS" desc="Text for button to enter the tab switcher and show tabs that are open on this device">
         Open tabs
@@ -3671,9 +3735,6 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
       <message name="IDS_MENU_DOWNLOADS" desc="Menu item for opening the downloads page. [CHAR_LIMIT=27]">
         Downloads
       </message>
-      <message name="IDS_MENU_ADD_BOOKMARK" desc="Menu item for adding the current page to 'Bookmarks'. Verb. [CHAR_LIMIT=27]">
-        Bookmark
-      </message>
       <message name="IDS_MENU_EDIT_BOOKMARK" desc="Menu item for editing the content of the bookmark for the current page. [CHAR_LIMIT=27]">
         Edit Bookmark
       </message>
@@ -3717,6 +3778,9 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
       </message>
       <message name="IDS_MENU_SETTINGS" desc="Menu item for opening browser settings. [CHAR_LIMIT=27]">
         Settings
+      </message>
+      <message name="IDS_MENU_SETTINGS_ACCOUNT_ERROR" desc="Accessibility string for settings menu item with a badge on the icon in case of sync/identity error.">
+        Settings, Google Account error
       </message>
       <message name="IDS_MENU_CLOSE_ALL_TABS" desc="Menu item for closing all open tabs. [CHAR_LIMIT=27]">
         Close all tabs
@@ -3977,13 +4041,13 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
       </message>
       <message name="IDS_LOCAL_BOOKMARK_MOVE_SNACKBAR_MESSAGE" desc="The snackbar message shown when a bookmark is moved to a local folder.">
         {BOOKMARK_COUNT, plural,
-          =1 {Bookmark saved to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>. It is only saved to this device.}
-          other {Bookmarks saved to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>. It is only saved to this device.}}
+          =1 {Bookmark saved to "<ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>". It is only saved to this device.}
+          other {Bookmarks saved to "<ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>". It is only saved to this device.}}
       </message>
       <message name="IDS_ACCOUNT_BOOKMARK_MOVE_SNACKBAR_MESSAGE" desc="The snackbar message shown when a bookmark is moved to an account folder.">
         {BOOKMARK_COUNT, plural,
-          =1 {Bookmark saved to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph> in your account, <ph name="ACCOUNT_EMAIL">%2$s<ex>example@gmail.com</ex></ph>.}
-          other {Bookmarks saved to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph> in your account, <ph name="ACCOUNT_EMAIL">%2$s<ex>example@gmail.com</ex></ph>.}}
+          =1 {Bookmark saved to "<ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>" in your account, <ph name="ACCOUNT_EMAIL">%2$s<ex>example@gmail.com</ex></ph>.}
+          other {Bookmarks saved to "<ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>" in your account, <ph name="ACCOUNT_EMAIL">%2$s<ex>example@gmail.com</ex></ph>.}}
       </message>
 
 
@@ -5932,6 +5996,16 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome da
       </message>
       <message name="IDS_WEBAUTHN_INCOGNITO_CONFIRMATION_SHEET_CLOSED" desc="Accessibility string that describes closing a bottomsheet that confirms with the user that they want to create passkey while in Incognito mode. (See the glossary for translations of the word 'passkey'. Do not translate as 'password'." formatter_data="android_java">
         Passkey confirmation sheet closed
+      </message>
+
+      <!-- Safety Hub -->
+      <message name="IDS_PREFS_SAFETY_HUB" desc="Title of the Safety hub element in settings, allowing the user to check multiple areas of browser safety. [CHAR_LIMIT=32]">
+        Safety hub
+      </message>
+
+      <!-- Data Sharing -->
+      <message name="IDS_SHARED_IMAGE_TILES_COUNT" desc="The count string for number of tiles that overflows from shared image tiles. |COUNT_NUMBER| will be a number between 1 and 99 (it will be 1-2 digits at most). [CHAR_LIMIT=3]">
+        +<ph name="COUNT_NUMBER">%1$s<ex>1</ex></ph>
       </message>
     </messages>
   </release>

@@ -95,6 +95,7 @@ source_set("unit_tests") {
     "//ios/chrome/app/application_delegate:test_support",
     "//ios/chrome/app/application_delegate:url_opener_params",
     "//ios/chrome/browser/bookmarks/model",
+    "//ios/chrome/browser/bookmarks/model:test_support",
     "//ios/chrome/browser/metrics/model",
     "//ios/chrome/browser/promos_manager/model",
     "//ios/chrome/browser/promos_manager/model:constants",
@@ -230,6 +231,7 @@ source_set("app_metrics_app_state_agent") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/app",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/app/application_delegate:observing_app_state_agent",
@@ -362,6 +364,9 @@ source_set("docking_promo_app_agent") {
     "//ios/chrome/browser/docking_promo/model:utils",
     "//ios/chrome/browser/promos_manager/model",
     "//ios/chrome/browser/promos_manager/model:constants",
+    "//ios/chrome/browser/promos_manager/model:factory",
+    "//ios/chrome/browser/shared/model/application_context",
+    "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/ui/start_surface",
   ]
@@ -546,6 +551,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/main/model",
     "//ios/chrome/browser/memory/model",
     "//ios/chrome/browser/metrics/model",
+    "//ios/chrome/browser/metrics/model:metrics_browser_agent",
     "//ios/chrome/browser/metrics/model:metrics_internal",
     "//ios/chrome/browser/omaha/model",
     "//ios/chrome/browser/passwords/model",

@@ -48,10 +48,16 @@ class DOMException;
 class ExceptionState;
 class ScriptFunction;
 
+template <typename IDLResolvedType>
+class ScriptPromiseTyped;
+
 // ScriptPromise is the class for representing Promise values in C++ world.
 // ScriptPromise holds a Promise.
-// So holding a ScriptPromise as a member variable in DOM object causes
-// memory leaks since it has a reference from C++ to V8.
+// Holding a `ScriptPromise` is rarely needed — typically you hold a
+// `ScriptPromiseResolver` when creating a Promise and passing it *to*
+// JavaScript — but is necessary when holding a promise received *from*
+// JavaScript. If a promise is exposed as an attribute in IDL and you need to
+// return the same promise on multiple invocations, use ScriptPromiseProperty.
 //
 // There are cases where promises cannot work (e.g., where the thread is being
 // terminated). In such cases operations will silently fail, so you should not
@@ -71,10 +77,10 @@ class CORE_EXPORT ScriptPromise {
 
   ~ScriptPromise() = default;
 
-  ScriptPromise Then(v8::Local<v8::Function> on_fulfilled,
-                     v8::Local<v8::Function> on_rejected = {});
-  ScriptPromise Then(ScriptFunction* on_fulfilled,
-                     ScriptFunction* on_rejected = nullptr);
+  ScriptPromiseTyped<IDLAny> Then(v8::Local<v8::Function> on_fulfilled,
+                                  v8::Local<v8::Function> on_rejected = {});
+  ScriptPromiseTyped<IDLAny> Then(ScriptFunction* on_fulfilled,
+                                  ScriptFunction* on_rejected = nullptr);
 
   bool IsObject() const { return promise_.IsObject(); }
 
@@ -111,11 +117,14 @@ class CORE_EXPORT ScriptPromise {
   }
 
   // Constructs and returns a ScriptPromise from |value|.
-  // if |value| is not a Promise object, returns a Promise object
-  // resolved with |value|.
-  // Returns |value| itself if it is a Promise.
-  static ScriptPromise Cast(ScriptState*, const ScriptValue& /*value*/);
-  static ScriptPromise Cast(ScriptState*, v8::Local<v8::Value> /*value*/);
+  // if `value` is not a Promise object, returns a Promise object
+  // resolved with `value`.
+  // Returns `value` itself if it is a Promise.
+  // This is intended only for cases where we are receiving an arbitrary
+  // `value` of unknown type from script. If constructing a ScriptPromise of
+  // known type, use ToResolvedPromise<>.
+  static ScriptPromise FromUntypedValueForBindings(ScriptState*,
+                                                   v8::Local<v8::Value>);
 
   // Constructs and returns a ScriptPromise resolved with undefined.
   static ScriptPromise CastUndefined(ScriptState*);
@@ -220,6 +229,10 @@ class ScriptPromiseTyped : public ScriptPromise {
     return promise;
   }
 };
+
+// Defined in to_v8_traits.h due to circular dependency.
+template <typename IDLType, typename BlinkType>
+ScriptPromiseTyped<IDLType> ToResolvedPromise(ScriptState*, BlinkType value);
 
 }  // namespace blink
 

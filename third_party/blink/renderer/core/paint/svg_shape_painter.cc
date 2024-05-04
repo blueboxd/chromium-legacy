@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
@@ -88,18 +89,23 @@ void SVGShapePainter::PaintShape(const PaintInfo& paint_info) {
   for (unsigned i = 0; i < 3; i++) {
     switch (paint_order[i]) {
       case PT_FILL: {
-        cc::PaintFlags fill_flags;
-        if (!SVGObjectPainter(layout_svg_shape_)
-                 .PreparePaint(paint_info.GetPaintFlags(), style,
-                               kApplyToFillMode, fill_flags)) {
-          break;
+        if (SVGObjectPainter::HasFill(style,
+                                      paint_info.GetSvgContextPaints())) {
+          cc::PaintFlags fill_flags;
+          if (!SVGObjectPainter(layout_svg_shape_,
+                                paint_info.GetSvgContextPaints())
+                   .PreparePaint(paint_info.GetPaintFlags(), style,
+                                 kApplyToFillMode, fill_flags)) {
+            break;
+          }
+          fill_flags.setAntiAlias(should_anti_alias);
+          FillShape(paint_info.context, fill_flags, style.FillRule());
         }
-        fill_flags.setAntiAlias(should_anti_alias);
-        FillShape(paint_info.context, fill_flags, style.FillRule());
         break;
       }
       case PT_STROKE:
-        if (style.HasVisibleStroke()) {
+        if (SVGObjectPainter::HasVisibleStroke(
+                style, paint_info.GetSvgContextPaints())) {
           GraphicsContextStateSaver state_saver(paint_info.context, false);
           std::optional<AffineTransform> non_scaling_transform;
 
@@ -114,7 +120,8 @@ void SVGShapePainter::PaintShape(const PaintInfo& paint_info) {
           }
 
           cc::PaintFlags stroke_flags;
-          if (!SVGObjectPainter(layout_svg_shape_)
+          if (!SVGObjectPainter(layout_svg_shape_,
+                                paint_info.GetSvgContextPaints())
                    .PreparePaint(paint_info.GetPaintFlags(), style,
                                  kApplyToStrokeMode, stroke_flags,
                                  base::OptionalToPtr(non_scaling_transform))) {
@@ -190,8 +197,6 @@ void SVGShapePainter::FillShape(GraphicsContext& context,
 
 void SVGShapePainter::StrokeShape(GraphicsContext& context,
                                   const cc::PaintFlags& flags) {
-  DCHECK(layout_svg_shape_.StyleRef().HasVisibleStroke());
-
   AutoDarkMode auto_dark_mode(PaintAutoDarkMode(
       layout_svg_shape_.StyleRef(), DarkModeFilter::ElementRole::kSVG));
 
@@ -269,15 +274,22 @@ void SVGShapePainter::PaintMarker(const PaintInfo& paint_info,
   canvas->concat(AffineTransformToSkM44(transform));
   if (SVGLayoutSupport::IsOverflowHidden(marker))
     canvas->clipRect(gfx::RectFToSkRect(marker.Viewport()));
-  auto* builder = MakeGarbageCollected<PaintRecordBuilder>(paint_info.context);
+  PaintRecordBuilder builder(paint_info.context);
   // It's expensive to track the transformed paint cull rect for each
   // marker so just disable culling. The shape paint call will already
   // be culled if it is outside the paint info cull rect.
-  const PaintInfo marker_paint_info(builder->Context(), CullRect::Infinite(),
-                                    paint_info.phase,
-                                    paint_info.GetPaintFlags());
+  SVGObjectPainter object_painter(layout_svg_shape_,
+                                  paint_info.GetSvgContextPaints());
+  SvgContextPaints marker_context_paints(
+      object_painter.ResolveContextPaint(
+          layout_svg_shape_.StyleRef().FillPaint()),
+      object_painter.ResolveContextPaint(
+          layout_svg_shape_.StyleRef().StrokePaint()));
+  PaintInfo marker_paint_info(builder.Context(), CullRect::Infinite(),
+                              paint_info.phase, paint_info.GetPaintFlags(),
+                              &marker_context_paints);
   SVGContainerPainter(marker).Paint(marker_paint_info);
-  builder->EndRecording(*canvas);
+  builder.EndRecording(*canvas);
 
   canvas->restore();
 }

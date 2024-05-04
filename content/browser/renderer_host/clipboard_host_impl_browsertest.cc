@@ -8,6 +8,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -200,7 +201,7 @@ class ClipboardBrowserTest : public ClipboardHostImplBrowserTest {
         blink::PermissionType::CLIPBOARD_READ_WRITE, status);
   }
 
-  void SetPermissionOverrideForSanitizedWriteTests(
+  void SetPermissionOverrideForStrictlyProcessedWriteTests(
       blink::mojom::PermissionStatus status) {
     content::PermissionController* permission_controller =
         GetRenderFrameHost()->GetBrowserContext()->GetPermissionController();
@@ -240,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardBrowserTest, NumberOfFormatsOnRead) {
       blink::mojom::PermissionStatus::GRANTED);
   ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
   ASSERT_TRUE(ExecJs(shell(), " navigator.clipboard.read()"));
-  SetPermissionOverrideForSanitizedWriteTests(
+  SetPermissionOverrideForStrictlyProcessedWriteTests(
       blink::mojom::PermissionStatus::GRANTED);
   ASSERT_TRUE(ExecJs(
       shell(),

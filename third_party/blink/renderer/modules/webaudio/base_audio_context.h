@@ -30,6 +30,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_decode_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_decode_success_callback.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
@@ -74,7 +75,6 @@ class PannerNode;
 class PeriodicWave;
 class PeriodicWaveConstraints;
 class ScriptProcessorNode;
-class ScriptPromiseResolver;
 class ScriptState;
 class SecurityOrigin;
 class StereoPannerNode;
@@ -150,25 +150,25 @@ class MODULES_EXPORT BaseAudioContext
                             ExceptionState&);
 
   // Asynchronous audio file data decoding.
-  ScriptPromise decodeAudioData(ScriptState*,
-                                DOMArrayBuffer* audio_data,
-                                V8DecodeSuccessCallback*,
-                                V8DecodeErrorCallback*,
-                                ExceptionState&);
+  ScriptPromiseTyped<AudioBuffer> decodeAudioData(ScriptState*,
+                                                  DOMArrayBuffer* audio_data,
+                                                  V8DecodeSuccessCallback*,
+                                                  V8DecodeErrorCallback*,
+                                                  ExceptionState&);
 
-  ScriptPromise decodeAudioData(ScriptState*,
-                                DOMArrayBuffer* audio_data,
-                                ExceptionState&);
+  ScriptPromiseTyped<AudioBuffer> decodeAudioData(ScriptState*,
+                                                  DOMArrayBuffer* audio_data,
+                                                  ExceptionState&);
 
-  ScriptPromise decodeAudioData(ScriptState*,
-                                DOMArrayBuffer* audio_data,
-                                V8DecodeSuccessCallback*,
-                                ExceptionState&);
+  ScriptPromiseTyped<AudioBuffer> decodeAudioData(ScriptState*,
+                                                  DOMArrayBuffer* audio_data,
+                                                  V8DecodeSuccessCallback*,
+                                                  ExceptionState&);
 
   // Handles the promise and callbacks when `.decodeAudioData()` is finished
   // decoding.
   void HandleDecodeAudioData(AudioBuffer*,
-                             ScriptPromiseResolver*,
+                             ScriptPromiseResolverTyped<AudioBuffer>*,
                              V8DecodeSuccessCallback*,
                              V8DecodeErrorCallback*,
                              ExceptionContext);
@@ -276,8 +276,6 @@ class MODULES_EXPORT BaseAudioContext
 
   // In DCHECK builds, fails if this thread does not own the context's lock.
   void AssertGraphOwner() const { GetDeferredTaskHandler().AssertGraphOwner(); }
-
-  using GraphAutoLocker = DeferredTaskHandler::GraphAutoLocker;
 
   // Returns the maximum numuber of channels we can support.
   static uint32_t MaxNumberOfChannels() { return kMaxNumberOfChannels; }
@@ -440,7 +438,7 @@ class MODULES_EXPORT BaseAudioContext
   // reference to the WorkerThread associated with the AudioWorkletGlobalScope.
   // This cannot be nullptr once it is assigned from AudioWorkletThread until
   // the BaseAudioContext goes away.
-  raw_ptr<WorkerThread, ExperimentalRenderer> audio_worklet_thread_ = nullptr;
+  raw_ptr<WorkerThread, DanglingUntriaged> audio_worklet_thread_ = nullptr;
 };
 
 }  // namespace blink

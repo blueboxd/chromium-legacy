@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/rust.gni")
 import("clang.gni")
 
@@ -31,7 +32,7 @@ config("find_bad_constructs") {
       "-Xclang",
       "check-stack-allocated",
 
-      # TODO(danakj): Delete this and the option from the plugin.
+      # TODO(danakj): Delete this after the next clang roll.
       "-Xclang",
       "-plugin-arg-find-bad-constructs",
       "-Xclang",
@@ -53,20 +54,6 @@ config("find_bad_constructs") {
       "-plugin-arg-find-bad-constructs",
       "-Xclang",
       "raw-ptr-exclude-path=/third_party/dawn/",
-
-      # TODO(bartekn): Remove once clang plugin with crrev.com/c/5205312 rolls.
-      "-Xclang",
-      "-plugin-arg-find-bad-constructs",
-      "-Xclang",
-      "raw-ptr-exclude-path=base/logging.h",
-      "-Xclang",
-      "-plugin-arg-find-bad-constructs",
-      "-Xclang",
-      "raw-ptr-exclude-path=base/synchronization/lock_impl.h",
-      "-Xclang",
-      "-plugin-arg-find-bad-constructs",
-      "-Xclang",
-      "raw-ptr-exclude-path=base/check.h",
     ]
 
     if (is_linux || is_chromeos || is_android || is_fuchsia) {
@@ -96,6 +83,28 @@ config("find_bad_constructs") {
       ]
     }
   }
+}
+
+# A plugin for incrementally applying the -Wunsafe-buffer-usage warning.
+config("unsafe_buffers") {
+  if (clang_use_chrome_plugins) {
+    cflags = [
+      "-Xclang",
+      "-add-plugin",
+      "-Xclang",
+      "unsafe-buffers",
+
+      "-Xclang",
+      "-plugin-arg-unsafe-buffers",
+      "-Xclang",
+      rebase_path("//build/config/unsafe_buffers_paths.txt", root_build_dir),
+    ]
+  }
+}
+
+buildflag_header("unsafe_buffers_buildflags") {
+  header = "unsafe_buffers_buildflags.h"
+  flags = [ "UNSAFE_BUFFERS_WARNING_ENABLED=$clang_use_chrome_plugins" ]
 }
 
 # Enables some extra Clang-specific warnings. Some third-party code won't

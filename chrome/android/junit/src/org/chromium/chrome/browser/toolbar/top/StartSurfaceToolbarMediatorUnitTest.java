@@ -64,6 +64,7 @@ import org.chromium.chrome.browser.logo.LogoBridge;
 import org.chromium.chrome.browser.logo.LogoBridgeJni;
 import org.chromium.chrome.browser.logo.LogoView;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabModelObserver;
@@ -77,7 +78,6 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -159,7 +159,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
                         0,
                         false);
 
-        Profile.setLastUsedProfileForTesting(mProfile);
+        ProfileManager.setLastUsedProfileForTesting(mProfile);
         TrackerFactory.setTrackerForTests(mTracker);
 
         when(mLogoBridge.init(any(), any())).thenReturn(1L);
@@ -167,12 +167,10 @@ public class StartSurfaceToolbarMediatorUnitTest {
 
         doReturn(mButtonData)
                 .when(mIdentityDiscController)
-                .getForStartSurface(StartSurfaceState.SHOWN_HOMEPAGE, LayoutType.START_SURFACE);
+                .getForStartSurface(LayoutType.START_SURFACE);
         doReturn(disabledButtonData)
                 .when(mIdentityDiscController)
-                .getForStartSurface(
-                        not(eq(StartSurfaceState.SHOWN_HOMEPAGE)),
-                        not(eq(LayoutType.START_SURFACE)));
+                .getForStartSurface(not(eq(LayoutType.START_SURFACE)));
 
         mMockConstantState = mock(Drawable.ConstantState.class);
         doReturn(mMockConstantState).when(mDrawable).getConstantState();
@@ -209,8 +207,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertFalse(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
         assertFalse(mPropertyModel.get(IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         if (!isLogoMovedDownForSurfacePolish) {
             assertTrue(mMediator.isLogoVisibleForTesting());
         }
@@ -222,8 +219,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertTrue(mPropertyModel.get(IS_VISIBLE));
 
         doReturn(1).when(mIncognitoTabModel).getCount();
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         if (!isLogoMovedDownForSurfacePolish) {
             assertTrue(mMediator.isLogoVisibleForTesting());
         }
@@ -248,8 +244,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertFalse(mPropertyModel.get(NEW_TAB_VIEW_TEXT_IS_VISIBLE));
         assertFalse(mPropertyModel.get(IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertFalse(mMediator.isLogoVisibleForTesting());
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
         assertFalse(mPropertyModel.get(IDENTITY_DISC_AT_START));
@@ -263,8 +258,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
         doReturn(1).when(mIncognitoTabModel).getCount();
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertFalse(mMediator.isLogoVisibleForTesting());
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
         assertFalse(mPropertyModel.get(IDENTITY_DISC_AT_START));
@@ -273,8 +267,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertTrue(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
         assertTrue(mPropertyModel.get(IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.NOT_SHOWN, false, LayoutType.BROWSING);
+        mMediator.onStartSurfaceStateChanged(false, LayoutType.BROWSING);
         verify(mFinishedShowingCallback).onResult(false);
     }
 
@@ -287,8 +280,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
 
         mButtonData.setCanShow(true);
         mMediator.updateIdentityDisc(mButtonData);
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         if (!isLogoMovedDownForSurfacePolish) {
             assertTrue(mMediator.isLogoVisibleForTesting());
         }
@@ -298,8 +290,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertFalse(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
         assertTrue(mPropertyModel.get(IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertFalse(mMediator.isLogoVisibleForTesting());
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
         assertFalse(mPropertyModel.get(IDENTITY_DISC_AT_START));
@@ -308,8 +299,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertTrue(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
         assertTrue(mPropertyModel.get(IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         if (!isLogoMovedDownForSurfacePolish) {
             assertTrue(mMediator.isLogoVisibleForTesting());
         }
@@ -325,15 +315,13 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(true);
 
         doReturn(0).when(mIncognitoTabModel).getCount();
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertFalse(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
         assertTrue(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
         assertTrue(mPropertyModel.get(NEW_TAB_VIEW_TEXT_IS_VISIBLE));
 
         doReturn(1).when(mIncognitoTabModel).getCount();
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertTrue(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE));
         assertTrue(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
         assertFalse(mPropertyModel.get(NEW_TAB_VIEW_TEXT_IS_VISIBLE));
@@ -342,8 +330,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
     @Test
     public void testIncognitoTabModelObserverUpdatesIncognitoToggle() {
         createMediator(true);
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
 
         doReturn(0).when(mIncognitoTabModel).getCount();
         mIncognitoTabModelObserver.getValue().didBecomeEmpty();
@@ -361,12 +348,10 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(false);
         assertFalse(mPropertyModel.get(BUTTONS_CLICKABLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertTrue(mPropertyModel.get(BUTTONS_CLICKABLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.NOT_SHOWN, false, LayoutType.BROWSING);
+        mMediator.onStartSurfaceStateChanged(false, LayoutType.BROWSING);
         assertFalse(mPropertyModel.get(BUTTONS_CLICKABLE));
     }
 
@@ -375,8 +360,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.setForTesting(false);
         createMediator(false);
         when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
 
         // If default search engine doesn't have logo, logo shouldn't be visible.
         when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(false);
@@ -394,8 +378,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(false);
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
         mButtonData.setButtonSpec(
@@ -445,8 +428,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(false);
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
         mButtonData.setCanShow(true);
@@ -465,8 +447,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(false);
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         mButtonData.setCanShow(true);
         IPHCommandBuilder iphCommandBuilder =
                 new IPHCommandBuilder(mMockResources, "IdentityDisc", 0, 0)
@@ -496,8 +477,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(false);
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
         mButtonData.setCanShow(false);
@@ -520,8 +500,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
 
         createMediator(false);
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         // When accessibility is turned on and TAB_GROUPS_CONTINUATION_ANDROID is enabled, new tab
         // button shouldn't show on homepage.
         assertFalse(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
@@ -530,8 +509,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
     @Test
     public void hideRealSearchBoxWhenStartSurfaceToolbarIsOnScreenTop() {
         createMediator(false);
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         int toolbarHeight = 10;
 
         assertEquals(0.0, mPropertyModel.get(TRANSLATION_Y), 0.0);
@@ -550,17 +528,14 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(false);
         assertFalse(mMediator.isLogoVisibleForTesting());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertTrue(mMediator.isLogoVisibleForTesting());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertFalse(mMediator.isLogoVisibleForTesting());
         verify(mLogoBridge).destroy(eq(1L), any());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertTrue(mMediator.isLogoVisibleForTesting());
     }
 
@@ -571,17 +546,14 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(false);
         assertFalse(mMediator.isLogoVisibleForTesting());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertTrue(mMediator.isLogoVisibleForTesting());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertFalse(mMediator.isLogoVisibleForTesting());
         verify(mLogoBridge).destroy(eq(1L), any());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertTrue(mMediator.isLogoVisibleForTesting());
     }
 
@@ -592,17 +564,14 @@ public class StartSurfaceToolbarMediatorUnitTest {
         createMediator(false);
         assertFalse(mMediator.isLogoVisibleForTesting());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertFalse(mMediator.isLogoVisibleForTesting());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.TAB_SWITCHER);
         assertFalse(mMediator.isLogoVisibleForTesting());
         verify(mLogoBridge, times(0)).destroy(eq(1L), any());
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         assertFalse(mMediator.isLogoVisibleForTesting());
     }
 
@@ -614,8 +583,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
         @ColorInt int backgroundColor = ChromeColors.getPrimaryBackgroundColor(mActivity, false);
         assertEquals(backgroundColor, mPropertyModel.get(BACKGROUND_COLOR));
 
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        mMediator.onStartSurfaceStateChanged(true, LayoutType.START_SURFACE);
         @ColorInt
         int newBackgroundColor =
                 ChromeColors.getSurfaceColor(
@@ -639,12 +607,11 @@ public class StartSurfaceToolbarMediatorUnitTest {
                         mIdentityDiscController,
                         () ->
                                 mIdentityDiscController.getForStartSurface(
-                                        mMediator.getOverviewModeStateForTesting(),
                                         mMediator.getLayoutTypeForTesting()),
                         /* isTabToGtsFadeAnimationEnabled= */ false,
                         () -> false,
                         /* logoClickedCallback= */ null,
-                        /* isRefactorEnabled= */ false,
+                        /* isRefactorEnabled= */
                         /* shouldFetchDoodle= */ false,
                         shouldCreateLogoInToolbar,
                         mFinishedShowingCallback,

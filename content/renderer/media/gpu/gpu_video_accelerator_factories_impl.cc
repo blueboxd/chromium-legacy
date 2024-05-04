@@ -6,6 +6,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+
 #include <memory>
 #include <optional>
 
@@ -285,14 +286,6 @@ bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames(
     bool for_media_stream) const {
   return for_media_stream ? enable_media_stream_gpu_memory_buffers_
                           : enable_video_gpu_memory_buffers_;
-}
-
-unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(
-    gfx::BufferFormat format) {
-  DCHECK(context_provider_);
-  return gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                     format,
-                                     context_provider_->ContextCapabilities());
 }
 
 media::GpuVideoAcceleratorFactories::OutputFormat

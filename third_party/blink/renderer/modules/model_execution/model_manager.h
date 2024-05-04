@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 
 namespace blink {
+class V8GenericModelAvailability;
 
 // The class that manages the exposed model APIs that load model assets and
 // create ModelGenericSession.
@@ -24,7 +25,13 @@ class ModelManager final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum Availability { kReadily, kAfterDownload, kNo };
+  enum class ModelAvailability {
+    kReadily = 0,
+    kAfterDownload = 1,
+    kNo = 2,
+
+    kMaxValue = kNo,
+  };
 
   explicit ModelManager(LocalDOMWindow* window);
   ~ModelManager() override = default;
@@ -32,8 +39,9 @@ class ModelManager final : public ScriptWrappable,
   void Trace(Visitor* visitor) const override;
 
   // model_manager.idl implementation.
-  ScriptPromise canCreateGenericSession(ScriptState* script_state,
-                                        ExceptionState& exception_state);
+  ScriptPromiseTyped<V8GenericModelAvailability> canCreateGenericSession(
+      ScriptState* script_state,
+      ExceptionState& exception_state);
   ScriptPromise createGenericSession(ScriptState* script_state,
                                      ExceptionState& exception_state);
 

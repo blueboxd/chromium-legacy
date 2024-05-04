@@ -92,6 +92,11 @@ class InheritedFilterListChecker
         filter_operations_wrapper_(
             MakeGarbageCollected<FilterOperationsWrapper>(filter_operations)) {}
 
+  void Trace(Visitor* visitor) const final {
+    CSSConversionChecker::Trace(visitor);
+    visitor->Trace(filter_operations_wrapper_);
+  }
+
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     const FilterOperations& filter_operations =
@@ -101,16 +106,18 @@ class InheritedFilterListChecker
 
  private:
   const CSSProperty& property_;
-  Persistent<FilterOperationsWrapper> filter_operations_wrapper_;
+  Member<FilterOperationsWrapper> filter_operations_wrapper_;
 };
 
 InterpolationValue ConvertFilterList(const FilterOperations& filter_operations,
-                                     double zoom) {
+                                     double zoom,
+                                     mojom::blink::ColorScheme color_scheme,
+                                     const ui::ColorProvider* color_provider) {
   wtf_size_t length = filter_operations.size();
   auto* interpolable_list = MakeGarbageCollected<InterpolableList>(length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolableFilter* result = InterpolableFilter::MaybeCreate(
-        *filter_operations.Operations()[i], zoom);
+        *filter_operations.Operations()[i], zoom, color_scheme, color_provider);
     if (!result) {
       return nullptr;
     }
@@ -135,7 +142,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertNeutral(
   const auto* interpolable_list =
       To<InterpolableList>(underlying.interpolable_value.Get());
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingFilterListChecker>(interpolable_list));
+      MakeGarbageCollected<UnderlyingFilterListChecker>(interpolable_list));
   // The neutral value for composition for a filter list is the empty list, as
   // the additive operator is concatenation, so concat(underlying, []) ==
   // underlying.
@@ -145,10 +152,14 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertNeutral(
 InterpolationValue CSSFilterListInterpolationType::MaybeConvertInitial(
     const StyleResolverState& state,
     ConversionCheckers& conversion_checkers) const {
+  mojom::blink::ColorScheme color_scheme =
+      state.StyleBuilder().UsedColorScheme();
+  const ui::ColorProvider* color_provider =
+      state.GetDocument().GetColorProviderForPainting(color_scheme);
   return ConvertFilterList(
       GetFilterList(CssProperty(),
                     state.GetDocument().GetStyleResolver().InitialStyle()),
-      1);
+      1, color_scheme, color_provider);
 }
 
 InterpolationValue CSSFilterListInterpolationType::MaybeConvertInherit(
@@ -156,15 +167,21 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   const FilterOperations& inherited_filter_operations =
       GetFilterList(CssProperty(), *state.ParentStyle());
-  conversion_checkers.push_back(std::make_unique<InheritedFilterListChecker>(
-      CssProperty(), inherited_filter_operations));
+  conversion_checkers.push_back(
+      MakeGarbageCollected<InheritedFilterListChecker>(
+          CssProperty(), inherited_filter_operations));
+  mojom::blink::ColorScheme color_scheme =
+      state.StyleBuilder().UsedColorScheme();
+  const ui::ColorProvider* color_provider =
+      state.GetDocument().GetColorProviderForPainting(color_scheme);
   return ConvertFilterList(inherited_filter_operations,
-                           state.StyleBuilder().EffectiveZoom());
+                           state.StyleBuilder().EffectiveZoom(), color_scheme,
+                           color_provider);
 }
 
 InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState*,
+    const StyleResolverState* state,
     ConversionCheckers&) const {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone) {
@@ -179,8 +196,14 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
   wtf_size_t length = list.length();
   auto* interpolable_list = MakeGarbageCollected<InterpolableList>(length);
   for (wtf_size_t i = 0; i < length; i++) {
-    InterpolableFilter* result =
-        InterpolableFilter::MaybeConvertCSSValue(list.Item(i));
+    mojom::blink::ColorScheme color_scheme =
+        state ? state->StyleBuilder().UsedColorScheme()
+              : mojom::blink::ColorScheme::kLight;
+    const ui::ColorProvider* color_provider =
+        state ? state->GetDocument().GetColorProviderForPainting(color_scheme)
+              : nullptr;
+    InterpolableFilter* result = InterpolableFilter::MaybeConvertCSSValue(
+        list.Item(i), color_scheme, color_provider);
     if (!result) {
       return nullptr;
     }
@@ -192,8 +215,10 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
 InterpolationValue
 CSSFilterListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
+  // TODO(crbug.com/1231644): Need to pass an appropriate color provider here.
   return ConvertFilterList(GetFilterList(CssProperty(), style),
-                           style.EffectiveZoom());
+                           style.EffectiveZoom(), style.UsedColorScheme(),
+                           /*color_provider=*/nullptr);
 }
 
 PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
@@ -290,7 +315,8 @@ CSSFilterListInterpolationType::PreInterpolationCompositeIfNeeded(
   // to disable that caching in this case.
   // TODO(crbug.com/1009230): Remove this once our interpolation code isn't
   // caching composited values.
-  conversion_checkers.push_back(std::make_unique<AlwaysInvalidateChecker>());
+  conversion_checkers.push_back(
+      MakeGarbageCollected<AlwaysInvalidateChecker>());
 
   // The non_interpolable_value can be non-null, for example, it contains a
   // single frame url().

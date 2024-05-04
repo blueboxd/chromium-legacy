@@ -86,14 +86,17 @@ EXCLUDED_TESTS_MAC = [
     # https://crbug.com/1479875 This fails on Mac. It relates to the large code
     # model which we don't use, so suppress it for now.
     os.path.join('tests', 'ui', 'thread-local', 'thread-local-issue-37508.rs'),
-    # https://crbug.com/1521497 This fails on Mac.
+    # https://crbug.com/1521497 These fail on Mac.
     os.path.join('tests', 'ui', 'abi', 'stack-probes-lto.rs#x64'),
+    os.path.join('tests', 'ui', 'abi', 'stack-probes.rs#x64'),
 ]
 EXCLUDED_TESTS_MAC_ARM64 = [
     # https://crbug.com/1519640 This fails on Mac/ARM64. We didn't even run it
     # until recently, so ignore it for now.
     os.path.join('tests', 'ui', 'extern',
                  'issue-64655-extern-rust-must-allow-unwind.rs#fat0'),
+    os.path.join('tests', 'ui', 'extern',
+                 'issue-64655-extern-rust-must-allow-unwind.rs#thin0'),
 ]
 
 CLANG_SCRIPTS_DIR = os.path.join(CHROMIUM_DIR, 'tools', 'clang', 'scripts')

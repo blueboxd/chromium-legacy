@@ -9,8 +9,8 @@
 #include <set>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
-#include "base/containers/cxx20_erase.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -175,6 +175,8 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
     case ax::mojom::IntAttribute::kDropeffectDeprecated:
     case ax::mojom::IntAttribute::kDOMNodeId:
+    case ax::mojom::IntAttribute::kAriaNotificationInterrupt:
+    case ax::mojom::IntAttribute::kAriaNotificationPriority:
       return false;
   }
 
@@ -538,35 +540,35 @@ void AXNodeData::AddStringListAttribute(
 
 void AXNodeData::RemoveBoolAttribute(ax::mojom::BoolAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
-  base::EraseIf(bool_attributes, [attribute](const auto& bool_attribute) {
+  std::erase_if(bool_attributes, [attribute](const auto& bool_attribute) {
     return bool_attribute.first == attribute;
   });
 }
 
 void AXNodeData::RemoveIntAttribute(ax::mojom::IntAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::IntAttribute::kNone);
-  base::EraseIf(int_attributes, [attribute](const auto& int_attribute) {
+  std::erase_if(int_attributes, [attribute](const auto& int_attribute) {
     return int_attribute.first == attribute;
   });
 }
 
 void AXNodeData::RemoveFloatAttribute(ax::mojom::FloatAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::FloatAttribute::kNone);
-  base::EraseIf(float_attributes, [attribute](const auto& float_attribute) {
+  std::erase_if(float_attributes, [attribute](const auto& float_attribute) {
     return float_attribute.first == attribute;
   });
 }
 
 void AXNodeData::RemoveStringAttribute(ax::mojom::StringAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
-  base::EraseIf(string_attributes, [attribute](const auto& string_attribute) {
+  std::erase_if(string_attributes, [attribute](const auto& string_attribute) {
     return string_attribute.first == attribute;
   });
 }
 
 void AXNodeData::RemoveIntListAttribute(ax::mojom::IntListAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::IntListAttribute::kNone);
-  base::EraseIf(intlist_attributes, [attribute](const auto& intlist_attribute) {
+  std::erase_if(intlist_attributes, [attribute](const auto& intlist_attribute) {
     return intlist_attribute.first == attribute;
   });
 }
@@ -574,7 +576,7 @@ void AXNodeData::RemoveIntListAttribute(ax::mojom::IntListAttribute attribute) {
 void AXNodeData::RemoveStringListAttribute(
     ax::mojom::StringListAttribute attribute) {
   DCHECK_NE(attribute, ax::mojom::StringListAttribute::kNone);
-  base::EraseIf(stringlist_attributes,
+  std::erase_if(stringlist_attributes,
                 [attribute](const auto& stringlist_attribute) {
                   return stringlist_attribute.first == attribute;
                 });
@@ -1647,6 +1649,31 @@ std::string AXNodeData::ToString(bool verbose) const {
       case ax::mojom::IntAttribute::kDOMNodeId:
         result += " dom_node_id=" + value;
         break;
+      case ax::mojom::IntAttribute::kAriaNotificationInterrupt:
+        switch (static_cast<ax::mojom::AriaNotificationInterrupt>(
+            int_attribute.second)) {
+          case ax::mojom::AriaNotificationInterrupt::kNone:
+            result += " aria_notification_interrupt=none";
+            break;
+          case ax::mojom::AriaNotificationInterrupt::kAll:
+            result += " aria_notification_interrupt=all";
+            break;
+          case ax::mojom::AriaNotificationInterrupt::kPending:
+            result += " aria_notification_interrupt=pending";
+            break;
+        }
+        break;
+      case ax::mojom::IntAttribute::kAriaNotificationPriority:
+        switch (static_cast<ax::mojom::AriaNotificationPriority>(
+            int_attribute.second)) {
+          case ax::mojom::AriaNotificationPriority::kNone:
+            result += " aria_notification_priority=none";
+            break;
+          case ax::mojom::AriaNotificationPriority::kImportant:
+            result += " aria_notification_priority=important";
+            break;
+        }
+        break;
       case ax::mojom::IntAttribute::kNone:
         break;
     }
@@ -1667,6 +1694,12 @@ std::string AXNodeData::ToString(bool verbose) const {
         break;
       case ax::mojom::StringAttribute::kAriaBrailleRoleDescription:
         result += " aria_braille_role_description=" + value;
+        break;
+      case ax::mojom::StringAttribute::kAriaNotificationAnnouncement:
+        result += " aria_notification_announcement=" + value;
+        break;
+      case ax::mojom::StringAttribute::kAriaNotificationId:
+        result += " aria_notification_id=" + value;
         break;
       case ax::mojom::StringAttribute::kCheckedStateDescription:
         result += " checked_state_description=" + value;

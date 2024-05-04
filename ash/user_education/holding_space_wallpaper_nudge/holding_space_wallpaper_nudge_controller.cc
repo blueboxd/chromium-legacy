@@ -41,7 +41,6 @@
 #include "ash/wallpaper/wallpaper_drag_drop_delegate.h"
 #include "base/check_is_test.h"
 #include "base/check_op.h"
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/files/file_path.h"
 #include "base/scoped_observation.h"
 #include "base/timer/elapsed_timer.h"
@@ -84,7 +83,7 @@ std::vector<base::FilePath> ExtractUnpinnedFilePaths(
       holding_space_util::ExtractFilePaths(data,
                                            /*fallback_to_filenames=*/false);
 
-  base::EraseIf(unpinned_file_paths, [&](const base::FilePath& file_path) {
+  std::erase_if(unpinned_file_paths, [&](const base::FilePath& file_path) {
     return model->ContainsItem(HoldingSpaceItem::Type::kPinnedFile, file_path);
   });
 
@@ -124,6 +123,14 @@ aura::client::DragDropClient* GetDragDropClientNearestPoint(
       GetDisplayNearestPoint(location_in_screen).id()));
 }
 
+gfx::Point GetLocationInScreen(const ui::DropTargetEvent* event) {
+  gfx::Point location_in_screen = event->root_location();
+  wm::ConvertPointToScreen(
+      static_cast<aura::Window*>(event->target())->GetRootWindow(),
+      &location_in_screen);
+  return location_in_screen;
+}
+
 Shelf* GetShelfNearestPoint(const gfx::Point& location_in_screen) {
   return Shelf::ForWindow(GetRootWindowForDisplayId(
       GetDisplayNearestPoint(location_in_screen).id()));
@@ -147,6 +154,13 @@ WallpaperView* GetWallpaperViewNearestPoint(
                  GetDisplayNearestPoint(location_in_screen).id()))
       ->wallpaper_widget_controller()
       ->wallpaper_view();
+}
+
+bool IsWallpaperViewTarget(const ui::DropTargetEvent* event) {
+  return static_cast<aura::Window*>(event->target())
+      ->Contains(GetWallpaperViewNearestPoint(GetLocationInScreen(event))
+                     ->GetWidget()
+                     ->GetNativeWindow());
 }
 
 // TODO(http://b/311411775): Relocate recording wallpaper nudge histograms
@@ -280,10 +294,15 @@ class DragDropSequenceTracker {
   bool IsTrackingSequence() const { return !!sequence_observer_; }
 
   // Initiates tracking a new sequence associated with the specified `client`.
-  // NOTE: This method may only be called while a drag-and-drop sequence is in
-  // progress.
-  void TrackNewSequence(aura::client::DragDropClient* client) {
+  // If the tracked sequence terminates in drag completion, the specified
+  // `drag_completed_callback` is invoked with the final `ui::DropTargetEvent`.
+  // NOTE: This method may only be called while a sequence is in progress.
+  void TrackNewSequence(
+      aura::client::DragDropClient* client,
+      base::OnceCallback<void(const ui::DropTargetEvent* event)>
+          drag_completed_callback) {
     CHECK(client->IsDragDropInProgress());
+    drag_completed_callback_ = std::move(drag_completed_callback);
     is_tracking_new_sequence_ = true;
     sequence_observer_ = std::make_unique<ScopedDragDropObserver>(
         client, base::BindRepeating(&DragDropSequenceTracker::OnDropTargetEvent,
@@ -295,8 +314,11 @@ class DragDropSequenceTracker {
                          const ui::DropTargetEvent* event) {
     is_tracking_new_sequence_ = false;
     switch (event_type) {
-      case ScopedDragDropObserver::EventType::kDragCancelled:
       case ScopedDragDropObserver::EventType::kDragCompleted:
+        std::move(drag_completed_callback_).Run(event);
+        [[fallthrough]];
+      case ScopedDragDropObserver::EventType::kDragCancelled:
+        drag_completed_callback_.Reset();
         sequence_observer_.reset();
         break;
       case ScopedDragDropObserver::EventType::kDragUpdated:
@@ -304,7 +326,16 @@ class DragDropSequenceTracker {
     }
   }
 
+  // Exists only while a sequence is actively being tracked and invoked only if
+  // the tracked sequence terminates in drag completion.
+  base::OnceCallback<void(const ui::DropTargetEvent* event)>
+      drag_completed_callback_;
+
+  // Whether a new sequence is actively being tracked. A sequence is new only
+  // until it receives its first drag update.
   bool is_tracking_new_sequence_ = false;
+
+  // Exists only while a sequence is actively being tracked.
   std::unique_ptr<ScopedDragDropObserver> sequence_observer_;
 };
 
@@ -338,6 +369,17 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
   }
 
   bool CanDrop(const ui::OSExchangeData& data) override {
+    // Ineligible users should not see any behavioral changes introduced by
+    // the holding space wallpaper nudge experiment. Returning `false` here
+    // prevents any downstream events from being received.
+    if (!features::IsHoldingSpaceWallpaperNudgeForceEligibilityEnabled() &&
+        holding_space_wallpaper_nudge_prefs::GetUserEligibility(
+            Shell::Get()
+                ->session_controller()
+                ->GetLastActiveUserPrefService()) != true) {
+      return false;
+    }
+
     // If this `data` can be pinned to holding space, return true to make sure
     // we can track the drag to show the nudge appropriately, even if
     // drop-to-pin is not enabled.
@@ -346,10 +388,23 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
 
   void OnDragEntered(const ui::OSExchangeData& data,
                      const gfx::Point& location_in_screen) override {
+    // Record metrics.
+    holding_space_wallpaper_nudge_metrics::RecordInteraction(
+        holding_space_wallpaper_nudge_metrics::Interaction::
+            kDraggedFileOverWallpaper);
+
     // Start tracking the drag-and-drop sequence if necessary.
     if (!drag_drop_sequence_tracker_.IsTrackingSequence()) {
       drag_drop_sequence_tracker_.TrackNewSequence(
-          GetDragDropClientNearestPoint(location_in_screen));
+          GetDragDropClientNearestPoint(location_in_screen),
+          /*drag_completed_callback=*/base::BindOnce(
+              [](const ui::DropTargetEvent* event) {
+                if (IsWallpaperViewTarget(event)) {
+                  holding_space_wallpaper_nudge_metrics::RecordInteraction(
+                      holding_space_wallpaper_nudge_metrics::Interaction::
+                          kDroppedFileOnWallpaper);
+                }
+              }));
     }
 
     if (features::IsHoldingSpaceWallpaperNudgeEnabledCounterfactually()) {
@@ -443,11 +498,6 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     CHECK(wallpaper_highlight_);
     wallpaper_highlight_.reset();
 
-    // Immediately close the help bubble so that it does not block the holding
-    // space. If it has already closed, e.g. due to timeout, the internal
-    // callback will have already been canceled and no-op.
-    scoped_help_bubble_closer_.RunAndReset();
-
     // No-op if no holding space `client` is registered since we will be unable
     // to handle the dropped `data`.
     HoldingSpaceClient* const client = HoldingSpaceController::Get()->client();
@@ -468,10 +518,24 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     client->PinFiles(unpinned_file_paths,
                      holding_space_metrics::EventSource::kWallpaper);
 
-    // Open the holding space tray so that the user can see the newly pinned
-    // files and understands the relationship between the action they took on
-    // the wallpaper and its effect in holding space.
-    GetHoldingSpaceTrayNearestPoint(location_in_screen)->ShowBubble();
+    if (features::IsHoldingSpaceWallpaperNudgeAutoOpenEnabled()) {
+      // Open the holding space tray so that the user can see the newly pinned
+      // files and understands the relationship between the action they took on
+      // the wallpaper and its effect in holding space.
+      GetHoldingSpaceTrayNearestPoint(location_in_screen)->ShowBubble();
+    } else {
+      // Since the holding space tray is not being auto-opened, prevent auto-
+      // hiding of the shelf for a second so that the user can see the newly
+      // pinned file in the holding space tray and understands the relationship
+      // between the action they took on the wallpaper and its effect in holding
+      // space.
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE,
+          base::DoNothingWithBoundArgs(
+              std::make_unique<Shelf::ScopedDisableAutoHide>(
+                  GetShelfNearestPoint(location_in_screen))),
+          base::Seconds(1));
+    }
 
     return ui::mojom::DragOperation::kCopy;
   }
@@ -484,12 +548,8 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     CHECK(drag_drop_observer_);
 
     std::optional<gfx::Point> location_in_screen;
-
     if (event_type == ScopedDragDropObserver::EventType::kDragUpdated) {
-      location_in_screen = event->root_location();
-      wm::ConvertPointToScreen(
-          static_cast<aura::Window*>(event->target())->GetRootWindow(),
-          &location_in_screen.value());
+      location_in_screen = GetLocationInScreen(event);
     }
 
     OnDragOrDropEvent(std::move(location_in_screen));
@@ -638,8 +698,16 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
   void OnHoldingSpaceTrayBubbleVisibilityChanged(const HoldingSpaceTray* tray,
                                                  bool visible) override {
     if (visible && help_bubble_anchor_) {
+      // Only force show holding space in the shelf if the model is empty.
+      // Otherwise, if the model becomes empty while visible to the user, the
+      // tray and bubble will not be hidden. This would occur if, for example,
+      // the user pins their first file to holding space via drag-and-drop but
+      // then immediately unpins it when holding space is presented.
       force_holding_space_show_in_shelf_for_tray_bubble_ =
-          std::make_unique<HoldingSpaceController::ScopedForceShowInShelf>();
+          HoldingSpaceController::Get()->model()->items().empty()
+              ? std::make_unique<
+                    HoldingSpaceController::ScopedForceShowInShelf>()
+              : nullptr;
 
       // If the tray that emitted this event is the one that the currently open
       // help bubble is anchored to, close the help bubble to avoid overlap
@@ -672,7 +740,9 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
       case ItemAction::kPause:
       case ItemAction::kRemove:
       case ItemAction::kResume:
+      case ItemAction::kShowInBrowser:
       case ItemAction::kShowInFolder:
+      case ItemAction::kViewDetailsInBrowser:
         RecordUsedInteraction(items);
         break;
       case ItemAction::kUnpin:

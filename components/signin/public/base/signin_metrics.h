@@ -107,8 +107,13 @@ enum class ProfileSignout {
   // Profile signout when IdleTimeoutActions enterprise policy triggers sign
   // out.
   kIdleTimeoutPolicyTriggeredSignOut = 31,
+  // User adds the primary account through the sync flow then aborts.
+  kCancelSyncConfirmationRemoveAccount = 32,
+  // Move primary account to another profile on sign in interception or sync
+  // merge data confirmation.
+  kMovePrimaryAccount = 33,
   // Keep this as the last enum.
-  kMaxValue = kIdleTimeoutPolicyTriggeredSignOut
+  kMaxValue = kMovePrimaryAccount
 };
 
 // Enum values which enumerates all access points where sign in could be
@@ -313,17 +318,25 @@ enum class AccountConsistencyPromoAction : int {
   // User started with the bottom sheet without a device-account, and signed in
   // to chrome by finishing the add-account and sign-in flows.
   SIGNED_IN_WITH_NO_DEVICE_ACCOUNT = 23,
-  kMaxValue = SIGNED_IN_WITH_NO_DEVICE_ACCOUNT,
+  // User was shown the confirm management screen on signin.
+  CONFIRM_MANAGEMENT_SHOWN = 24,
+  // User accepted management on signin.
+  CONFIRM_MANAGEMENT_ACCEPTED = 25,
+  kMaxValue = CONFIRM_MANAGEMENT_ACCEPTED,
 };
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 // Enum values which enumerates all reasons to start sign in process.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-// Please keep in Sync with "SigninReason" in
+// Please keep in sync with "SigninReason" in
 // src/tools/metrics/histograms/enums.xml.
 enum class Reason : int {
+  // Used only for the Sync flows, i.e. the user will be proposed to enable Sync
+  // after sign-in.
   kSigninPrimaryAccount = 0,
+  // Used for signing in without enabling Sync. This might also be used for
+  // adding a new primary account without enabling Sync.
   kAddSecondaryAccount = 1,
   kReauthentication = 2,
   // REASON_UNLOCK = 3,  // DEPRECATED, profile unlocking was removed.
@@ -331,7 +344,7 @@ enum class Reason : int {
   kUnknownReason = 4,
   kForcedSigninPrimaryAccount = 5,
   // Used to simply login and acquire a login scope token without actually
-  // signing into any profiles on Chrome. This allows the chrome signin page to
+  // signing into any profiles on Chrome. This allows the Chrome sign-in page to
   // work in incognito mode.
   kFetchLstOnly = 6,
   kMaxValue = kFetchLstOnly,
@@ -365,16 +378,6 @@ enum class SigninAccountType : int {
   kManaged = 1,
   // Always the last enumerated type.
   kMaxValue = kManaged,
-};
-
-// When the user is give a choice of deleting their profile or not when signing
-// out, the |kDeleted| or |kKeeping| metric should be used. If the user is not
-// given any option, then use the |kIgnoreMetric| value should be used.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
-enum class SignoutDelete : int {
-  kDeleted = 0,
-  kKeeping,
-  kIgnoreMetric,
 };
 
 // This is the relationship between the account used to sign into chrome, and
@@ -514,7 +517,7 @@ void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
                                             bool successful);
 
 // Track a profile signout.
-void LogSignout(ProfileSignout source_metric, SignoutDelete delete_metric);
+void LogSignout(ProfileSignout source_metric);
 
 // Tracks whether the external connection results were all fetched before
 // the gaia cookie manager service tried to use them with merge session.

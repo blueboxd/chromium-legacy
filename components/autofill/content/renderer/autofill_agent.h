@@ -156,11 +156,11 @@ class AutofillAgent : public content::RenderFrameObserver,
   void TriggerFormExtraction() override;
   void TriggerFormExtractionWithResponse(
       base::OnceCallback<void(bool)> callback) override;
-  void ApplyFormAction(mojom::ActionType action_type,
+  void ApplyFormAction(mojom::FormActionType action_type,
                        mojom::ActionPersistence action_persistence,
                        const FormData::FillData& form) override;
-  void ApplyFieldAction(mojom::ActionPersistence action_persistence,
-                        mojom::TextReplacement text_replacement,
+  void ApplyFieldAction(mojom::FieldActionType action_type,
+                        mojom::ActionPersistence action_persistence,
                         FieldRendererId field_id,
                         const std::u16string& value) override;
   void ExtractForm(FormRendererId form,
@@ -186,7 +186,6 @@ class AutofillAgent : public content::RenderFrameObserver,
                                  const std::u16string& password) override;
   void PreviewPasswordGenerationSuggestion(
       const std::u16string& password) override;
-  void EnableHeavyFormDataScraping() override;
   void GetPotentialLastFourCombinationsForStandaloneCvc(
       base::OnceCallback<void(const std::vector<std::string>&)>
           potential_matches) override;
@@ -218,10 +217,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   void UpdateStateForTextChange(const blink::WebFormControlElement& element,
                                 FieldPropertiesFlags flag);
 
-  bool is_heavy_form_data_scraping_enabled() {
-    return is_heavy_form_data_scraping_enabled_;
-  }
-
   bool IsPrerendering() const;
 
   blink::WebFormControlElement focused_element() const {
@@ -241,6 +236,15 @@ class AutofillAgent : public content::RenderFrameObserver,
   void DidChangeFormRelatedElementDynamically(
       const blink::WebElement&,
       blink::WebFormRelatedChangeType) override;
+
+  // content::RenderFrameObserver:
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
+  void DidCreateDocumentElement() override;
+  void DidDispatchDOMContentLoadedEvent() override;
+  void DidChangeScrollOffset() override;
+  void FocusedElementChanged(const blink::WebElement& element) override;
+  void AccessibilityModeChanged(const ui::AXMode& mode) override;
+  void OnDestruct() override;
 
  private:
   class DeferringAutofillDriver;
@@ -265,7 +269,6 @@ class AutofillAgent : public content::RenderFrameObserver,
     // currently focused node (with no setting it to a new one).
     void ResetFocus();
 
-   private:
     mojom::FocusedFieldType GetFieldType(
         const blink::WebFormControlElement& node);
     void NotifyIfChanged(mojom::FocusedFieldType new_focused_field_type,
@@ -274,16 +277,8 @@ class AutofillAgent : public content::RenderFrameObserver,
     FieldRendererId focused_field_id_;
     mojom::FocusedFieldType focused_field_type_ =
         mojom::FocusedFieldType::kUnknown;
-    const raw_ref<AutofillAgent, ExperimentalRenderer> agent_;
+    const raw_ref<AutofillAgent> agent_;
   };
-
-  // content::RenderFrameObserver:
-  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
-  void DidDispatchDOMContentLoadedEvent() override;
-  void DidChangeScrollOffset() override;
-  void FocusedElementChanged(const blink::WebElement& element) override;
-  void AccessibilityModeChanged(const ui::AXMode& mode) override;
-  void OnDestruct() override;
 
   // The RenderFrame* is nullptr while the AutofillAgent is pending deletion,
   // between OnDestruct() and ~AutofillAgent().
@@ -300,6 +295,10 @@ class AutofillAgent : public content::RenderFrameObserver,
         "because AutofillAgent destructs itself asynchronously. Use "
         "unsafe_render_frame() instead and make test that it is non-nullptr.");
   }
+
+  // To be called when all forms are irretrievably gone, e.g., when a new
+  // document is loaded.
+  void Reset();
 
   // Fires Mojo messages for a given form submission.
   void FireHostSubmitEvents(const FormData& form_data,
@@ -331,8 +330,7 @@ class AutofillAgent : public content::RenderFrameObserver,
       const blink::WebFormControlElement& element) override;
   void FormElementReset(const blink::WebFormElement& form) override;
   void PasswordFieldReset(const blink::WebInputElement& element) override;
-  std::vector<blink::WebAutofillClient::FormIssue>
-  ProccessFormsAndReturnIssues() override;
+  void EmitFormIssuesToDevtools() override;
 
   void HandleFocusChangeComplete(bool focused_node_was_last_clicked);
   void SendFocusedInputChangedNotificationToBrowser(
@@ -341,11 +339,15 @@ class AutofillAgent : public content::RenderFrameObserver,
   void OnTextFieldDidChange(const blink::WebFormControlElement& element);
   void DidChangeScrollOffsetImpl(const blink::WebFormControlElement& element);
 
-  // Shows the autofill suggestions for `element`. This call is asynchronous
-  // and may or may not lead to the showing of a suggestion popup (no popup is
-  // shown if there are no available suggestions).
+  // Shows Password Manager, password generation, or Autofill suggestions for
+  // `element`. This call is asynchronous and may or may not lead to the showing
+  // of a suggestion popup (no popup is shown if there are no available
+  // suggestions).
   void ShowSuggestions(const blink::WebFormControlElement& element,
                        AutofillSuggestionTriggerSource trigger_source);
+
+  // Shows Autofill suggestions for `element` if `element` is a contenteditable.
+  void ShowSuggestionsForContentEditable(const blink::WebElement& element);
 
   // Queries the browser for Autocomplete and Autofill suggestions for the given
   // `element`.
@@ -378,7 +380,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // avoid memory allocation for the OnceCallback state. Allocation and
   // destruction of this callback in the hot path (when timer is already
   // running) is expensive.
-  void ExtractFormsForPasswordAutofillAgent(base::OneShotTimer& timer);
+  void ExtractFormsAndNotifyPasswordAutofillAgent(base::OneShotTimer& timer);
 
   void ExtractFormsUnthrottled(base::OnceCallback<void(bool)> callback);
 
@@ -432,7 +434,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Records the last autofill action (Fill or Undo) done by the agent. Used in
   // ClearPreviewedForm to get the default state of previewed fields
   // post-clearing.
-  mojom::ActionType last_action_type_ = mojom::ActionType::kFill;
+  mojom::FormActionType last_action_type_ = mojom::FormActionType::kFill;
 
   // Last form which was interacted with by the user.
   struct {
@@ -486,16 +488,13 @@ class AutofillAgent : public content::RenderFrameObserver,
   base::OneShotTimer process_forms_form_extraction_timer_;
   base::OneShotTimer process_forms_form_extraction_with_response_timer_;
 
-  // True iff DidDispatchDOMContentLoadedEvent() fired.
+  // True iff DidDispatchDOMContentLoadedEvent() fired since the last
+  // navigation.
   bool is_dom_content_loaded_ = false;
 
   // Will be set when accessibility mode changes, depending on what the new mode
   // is.
   bool is_screen_reader_enabled_ = false;
-
-  // Whether agents should enable heavy scraping of form data (e.g., button
-  // titles for unowned forms).
-  bool is_heavy_form_data_scraping_enabled_ = false;
 
   // Map WebFormControlElement to the pair of:
   // 1) The most recent text that user typed or autofilled in input elements.

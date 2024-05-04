@@ -22,6 +22,8 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -41,6 +43,7 @@
 #include "components/sync/test/fake_sync_engine.h"
 #include "components/sync/test/sync_client_mock.h"
 #include "components/sync/test/sync_service_impl_bundle.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/trusted_vault/test/fake_trusted_vault_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -160,6 +163,7 @@ class SyncServiceImplTest : public ::testing::Test {
     sync_client_ = sync_client.get();
     ON_CALL(*sync_client, CreateDataTypeControllers)
         .WillByDefault(Return(ByMove(std::move(controllers))));
+    ON_CALL(*sync_client, IsPasswordSyncAllowed).WillByDefault(Return(true));
 
     service_ = std::make_unique<SyncServiceImpl>(
         sync_service_impl_bundle_.CreateBasicInitParams(
@@ -239,7 +243,7 @@ class SyncServiceImplTest : public ::testing::Test {
 
   SyncClientMock* sync_client() { return sync_client_; }
 
-  TestingPrefServiceSimple* prefs() {
+  sync_preferences::TestingPrefServiceSyncable* prefs() {
     return sync_service_impl_bundle_.pref_service();
   }
 
@@ -513,9 +517,7 @@ TEST_F(SyncServiceImplTest, EarlySignOut) {
   signin::PrimaryAccountMutator* account_mutator =
       identity_manager()->GetPrimaryAccountMutator();
   DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
-  account_mutator->ClearPrimaryAccount(
-      signin_metrics::ProfileSignout::kTest,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
+  account_mutator->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   // Wait for SyncServiceImpl to be notified.
   base::RunLoop().RunUntilIdle();
 
@@ -547,9 +549,7 @@ TEST_F(SyncServiceImplTest, SignOutDisablesSyncTransportAndSyncFeature) {
   signin::PrimaryAccountMutator* account_mutator =
       identity_manager()->GetPrimaryAccountMutator();
   DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
-  account_mutator->ClearPrimaryAccount(
-      signin_metrics::ProfileSignout::kTest,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
+  account_mutator->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   // Wait for SyncServiceImpl to be notified.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SyncService::DisableReasonSet(
@@ -576,9 +576,7 @@ TEST_F(SyncServiceImplTest,
   signin::PrimaryAccountMutator* account_mutator =
       identity_manager()->GetPrimaryAccountMutator();
   DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
-  account_mutator->ClearPrimaryAccount(
-      signin_metrics::ProfileSignout::kTest,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
+  account_mutator->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   // Wait for SyncServiceImpl to be notified.
   base::RunLoop().RunUntilIdle();
   // These are specific to sync-the-feature and should be cleared.
@@ -620,9 +618,7 @@ TEST_F(SyncServiceImplTest,
   signin::PrimaryAccountMutator* account_mutator =
       identity_manager()->GetPrimaryAccountMutator();
   DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
-  account_mutator->ClearPrimaryAccount(
-      signin_metrics::ProfileSignout::kTest,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
+  account_mutator->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   // Wait for SyncServiceImpl to be notified.
   base::RunLoop().RunUntilIdle();
 
@@ -722,11 +718,16 @@ TEST_F(
       /*enabled_features=*/
       {syncer::kReplaceSyncPromosWithSignInPromos,
        syncer::kSyncEnableContactInfoDataTypeForCustomPassphraseUsers,
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+       switches::kExplicitBrowserSigninUIOnDesktop,
+#endif
        syncer::kSyncEnableContactInfoDataTypeInTransportMode},
       /*disabled_features=*/{});
 
   // Sign-in.
   SignInWithoutSyncConsent();
+  ASSERT_TRUE(prefs()->GetBoolean(::prefs::kExplicitBrowserSignin));
+
   // Registering CONTACT_INFO which includes addresses.
   // To disable addresses sync, the kAutofill selectable type will be disabled.
   // This will also disable the kPayments selectable type. Therefore,
@@ -946,9 +947,7 @@ TEST_F(SyncServiceImplTest, SignOutRevokeAccessToken) {
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
   DCHECK(account_mutator);
 
-  account_mutator->ClearPrimaryAccount(
-      signin_metrics::ProfileSignout::kTest,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
+  account_mutator->ClearPrimaryAccount(signin_metrics::ProfileSignout::kTest);
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
 }
 #endif

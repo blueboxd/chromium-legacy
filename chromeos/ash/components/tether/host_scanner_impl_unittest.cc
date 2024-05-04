@@ -62,48 +62,48 @@ class FakeHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
       multidevice::RemoteDeviceRefList* remote_devices) const override {}
 };
 
-class FakeHostScannerOperation : public HostScannerOperation {
+class FakeTetherAvailabilityOperation : public TetherAvailabilityOperation {
  public:
-  FakeHostScannerOperation(
+  FakeTetherAvailabilityOperation(
       const multidevice::RemoteDeviceRefList& devices_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
       TetherHostResponseRecorder* tether_host_response_recorder,
       ConnectionPreserver* connection_preserver)
-      : HostScannerOperation(devices_to_connect,
-                             device_sync_client,
-                             secure_channel_client,
-                             host_scan_device_prioritizer,
-                             tether_host_response_recorder,
-                             connection_preserver) {}
+      : TetherAvailabilityOperation(devices_to_connect,
+                                    device_sync_client,
+                                    secure_channel_client,
+                                    host_scan_device_prioritizer,
+                                    tether_host_response_recorder,
+                                    connection_preserver) {}
 
-  ~FakeHostScannerOperation() override = default;
+  ~FakeTetherAvailabilityOperation() override = default;
 
   void SendScannedDeviceListUpdate(
-      const std::vector<HostScannerOperation::ScannedDeviceInfo>&
-          scanned_device_list_so_far,
+      const std::vector<ScannedDeviceInfo>& scanned_device_list_so_far,
       bool is_final_scan_result) {
     scanned_device_list_so_far_ = scanned_device_list_so_far;
     NotifyObserversOfScannedDeviceList(is_final_scan_result);
   }
 };
 
-class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
+class FakeTetherAvailabilityOperationFactory
+    : public TetherAvailabilityOperation::Factory {
  public:
-  FakeHostScannerOperationFactory(
+  FakeTetherAvailabilityOperationFactory(
       const multidevice::RemoteDeviceRefList& test_devices)
       : expected_devices_(test_devices) {}
-  ~FakeHostScannerOperationFactory() override = default;
+  ~FakeTetherAvailabilityOperationFactory() override = default;
 
-  std::vector<raw_ptr<FakeHostScannerOperation, VectorExperimental>>&
+  std::vector<raw_ptr<FakeTetherAvailabilityOperation, VectorExperimental>>&
   created_operations() {
     return created_operations_;
   }
 
  protected:
-  // HostScannerOperation::Factory:
-  std::unique_ptr<HostScannerOperation> CreateInstance(
+  // TetherAvailabilityOperation::Factory:
+  std::unique_ptr<TetherAvailabilityOperation> CreateInstance(
       const multidevice::RemoteDeviceRefList& devices_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
@@ -111,17 +111,18 @@ class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
       TetherHostResponseRecorder* tether_host_response_recorder,
       ConnectionPreserver* connection_preserver) override {
     EXPECT_EQ(*expected_devices_, devices_to_connect);
-    FakeHostScannerOperation* operation = new FakeHostScannerOperation(
-        devices_to_connect, device_sync_client, secure_channel_client,
-        host_scan_device_prioritizer, tether_host_response_recorder,
-        connection_preserver);
+    FakeTetherAvailabilityOperation* operation =
+        new FakeTetherAvailabilityOperation(
+            devices_to_connect, device_sync_client, secure_channel_client,
+            host_scan_device_prioritizer, tether_host_response_recorder,
+            connection_preserver);
     created_operations_.push_back(operation);
     return base::WrapUnique(operation);
   }
 
  private:
   const raw_ref<const multidevice::RemoteDeviceRefList> expected_devices_;
-  std::vector<raw_ptr<FakeHostScannerOperation, VectorExperimental>>
+  std::vector<raw_ptr<FakeTetherAvailabilityOperation, VectorExperimental>>
       created_operations_;
 };
 
@@ -131,14 +132,13 @@ std::string GenerateCellProviderForDevice(
   return "cellProvider" + remote_device.GetTruncatedDeviceIdForLogs();
 }
 
-std::vector<HostScannerOperation::ScannedDeviceInfo>
-CreateFakeScannedDeviceInfos(
+std::vector<ScannedDeviceInfo> CreateFakeScannedDeviceInfos(
     const multidevice::RemoteDeviceRefList& remote_devices) {
   // At least 4 ScannedDeviceInfos should be created to ensure that all 4 cases
   // described below are tested.
   EXPECT_GT(remote_devices.size(), 3u);
 
-  std::vector<HostScannerOperation::ScannedDeviceInfo> scanned_device_infos;
+  std::vector<ScannedDeviceInfo> scanned_device_infos;
 
   for (size_t i = 0; i < remote_devices.size(); ++i) {
     // Four field possibilities:
@@ -186,8 +186,8 @@ CreateFakeScannedDeviceInfos(
     // Require set-up for odd-numbered device indices.
     bool setup_required = i % 2 == 0;
 
-    scanned_device_infos.push_back(HostScannerOperation::ScannedDeviceInfo(
-        remote_devices[i], device_status, setup_required));
+    scanned_device_infos.push_back(
+        ScannedDeviceInfo(remote_devices[i], device_status, setup_required));
   }
 
   return scanned_device_infos;
@@ -228,10 +228,10 @@ class HostScannerImplTest : public testing::Test {
         std::make_unique<DeviceIdTetherNetworkGuidMap>();
     fake_host_scan_cache_ = std::make_unique<FakeHostScanCache>();
 
-    fake_host_scanner_operation_factory_ =
-        base::WrapUnique(new FakeHostScannerOperationFactory(test_devices_));
-    HostScannerOperation::Factory::SetFactoryForTesting(
-        fake_host_scanner_operation_factory_.get());
+    fake_tether_availability_operation_factory_ = base::WrapUnique(
+        new FakeTetherAvailabilityOperationFactory(test_devices_));
+    TetherAvailabilityOperation::Factory::SetFactoryForTesting(
+        fake_tether_availability_operation_factory_.get());
 
     fake_connection_preserver_ = std::make_unique<FakeConnectionPreserver>();
 
@@ -254,14 +254,14 @@ class HostScannerImplTest : public testing::Test {
 
   void TearDown() override {
     host_scanner_->RemoveObserver(test_observer_.get());
-    HostScannerOperation::Factory::SetFactoryForTesting(nullptr);
+    TetherAvailabilityOperation::Factory::SetFactoryForTesting(nullptr);
   }
 
   // Causes |fake_operation| to receive the scan result in
   // |test_scanned_device_infos| vector at the index |test_device_index| with
   // the "final result" value of |is_final_scan_result|.
   void ReceiveScanResultAndVerifySuccess(
-      FakeHostScannerOperation* fake_operation,
+      FakeTetherAvailabilityOperation* fake_operation,
       size_t test_device_index,
       bool is_final_scan_result,
       NotificationPresenter::PotentialHotspotNotificationState
@@ -315,7 +315,7 @@ class HostScannerImplTest : public testing::Test {
   }
 
   void VerifyScanResultsMatchCache() {
-    std::vector<HostScannerOperation::ScannedDeviceInfo> combined_device_infos =
+    std::vector<ScannedDeviceInfo> combined_device_infos =
         scanned_device_infos_from_current_scan_;
     for (const auto& previous_scan_result :
          scanned_device_infos_from_previous_scans_) {
@@ -345,7 +345,7 @@ class HostScannerImplTest : public testing::Test {
   }
 
   void VerifyScannedDeviceInfoAndCacheEntryAreEquivalent(
-      const HostScannerOperation::ScannedDeviceInfo& scanned_device_info,
+      const ScannedDeviceInfo& scanned_device_info,
       const HostScanCacheEntry& entry) {
     EXPECT_EQ(scanned_device_info.remote_device.name(), entry.device_name);
 
@@ -405,8 +405,7 @@ class HostScannerImplTest : public testing::Test {
 
   NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
   const multidevice::RemoteDeviceRefList test_devices_;
-  const std::vector<HostScannerOperation::ScannedDeviceInfo>
-      test_scanned_device_infos;
+  const std::vector<ScannedDeviceInfo> test_scanned_device_infos;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
@@ -428,13 +427,11 @@ class HostScannerImplTest : public testing::Test {
   std::unique_ptr<base::SimpleTestClock> test_clock_;
   std::unique_ptr<TestObserver> test_observer_;
 
-  std::unique_ptr<FakeHostScannerOperationFactory>
-      fake_host_scanner_operation_factory_;
+  std::unique_ptr<FakeTetherAvailabilityOperationFactory>
+      fake_tether_availability_operation_factory_;
 
-  std::vector<HostScannerOperation::ScannedDeviceInfo>
-      scanned_device_infos_from_current_scan_;
-  std::vector<HostScannerOperation::ScannedDeviceInfo>
-      scanned_device_infos_from_previous_scans_;
+  std::vector<ScannedDeviceInfo> scanned_device_infos_from_current_scan_;
+  std::vector<ScannedDeviceInfo> scanned_device_infos_from_previous_scans_;
 
   std::unique_ptr<HostScanner> host_scanner_;
 
@@ -448,30 +445,31 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_ConnectingToExistingNetwork) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       3u /* test_device_index */, true /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
@@ -486,30 +484,31 @@ TEST_F(HostScannerImplTest,
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       3u /* test_device_index */, true /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
@@ -520,10 +519,11 @@ TEST_F(HostScannerImplTest,
        DISABLED_TestNotificationDisplaysMultipleTimesWhenUnlocked) {
   // Start a scan and receive a result.
   host_scanner_->StartScan();
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       0u /* test_device_index */, true /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
@@ -543,10 +543,11 @@ TEST_F(HostScannerImplTest,
 
   // Start another scan and receive a result.
   host_scanner_->StartScan();
-  ASSERT_EQ(2u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      2u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[1],
+      fake_tether_availability_operation_factory_->created_operations()[1],
       0u /* test_device_index */, true /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN,
@@ -565,30 +566,31 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_ResultsFromAllDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       3u /* test_device_index */, true /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
@@ -599,14 +601,14 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_ResultsFromNoDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
-  fake_host_scanner_operation_factory_->created_operations()[0]
-      ->SendScannedDeviceListUpdate(
-          std::vector<HostScannerOperation::ScannedDeviceInfo>(),
-          true /* is_final_scan_result */);
+  fake_tether_availability_operation_factory_->created_operations()[0]
+      ->SendScannedDeviceListUpdate(std::vector<ScannedDeviceInfo>(),
+                                    true /* is_final_scan_result */);
   EXPECT_EQ(0u, fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
@@ -614,8 +616,9 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_ResultsFromNoDevices) {
 TEST_F(HostScannerImplTest, DISABLED_StopScan) {
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   host_scanner_->StopScan();
@@ -626,25 +629,26 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_ResultsFromSomeDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // Only receive updates from the 0th and 1st device.
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
-  fake_host_scanner_operation_factory_->created_operations()[0]
+  fake_tether_availability_operation_factory_->created_operations()[0]
       ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
   EXPECT_EQ(scanned_device_infos_from_current_scan_.size(),
@@ -657,8 +661,9 @@ TEST_F(HostScannerImplTest,
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // Call StartScan again before the final scan result has been received. This
@@ -671,7 +676,7 @@ TEST_F(HostScannerImplTest,
 
   // Receive updates from the 0th device.
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
@@ -688,7 +693,7 @@ TEST_F(HostScannerImplTest,
             fake_host_scan_cache_->size());
 
   // Finally, finish the scan.
-  fake_host_scanner_operation_factory_->created_operations()[0]
+  fake_tether_availability_operation_factory_->created_operations()[0]
       ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
   EXPECT_EQ(scanned_device_infos_from_current_scan_.size(),
@@ -701,32 +706,33 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_MultipleCompleteScanSessions) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(1u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      1u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // Receive updates from devices 0-2.
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_tether_availability_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // Finish the first scan.
-  fake_host_scanner_operation_factory_->created_operations()[0]
+  fake_tether_availability_operation_factory_->created_operations()[0]
       ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
   EXPECT_EQ(scanned_device_infos_from_current_scan_.size(),
@@ -746,8 +752,9 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_MultipleCompleteScanSessions) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(2u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      2u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // The cache should be unaffected by the start of a new scan.
@@ -757,7 +764,7 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_MultipleCompleteScanSessions) {
   // still be present in the cache even though no results have been received
   // from that device during this scan session.
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[1],
+      fake_tether_availability_operation_factory_->created_operations()[1],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
@@ -767,7 +774,7 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_MultipleCompleteScanSessions) {
   // Finish the second scan. Since results were not received from devices 1 or
   // 2, previous results from those devices should now be removed from the
   // cache.
-  fake_host_scanner_operation_factory_->created_operations()[1]
+  fake_tether_availability_operation_factory_->created_operations()[1]
       ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
   EXPECT_FALSE(host_scanner_->IsScanActive());
@@ -786,8 +793,9 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_MultipleCompleteScanSessions) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ASSERT_EQ(3u,
-            fake_host_scanner_operation_factory_->created_operations().size());
+  ASSERT_EQ(
+      3u,
+      fake_tether_availability_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // The cache should be unaffected by the start of a new scan.
@@ -797,18 +805,18 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_MultipleCompleteScanSessions) {
   // be present in the cache even though no results have been received from that
   // device during this scan session.
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[2],
+      fake_tether_availability_operation_factory_->created_operations()[2],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[2],
+      fake_tether_availability_operation_factory_->created_operations()[2],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[2],
+      fake_tether_availability_operation_factory_->created_operations()[2],
       3u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
@@ -817,7 +825,7 @@ TEST_F(HostScannerImplTest, DISABLED_TestScan_MultipleCompleteScanSessions) {
 
   // Finish the second scan. Since results were not received from device 1,
   // previous results from device 1 should now be removed from the cache.
-  fake_host_scanner_operation_factory_->created_operations()[2]
+  fake_tether_availability_operation_factory_->created_operations()[2]
       ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
   EXPECT_FALSE(host_scanner_->IsScanActive());

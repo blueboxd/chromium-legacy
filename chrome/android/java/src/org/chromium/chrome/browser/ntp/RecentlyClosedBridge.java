@@ -11,6 +11,8 @@ import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
+import org.chromium.base.Token;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -36,7 +38,7 @@ public class RecentlyClosedBridge implements RecentlyClosedTabManager {
             long[] tabTimestamps,
             String[] tabTitles,
             GURL[] tabUrls,
-            String[] tabGroupIds) {
+            Token[] tabGroupIds) {
         assert tabIds.length == tabTimestamps.length;
         assert tabIds.length == tabTitles.length;
         assert tabIds.length == tabUrls.length;
@@ -55,8 +57,8 @@ public class RecentlyClosedBridge implements RecentlyClosedTabManager {
             long timestamp,
             String title,
             GURL url,
-            String groupId) {
-        RecentlyClosedTab tab = new RecentlyClosedTab(id, timestamp, title, url, groupId);
+            Token tabGroupId) {
+        RecentlyClosedTab tab = new RecentlyClosedTab(id, timestamp, title, url, tabGroupId);
         entries.add(tab);
     }
 
@@ -70,7 +72,7 @@ public class RecentlyClosedBridge implements RecentlyClosedTabManager {
             long[] tabTimestamps,
             String[] tabTitles,
             GURL[] tabUrls,
-            String[] tabGroupIds) {
+            Token[] tabGroupIds) {
         RecentlyClosedGroup group = new RecentlyClosedGroup(id, groupTimestamp, groupTitle);
 
         addTabs(group.getTabs(), tabIds, tabTimestamps, tabTitles, tabUrls, tabGroupIds);
@@ -83,29 +85,28 @@ public class RecentlyClosedBridge implements RecentlyClosedTabManager {
             List<RecentlyClosedEntry> entries,
             int id,
             long eventTimestamp,
-            String[] groupIds,
-            String[] groupsTitles,
+            Token[] tabGroupIds,
+            String[] groupTitles,
             int[] tabIds,
             long[] tabTimestamps,
             String[] tabTitles,
             GURL[] tabUrls,
-            String[] tabGroupIds) {
+            Token[] perTabTabGroupIds) {
         RecentlyClosedBulkEvent event = new RecentlyClosedBulkEvent(id, eventTimestamp);
 
-        assert groupIds.length == groupsTitles.length;
-        for (int i = 0; i < groupIds.length; i++) {
-            event.getGroupIdToTitleMap().put(groupIds[i], groupsTitles[i]);
+        assert tabGroupIds.length == groupTitles.length;
+        for (int i = 0; i < tabGroupIds.length; i++) {
+            event.getTabGroupIdToTitleMap().put(tabGroupIds[i], groupTitles[i]);
         }
 
-        addTabs(event.getTabs(), tabIds, tabTimestamps, tabTitles, tabUrls, tabGroupIds);
+        addTabs(event.getTabs(), tabIds, tabTimestamps, tabTitles, tabUrls, perTabTabGroupIds);
 
         entries.add(event);
     }
 
     @CalledByNative
-    private void restoreTabGroup(TabModel tabModel, int groupId, String title, int[] tabIds) {
-        // Can't restore empty or size 1 group. Note groupId is a tab in the group.
-        if (tabIds.length < 1) return;
+    private void restoreTabGroup(TabModel tabModel, String title, int[] tabIds) {
+        if (tabIds.length == 0) return;
 
         assert mTabModelSelector.getModel(tabModel.isIncognito()) == tabModel;
         TabModelFilter filter =
@@ -113,18 +114,25 @@ public class RecentlyClosedBridge implements RecentlyClosedTabManager {
                         .getTabModelFilterProvider()
                         .getTabModelFilter(tabModel.isIncognito());
         assert filter instanceof TabGroupModelFilter;
-
         TabGroupModelFilter groupFilter = (TabGroupModelFilter) filter;
-        for (int id : tabIds) {
-            // This shouldn't happen, but as a precaution skip.
-            if (id == groupId) continue;
 
-            groupFilter.mergeTabsToGroup(id, groupId);
+        int rootId = tabIds[0];
+        if (tabIds.length == 1) {
+            if (!ChromeFeatureList.sAndroidTabGroupStableIds.isEnabled()) {
+                return;
+            }
+            groupFilter.createSingleTabGroup(tabIds[0], false);
+        } else {
+            for (int id : tabIds) {
+                if (id == rootId) continue;
+
+                groupFilter.mergeTabsToGroup(id, rootId);
+            }
         }
 
         if (title == null || title.isEmpty()) return;
 
-        TabGroupTitleUtils.storeTabGroupTitle(groupId, title);
+        TabGroupTitleUtils.storeTabGroupTitle(rootId, title);
     }
 
     /**

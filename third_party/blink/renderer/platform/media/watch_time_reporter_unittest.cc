@@ -248,7 +248,7 @@ class WatchTimeReporterTest
     }
 
    private:
-    raw_ptr<WatchTimeReporterTest, ExperimentalRenderer> parent_;
+    raw_ptr<WatchTimeReporterTest, DanglingUntriaged> parent_;
   };
 
   class FakeMediaMetricsProvider : public media::mojom::MediaMetricsProvider {
@@ -301,7 +301,7 @@ class WatchTimeReporterTest
     void SetAudioPipelineInfo(const media::AudioPipelineInfo& info) override {}
 
    private:
-    raw_ptr<WatchTimeReporterTest, ExperimentalRenderer> parent_;
+    raw_ptr<WatchTimeReporterTest> parent_;
   };
 
   WatchTimeReporterTest()

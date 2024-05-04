@@ -17,6 +17,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
@@ -29,6 +30,7 @@
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
+#include "content/browser/attribution_reporting/attribution_suitable_context.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/network_service_devtools_observer.h"
 #include "content/browser/devtools/protocol/network_handler.h"
@@ -39,6 +41,7 @@
 #include "content/browser/private_aggregation/private_aggregation_manager.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -404,19 +407,28 @@ bool FencedFrameReporter::SendReport(
 
   const std::string devtools_request_id =
       base::UnguessableToken::Create().ToString();
+
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(request_initiator_frame);
-  auto* attribution_host = AttributionHost::FromWebContents(web_contents);
-  if (attribution_host &&
-      network::HasAttributionSupport(
-          AttributionManager::GetAttributionSupport(web_contents))) {
-    BeaconId beacon_id(unique_id_counter.GetNext());
-    if (attribution_host->NotifyFencedFrameReportingBeaconStarted(
-            beacon_id, navigation_id, request_initiator_frame,
-            devtools_request_id)) {
+  if (web_contents) {
+    network::mojom::AttributionSupport attribution_reporting_support =
+        static_cast<WebContentsImpl*>(web_contents)->GetAttributionSupport();
+    auto suitable_context =
+        AttributionSuitableContext::Create(request_initiator_frame);
+    if (network::HasAttributionSupport(attribution_reporting_support) &&
+        suitable_context.has_value()) {
+      BeaconId beacon_id(unique_id_counter.GetNext());
+
+      AttributionDataHostManager* manager =
+          suitable_context->data_host_manager();
+      manager->NotifyFencedFrameReportingBeaconStarted(
+          beacon_id, std::move(*suitable_context), navigation_id,
+          devtools_request_id);
+
       attribution_reporting_data.emplace(AttributionReportingData{
           .beacon_id = beacon_id,
           .is_automatic_beacon = navigation_id.has_value(),
+          .attribution_reporting_support = attribution_reporting_support,
           .attribution_reporting_runtime_features =
               attribution_reporting_runtime_features,
       });
@@ -673,8 +685,7 @@ bool FencedFrameReporter::SendReportInternal(
             : network::mojom::AttributionReportingEligibility::kEventSource;
 
     request->attribution_reporting_support =
-        AttributionManager::GetAttributionSupport(
-            WebContents::FromFrameTreeNodeId(initiator_frame_tree_node_id));
+        attribution_reporting_data->attribution_reporting_support;
 
     request->attribution_reporting_runtime_features =
         attribution_reporting_data->attribution_reporting_runtime_features;

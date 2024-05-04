@@ -16,11 +16,13 @@
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -29,7 +31,9 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/controls/hover_button.h"
+#include "chrome/browser/ui/views/promos/bubble_signin_promo_signin_button_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -58,6 +62,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -67,6 +72,10 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
+#if !BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/ui/views/profiles/badged_profile_photo.h"
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
 namespace {
 
 // Helpers --------------------------------------------------------------------
@@ -74,6 +83,7 @@ namespace {
 constexpr int kMenuWidth = 290;
 constexpr int kMaxImageSize = ProfileMenuViewBase::kIdentityImageSize;
 constexpr int kDefaultMargin = 8;
+constexpr int kAccountCardMargin = 4;
 constexpr int kBadgeSize = 16;
 constexpr int kCircularImageButtonSize = 28;
 constexpr int kCircularImageButtonRefreshSize = 32;
@@ -103,6 +113,9 @@ constexpr int kSyncInfoRefreshInsidePadding = 16;
 // The bottom background edge should match the center of the identity image.
 constexpr auto kBackgroundInsets =
     gfx::Insets::TLBR(0, 0, kHalfOfAvatarImageViewSize, 0);
+
+constexpr char kProfileMenuClickedActionableItemHistogram[] =
+    "Profile.Menu.ClickedActionableItem";
 
 gfx::ImageSkia SizeImage(const gfx::ImageSkia& image, int size) {
   return gfx::ImageSkiaOperations::CreateResizedImage(
@@ -496,7 +509,8 @@ class SyncImageView : public views::ImageView {
 BEGIN_METADATA(SyncImageView)
 END_METADATA
 
-void BuildProfileTitleAndSubtitle(views::View* parent,
+void BuildProfileTitleAndSubtitle(Browser* browser,
+                                  views::View* parent,
                                   const std::u16string& title,
                                   const std::u16string& subtitle,
                                   const std::u16string& management_label) {
@@ -527,10 +541,19 @@ void BuildProfileTitleAndSubtitle(views::View* parent,
 
   if (base::FeatureList::IsEnabled(features::kEnterpriseProfileBadging) &&
       !management_label.empty()) {
-    profile_titles_container->AddChildView(std::make_unique<views::Label>(
+    auto link = std::make_unique<views::Link>(
         management_label, views::style::CONTEXT_LABEL,
         features::IsChromeRefresh2023() ? views::style::STYLE_BODY_5
-                                        : views::style::STYLE_SECONDARY));
+                                        : views::style::STYLE_SECONDARY);
+    link->SetCallback(base::BindRepeating(
+        [](Browser* browser) {
+          base::UmaHistogramEnumeration(
+              kProfileMenuClickedActionableItemHistogram,
+              ProfileMenuViewBase::ActionableItem::kProfileManagementLabel);
+          chrome::ExecuteCommand(browser, IDC_SHOW_MANAGEMENT_PAGE);
+        },
+        browser));
+    profile_titles_container->AddChildView(std::move(link));
   }
 }
 
@@ -574,7 +597,7 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
   // probably because this API sets the a11y role for the widget, but not root
   // view in it. This is confusing and prone to misuse. We should unify the two
   // sets of API for BubbleDialogDelegateView.
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kMenu);
 
   RegisterWindowClosingCallback(base::BindOnce(
       &ProfileMenuViewBase::OnWindowClosing, base::Unretained(this)));
@@ -707,7 +730,8 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
   // crbug.com/1161166: Orca does not read the accessible window title of the
   // bubble, so we duplicate it in the top-level menu item. To be revisited
   // after considering other options, including fixes on the AT side.
-  GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
+  GetViewAccessibility().SetName(GetAccessibleWindowTitle(),
+                                 ax::mojom::NameFrom::kAttribute);
 #endif
 
   std::unique_ptr<views::Label> heading_label;
@@ -762,8 +786,8 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
   BuildProfileBackgroundContainer(
       std::move(heading_label), profile_background_color,
       std::move(avatar_image_view), std::move(edit_button), avatar_header_art);
-  BuildProfileTitleAndSubtitle(/*parent=*/identity_info_container_, title,
-                               subtitle, management_label);
+  BuildProfileTitleAndSubtitle(browser_, /*parent=*/identity_info_container_,
+                               title, subtitle, management_label);
 }
 
 void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
@@ -771,7 +795,8 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
     const std::u16string& button_text,
     ui::ColorId background_color_id,
     const base::RepeatingClosure& action,
-    bool show_sync_badge) {
+    bool show_sync_badge,
+    AccountInfo account) {
   const int kDescriptionIconSpacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL);
@@ -812,6 +837,9 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
 
   if (show_sync_badge) {
     description_container->AddChildView(std::make_unique<SyncImageView>(this));
+  } else if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+                 switches::ExplicitBrowserSigninPhase::kFull)) {
+    description_layout->SetMainAxisAlignment(views::LayoutAlignment::kStart);
   } else {
     // If there is no image, the description is centered.
     description_layout->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
@@ -829,13 +857,73 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kPreferred, true));
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+          switches::ExplicitBrowserSigninPhase::kFull)) {
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
 
   // Set sync info description as the name of the parent container, so
   // accessibility tools can read it together with the button text. The role
   // change is required by Windows ATs.
-  sync_info_container_->GetViewAccessibility().OverrideRole(
-      ax::mojom::Role::kGroup);
-  sync_info_container_->GetViewAccessibility().OverrideName(description);
+  sync_info_container_->GetViewAccessibility().SetRole(ax::mojom::Role::kGroup);
+  sync_info_container_->GetViewAccessibility().SetName(
+      description, ax::mojom::NameFrom::kAttribute);
+
+  // Add account card in the signin promo it the user is in the web-only signed
+  // in state in the UNO model.
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+          switches::ExplicitBrowserSigninPhase::kFull) &&
+      !account.IsEmpty()) {
+    views::View* account_container =
+        sync_info_container_->AddChildView(std::make_unique<views::View>());
+    account_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::LayoutOrientation::kVertical,
+                                 views::MinimumFlexSizeRule::kPreferred,
+                                 views::MaximumFlexSizeRule::kUnbounded, true,
+                                 views::MinimumFlexSizeRule::kScaleToZero));
+    account_container->SetLayoutManager(std::make_unique<views::FlexLayout>())
+        ->SetOrientation(views::LayoutOrientation::kHorizontal)
+        .SetIgnoreDefaultMainAxisMargins(true)
+        .SetCollapseMargins(true)
+        .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
+        .SetDefault(
+            views::kMarginsKey,
+            gfx::Insets::VH(kAccountCardMargin, kDescriptionIconSpacing));
+
+#if !BUILDFLAG(IS_CHROMEOS)
+    gfx::Image account_icon = account.account_image;
+    if (account_icon.IsEmpty()) {
+      account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          profiles::GetPlaceholderAvatarIconResourceID());
+    }
+    account_container->AddChildView(std::make_unique<BadgedProfilePhoto>(
+        BadgedProfilePhoto::BADGE_TYPE_NONE, account_icon));
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
+    auto* label_wrapper =
+        account_container->AddChildView(std::make_unique<views::View>());
+    label_wrapper->SetLayoutManager(std::make_unique<views::FlexLayout>())
+        ->SetOrientation(views::LayoutOrientation::kVertical)
+        .SetMainAxisAlignment(views::LayoutAlignment::kCenter);
+    label_wrapper->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                 views::MaximumFlexSizeRule::kUnbounded));
+    views::StyledLabel* title =
+        label_wrapper->AddChildView(std::make_unique<views::StyledLabel>());
+    title->SetText(base::UTF8ToUTF16(account.full_name));
+    title->SetDefaultTextStyle(views::style::STYLE_BODY_3_MEDIUM);
+    // Allow the StyledLabel for title to assume its preferred size on a single
+    // line and let the flex layout attenuate its width if necessary.
+    title->SizeToFit(0);
+    views::Label* subtitle =
+        label_wrapper->AddChildView(std::make_unique<views::Label>(
+            base::UTF8ToUTF16(account.email), views::style::CONTEXT_LABEL,
+            views::style::STYLE_BODY_4));
+    subtitle->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    subtitle->SetAutoColorReadabilityEnabled(false);
+  }
 
   // Add the prominent button at the bottom.
   auto* button =
@@ -968,10 +1056,10 @@ void ProfileMenuViewBase::AddAvailableProfile(const ui::ImageModel& image_model,
     // Give the container an accessible name so accessibility tools can provide
     // context for the buttons inside it. The role change is required by Windows
     // ATs.
-    selectable_profiles_container_->GetViewAccessibility().OverrideRole(
+    selectable_profiles_container_->GetViewAccessibility().SetRole(
         ax::mojom::Role::kGroup);
-    selectable_profiles_container_->GetViewAccessibility().OverrideName(
-        profile_mgmt_heading_);
+    selectable_profiles_container_->GetViewAccessibility().SetName(
+        profile_mgmt_heading_, ax::mojom::NameFrom::kAttribute);
   }
 
   DCHECK(!image_model.IsEmpty());
@@ -1034,6 +1122,17 @@ void ProfileMenuViewBase::AddProfileManagementManagedHint(
   icon_button->SetTooltipText(text);
 }
 
+void ProfileMenuViewBase::AddProfileManagementFeaturesSeparator() {
+  // Add separator before profile management features.
+  profile_mgmt_features_separator_container_->RemoveAllChildViews();
+  profile_mgmt_features_separator_container_->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  profile_mgmt_features_separator_container_->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::VH(kDefaultMargin, 0)));
+  profile_mgmt_features_separator_container_->AddChildView(
+      std::make_unique<views::Separator>());
+}
+
 void ProfileMenuViewBase::AddProfileManagementFeatureButton(
     const gfx::VectorIcon& icon,
     const std::u16string& text,
@@ -1063,7 +1162,8 @@ gfx::ImageSkia ProfileMenuViewBase::ColoredImageForMenu(
 
 void ProfileMenuViewBase::RecordClick(ActionableItem item) {
   // TODO(tangltom): Separate metrics for incognito and guest menu.
-  base::UmaHistogramEnumeration("Profile.Menu.ClickedActionableItem", item);
+  base::UmaHistogramEnumeration(kProfileMenuClickedActionableItemHistogram,
+                                item);
 }
 
 int ProfileMenuViewBase::GetMaxHeight() const {
@@ -1119,6 +1219,11 @@ void ProfileMenuViewBase::Reset() {
   // Third, add the profile management buttons.
   selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
+          switches::ExplicitBrowserSigninPhase::kFull)) {
+    profile_mgmt_features_separator_container_ =
+        components->AddChildView(std::make_unique<views::View>());
+  }
   profile_mgmt_features_container_ =
       components->AddChildView(std::make_unique<views::View>());
   first_profile_button_ = nullptr;

@@ -22,6 +22,7 @@
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "components/commerce/core/account_checker.h"
+#include "components/commerce/core/commerce_info_cache.h"
 #include "components/commerce/core/commerce_types.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/proto/discounts_db_content.pb.h"
@@ -246,6 +247,9 @@ class ShoppingService : public KeyedService,
 
   ShoppingService(const ShoppingService&) = delete;
   ShoppingService& operator=(const ShoppingService&) = delete;
+
+  // Gets an AccountChecker instance to aid in determining feature eligibility.
+  virtual AccountChecker* GetAccountChecker();
 
   // This API retrieves the product information for the provided |url| and
   // passes the payload back to the caller via |callback|. At minimum, this
@@ -551,15 +555,6 @@ class ShoppingService : public KeyedService,
   static void MergeProductInfoData(ProductInfo* info,
                                    const base::Value::Dict& on_page_data_map);
 
-  // Check if the shopping list is eligible for use. This not only checks the
-  // feature flag, but whether the feature is allowed by enterprise policy and
-  // whether the user is signed in. The value returned here can change during
-  // runtime so it should not be used when deciding to build infrastructure.
-  static bool IsShoppingListEligible(AccountChecker* account_checker,
-                                     PrefService* prefs,
-                                     const std::string& country_code,
-                                     const std::string& locale);
-
   void HandleOptGuideMerchantInfoResponse(
       const GURL& url,
       MerchantInfoCallback callback,
@@ -681,10 +676,9 @@ class ShoppingService : public KeyedService,
   std::unique_ptr<ShoppingPowerBookmarkDataProvider>
       shopping_power_bookmark_data_provider_;
 
-  // This is a cache that maps URL to a cache entry that may or may not contain
-  // product info.
-  std::unordered_map<std::string, std::unique_ptr<ProductInfoCacheEntry>>
-      product_info_cache_;
+  // A cache that retains commerce information for a URL as long as at least one
+  // instance of the URL is open in a tab or mainteined by some other subsystem.
+  CommerceInfoCache commerce_info_cache_;
 
   // This is a cache that maps URL to a cache entry that may or may not contain
   // price insights info.

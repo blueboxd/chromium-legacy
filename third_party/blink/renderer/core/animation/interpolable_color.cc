@@ -97,7 +97,10 @@ InterpolableColor* InterpolableColor::Create(ColorKeyword color_keyword) {
   return result;
 }
 
-InterpolableColor* InterpolableColor::Create(CSSValueID keyword) {
+InterpolableColor* InterpolableColor::Create(
+    CSSValueID keyword,
+    mojom::blink::ColorScheme color_scheme,
+    const ui::ColorProvider* color_provider) {
   switch (keyword) {
     case CSSValueID::kCurrentcolor:
       return Create(ColorKeyword::kCurrentcolor);
@@ -108,14 +111,11 @@ InterpolableColor* InterpolableColor::Create(CSSValueID keyword) {
     case CSSValueID::kInternalQuirkInherit:
       return Create(ColorKeyword::kQuirkInherit);
     case CSSValueID::kWebkitFocusRingColor:
-      // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
-      return Create(LayoutTheme::GetTheme().FocusRingColor(
-          mojom::blink::ColorScheme::kLight));
+      return Create(LayoutTheme::GetTheme().FocusRingColor(color_scheme));
     default:
       DCHECK(StyleColor::IsColorKeyword(keyword));
-      // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
-      return Create(StyleColor::ColorFromKeyword(
-          keyword, mojom::blink::ColorScheme::kLight));
+      return Create(
+          StyleColor::ColorFromKeyword(keyword, color_scheme, color_provider));
   }
 }
 

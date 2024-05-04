@@ -20,9 +20,9 @@ import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/p
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
 import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {OobeUiState} from '../../components/display_manager_types.js';
 
 import {CheckingDownloadingUpdate} from './checking_downloading_update.js';
 import {getTemplate} from './update_required_card.html.js';
@@ -44,9 +44,9 @@ enum UpdateRequiredUiState {
 
 const UpdateRequiredBase =
     mixinBehaviors(
-        [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
-        PolymerElement) as {
-      new (): PolymerElement & OobeI18nBehaviorInterface &
+        [LoginScreenBehavior, MultiStepBehavior],
+        OobeI18nMixin(PolymerElement)) as {
+      new (): PolymerElement & OobeI18nMixinInterface &
           LoginScreenBehaviorInterface & MultiStepBehaviorInterface,
     };
 
@@ -153,8 +153,8 @@ export class UpdateRequired extends UpdateRequiredBase {
 
   /** Initial UI State for screen */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  override getOobeUIInitialState() {
-    return OOBE_UI_STATE.BLOCKING;
+  override getOobeUIInitialState(): OobeUiState {
+    return OobeUiState.BLOCKING;
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -277,7 +277,7 @@ export class UpdateRequired extends UpdateRequiredBase {
   }
 
   private isEmpty(eolAdminMessage: string): boolean {
-    return !eolAdminMessage || eolAdminMessage.trim().length == 0;
+    return !eolAdminMessage || eolAdminMessage.trim().length === 0;
   }
 
   private updateEolDeleteUsersDataMessage(): void {

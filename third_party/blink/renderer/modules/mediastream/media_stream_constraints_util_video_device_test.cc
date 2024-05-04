@@ -34,7 +34,6 @@ const char kGroupID3[] = "fake_group_3";
 const char kGroupID4[] = "fake_group_4";
 const char kGroupID5[] = "fake_group_5";
 
-
 void CheckTrackAdapterSettingsEqualsResolution(
     const VideoCaptureSettings& settings) {
   EXPECT_FALSE(settings.track_adapter_settings().target_size());
@@ -202,6 +201,15 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     return SelectSettingsVideoDeviceCapture(capabilities_, constraints);
   }
 
+  base::expected<Vector<VideoCaptureSettings>, std::string>
+  SelectEligibleSettings() {
+    MediaConstraints constraints = constraint_factory_.CreateMediaConstraints();
+    return SelectEligibleSettingsVideoDeviceCapture(
+        capabilities_, constraints, MediaStreamVideoSource::kDefaultWidth,
+        MediaStreamVideoSource::kDefaultHeight,
+        MediaStreamVideoSource::kDefaultFrameRate);
+  }
+
   static WTF::Vector<BooleanConstraint MediaTrackConstraintSetPlatform::*>
   BooleanImageCaptureConstraints() {
     return {
@@ -223,23 +231,15 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
 
   test::TaskEnvironment task_environment_;
   VideoDeviceCaptureCapabilities capabilities_;
-  raw_ptr<const VideoInputDeviceCapabilities, ExperimentalRenderer>
-      default_device_;
-  raw_ptr<const VideoInputDeviceCapabilities, ExperimentalRenderer>
-      low_res_device_;
-  raw_ptr<const VideoInputDeviceCapabilities, ExperimentalRenderer>
-      high_res_device_;
-  raw_ptr<const VideoInputDeviceCapabilities, ExperimentalRenderer>
-      invalid_frame_rate_device_;
+  raw_ptr<const VideoInputDeviceCapabilities> default_device_;
+  raw_ptr<const VideoInputDeviceCapabilities> low_res_device_;
+  raw_ptr<const VideoInputDeviceCapabilities> high_res_device_;
+  raw_ptr<const VideoInputDeviceCapabilities> invalid_frame_rate_device_;
   // Closest formats to the default settings.
-  raw_ptr<const media::VideoCaptureFormat, ExperimentalRenderer>
-      default_closest_format_;
-  raw_ptr<const media::VideoCaptureFormat, ExperimentalRenderer>
-      low_res_closest_format_;
-  raw_ptr<const media::VideoCaptureFormat, ExperimentalRenderer>
-      high_res_closest_format_;
-  raw_ptr<const media::VideoCaptureFormat, ExperimentalRenderer>
-      high_res_highest_format_;
+  raw_ptr<const media::VideoCaptureFormat> default_closest_format_;
+  raw_ptr<const media::VideoCaptureFormat> low_res_closest_format_;
+  raw_ptr<const media::VideoCaptureFormat> high_res_closest_format_;
+  raw_ptr<const media::VideoCaptureFormat> high_res_highest_format_;
 
   MockConstraintFactory constraint_factory_;
 };
@@ -1891,12 +1891,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactPanTiltZoom) {
     // which is the low-res device.
     EXPECT_EQ(low_res_device_->device_id.Utf8(), result.device_id());
     ASSERT_TRUE(result.image_capture_device_settings().has_value());
-    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+    if (constraint == &MediaTrackConstraintSetPlatform::pan) {
       EXPECT_EQ(3, result.image_capture_device_settings()->pan.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::tilt) {
       EXPECT_EQ(3, result.image_capture_device_settings()->tilt.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::zoom) {
       EXPECT_EQ(3, result.image_capture_device_settings()->zoom.value());
+    }
   }
 }
 
@@ -1910,12 +1911,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinPanTiltZoom) {
     // natively, which is the low-res device.
     EXPECT_EQ(low_res_device_->device_id.Utf8(), result.device_id());
     ASSERT_TRUE(result.image_capture_device_settings().has_value());
-    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+    if (constraint == &MediaTrackConstraintSetPlatform::pan) {
       EXPECT_EQ(2, result.image_capture_device_settings()->pan.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::tilt) {
       EXPECT_EQ(2, result.image_capture_device_settings()->tilt.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::zoom) {
       EXPECT_EQ(2, result.image_capture_device_settings()->zoom.value());
+    }
   }
 }
 
@@ -1929,12 +1931,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxPanTiltZoom) {
     // natively, which is the low-res device.
     EXPECT_EQ(low_res_device_->device_id.Utf8(), result.device_id());
     ASSERT_TRUE(result.image_capture_device_settings().has_value());
-    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+    if (constraint == &MediaTrackConstraintSetPlatform::pan) {
       EXPECT_EQ(4, result.image_capture_device_settings()->pan.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::tilt) {
       EXPECT_EQ(4, result.image_capture_device_settings()->tilt.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::zoom) {
       EXPECT_EQ(4, result.image_capture_device_settings()->zoom.value());
+    }
   }
 }
 
@@ -1949,12 +1952,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryPanTiltZoomRange) {
     // natively, which is the low-res device.
     EXPECT_EQ(low_res_device_->device_id.Utf8(), result.device_id());
     ASSERT_TRUE(result.image_capture_device_settings().has_value());
-    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+    if (constraint == &MediaTrackConstraintSetPlatform::pan) {
       EXPECT_EQ(2, result.image_capture_device_settings()->pan.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::tilt) {
       EXPECT_EQ(2, result.image_capture_device_settings()->tilt.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::zoom) {
       EXPECT_EQ(2, result.image_capture_device_settings()->zoom.value());
+    }
   }
 }
 
@@ -1968,12 +1972,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealPanTiltZoom) {
     // constraint natively, which is the low-res device.
     EXPECT_EQ(low_res_device_->device_id.Utf8(), result.device_id());
     ASSERT_TRUE(result.image_capture_device_settings().has_value());
-    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+    if (constraint == &MediaTrackConstraintSetPlatform::pan) {
       EXPECT_EQ(3, result.image_capture_device_settings()->pan.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::tilt) {
       EXPECT_EQ(3, result.image_capture_device_settings()->tilt.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::zoom) {
       EXPECT_EQ(3, result.image_capture_device_settings()->zoom.value());
+    }
   }
 }
 
@@ -2679,12 +2684,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     // The second advanced set must be ignored because it contradicts the first
     // set. The third advanced must be ignored because it is invalid. The fourth
     // advanced set must be applied.
-    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+    if (constraint == &MediaTrackConstraintSetPlatform::pan) {
       EXPECT_EQ(3, result.image_capture_device_settings()->pan.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::tilt) {
       EXPECT_EQ(3, result.image_capture_device_settings()->tilt.value());
-    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+    } else if (constraint == &MediaTrackConstraintSetPlatform::zoom) {
       EXPECT_EQ(3, result.image_capture_device_settings()->zoom.value());
+    }
   }
 }
 
@@ -2878,6 +2884,29 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, InvertedDefaultResolution) {
   EXPECT_EQ(high_res_device_->device_id.Utf8(), result.device_id());
   EXPECT_EQ(result.Width(), MediaStreamVideoSource::kDefaultWidth);
   EXPECT_EQ(result.Height(), MediaStreamVideoSource::kDefaultHeight);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       SelectEligibleSettingsVideoDeviceCapture_NoEligibleDevices) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().device_id.SetExact("NONEXISTING");
+  auto result = SelectEligibleSettings();
+  EXPECT_FALSE(result.has_value());
+  EXPECT_EQ(constraint_factory_.basic().device_id.GetName(), result.error());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       SelectEligibleSettingsVideoDeviceCapture_IncludesEligibleDevices) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetMin(900);
+  auto result = SelectEligibleSettings();
+  EXPECT_TRUE(result.has_value());
+  // Vector<VideoCaptureSettings> expected_settings;
+  EXPECT_EQ(2u, result.value().size());
+  EXPECT_EQ("fake_device_1", result.value()[0].device_id());
+  EXPECT_EQ(gfx::Size(1000, 1000), result.value()[0].Format().frame_size);
+  EXPECT_EQ("fake_device_3", result.value()[1].device_id());
+  EXPECT_EQ(gfx::Size(1280, 720), result.value()[1].Format().frame_size);
 }
 
 }  // namespace blink

@@ -13,20 +13,23 @@ from collections import defaultdict
 import logging
 import re
 import typing
-from typing import NamedTuple, Optional
+from typing import List, NamedTuple, Optional
 
 from blinkpy.common import path_finder
-from blinkpy.common.net.luci_auth import LuciAuth
+from blinkpy.common.net.git_cl import Changelist
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.web_tests.models.testharness_results import (
     LineType,
     Status,
     parse_testharness_baseline,
 )
+from blinkpy.w3c.buganizer import (
+    BuganizerClient,
+    BuganizerError,
+    BuganizerIssue,
+)
 from blinkpy.w3c.common import WPT_GH_URL, WPT_GH_RANGE_URL_TEMPLATE
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
-from blinkpy.w3c.monorail import MonorailAPI, MonorailIssue
-from blinkpy.w3c.buganizer import BuganizerClient
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 from blinkpy.w3c.wpt_results_processor import TestType
 
@@ -34,19 +37,22 @@ _log = logging.getLogger(__name__)
 
 GITHUB_COMMIT_PREFIX = WPT_GH_URL + 'commit/'
 SHORT_GERRIT_PREFIX = 'https://crrev.com/c/'
+CHECKS_URL_TEMPLATE = 'https://chromium-review.googlesource.com/c/chromium/src/+/{}/{}?checksPatchset=1&tab=checks'
 
-USE_BUGANIZER = True
 BUGANIZER_WPT_COMPONENT = '1456176'
 
 
 class ImportNotifier:
-    def __init__(self, host, chromium_git, local_wpt):
+    def __init__(self,
+                 host,
+                 chromium_git,
+                 local_wpt,
+                 buganizer_client: Optional[BuganizerClient] = None):
         self.host = host
         self.git = chromium_git
         self.local_wpt = local_wpt
+        self._buganizer_client = buganizer_client or BuganizerClient()
 
-        self._monorail_api = MonorailAPI
-        self._buganizer_api = BuganizerClient
         self.default_port = host.port_factory.get()
         self.default_port.set_option_default('test_types',
                                              typing.get_args(TestType))
@@ -61,9 +67,7 @@ class ImportNotifier:
              test_expectations,
              issue,
              patchset,
-             dry_run=True,
-             service_account_key_json=None,
-             sheriff_email=None):
+             dry_run=True):
         """Files bug reports for new failures.
 
         Args:
@@ -77,16 +81,11 @@ class ImportNotifier:
             issue: The issue number of the import CL (a string).
             patchset: The patchset number of the import CL (a string).
             dry_run: If True, no bugs will be actually filed to crbug.com.
-            service_account_key_json: The path to a JSON private key of a
-                service account for accessing Monorail. If None, try to get an
-                access token from luci-auth.
 
         Note: "test names" are paths of the tests relative to web_tests.
         """
-        gerrit_url = SHORT_GERRIT_PREFIX + issue
-        gerrit_url_with_ps = gerrit_url + '/' + patchset + '/'
-
-        self.sheriff_email = sheriff_email
+        gerrit_url = str(Changelist(issue))
+        gerrit_url_with_ps = str(Changelist(issue, patchset)) + '/'
 
         changed_test_baselines = self.find_changed_baselines_of_tests(
             rebaselined_tests)
@@ -95,8 +94,8 @@ class ImportNotifier:
         self.examine_new_test_expectations(test_expectations)
 
         bugs = self.create_bugs_from_new_failures(wpt_revision_start,
-                                                  wpt_revision_end, gerrit_url)
-        self.file_bugs(bugs, dry_run, service_account_key_json)
+                                                  wpt_revision_end, issue)
+        self.file_bugs(bugs, dry_run)
 
     def find_changed_baselines_of_tests(self, rebaselined_tests):
         """Finds the corresponding changed baselines of each test.
@@ -198,8 +197,9 @@ class ImportNotifier:
                     TestFailure.from_expectation_line(test_name,
                                                       expectation_line))
 
-    def create_bugs_from_new_failures(self, wpt_revision_start,
-                                      wpt_revision_end, gerrit_url):
+    def create_bugs_from_new_failures(self, wpt_revision_start: str,
+                                      wpt_revision_end: str,
+                                      issue: str) -> List[BuganizerIssue]:
         """Files bug reports for new failures.
 
         Args:
@@ -207,11 +207,13 @@ class ImportNotifier:
                 (exclusive), i.e. the last imported revision.
             wpt_revision_end: The end of the imported WPT revision range
                 (inclusive), i.e. the current imported revision.
-            gerrit_url: Gerrit URL of the CL.
+            issue: Issue number of the CL.
 
         Return:
-            A list of MonorailIssue objects that should be filed.
+            A list of issues that should be filed.
         """
+        gerrit_url = SHORT_GERRIT_PREFIX + issue
+        patchset1_checks_url = CHECKS_URL_TEMPLATE.format(issue, '1')
         imported_commits = self.local_wpt.commits_in_range(
             wpt_revision_start, wpt_revision_end)
         bugs = []
@@ -236,32 +238,23 @@ class ImportNotifier:
                 _log.warning(f'{owners_file!r} does not exist and '
                              'was not added to the CC list.')
 
-            # component could be None.
-            components = [metadata.monorail_component
-                          ] if metadata.monorail_component else None
-            buganizer_public_components = [
-                metadata.buganizer_public_component
-            ] if metadata.buganizer_public_component else None
-
             prologue = ('WPT import {} introduced new failures in {}:\n\n'
                         'List of new failures:\n'.format(
                             gerrit_url, directory))
             failure_list = ''.join(f'{failure.message}\n'
                                    for failure in failures)
+            checks = '\nSee {} for details.\n'.format(patchset1_checks_url)
 
             expectations_statement = (
                 '\nExpectations or baseline files [0] have been automatically '
                 'added for the failing results to keep the bots green. Please '
                 'investigate the new failures and triage as appropriate.\n')
-
             range_statement = '\nUpstream changes imported:\n'
             range_statement += WPT_GH_RANGE_URL_TEMPLATE.format(
                 wpt_revision_start, wpt_revision_end) + '\n'
             commit_list = self.format_commit_list(imported_commits,
                                                   full_directory)
-
             links_list = '\n[0]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/web_test_expectations.md\n'
-
             dir_metadata_path = self.host.filesystem.join(
                 directory, "DIR_METADATA")
             epilogue = (
@@ -270,21 +263,18 @@ class ImportNotifier:
                 'If you do not want to receive these reports, please add '
                 '"wpt { notify: NO }"  to the relevant DIR_METADATA file.')
 
-            description = (prologue + failure_list + expectations_statement +
-                           range_statement + commit_list + links_list +
-                           epilogue)
+            description = (prologue + failure_list + checks +
+                           expectations_statement + range_statement +
+                           commit_list + links_list + epilogue)
 
-            bug = MonorailIssue.new_chromium_issue(summary,
-                                                   description,
-                                                   cc,
-                                                   components,
-                                                   labels=['Test-WebTest'])
-            _log.info(bug)
+            bug = BuganizerIssue(
+                title=summary,
+                description=description,
+                component_id=(metadata.buganizer_public_component
+                              or BUGANIZER_WPT_COMPONENT),
+                cc=cc)
             _log.info("WPT-NOTIFY enabled in %s; adding the bug to the pending list." % full_directory)
-
-            # TODO(crbug.com/1487196): refactor this so we use a common issue which is converted later to
-            # buganizer or monorail specific issue.
-            bug.buganizer_public_components = buganizer_public_components
+            _log.info(f'{bug}')
             bugs.append(bug)
         return bugs
 
@@ -338,13 +328,12 @@ class ImportNotifier:
             owned_directory, self.finder.web_tests_dir())
         return short_directory
 
-    def file_bugs(self, bugs, dry_run, service_account_key_json=None):
-        """Files a list of bugs to Monorail.
+    def file_bugs(self, bugs: List[BuganizerIssue], dry_run: bool = False):
+        """Files a list of bugs to Buganizer.
 
         Args:
-            bugs: A list of MonorailIssue objects.
+            bugs: A list of bugs to file.
             dry_run: A boolean, whether we are in dry run mode.
-            service_account_key_json: Optional, see docs for main().
         """
         # TODO(robertma): Better error handling in this method.
         if dry_run:
@@ -353,60 +342,13 @@ class ImportNotifier:
                 len(bugs))
             return
 
-        _log.info('Filing %d bugs in the pending list to Monorail', len(bugs))
-        api = self._get_monorail_api(service_account_key_json)
-        buganizer_api = None
-        try:
-            buganizer_api = self._get_buganizer_api()
-        except Exception as e:
-            _log.warning('buganizer instantiation failed')
-            _log.warning(e)
-
+        _log.info('Filing %d bugs in the pending list to Buganizer', len(bugs))
         for index, bug in enumerate(bugs, start=1):
-            buganizer_component_id = BUGANIZER_WPT_COMPONENT
-            issue_link = None
-            if buganizer_api and USE_BUGANIZER:
-                if 'summary' not in bug.body:
-                    _log.warning('failed to file bug')
-                    _log.warning('summary missing from bug:')
-                    _log.warning(bug)
-                    continue
-                if 'description' not in bug.body:
-                    _log.warning('failed to file bug')
-                    _log.warning('description missing from bug:')
-                    _log.warning(bug)
-                    continue
-                title = bug.body['summary']
-                description = bug.body['description']
-                cc = bug.body.get('cc', []) + [self.sheriff_email]
-                if bug.buganizer_public_components:
-                    buganizer_component_id = bug.buganizer_public_components[0]
-                try:
-                    buganizer_res = buganizer_api.NewIssue(
-                        title=title,
-                        description=description,
-                        cc=cc,
-                        status="New",
-                        componentId=buganizer_component_id)
-                    issue_link = f'b/{buganizer_res["issue_id"]}'
-                except Exception as e:
-                    _log.warning('buganizer api call to new issue failed')
-                    _log.warning(e)
-            else:
-                # using monorail
-                response = api.insert_issue(bug)
-                issue_link = MonorailIssue.crbug_link(response['id'])
-            _log.info('[%d] Filed bug: %s', index, issue_link)
-
-    def _get_buganizer_api(self):
-        return self._buganizer_api()
-
-    def _get_monorail_api(self, service_account_key_json):
-        if service_account_key_json:
-            return self._monorail_api(
-                service_account_key_json=service_account_key_json)
-        token = LuciAuth(self.host).get_access_token()
-        return self._monorail_api(access_token=token)
+            try:
+                bug = self._buganizer_client.NewIssue(bug)
+                _log.info(f'[{index}] Filed bug: {bug.link}')
+            except BuganizerError as error:
+                _log.exception('Failed to file bug', exc_info=error)
 
 
 class TestFailure(NamedTuple):

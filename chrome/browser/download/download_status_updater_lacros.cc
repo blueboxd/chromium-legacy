@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/download/download_bubble_info_utils.h"
 #include "chrome/browser/ui/download/download_bubble_row_view_info.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chromeos/crosapi/mojom/download_controller.mojom.h"
@@ -43,12 +44,22 @@
 #include "content/public/browser/download_item_utils.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/color/color_provider.h"
+#include "ui/color/color_provider_key.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
 // Constants -------------------------------------------------------------------
+
+// The DIP size of the rasterized icon. Ensures that the icon is large enough
+// for download status clients to resize with sufficient resolution.
+constexpr int kIconSize = 50;
 
 // The key referring to an image decoder task.
 constexpr char kImageDecoderTaskKey[] = "kImageDecoderTask";
@@ -57,6 +68,19 @@ constexpr char kImageDecoderTaskKey[] = "kImageDecoderTask";
 constexpr size_t kImageDecoderTaskMaxFileSize = 10 * 1024 * 1024;  // 10 MB
 
 // Helpers ---------------------------------------------------------------------
+
+// Returns the corresponding color of `id` under the specific `color_mode`.
+// WARNING: Sending UI icons directly has drawbacks (see http://b/328070365).
+// Prefer sending metadata to construct the UI instead.
+SkColor GetColor(ui::ColorId id, ui::ColorProviderKey::ColorMode color_mode) {
+  ui::ColorProviderKey provider_key =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetColorProviderKey(
+          /*custom_theme=*/nullptr);
+  provider_key.color_mode = color_mode;
+  return ui::ColorProviderManager::Get()
+      .GetColorProviderFor(provider_key)
+      ->GetColor(id);
+}
 
 crosapi::mojom::DownloadStatusUpdater* GetRemote(
     std::optional<uint32_t> min_version = std::nullopt) {
@@ -73,8 +97,9 @@ crosapi::mojom::DownloadStatusUpdater* GetRemote(
              : nullptr;
 }
 
-bool IsCommandEnabled(const DownloadBubbleRowViewInfo& info,
-                      DownloadCommands::Command command) {
+bool IsCommandEnabled(
+    const std::vector<DownloadBubbleQuickAction>& quick_actions,
+    DownloadCommands::Command command) {
   // To support other commands, we may need to update checks below to also
   // inspect `DownloadBubbleSecurityViewInfo` subpage buttons.
   CHECK(command == DownloadCommands::CANCEL ||
@@ -86,8 +111,8 @@ bool IsCommandEnabled(const DownloadBubbleRowViewInfo& info,
   // non-`DownloadBubbleRowViewInfo`-based determination of command
   // enablement as it takes more signals into account, e.g. if the
   // download has been marked dangerous.
-  return base::Contains(info.quick_actions(), command,
-                        &DownloadBubbleRowViewInfo::QuickAction::command);
+  return base::Contains(quick_actions, command,
+                        &DownloadBubbleQuickAction::command);
 }
 
 // Reads a specified image into binary data. Returns an empty string if
@@ -194,33 +219,42 @@ class DownloadStatusUpdater::Delegate
       return false;
     }
 
-    // TODO(crbug.com/40931768): Factor out the quick action selection
-    // so we don't need an entire DownloadBubbleRowViewInfo
-    DownloadBubbleRowViewInfo row_info(std::make_unique<DownloadItemModel>(
-        download,
-        std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>()));
     DownloadItemModel model(
         download, std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>());
+    std::vector<DownloadBubbleQuickAction> quick_actions =
+        QuickActionsForDownload(model);
     auto status = crosapi::mojom::DownloadStatus::New();
-    status->cancellable = IsCommandEnabled(row_info, DownloadCommands::CANCEL);
+    status->cancellable =
+        IsCommandEnabled(quick_actions, DownloadCommands::CANCEL);
     status->full_path = download->GetFullPath();
     status->guid = download->GetGuid();
-    status->pausable = IsCommandEnabled(row_info, DownloadCommands::PAUSE);
-    status->resumable = IsCommandEnabled(row_info, DownloadCommands::RESUME);
+    status->pausable = IsCommandEnabled(quick_actions, DownloadCommands::PAUSE);
+    status->resumable =
+        IsCommandEnabled(quick_actions, DownloadCommands::RESUME);
     status->state = download::download_item_utils::ConvertToMojoDownloadState(
         download->GetState());
     status->status_text = model.GetStatusText();
     status->target_file_path = download->GetTargetFilePath();
 
-    // TODO(http://b/306459683): Remove after the 2-version skew period passes.
-    status->received_bytes_deprecated = download->GetReceivedBytes();
-    status->total_bytes_deprecated = download->GetTotalBytes();
+    const IconAndColor icon_and_color = IconAndColorForDownload(model);
+    if (const gfx::VectorIcon* const icon = icon_and_color.icon) {
+      status->icons = crosapi::mojom::DownloadStatusIcons::New(
+          gfx::CreateVectorIcon(
+              *icon, kIconSize,
+              GetColor(icon_and_color.color,
+                       ui::ColorProviderKey::ColorMode::kDark)),
+          gfx::CreateVectorIcon(
+              *icon, kIconSize,
+              GetColor(icon_and_color.color,
+                       ui::ColorProviderKey::ColorMode::kLight)));
+    }
 
+    DownloadBubbleProgressBar progress_bar = ProgressBarForDownload(model);
     auto progress = crosapi::mojom::DownloadProgress::New();
-    progress->loop = row_info.is_progress_bar_looping();
+    progress->loop = progress_bar.is_looping;
     progress->received_bytes = download->GetReceivedBytes();
     progress->total_bytes = download->GetTotalBytes();
-    progress->visible = row_info.has_progress_bar();
+    progress->visible = progress_bar.is_visible;
     status->progress = std::move(progress);
 
     // If `task` exists and completes, copy the image generated by `task` to

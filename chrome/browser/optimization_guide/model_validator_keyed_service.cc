@@ -8,26 +8,24 @@
 #include "base/files/file_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_component.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
+#include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/optimization_guide/proto/string_value.pb.h"
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-#include "base/task/thread_pool.h"
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "components/optimization_guide/core/model_validator.h"
 #endif  // BUILD_WITH_TFLITE_LIB
 
 namespace {
-
-// Delay at the startup before performing the model execution validation.
-constexpr base::TimeDelta kOnDeviceModelExecutionValidationStartupDelay =
-    base::Seconds(5);
 
 std::unique_ptr<optimization_guide::proto::ComposeRequest>
 ParseComposeRequestFromFile(base::FilePath path) {
@@ -151,7 +149,7 @@ void ModelValidatorKeyedService::StartOnDeviceModelExecutionValidation(
       base::BindOnce(
           &ModelValidatorKeyedService::PerformOnDeviceModelExecutionValidation,
           weak_ptr_factory_.GetWeakPtr(), std::move(request)),
-      kOnDeviceModelExecutionValidationStartupDelay);
+      features::GetOnDeviceModelExecutionValidationStartupDelay());
 }
 
 void ModelValidatorKeyedService::PerformOnDeviceModelExecutionValidation(
@@ -163,7 +161,8 @@ void ModelValidatorKeyedService::PerformOnDeviceModelExecutionValidation(
     return;
   }
   on_device_validation_session_ = opt_guide_service->StartSession(
-      proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE);
+      proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE,
+      /*config_params=*/std::nullopt);
   on_device_validation_session_->ExecuteModel(
       *request, base::RepeatingCallback(base::BindRepeating(
                     &ModelValidatorKeyedService::OnDeviceModelExecuteResponse,

@@ -295,14 +295,6 @@ export class SettingsInternetDetailPageElement extends
         },
       },
 
-      isSuppressTextMessagesEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.valueExists('isSuppressTextMessagesEnabled') &&
-              loadTimeData.getBoolean('isSuppressTextMessagesEnabled');
-        },
-      },
-
       isCellularCarrierLockEnabled_: {
         type: Boolean,
         value() {
@@ -412,7 +404,6 @@ export class SettingsInternetDetailPageElement extends
   private hiddenPref_: chrome.settingsPrivate.PrefObject<boolean>;
   private ipAddress_: string;
   private isApnRevampEnabled_: boolean;
-  private isSuppressTextMessagesEnabled_: boolean;
   private suppressTextMessagesOverride_: boolean;
   private isCellularCarrierLockEnabled_: boolean;
   private isPasspointEnabled_: boolean;
@@ -720,8 +711,7 @@ export class SettingsInternetDetailPageElement extends
     this.updateAutoConnectPref_();
     this.updateHiddenPref_();
 
-    if (this.isSuppressTextMessagesEnabled_ &&
-        this.isCellular_(this.managedProperties_) &&
+    if (this.isCellular_(this.managedProperties_) &&
         this.managedProperties_!.typeProperties.cellular!.allowTextMessages) {
       this.suppressTextMessagesOverride_ = !!OncMojo.getActiveValue(
           this.managedProperties_!.typeProperties.cellular!.allowTextMessages);
@@ -957,7 +947,7 @@ export class SettingsInternetDetailPageElement extends
   }
 
   private suppressTextMessagesChanged_(e: CustomEvent<{value: boolean}>): void {
-    if (!this.isSuppressTextMessagesEnabled_ || !this.propertiesReceived_ ||
+    if (!this.propertiesReceived_ ||
         !this.isCellular_(this.managedProperties_) ||
         !this.managedProperties_!.typeProperties.cellular!.allowTextMessages) {
       return;
@@ -1125,7 +1115,7 @@ export class SettingsInternetDetailPageElement extends
     if (!this.propertiesReceived_ || !this.guid || this.applyingChanges_) {
       return;
     }
-    recordSettingChange();
+    // TODO(b/282233232) recordSettingChange() for updating network properties.
     const response = await this.networkConfig_.setProperties(this.guid, config);
     if (!response.success) {
       console.warn('Unable to set properties: ' + JSON.stringify(config));
@@ -1285,8 +1275,7 @@ export class SettingsInternetDetailPageElement extends
   }
 
   private shouldShowSuppressTextMessagesToggle_(): boolean {
-    if (!this.isSuppressTextMessagesEnabled_ || !this.managedProperties_ ||
-        !this.deviceState_) {
+    if (!this.managedProperties_ || !this.deviceState_) {
       return false;
     }
     const networkState = this.getNetworkState_(this.managedProperties_);
@@ -1623,13 +1612,14 @@ export class SettingsInternetDetailPageElement extends
           {networkState: networkState, bypassConnectionDialog: bypassDialog},
     });
     this.dispatchEvent(networkConnectEvent);
-    recordSettingChange();
+    // TODO(b/282233232) recordSettingChange() for connecting to network.
   }
 
   private async handleDisconnectClick_(): Promise<void> {
-    recordSettingChange();
     const response = await this.networkConfig_.startDisconnect(this.guid);
-    if (!response.success) {
+    if (response.success) {
+      recordSettingChange(Setting.kDisconnectWifiNetwork);
+    } else {
       console.warn('Disconnect failed for: ' + this.guid);
     }
   }
@@ -1700,7 +1690,7 @@ export class SettingsInternetDetailPageElement extends
     if (this.managedProperties_!.type === NetworkType.kWiFi) {
       recordSettingChange(Setting.kForgetWifiNetwork);
     } else {
-      recordSettingChange();
+      // TODO(b/282233232) recordSettingChange() for other network types.
     }
 
     const response = await this.networkConfig_.forgetNetwork(this.guid);
@@ -1724,7 +1714,7 @@ export class SettingsInternetDetailPageElement extends
         (this.isThirdPartyVpn_(this.managedProperties_) ||
          this.isArcVpn_(this.managedProperties_))) {
       this.browserProxy_.configureThirdPartyVpn(this.guid);
-      recordSettingChange();
+      // TODO(b/282233232) recordSettingChange() for third party VPN configure.
       return;
     }
 

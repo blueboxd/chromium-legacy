@@ -108,6 +108,11 @@ void PasswordStoreBackendMetricsRecorder::RecordSuccess(
   // Adding the infix for split stores.
   if (store_type_ != PasswordStoreAndroidBackendType::kNone) {
     possible_infixes.push_back(GetStoreInfix());
+
+    base::UmaHistogramBoolean(
+        base::JoinString(
+            {base::StrCat({kMetricPrefix, GetStoreInfix()}), "Success"}, "."),
+        success_status == SuccessStatus::kSuccess);
   }
 
   for (const auto& infix : possible_infixes) {
@@ -131,6 +136,10 @@ void PasswordStoreBackendMetricsRecorder::RecordErrorCode(
       backend_error.type);
 
   if (store_type_ != PasswordStoreAndroidBackendType::kNone) {
+    base::UmaHistogramEnumeration(
+        base::JoinString(
+            {base::StrCat({kMetricPrefix, GetStoreInfix()}), "ErrorCode"}, "."),
+        backend_error.type);
     base::UmaHistogramEnumeration(
         base::JoinString({base::StrCat({kMetricPrefix, GetStoreInfix()}),
                           *method_name_, "ErrorCode"},
@@ -180,6 +189,10 @@ void PasswordStoreBackendMetricsRecorder::RecordApiErrorCode(
       api_error_code);
 
   if (store_type_ != PasswordStoreAndroidBackendType::kNone) {
+    base::UmaHistogramSparse(
+        base::JoinString(
+            {base::StrCat({kMetricPrefix, GetStoreInfix()}), "APIError"}, "."),
+        api_error_code);
     base::UmaHistogramSparse(
         base::JoinString({base::StrCat({kMetricPrefix, GetStoreInfix()}),
                           *method_name_, "APIError"},

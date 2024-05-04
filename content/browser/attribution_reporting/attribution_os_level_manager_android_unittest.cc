@@ -14,11 +14,14 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/os_registration.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_os_level_manager.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/os_registration.h"
 #include "content/browser/attribution_reporting/test/mock_content_browser_client.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -29,6 +32,9 @@
 
 namespace content {
 namespace {
+
+using AttributionReportingOsReportType =
+    ContentBrowserClient::AttributionReportingOsReportType;
 
 class AttributionOsLevelManagerAndroidTest : public ::testing::Test {
  public:
@@ -52,35 +58,90 @@ TEST_F(AttributionOsLevelManagerAndroidTest, Register) {
   const struct {
     const char* desc;
     std::optional<AttributionInputEvent> input_event;
-    bool should_use_os_web_source;
+    ContentBrowserClient::AttributionReportingOsReportTypes os_report_types;
+    size_t items_count;
   } kTestCases[] = {
-      {"trigger", std::nullopt, false},
-      {"os-source", AttributionInputEvent(), false},
-      {"web-source", AttributionInputEvent(), true},
+      {"os-trigger-single",
+       std::nullopt,
+       {AttributionReportingOsReportType::kOs,
+        AttributionReportingOsReportType::kOs},
+       1},
+      {"os-trigger-multi",
+       std::nullopt,
+       {AttributionReportingOsReportType::kOs,
+        AttributionReportingOsReportType::kOs},
+       3},
+      {"web-trigger-single",
+       std::nullopt,
+       {AttributionReportingOsReportType::kOs,
+        AttributionReportingOsReportType::kWeb},
+       1},
+      {"web-trigger-multi",
+       std::nullopt,
+       {AttributionReportingOsReportType::kOs,
+        AttributionReportingOsReportType::kWeb},
+       3},
+      {"web-source-single",
+       AttributionInputEvent(),
+       {AttributionReportingOsReportType::kWeb,
+        AttributionReportingOsReportType::kWeb},
+       1},
+      {"web-source-multi",
+       AttributionInputEvent(),
+       {AttributionReportingOsReportType::kWeb,
+        AttributionReportingOsReportType::kWeb},
+       3},
+      {"os-source-single",
+       AttributionInputEvent(),
+       {AttributionReportingOsReportType::kOs,
+        AttributionReportingOsReportType::kWeb},
+       1},
+      {"os-source-multi",
+       AttributionInputEvent(),
+       {AttributionReportingOsReportType::kOs,
+        AttributionReportingOsReportType::kWeb},
+       3},
   };
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.desc);
 
     MockAttributionReportingContentBrowserClient browser_client;
-    EXPECT_CALL(browser_client,
-                ShouldUseOsWebSourceAttributionReporting(testing::_))
-        .WillRepeatedly(testing::Return(test_case.should_use_os_web_source));
     ScopedContentBrowserClientSetting setting(&browser_client);
 
     base::RunLoop run_loop;
 
+    std::vector<attribution_reporting::OsRegistrationItem> items;
+    items.reserve(test_case.items_count);
+    std::vector<bool> is_debug_key_allowed;
+    is_debug_key_allowed.reserve(test_case.items_count);
+    for (size_t i = 0; i < test_case.items_count; ++i) {
+      items.emplace_back(GURL("https://r.test"), /*debug_reporting=*/false);
+      is_debug_key_allowed.push_back(false);
+    }
     manager_->Register(
-        OsRegistration(GURL("https://r.test"), /*debug_reporting=*/false,
+        OsRegistration(std::move(items),
                        url::Origin::Create(GURL("https://o.test")),
                        test_case.input_event, /*is_within_fenced_frame=*/false,
-                       /*render_frame_id=*/GlobalRenderFrameHostId()),
-        /*is_debug_key_allowed=*/false,
-        base::BindLambdaForTesting([&](const OsRegistration&, bool success) {
-          // We don't check `success` here because the measurement API may or
-          // may not be available depending on the Android version.
-          run_loop.Quit();
-        }));
+                       /*render_frame_id=*/GlobalRenderFrameHostId(),
+                       test_case.os_report_types),
+        is_debug_key_allowed,
+        base::BindLambdaForTesting(
+            [&](const OsRegistration& registration, bool success) {
+              switch (registration.GetType()) {
+                case attribution_reporting::mojom::RegistrationType::kSource:
+                  EXPECT_EQ(registration.report_type,
+                            test_case.os_report_types.source_report_type);
+                  break;
+                case attribution_reporting::mojom::RegistrationType::kTrigger:
+                  EXPECT_EQ(registration.report_type,
+                            test_case.os_report_types.trigger_report_type);
+                  break;
+              }
+              // We don't check `success` here because the measurement API may
+              // or may not be available depending on the Android version.
+              run_loop.Quit();
+            }));
 
     run_loop.Run();
   }

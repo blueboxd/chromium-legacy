@@ -4,6 +4,8 @@
 
 #include "chromeos/components/kcer/kcer_nss/test_utils.h"
 
+#include <pk11pub.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -30,8 +32,10 @@ std::string ToString(const std::optional<chaps::KeyPermissions>& val) {
 }
 }  // namespace
 
-TokenHolder::TokenHolder(Token token, bool initialize) {
-  io_token_ = std::make_unique<internal::KcerTokenImplNss>(token);
+TokenHolder::TokenHolder(Token token,
+                         HighLevelChapsClient* chaps_client,
+                         bool initialize) {
+  io_token_ = std::make_unique<internal::KcerTokenImplNss>(token, chaps_client);
   io_token_->SetAttributeTranslationForTesting(/*is_enabled=*/true);
   weak_ptr_ = io_token_->GetWeakPtr();
   // After this point `io_token_` should only be used on the IO thread.
@@ -66,6 +70,10 @@ void TokenHolder::FailInitialization() {
       FROM_HERE,
       base::BindOnce(&internal::KcerToken::InitializeForNss, weak_ptr_,
                      /*nss_slot=*/nullptr));
+}
+
+uint32_t TokenHolder::GetSlotId() {
+  return PK11_GetSlotID(nss_slot_.slot());
 }
 
 //==============================================================================

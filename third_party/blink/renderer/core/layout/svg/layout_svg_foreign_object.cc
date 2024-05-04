@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/block_node.h"
 #include "third_party/blink/renderer/core/layout/constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_result.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
@@ -109,8 +110,8 @@ void LayoutSVGForeignObject::UpdateLayout() {
   const ComputedStyle& style = StyleRef();
   viewport_.set_origin(
       PointForLengthPair(style.X(), style.Y(), viewport_resolver, style));
-  gfx::Vector2dF size = VectorForLengthPair(
-      style.UsedWidth(), style.UsedHeight(), viewport_resolver, style);
+  gfx::Vector2dF size = VectorForLengthPair(style.Width(), style.Height(),
+                                            viewport_resolver, style);
   // gfx::SizeF() will clamp negative width/height to zero.
   viewport_.set_size(gfx::SizeF(size.x(), size.y()));
 

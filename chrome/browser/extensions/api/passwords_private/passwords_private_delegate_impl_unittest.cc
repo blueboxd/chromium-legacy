@@ -27,11 +27,11 @@
 #include "base/test/mock_callback.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "base/values.h"
+#include "chrome/browser/affiliations/affiliation_service_factory.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
-#include "chrome/browser/password_manager/affiliation_service_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/browser/password_manager/password_sender_service_factory.h"
@@ -52,11 +52,11 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/affiliations/core/browser/fake_affiliation_service.h"
 #include "components/device_reauth/device_reauth_metrics_util.h"
 #include "components/device_reauth/mock_device_authenticator.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
-#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/import/import_results.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
@@ -68,6 +68,8 @@
 #include "components/password_manager/core/browser/sharing/recipients_fetcher_impl.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/base/features.h"
 #include "components/sync/protocol/password_sharing_recipients.pb.h"
@@ -426,7 +428,7 @@ void PasswordsPrivateDelegateImplTest::SetUp() {
   test_clipboard_ = ui::TestClipboard::CreateForCurrentThread();
   AffiliationServiceFactory::GetInstance()->SetTestingSubclassFactoryAndUse(
       profile(), base::BindRepeating([](content::BrowserContext*) {
-        return std::make_unique<password_manager::FakeAffiliationService>();
+        return std::make_unique<affiliations::FakeAffiliationService>();
       }));
   SetUpRouters();
   SetUpSyncInTransportMode(profile());
@@ -1031,7 +1033,12 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
       1);
 }
 
-TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
+TEST_F(PasswordsPrivateDelegateImplTest,
+       TestShouldReauthForOptInIfImplicitSignin) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      switches::kExplicitBrowserSigninUIOnDesktop);
+  profile()->GetPrefs()->SetBoolean(prefs::kExplicitBrowserSignin, false);
+
   std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
   auto* client =
       MockPasswordManagerClient::CreateForWebContentsAndGet(web_contents.get());
@@ -1041,6 +1048,29 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
   EXPECT_CALL(*client,
               TriggerReauthForPrimaryAccount(
                   signin_metrics::ReauthAccessPoint::kPasswordSettings, _));
+
+  auto delegate = CreateDelegate();
+  delegate->SetAccountStorageOptIn(true, web_contents.get());
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest,
+       TestShouldNotReauthForOptInIfExplicitSignin) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      switches::kExplicitBrowserSigninUIOnDesktop);
+  profile()->GetPrefs()->SetBoolean(prefs::kExplicitBrowserSignin, true);
+
+  std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
+  auto* client =
+      MockPasswordManagerClient::CreateForWebContentsAndGet(web_contents.get());
+  ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
+      .WillByDefault(Return(false));
+
+  // Optin without reauth when the signin is explicit.
+  EXPECT_CALL(*client,
+              TriggerReauthForPrimaryAccount(
+                  signin_metrics::ReauthAccessPoint::kPasswordSettings, _))
+      .Times(0);
+  EXPECT_CALL(*(client->GetPasswordFeatureManager()), OptInToAccountStorage);
 
   auto delegate = CreateDelegate();
   delegate->SetAccountStorageOptIn(true, web_contents.get());

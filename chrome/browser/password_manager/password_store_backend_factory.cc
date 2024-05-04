@@ -20,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/password_manager/android/legacy_password_store_backend_migration_decorator.h"
 #include "chrome/browser/password_manager/android/password_manager_android_util.h"
 #include "chrome/browser/password_manager/android/password_manager_eviction_util.h"
 #include "chrome/browser/password_manager/android/password_store_android_account_backend.h"
@@ -65,7 +66,7 @@ CreateProfilePasswordStoreBackendForUpmAndroid(
           std::move(built_in_backend),
           std::make_unique<password_manager::PasswordStoreAndroidLocalBackend>(
               prefs, affiliations_prefetcher),
-          prefs, password_manager::kProfileStore);
+          prefs);
     // UPM M2: The password store proxy backend is created. No migrations are
     // needed.
     case UseUpmLocalAndSeparateStoresState::kOn:
@@ -80,7 +81,7 @@ CreateProfilePasswordStoreBackendForUpmAndroid(
     // account store.
     case UseUpmLocalAndSeparateStoresState::kOff:
       return std::make_unique<
-          password_manager::PasswordStoreBackendMigrationDecorator>(
+          password_manager::LegacyPasswordStoreBackendMigrationDecorator>(
           std::move(built_in_backend),
           // Even though this is a backend for a ProfilePasswordStore it has to
           // talk to the account. Before the store split, the ProfileStore only
@@ -89,7 +90,7 @@ CreateProfilePasswordStoreBackendForUpmAndroid(
           std::make_unique<
               password_manager::PasswordStoreAndroidAccountBackend>(
               prefs, affiliations_prefetcher, password_manager::kProfileStore),
-          prefs, password_manager::kProfileStore);
+          prefs);
   }
 }
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -105,7 +106,7 @@ CreateProfilePasswordStoreBackend(
   return std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
       password_manager::CreateLoginDatabaseForProfileStorage(
           login_db_directory, /*is_empty_cb=*/base::NullCallback()),
-      syncer::WipeModelUponSyncDisabledBehavior::kNever);
+      syncer::WipeModelUponSyncDisabledBehavior::kNever, prefs);
 #else  // BUILDFLAG(IS_ANDROID) && !USE_LEGACY_PASSWORD_STORE_BACKEND
   // base::Unretained() is safe, `prefs` outlives all keyed services, including
   // the PasswordStore (LoginDatabase's owner).
@@ -119,7 +120,7 @@ CreateProfilePasswordStoreBackend(
   auto built_in_backend =
       std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
           std::move(profile_login_db),
-          syncer::WipeModelUponSyncDisabledBehavior::kNever);
+          syncer::WipeModelUponSyncDisabledBehavior::kNever, prefs);
 
   if (password_manager::PasswordStoreAndroidBackendBridgeHelper::
           CanCreateBackend()) {
@@ -145,8 +146,8 @@ CreateAccountPasswordStoreBackend(
           CanCreateBackend()) {
     // Can happen if the downstream code is not available.
     return std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
-        std::move(login_db),
-        syncer::WipeModelUponSyncDisabledBehavior::kAlways);
+        std::move(login_db), syncer::WipeModelUponSyncDisabledBehavior::kAlways,
+        prefs);
   }
 
   // Note: The built-in backend is backed by the login database and Chrome
@@ -156,13 +157,13 @@ CreateAccountPasswordStoreBackend(
   return std::make_unique<password_manager::PasswordStoreProxyBackend>(
       std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
           std::move(login_db),
-          syncer::WipeModelUponSyncDisabledBehavior::kAlways),
+          syncer::WipeModelUponSyncDisabledBehavior::kAlways, prefs),
       std::make_unique<password_manager::PasswordStoreAndroidAccountBackend>(
           prefs, affiliations_prefetcher, password_manager::kAccountStore),
       prefs, password_manager::kAccountStore);
 #else
   return std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
       std::move(login_db), syncer::WipeModelUponSyncDisabledBehavior::kAlways,
-      std::move(unsynced_deletions_notifier));
+      prefs, std::move(unsynced_deletions_notifier));
 #endif
 }

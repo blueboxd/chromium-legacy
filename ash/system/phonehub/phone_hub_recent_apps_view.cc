@@ -94,11 +94,9 @@ void LayoutAppButtonsView(views::View* buttons_view) {
   if (visible_children.empty()) {
     return;
   }
-  const int visible_child_width =
-      std::accumulate(visible_children.cbegin(), visible_children.cend(), 0,
-                      [](int width, const views::View* v) {
-                        return width + v->GetPreferredSize().width();
-                      });
+  const int visible_child_width = std::transform_reduce(
+      visible_children.cbegin(), visible_children.cend(), 0, std::plus<>(),
+      [](const views::View* v) { return v->GetPreferredSize().width(); });
 
   int spacing = 0;
   if (visible_children.size() > 1) {
@@ -169,7 +167,7 @@ void PhoneHubRecentAppsView::HeaderView::SetErrorButtonVisible(
   }
 }
 
-BEGIN_METADATA(PhoneHubRecentAppsView, HeaderView, views::View)
+BEGIN_METADATA(PhoneHubRecentAppsView, HeaderView)
 END_METADATA
 
 class PhoneHubRecentAppsView::PlaceholderView : public views::Label {
@@ -197,7 +195,7 @@ class PhoneHubRecentAppsView::PlaceholderView : public views::Label {
   PlaceholderView operator=(PlaceholderView&) = delete;
 };
 
-BEGIN_METADATA(PhoneHubRecentAppsView, PlaceholderView, views::Label)
+BEGIN_METADATA(PhoneHubRecentAppsView, PlaceholderView)
 END_METADATA
 
 PhoneHubRecentAppsView::PhoneHubRecentAppsView(
@@ -302,7 +300,7 @@ PhoneHubRecentAppsView::RecentAppButtonsView::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-BEGIN_METADATA(PhoneHubRecentAppsView, RecentAppButtonsView, views::View)
+BEGIN_METADATA(PhoneHubRecentAppsView, RecentAppButtonsView)
 END_METADATA
 
 PhoneHubRecentAppsView::LoadingView::LoadingView() {
@@ -363,7 +361,7 @@ void PhoneHubRecentAppsView::LoadingView::StopLoadingAnimation() {
   more_apps_button_->StopLoadingAnimation();
 }
 
-BEGIN_METADATA(PhoneHubRecentAppsView, LoadingView, views::BoxLayoutView)
+BEGIN_METADATA(PhoneHubRecentAppsView, LoadingView)
 END_METADATA
 
 void PhoneHubRecentAppsView::Update() {

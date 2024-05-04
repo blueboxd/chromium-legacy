@@ -91,7 +91,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Views.ColorProviderCacheSize" units="entries"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>pkasting@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>skau@chromium.org</owner>
@@ -101,6 +101,32 @@ chromium-metrics-reviews@google.com.
     ColorProvider with a Key that is not in the cache. Since the cache size is
     capped, a distribution with too many results at the tail indicate that the
     cache is too small.
+  </summary>
+</histogram>
+
+<histogram name="Views.InvalidatesDuringLayout" units="count"
+    expires_after="2024-12-31">
+  <owner>dpranke@chromium.org</owner>
+  <owner>elainechien@chromium.org</owner>
+  <owner>kylixrd@chromium.org</owner>
+  <summary>
+    Records the number of times a view's InvalidateLayout() method is called
+    during a Layout() call. Calling InvalidateLayout() during a layout call
+    should never be necessary.
+  </summary>
+</histogram>
+
+<histogram name="Views.LayoutCallDepth" units="count"
+    expires_after="2024-12-31">
+  <owner>dpranke@chromium.org</owner>
+  <owner>elainechien@chromium.org</owner>
+  <owner>kylixrd@chromium.org</owner>
+  <summary>
+    The maximum reentrant call depth seen during a view's layout. Normally this
+    value will be one (Layout() was not reentered). But, we know Layout() is
+    reentered sometimes in some views (where the value will be two), and want to
+    measure how often that is. We also want to know if Layout() is ever
+    reentered more than two deep.
   </summary>
 </histogram>
 
@@ -121,7 +147,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Views.{Process}.NumColorProvidersInitializedDuringOnNativeThemeUpdated"
-    units="providers" expires_after="2024-06-16">
+    units="providers" expires_after="2024-08-18">
   <owner>pkasting@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>skau@chromium.org</owner>
@@ -138,7 +164,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Views.{Process}.TimeSpentInitializingColorProvider" units="ms"
-    expires_after="2024-06-16">
+    expires_after="2024-08-18">
   <owner>pkasting@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>skau@chromium.org</owner>
@@ -155,7 +181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Views.{Process}.TimeSpentProcessingOnNativeThemeUpdatedEvent"
-    units="ms" expires_after="2024-06-16">
+    units="ms" expires_after="2024-08-18">
   <owner>pkasting@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <owner>skau@chromium.org</owner>

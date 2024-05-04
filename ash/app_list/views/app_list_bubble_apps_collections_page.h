@@ -5,7 +5,14 @@
 #ifndef ASH_APP_LIST_VIEWS_APP_LIST_BUBBLE_APPS_COLLECTIONS_PAGE_H_
 #define ASH_APP_LIST_VIEWS_APP_LIST_BUBBLE_APPS_COLLECTIONS_PAGE_H_
 
+#include <memory>
+
+#include "ash/app_list/app_list_model_provider.h"
+#include "ash/app_list/app_list_view_provider.h"
+#include "ash/app_list/views/app_list_nudge_controller.h"
+#include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/ash_export.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/views/view.h"
@@ -16,15 +23,24 @@ class ScrollView;
 
 namespace ash {
 class RoundedScrollBar;
+class AppListConfig;
+class AppListNudgeController;
 
 // A page for the bubble / clamshell launcher. Contains a scroll view with
-// subsections of apps, one per each category of the Apps Collections. Does not
-// include the search box, which is owned by a parent view.
-class ASH_EXPORT AppListBubbleAppsCollectionsPage : public views::View {
- public:
-  METADATA_HEADER(AppListBubbleAppsCollectionsPage);
+// subsections of apps, one per each category of the Apps Collections. It also
+// contains an informational nudge that dismisses the page when acknowledged.
+// Does not include the search box, which is owned by a parent view.
+class ASH_EXPORT AppListBubbleAppsCollectionsPage
+    : public AppListToastContainerView::Delegate,
+      public AppListModelProvider::Observer,
+      public views::View {
+  METADATA_HEADER(AppListBubbleAppsCollectionsPage, views::View)
 
-  AppListBubbleAppsCollectionsPage();
+ public:
+  AppListBubbleAppsCollectionsPage(AppListViewDelegate* view_delegate,
+                                   AppListConfig* app_list_config,
+                                   AppListA11yAnnouncer* a11y_announcer,
+                                   base::OnceClosure exit_page_callback);
   AppListBubbleAppsCollectionsPage(const AppListBubbleAppsCollectionsPage&) =
       delete;
   AppListBubbleAppsCollectionsPage& operator=(
@@ -40,18 +56,41 @@ class ASH_EXPORT AppListBubbleAppsCollectionsPage : public views::View {
   // Aborts all layer animations, which invokes their cleanup callbacks.
   void AbortAllAnimations();
 
+  // AppListToastContainerView::Delegate:
+  void OnNudgeRemoved() override;
+
+  // AppListModelProvider::Observer:
+  void OnActiveAppListModelsChanged(AppListModel* model,
+                                    SearchModel* search_model) override;
+
   // Which layer animates is an implementation detail.
   ui::Layer* GetPageAnimationLayerForTest();
+
+  // The view that contains the informational nudge for this page.
+  AppListToastContainerView* GetToastContainerViewForTest();
 
   views::ScrollView* scroll_view() { return scroll_view_; }
 
  private:
+  friend class AppListTestHelper;
+
   // A callback invoked to update the visibility of the page contents after an
   // animation is done.
   void SetVisibilityAfterAnimation(bool visible);
 
+  void PopulateCollections(AppListModel* model);
+
+  const raw_ptr<AppListViewDelegate> view_delegate_;
   raw_ptr<views::ScrollView> scroll_view_ = nullptr;
   raw_ptr<RoundedScrollBar> scroll_bar_ = nullptr;
+  raw_ptr<AppListToastContainerView> toast_container_ = nullptr;
+  raw_ptr<views::View> sections_container_ = nullptr;
+  const raw_ptr<AppListConfig> app_list_config_;
+
+  std::unique_ptr<AppListNudgeController> app_list_nudge_controller_;
+
+  // A callback invoked when the nudge on this page is removed/dismissed.
+  base::OnceClosure exit_page_callback_;
 
   base::WeakPtrFactory<AppListBubbleAppsCollectionsPage> weak_factory_{this};
 };

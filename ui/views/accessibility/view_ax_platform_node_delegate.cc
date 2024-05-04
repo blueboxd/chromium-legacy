@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/containers/adapters.h"
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
@@ -214,11 +213,12 @@ void ViewAXPlatformNodeDelegate::FireFocusAfterMenuClose() {
   }
 }
 
-bool ViewAXPlatformNodeDelegate::IsIgnored() const {
-  // TODO(nektar): Make `ViewAccessibility::IsIgnored()` non-virtual and delete
-  // this method. For this to happen
-  // `IsViewUnfocusableDescendantOfFocusableAncestor()` needs to be moved to
-  // `ViewAccessibility`.
+bool ViewAXPlatformNodeDelegate::GetIsIgnored() const {
+  // TODO(accessibility): Make `ViewAccessibility::GetIsIgnored()` non-virtual
+  // and delete this method. For this to happen the logic relevant to
+  // `IsViewUnfocusableDescendantOfFocusableAncestor()` needs to be moved to be
+  // part of a "push" system rather than "pull".
+  // For more info: https://crbug.com/325137417
   return GetData().IsIgnored();
 }
 
@@ -386,7 +386,7 @@ size_t ViewAXPlatformNodeDelegate::GetChildCount() const {
   size_t view_child_count = 0;
   for (View* child : view()->children()) {
     const ViewAccessibility& view_accessibility = child->GetViewAccessibility();
-    if (view_accessibility.IsIgnored()) {
+    if (view_accessibility.GetIsIgnored()) {
       const auto* child_view_delegate =
           static_cast<const ViewAXPlatformNodeDelegate*>(&view_accessibility);
       DCHECK(child_view_delegate);
@@ -446,7 +446,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(
 
   for (View* child : view()->children()) {
     ViewAccessibility& view_accessibility = child->GetViewAccessibility();
-    if (view_accessibility.IsIgnored()) {
+    if (view_accessibility.GetIsIgnored()) {
       auto* child_view_delegate =
           static_cast<ViewAXPlatformNodeDelegate*>(&view_accessibility);
       DCHECK(child_view_delegate);
@@ -554,8 +554,9 @@ ViewAXPlatformNodeDelegate::GetNativeViewAccessible() {
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() const {
   if (View* parent_view = view()->parent()) {
     ViewAccessibility& view_accessibility = parent_view->GetViewAccessibility();
-    if (!view_accessibility.IsIgnored())
+    if (!view_accessibility.GetIsIgnored()) {
       return parent_view->GetNativeViewAccessible();
+    }
 
     auto* parent_view_delegate =
         static_cast<ViewAXPlatformNodeDelegate*>(&view_accessibility);
@@ -577,11 +578,7 @@ bool ViewAXPlatformNodeDelegate::IsLeaf() const {
 }
 
 bool ViewAXPlatformNodeDelegate::IsInvisibleOrIgnored() const {
-  return IsIgnored() || GetData().IsInvisible();
-}
-
-bool ViewAXPlatformNodeDelegate::IsAccessibilityEnabled() const {
-  return GetData().GetRestriction() != ax::mojom::Restriction::kDisabled;
+  return GetIsIgnored() || GetData().IsInvisible();
 }
 
 bool ViewAXPlatformNodeDelegate::IsFocused() const {
@@ -1004,8 +1001,8 @@ void ViewAXPlatformNodeDelegate::GetViewsInGroupForSet(
   view_to_check->GetViewsInGroup(group_id, views_in_group);
 
   // Remove any views that are ignored in the accessibility tree.
-  base::EraseIf(*views_in_group, [](View* view) {
-    return view->GetViewAccessibility().IsIgnored();
+  std::erase_if(*views_in_group, [](View* view) {
+    return view->GetViewAccessibility().GetIsIgnored();
   });
 }
 

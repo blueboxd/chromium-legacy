@@ -51,6 +51,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "build/build_config.h"
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -68,6 +69,7 @@
 #include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
 #include "third_party/blink/renderer/core/layout/fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -813,6 +815,16 @@ void PaintLayer::UpdateScrollableArea() {
 
   if (!scrollable_area_) {
     scrollable_area_ = MakeGarbageCollected<PaintLayerScrollableArea>(*this);
+    const ComputedStyle& style = GetLayoutObject().StyleRef();
+    // A newly created snap container may need to be made aware of snap areas
+    // within it which are targeted or contain a targeted element. Such a
+    // container may also change the snap areas associated with snap containers
+    // higher in the DOM.
+    if (!style.GetScrollSnapType().is_none) {
+      if (Element* css_target = GetLayoutObject().GetDocument().CssTarget()) {
+        css_target->SetTargetedSnapAreaIdsForSnapContainers();
+      }
+    }
   } else {
     scrollable_area_->Dispose();
     scrollable_area_.Clear();
@@ -2232,13 +2244,13 @@ void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
   // approximate.
   FilterOperations filter_operations = style.BackdropFilter();
   filter_operations.Operations().AppendVector(style.Filter().Operations());
-  // Use kClamp tile mode to avoid pixel moving filters bringing in black
-  // transparent pixels from the viewport edge.
+  // NOTE: Backdrop filters will have their input cropped to the their layer
+  // bounds with a mirror edge mode, but this is the responsibility of the
+  // compositor to apply, regardless of the actual filter operations added here.
   operations =
       FilterEffectBuilder(reference_box, zoom,
                           style.VisitedDependentColor(GetCSSPropertyColor()),
-                          style.UsedColorScheme(), nullptr, nullptr,
-                          SkTileMode::kClamp)
+                          style.UsedColorScheme(), nullptr, nullptr)
           .BuildFilterOperations(filter_operations);
   // Note that |operations| may be empty here, if the |filter_operations| list
   // contains only invalid filters (e.g. invalid reference filters). See

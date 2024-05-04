@@ -5,15 +5,24 @@
 #include "crypto/user_verifying_key.h"
 
 #include "base/check.h"
-#include "base/functional/bind.h"
 
 namespace crypto {
 
 UserVerifyingSigningKey::~UserVerifyingSigningKey() = default;
 UserVerifyingKeyProvider::~UserVerifyingKeyProvider() = default;
 
+RefCountedUserVerifyingSigningKey::RefCountedUserVerifyingSigningKey(
+    std::unique_ptr<crypto::UserVerifyingSigningKey> key)
+    : key_(std::move(key)) {
+  CHECK(key_);
+}
+
+RefCountedUserVerifyingSigningKey::~RefCountedUserVerifyingSigningKey() =
+    default;
+
 #if BUILDFLAG(IS_WIN)
 std::unique_ptr<UserVerifyingKeyProvider> GetUserVerifyingKeyProviderWin();
+void IsKeyCredentialManagerAvailable(base::OnceCallback<void(bool)> callback);
 #endif
 
 std::unique_ptr<UserVerifyingKeyProvider> GetUserVerifyingKeyProvider() {
@@ -21,6 +30,14 @@ std::unique_ptr<UserVerifyingKeyProvider> GetUserVerifyingKeyProvider() {
   return GetUserVerifyingKeyProviderWin();
 #else
   return nullptr;
+#endif
+}
+
+void AreUserVerifyingKeysSupported(base::OnceCallback<void(bool)> callback) {
+#if BUILDFLAG(IS_WIN)
+  IsKeyCredentialManagerAvailable(std::move(callback));
+#else
+  std::move(callback).Run(false);
 #endif
 }
 

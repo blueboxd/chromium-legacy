@@ -79,7 +79,7 @@ enum {
   kShowHomeButton = 100022,
   kPinnedExtensions = 100023,
   kSupervisedUserApprovedExtensions = 100024,
-  kIsDefaultPageColorsOnHighContrast = 100025,
+  // kIsDefaultPageColorsOnHighContrast = 100025, (no longer synced)
   kShowFullscreenToolbar = 100026,
   kAllowJavascriptAppleEvents = 100027,
   kRestoreAppsAndPagesPrefName = 100028,
@@ -200,7 +200,7 @@ enum {
   kAccessibilityImageLabelsEnabled = 100142,
   kAccessibilityImageLabelsOptInAccepted = 100143,
   kAccessibilityPdfOcrAlwaysActive = 100144,
-  kApplyPageColorsOnlyOnIncreasedContrast = 100145,
+  // kApplyPageColorsOnlyOnIncreasedContrast = 100145, (no longer synced)
   kDefaultCharset = 100146,
   kDefaultTasksByMimeType = 100147,
   kDefaultTasksBySuffix = 100148,
@@ -217,7 +217,7 @@ enum {
   kNetworkPredictionOptions = 100159,
   kNetworkQualities = 100160,
   // kNtpAppPageNames = 100161, (deprecated)
-  kPageColors = 100162,
+  // kPageColors = 100162, (no longer synced)
   kPerformanceTracingEnabled = 100163,
   kPluginsAlwaysOpenPdfExternally = 100164,
   kPrivacySandboxApisEnabled = 100165,
@@ -326,6 +326,8 @@ enum {
   kAccessibilityFaceGazeCursorSpeedRight = 100266,
   kAccessibilityFaceGazeCursorSmoothing = 100267,
   kAccessibilityFaceGazeCursorUseAcceleration = 100268,
+  kAntiFingerprintingEnabled = 100269,
+  kAccessibilityFaceGazeGesturesToMacros = 100270,
   // See components/sync_preferences/README.md about adding new entries here.
   // vvvvv IMPORTANT! vvvvv
   // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
@@ -498,12 +500,6 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
       syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
-#if BUILDFLAG(IS_WIN)
-    {prefs::kIsDefaultPageColorsOnHighContrast,
-     {syncable_prefs_ids::kIsDefaultPageColorsOnHighContrast,
-      syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
-      sync_preferences::MergeBehavior::kNone}},
-#endif
 #if BUILDFLAG(IS_MAC)
     {prefs::kShowFullscreenToolbar,
      {syncable_prefs_ids::kShowFullscreenToolbar, syncer::PREFERENCES,
@@ -1098,6 +1094,10 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
      {syncable_prefs_ids::kAccessibilityFaceGazeCursorUseAcceleration,
       syncer::OS_PREFERENCES, sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
+    {ash::prefs::kAccessibilityFaceGazeGesturesToMacros,
+     {syncable_prefs_ids::kAccessibilityFaceGazeGesturesToMacros,
+      syncer::OS_PREFERENCES, sync_preferences::PrefSensitivity::kNone,
+      sync_preferences::MergeBehavior::kMergeableDict}},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     {performance_manager::user_tuning::prefs::kTabDiscardingExceptions,
      {syncable_prefs_ids::kTabDiscardingExceptions, syncer::PREFERENCES,
@@ -1118,10 +1118,6 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
     {prefs::kAccessibilityPdfOcrAlwaysActive,
      {syncable_prefs_ids::kAccessibilityPdfOcrAlwaysActive, syncer::PREFERENCES,
       sync_preferences::PrefSensitivity::kNone,
-      sync_preferences::MergeBehavior::kNone}},
-    {prefs::kApplyPageColorsOnlyOnIncreasedContrast,
-     {syncable_prefs_ids::kApplyPageColorsOnlyOnIncreasedContrast,
-      syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
     {prefs::kBrowserColorScheme,
      {syncable_prefs_ids::kBrowserColorScheme, syncer::PREFERENCES,
@@ -1181,10 +1177,6 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
       sync_preferences::MergeBehavior::kNone}},
     {prefs::kNetworkQualities,
      {syncable_prefs_ids::kNetworkQualities, syncer::PREFERENCES,
-      sync_preferences::PrefSensitivity::kNone,
-      sync_preferences::MergeBehavior::kNone}},
-    {prefs::kPageColors,
-     {syncable_prefs_ids::kPageColors, syncer::PREFERENCES,
       sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
     {prefs::kPerformanceTracingEnabled,
@@ -1420,6 +1412,10 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
      {syncable_prefs_ids::kIpProtectionEnabled, syncer::PREFERENCES,
       sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
+    {prefs::kAntiFingerprintingEnabled,
+     {syncable_prefs_ids::kAntiFingerprintingEnabled, syncer::PREFERENCES,
+      sync_preferences::PrefSensitivity::kNone,
+      sync_preferences::MergeBehavior::kNone}},
     {prefs::kHttpsFirstModeIncognito,
      {syncable_prefs_ids::kHttpsFirstModeIncognito, syncer::PREFERENCES,
       sync_preferences::PrefSensitivity::kNone,
@@ -1431,7 +1427,7 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
 std::optional<sync_preferences::SyncablePrefMetadata>
 ChromeSyncablePrefsDatabase::GetSyncablePrefMetadata(
     const std::string& pref_name) const {
-  const auto* it = kChromeSyncablePrefsAllowlist.find(pref_name);
+  const auto it = kChromeSyncablePrefsAllowlist.find(pref_name);
   if (it != kChromeSyncablePrefsAllowlist.end()) {
     DCHECK(!common_syncable_prefs_database_.GetSyncablePrefMetadata(pref_name)
                 .has_value());

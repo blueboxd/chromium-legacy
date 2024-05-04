@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ntp/model/set_up_list.h"
 
 #import "base/memory/raw_ptr.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_manager_util.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_service.h"
@@ -18,6 +19,8 @@
 #import "ios/chrome/browser/ntp/model/set_up_list_metrics.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
 #import "ios/chrome/browser/push_notification/model/constants.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_client_id.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_settings_util.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
@@ -29,6 +32,7 @@ namespace {
 
 bool GetIsItemComplete(SetUpListItemType type,
                        PrefService* prefs,
+                       PrefService* local_state,
                        AuthenticationService* auth_service) {
   switch (type) {
     case SetUpListItemType::kSignInSync:
@@ -37,22 +41,20 @@ bool GetIsItemComplete(SetUpListItemType type,
       return IsChromeLikelyDefaultBrowser();
     case SetUpListItemType::kAutofill:
       return password_manager_util::IsCredentialProviderEnabledOnStartup(prefs);
-    case SetUpListItemType::kNotifications:
+    case SetUpListItemType::kNotifications: {
+      id<SystemIdentity> identity =
+          auth_service->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
       if (IsIOSTipsNotificationsEnabled()) {
-        return prefs->GetDict(prefs::kFeaturePushNotificationPermissions)
-                   .FindBool(kContentNotificationKey)
-                   .value_or(false) ||
-               prefs->GetDict(prefs::kFeaturePushNotificationPermissions)
-                   .FindBool(kTipsNotificationKey)
-                   .value_or(false) ||
-               prefs->GetDict(prefs::kFeaturePushNotificationPermissions)
-                   .FindBool(kCommerceNotificationKey)
-                   .value_or(false);
+        return push_notification_settings::
+            IsMobileNotificationsEnabledForAnyClient(
+                base::SysNSStringToUTF8(identity.gaiaID), prefs);
       } else {
-        return prefs->GetDict(prefs::kFeaturePushNotificationPermissions)
-            .FindBool(kContentNotificationKey)
-            .value_or(false);
+        return push_notification_settings::
+            GetMobileNotificationPermissionStatusForClient(
+                PushNotificationClientId::kContent,
+                base::SysNSStringToUTF8(identity.gaiaID));
       }
+    }
     case SetUpListItemType::kFollow:
     case SetUpListItemType::kAllSet:
       NOTREACHED_NORETURN();
@@ -69,7 +71,7 @@ SetUpListItem* BuildItem(SetUpListItemType type,
   switch (state) {
     case SetUpListItemState::kUnknown:
     case SetUpListItemState::kNotComplete:
-      complete = GetIsItemComplete(type, prefs, auth_service);
+      complete = GetIsItemComplete(type, prefs, local_state, auth_service);
       // If complete, mark it as "not in list" for next time, but add to list
       // this time.
       new_state = complete ? SetUpListItemState::kCompleteNotInList
@@ -121,6 +123,8 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
   PrefChangeRegistrar _prefChangeRegistrar;
+  // YES if the Notification item should be included in `allItems`.
+  BOOL _shouldIncludeNotificationItem;
 }
 
 + (instancetype)buildFromPrefs:(PrefService*)prefs
@@ -165,11 +169,14 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
   }
 
   // TODO(crbug.com/1428070): Add a Follow item to the Set Up List.
-  return [[self alloc] initWithItems:items localState:localState];
+  return [[self alloc] initWithItems:items
+                          localState:localState
+               authenticationService:authService];
 }
 
 - (instancetype)initWithItems:(NSArray<SetUpListItem*>*)items
-                   localState:(PrefService*)localState {
+                   localState:(PrefService*)localState
+        authenticationService:(AuthenticationService*)authService {
   self = [super init];
   if (self) {
     _items = items;
@@ -186,6 +193,10 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
         set_up_list_prefs::kFollowItemState, &_prefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(
         set_up_list_prefs::kNotificationsItemState, &_prefChangeRegistrar);
+    _shouldIncludeNotificationItem =
+        IsIOSTipsNotificationsEnabled() ||
+        (IsContentPushNotificationsSetUpListEnabled() &&
+         authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin));
   }
   return self;
 }
@@ -209,8 +220,10 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
   NSMutableArray* itemTypes = [[NSMutableArray alloc]
       initWithObjects:@(int(SetUpListItemType::kSignInSync)),
                       @(int(SetUpListItemType::kDefaultBrowser)),
-                      @(int(SetUpListItemType::kAutofill)),
-                      @(int(SetUpListItemType::kNotifications)), nil];
+                      @(int(SetUpListItemType::kAutofill)), nil];
+  if (_shouldIncludeNotificationItem) {
+    [itemTypes addObject:@(int(SetUpListItemType::kNotifications))];
+  }
   for (SetUpListItem* item in _items) {
     [itemTypes removeObject:@(int(item.type))];
   }

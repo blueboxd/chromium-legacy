@@ -40,7 +40,7 @@ import java.util.List;
  * {@link StripLayoutTab} is used to keep track of the strip position and rendering information for
  * a particular tab so it can draw itself onto the GL canvas.
  */
-public class StripLayoutTab implements StripLayoutView {
+public class StripLayoutTab extends StripLayoutView {
     /** An observer interface for StripLayoutTab. */
     public interface Observer {
         /** @param visible Whether the StripLayoutTab is visible. */
@@ -173,7 +173,7 @@ public class StripLayoutTab implements StripLayoutView {
     // Strip Tab Offset Constants
     private static final float TOP_MARGIN_DP = 2.f;
     private static final float FOLIO_CONTENT_OFFSET_Y = 8.f;
-    private static final float TOUCH_TARGET_INSET = 16.f;
+    protected static final float FOLIO_FOOT_LENGTH_DP = 16.f;
 
     // Divider Constants
     private static final int DIVIDER_OFFSET_X = 13;
@@ -191,7 +191,6 @@ public class StripLayoutTab implements StripLayoutView {
     private final LayoutUpdateHost mUpdateHost;
     private TintedCompositorButton mCloseButton;
 
-    private boolean mVisible = true;
     private boolean mIsDying;
     private boolean mIsReordering;
     private boolean mIsDraggedOffStrip;
@@ -309,9 +308,9 @@ public class StripLayoutTab implements StripLayoutView {
         mCloseButton.setClickSlop(0.f);
         if (LocalizationUtils.isLayoutRtl()) {
             mLeftInset = getCloseButtonOffsetX();
-            mRightInset = TOUCH_TARGET_INSET;
+            mRightInset = FOLIO_FOOT_LENGTH_DP;
         } else {
-            mLeftInset = TOUCH_TARGET_INSET;
+            mLeftInset = FOLIO_FOOT_LENGTH_DP;
             mRightInset = getCloseButtonOffsetX();
         }
     }
@@ -327,14 +326,10 @@ public class StripLayoutTab implements StripLayoutView {
         mObservers.removeObserver(observer);
     }
 
-    /**
-     * Get a list of virtual views for accessibility events.
-     *
-     * @param views     A List to populate with virtual views.
-     */
+    @Override
     public void getVirtualViews(List<VirtualView> views) {
-        views.add(this);
-        if (mShowingCloseButton) views.add(mCloseButton);
+        super.getVirtualViews(views);
+        if (mShowingCloseButton) mCloseButton.getVirtualViews(views);
     }
 
     /**
@@ -445,7 +440,7 @@ public class StripLayoutTab implements StripLayoutView {
      * @return The Android resource that represents the tab outline.
      */
     public @DrawableRes int getOutlineResourceId() {
-        return R.drawable.bg_tabstrip_background_tab_outline;
+        return R.drawable.tab_group_outline;
     }
 
     /**
@@ -522,24 +517,15 @@ public class StripLayoutTab implements StripLayoutView {
         return mEndDividerVisible;
     }
 
-    /**
-     * @param visible Whether or not this {@link StripLayoutTab} should be drawn.
-     */
+    @Override
     public void setVisible(boolean visible) {
-        mVisible = visible;
+        super.setVisible(visible);
         if (!visible) {
             mUpdateHost.releaseResourcesForTab(mId);
         }
         for (Observer observer : mObservers) {
-            observer.onVisibilityChanged(mVisible);
+            observer.onVisibilityChanged(isVisible());
         }
-    }
-
-    /**
-     * @return Whether or not this {@link StripLayoutTab} should be drawn.
-     */
-    public boolean isVisible() {
-        return mVisible;
     }
 
     /**

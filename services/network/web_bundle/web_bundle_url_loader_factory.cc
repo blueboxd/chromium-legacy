@@ -20,9 +20,9 @@
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "net/http/http_status_code.h"
-#include "services/network/public/cpp/corb/corb_api.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/header_util.h"
+#include "services/network/public/cpp/orb/orb_api.h"
 #include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
@@ -268,14 +268,14 @@ class WebBundleURLLoaderFactory::URLLoader : public mojom::URLLoader {
     deleteThis();
   }
 
-  void BlockResponseForCorb(mojom::URLResponseHeadPtr response_head) {
-    // A minimum implementation to block CORB-protected resources.
+  void BlockResponseForOrb(mojom::URLResponseHeadPtr response_head) {
+    // A minimum implementation to block ORB-protected resources.
     //
     // TODO(crbug.com/1082020): Re-use
-    // network::URLLoader::BlockResponseForCorb(), instead of copying
+    // network::URLLoader::BlockResponseForOrb(), instead of copying
     // essential parts from there, so that the two implementations won't
     // diverge further. That requires non-trivial refactoring.
-    corb::SanitizeBlockedResponseHeaders(*response_head);
+    orb::SanitizeBlockedResponseHeaders(*response_head);
 
     // Send empty body to the URLLoaderClient.
     mojo::ScopedDataPipeProducerHandle producer;
@@ -288,7 +288,7 @@ class WebBundleURLLoaderFactory::URLLoader : public mojom::URLLoader {
     client_->OnReceiveResponse(std::move(response_head), std::move(consumer),
                                std::nullopt);
 
-    // CORB responses are reported as a success.
+    // ORB responses are reported as a success.
     CompleteBlockedResponse(net::OK, std::nullopt);
   }
 
@@ -914,16 +914,16 @@ void WebBundleURLLoaderFactory::SendResponseToLoader(
     return;
   }
 
-  auto corb_analyzer = corb::ResponseAnalyzer::Create(corb_state_);
-  auto decision = corb_analyzer->Init(
+  auto orb_analyzer = orb::ResponseAnalyzer::Create(orb_state_);
+  auto decision = orb_analyzer->Init(
       loader->url(), loader->request_initiator(), loader->request_mode(),
       loader->request_destination(), *response_head);
   switch (decision) {
-    case network::corb::ResponseAnalyzer::Decision::kBlock:
-      loader->BlockResponseForCorb(std::move(response_head));
+    case network::orb::ResponseAnalyzer::Decision::kBlock:
+      loader->BlockResponseForOrb(std::move(response_head));
       return;
-    case network::corb::ResponseAnalyzer::Decision::kAllow:
-    case network::corb::ResponseAnalyzer::Decision::kSniffMore:
+    case network::orb::ResponseAnalyzer::Decision::kAllow:
+    case network::orb::ResponseAnalyzer::Decision::kSniffMore:
       break;
   }
 

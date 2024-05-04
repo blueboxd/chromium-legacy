@@ -72,7 +72,7 @@
 <translation id="1577977504532381335">Xem kỹ chính sách của quản trị viên</translation>
 <translation id="158849752021629804">Cần mạng gia đình</translation>
 <translation id="1589128298353575783"><ph name="NUMBER_OF_PB" /> PB</translation>
-<translation id="1620510694547887537">Máy ảnh</translation>
+<translation id="1620510694547887537">Camera</translation>
 <translation id="162175252992296058">Tiếng Bồ Đào Nha bằng bàn phím quốc tế Hoa Kỳ</translation>
 <translation id="1629521517399325891">Không có chứng chỉ người dùng để xác thực mạng.</translation>
 <translation id="1641780993263690097">Tiếng Trung (bính âm)</translation>
@@ -852,6 +852,7 @@
 <translation id="7589661784326793847">Xin đợi một chút</translation>
 <translation id="7600126690270271294">Tiếng Serbia</translation>
 <translation id="7603724359189955920">Lưới</translation>
+<translation id="7624010287655004652">Một nhà cung cấp mạng di động khác đã khoá lại.</translation>
 <translation id="7627790789328695202">Rất tiếc, <ph name="FILE_NAME" /> đã tồn tại. Hãy đổi tên tệp và thử lại.</translation>
 <translation id="7628656427739290098">Đã hoàn tất <ph name="PERCENT" />%.</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
@@ -1018,7 +1019,6 @@
 <translation id="8698877009525468705">Tệp này được bảo mật và phải tuân thủ các hạn chế theo chính sách dành cho quản trị viên.</translation>
 <translation id="8712637175834984815">Tôi hiểu</translation>
 <translation id="8713112442029511308">Tiếng Malta</translation>
-<translation id="8714138378966541668">Bị khoá bởi nhà cung cấp</translation>
 <translation id="8714406895390098252">Xe đạp</translation>
 <translation id="8719721339511222681">Đã chọn <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Tiếng Croatia</translation>

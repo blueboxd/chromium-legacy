@@ -8,6 +8,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/block_node.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
@@ -115,15 +116,15 @@ TEST_P(BoxFragmentPainterTest, AddUrlRects) {
 
   paint_preview::PaintPreviewTracker tracker(base::UnguessableToken::Create(),
                                              std::nullopt, true);
-  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
-  builder->Context().SetPaintPreviewTracker(&tracker);
+  PaintRecordBuilder builder;
+  builder.Context().SetPaintPreviewTracker(&tracker);
 
   GetDocument().View()->PaintOutsideOfLifecycle(
-      builder->Context(),
+      builder.Context(),
       PaintFlag::kAddUrlMetadata | PaintFlag::kOmitCompositingInfo,
       CullRect::Infinite());
 
-  auto record = builder->EndRecording();
+  auto record = builder.EndRecording();
   std::vector<GURL> links;
   ExtractLinks(record, &links);
   ASSERT_EQ(links.size(), 2U);
@@ -175,13 +176,13 @@ TEST_P(BoxFragmentPainterTest, SelectionTablePainting) {
   GetDocument().View()->GetFrame().Selection().SelectAll();
   GetDocument().GetLayoutView()->CommitPendingSelection();
   UpdateAllLifecyclePhasesForTest();
-  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
+  PaintRecordBuilder builder;
   GetDocument().View()->PaintOutsideOfLifecycle(
-      builder->Context(),
+      builder.Context(),
       PaintFlag::kSelectionDragImageOnly | PaintFlag::kOmitCompositingInfo,
       CullRect::Infinite());
 
-  auto record = builder->EndRecording();
+  auto record = builder.EndRecording();
 }
 
 TEST_P(BoxFragmentPainterTest, ClippedText) {

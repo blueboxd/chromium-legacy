@@ -29,6 +29,7 @@ export class FakeDisplaySettingsProvider implements
   private displayConfigurationObservers:
       DisplayConfigurationObserverInterface[] = [];
   private isTabletMode: boolean = false;
+  private performanceSettingEnabled: boolean = false;
   private internalDisplayHistogram = new Map<DisplaySettingsType, number>();
   private externalDisplayHistogram = new Map<DisplaySettingsType, number>();
   private displayHistogram = new Map<DisplaySettingsType, number>();
@@ -86,7 +87,7 @@ export class FakeDisplaySettingsProvider implements
   recordChangingDisplaySettings(
       type: DisplaySettingsType, value: DisplaySettingsValue) {
     let histogram: Map<DisplaySettingsType, number>;
-    if (value.isInternalDisplay === undefined) {
+    if (value.isInternalDisplay === null) {
       histogram = this.displayHistogram;
     } else if (value.isInternalDisplay) {
       histogram = this.internalDisplayHistogram;
@@ -97,8 +98,7 @@ export class FakeDisplaySettingsProvider implements
 
     if (type ===
             displaySettingsProviderMojom.DisplaySettingsType.kOrientation &&
-        value.isInternalDisplay !== undefined &&
-        value.orientation !== undefined) {
+        value.isInternalDisplay !== null && value.orientation !== null) {
       const orientationHistogram =
           this.getDisplayOrientationHistogram(value.isInternalDisplay);
       orientationHistogram.set(
@@ -108,8 +108,7 @@ export class FakeDisplaySettingsProvider implements
           value.isInternalDisplay, orientationHistogram);
     } else if (
         type === displaySettingsProviderMojom.DisplaySettingsType.kNightLight &&
-        value.isInternalDisplay !== undefined &&
-        value.nightLightStatus !== undefined) {
+        value.isInternalDisplay !== null && value.nightLightStatus !== null) {
       const nightLightStatusHistogram =
           this.getDisplayNightLightStatusHistogram(value.isInternalDisplay);
       nightLightStatusHistogram.set(
@@ -121,8 +120,7 @@ export class FakeDisplaySettingsProvider implements
         type ===
             displaySettingsProviderMojom.DisplaySettingsType
                 .kNightLightSchedule &&
-        value.isInternalDisplay !== undefined &&
-        value.nightLightSchedule !== undefined) {
+        value.isInternalDisplay !== null && value.nightLightSchedule !== null) {
       const nightLightScheduleHistogram =
           this.getDisplayNightLightScheduleHistogram(value.isInternalDisplay);
       nightLightScheduleHistogram.set(
@@ -132,8 +130,7 @@ export class FakeDisplaySettingsProvider implements
           value.isInternalDisplay, nightLightScheduleHistogram);
     } else if (
         type === displaySettingsProviderMojom.DisplaySettingsType.kMirrorMode &&
-        value.isInternalDisplay === undefined &&
-        value.mirrorModeStatus !== undefined) {
+        value.isInternalDisplay === null && value.mirrorModeStatus !== null) {
       this.displayMirrorModeStatusHistogram.set(
           value.mirrorModeStatus,
           (this.displayMirrorModeStatusHistogram.get(value.mirrorModeStatus) ||
@@ -142,8 +139,7 @@ export class FakeDisplaySettingsProvider implements
     } else if (
         type ===
             displaySettingsProviderMojom.DisplaySettingsType.kUnifiedMode &&
-        value.isInternalDisplay === undefined &&
-        value.unifiedModeStatus !== undefined) {
+        value.isInternalDisplay === null && value.unifiedModeStatus !== null) {
       this.displayUnifiedModeStatusHistogram.set(
           value.unifiedModeStatus,
           (this.displayUnifiedModeStatusHistogram.get(
@@ -151,6 +147,15 @@ export class FakeDisplaySettingsProvider implements
            0) +
               1);
     }
+  }
+
+  // Implement DisplaySettingsProviderInterface.
+  setShinyPerformance(enabled: boolean): void {
+    this.performanceSettingEnabled = enabled;
+  }
+
+  getShinyPerformance(): boolean {
+    return this.performanceSettingEnabled;
   }
 
   getInternalDisplayHistogram(): Map<DisplaySettingsType, number> {

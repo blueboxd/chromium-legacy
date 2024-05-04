@@ -409,6 +409,7 @@ defaults = args.defaults(
     siso_enable_cloud_profiler = None,
     siso_enable_cloud_trace = None,
     siso_experiments = [],
+    siso_remote_jobs = None,
     health_spec = None,
 
     # Variables for modifying builder characteristics in a shadow bucket
@@ -417,6 +418,7 @@ defaults = args.defaults(
     shadow_pool = None,
     shadow_service_account = None,
     shadow_reclient_instance = None,
+    shadow_siso_project = None,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -438,7 +440,7 @@ def builder(
         os = args.DEFAULT,
         builderless = args.DEFAULT,
         free_space = args.DEFAULT,
-        builder_cache_name = None,
+        builder_cache_name = args.DEFAULT,
         override_builder_dimension = None,
         auto_builder_dimension = args.DEFAULT,
         fully_qualified_builder_dimension = args.DEFAULT,
@@ -449,7 +451,7 @@ def builder(
         builder_group = args.DEFAULT,
         builder_spec = None,
         mirrors = None,
-        try_settings = None,
+        builder_config_settings = None,
         pool = args.DEFAULT,
         ssd = args.DEFAULT,
         sheriff_rotations = None,
@@ -488,13 +490,15 @@ def builder(
         siso_enable_cloud_profiler = args.DEFAULT,
         siso_enable_cloud_trace = args.DEFAULT,
         siso_experiments = args.DEFAULT,
-        skip_profile_upload = False,
+        siso_remote_jobs = args.DEFAULT,
+        skip_profile_upload = args.DEFAULT,
         health_spec = args.DEFAULT,
         shadow_builderless = args.DEFAULT,
         shadow_free_space = args.DEFAULT,
         shadow_pool = args.DEFAULT,
         shadow_service_account = args.DEFAULT,
         shadow_reclient_instance = args.DEFAULT,
+        shadow_siso_project = args.DEFAULT,
         gn_args = None,
         targets = None,
         contact_team_email = args.DEFAULT,
@@ -585,8 +589,9 @@ def builder(
             Cannot be set if `mirrors` is set.
         mirrors: References to the builders that the builder should mirror.
             Cannot be set if `builder_spec` is set.
-        try_settings: Try-builder-specific settings, can only be set if
-            `mirrors` is set.
+        builder_config_settings: Additional builder configuration that used by
+            the recipes. Could be an instance of ci_settings or try_settings.
+            It can only be set if one of builder_spec or mirrors is set.
         pool: a string indicating the pool of the machines that run the builder.
             Emits a dimension of the form 'pool:<pool>'. By default, considered
             None. When running a builder that has no explicit pool dimension,
@@ -706,6 +711,8 @@ def builder(
         siso_enable_cloud_profiler: If True, enable cloud profiler in siso.
         siso_enable_cloud_trace: If True, enable cloud trace in siso.
         siso_experiments: a list of experiment flags for siso.
+        siso_remote_jobs: an integer indicating the number of concurrent remote jobs
+            to run when building with Siso.
         health_spec: a health spec instance describing the threshold for when
             the builder should be considered unhealthy.
         shadow_builderless: If set to True, then led builds created for this
@@ -726,6 +733,9 @@ def builder(
             use this as the reclient instance instead of reclient_instance. The
             other reclient_* values will continue to be used for the shadow
             build.
+        shadow_siso_project: If set, then led builds for this builder will
+            use this as the siso project instead of siso_project. The other
+            siso_* values will continue to be used for the shadow build.
         gn_args: If set, the GN args config to use for the builder. It can be
             set to the name of a predeclared config or an unnamed
             gn_args.config declaration for an unphased config. A builder can use
@@ -752,8 +762,9 @@ def builder(
 
     if builder_spec and mirrors:
         fail("Only one of builder_spec or mirrors can be set")
-    if try_settings and not (builder_spec or mirrors):
-        fail("try_settings can only be set if builder_spec or mirrors is set")
+    if builder_config_settings and not (builder_spec or mirrors):
+        fail("builder_config_settings can only be set if builder_spec or " +
+             "mirrors is set")
 
     dimensions = {}
 
@@ -926,13 +937,21 @@ def builder(
     siso_project = defaults.get_value("siso_project", siso_project)
     use_siso = defaults.get_value("siso_enabled", siso_enabled) and siso_project
     if use_siso:
-        properties["$build/siso"] = {
+        siso = {
             "configs": defaults.get_value("siso_configs", siso_configs),
             "enable_cloud_profiler": defaults.get_value("siso_enable_cloud_profiler", siso_enable_cloud_profiler),
             "enable_cloud_trace": defaults.get_value("siso_enable_cloud_trace", siso_enable_cloud_trace),
             "experiments": defaults.get_value("siso_experiments", siso_experiments),
             "project": siso_project,
         }
+        remote_jobs = defaults.get_value("siso_remote_jobs", siso_remote_jobs)
+        if remote_jobs:
+            siso["remote_jobs"] = remote_jobs
+        properties["$build/siso"] = siso
+        if defaults.get_value("shadow_siso_project", shadow_siso_project):
+            shadow_siso = dict(siso)
+            shadow_siso["project"] = defaults.get_value("shadow_siso_project", shadow_siso_project)
+            shadow_properties["$build/siso"] = shadow_siso
 
     pgo = _pgo_property(
         use_pgo = use_pgo,
@@ -1023,7 +1042,7 @@ def builder(
         builder_group,
         builder_spec,
         mirrors,
-        try_settings,
+        builder_config_settings,
         targets,
         additional_exclusions,
     )

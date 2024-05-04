@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("//build/buildflag_header.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//device/bluetooth/cast_bluetooth.gni")
@@ -40,6 +41,8 @@ source_set("deprecated_experimental_mojo") {
     "device.h",
     "discovery_session.cc",
     "discovery_session.h",
+    "gatt_service.cc",
+    "gatt_service.h",
     "server_socket.cc",
     "server_socket.h",
     "socket.cc",
@@ -85,6 +88,10 @@ source_set("fake_bluetooth") {
     "test/fake_bluetooth_socket.h",
     "test/fake_central.cc",
     "test/fake_central.h",
+    "test/fake_local_gatt_characteristic.cc",
+    "test/fake_local_gatt_characteristic.h",
+    "test/fake_local_gatt_service.cc",
+    "test/fake_local_gatt_service.h",
     "test/fake_peripheral.cc",
     "test/fake_peripheral.h",
     "test/fake_read_response.cc",
@@ -134,11 +141,9 @@ component("bluetooth") {
     "bluetooth_gatt_notify_session.h",
     "bluetooth_gatt_service.cc",
     "bluetooth_gatt_service.h",
-    "bluetooth_local_gatt_characteristic.cc",
     "bluetooth_local_gatt_characteristic.h",
     "bluetooth_local_gatt_descriptor.cc",
     "bluetooth_local_gatt_descriptor.h",
-    "bluetooth_local_gatt_service.cc",
     "bluetooth_local_gatt_service.h",
     "bluetooth_low_energy_scan_filter.cc",
     "bluetooth_low_energy_scan_filter.h",

@@ -6,20 +6,25 @@
 
 #import "base/check.h"
 #import "base/check_op.h"
+#import "base/feature_list.h"
+#import "base/functional/bind.h"
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/signin/public/base/signin_switches.h"
+#import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
-#import "components/unified_consent/unified_consent_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/account_capabilities_latency_tracker.h"
+#import "ios/chrome/browser/ui/authentication/history_sync/history_sync_capabilities_fetcher.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_consumer.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
+// Mediator that handles the sync operations.
 @interface HistorySyncMediator () <ChromeAccountManagerServiceObserver,
                                    IdentityManagerObserverBridgeDelegate>
 @end
@@ -30,6 +35,7 @@
   raw_ptr<ChromeAccountManagerService> _accountManagerService;
   std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
       _accountManagerServiceObserver;
+  raw_ptr<signin::IdentityManager> _identityManager;
   // Observer for `IdentityManager`.
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
@@ -41,6 +47,8 @@
   std::unique_ptr<signin::AccountCapabilitiesLatencyTracker>
       _accountCapabilitiesLatencyTracker;
 }
+
+@synthesize capabilitiesFetcher = _capabilitiesFetcher;
 
 - (instancetype)
     initWithAuthenticationService:(AuthenticationService*)authenticationService
@@ -56,15 +64,34 @@
     _accountManagerServiceObserver =
         std::make_unique<ChromeAccountManagerServiceObserverBridge>(
             self, _accountManagerService);
+    _identityManager = identityManager;
     _identityManagerObserver =
         std::make_unique<signin::IdentityManagerObserverBridge>(identityManager,
                                                                 self);
     _syncService = syncService;
     _showUserEmail = showUserEmail;
-    _accountCapabilitiesLatencyTracker =
-        std::make_unique<signin::AccountCapabilitiesLatencyTracker>(
-            identityManager);
+
+    if ([self useMinorModeRestrictions]) {
+      __weak __typeof(self) weakSelf = self;
+      CapabilityFetchCompletionCallback callback =
+          base::BindRepeating(^(bool capability) {
+            bool isRestricted = !capability;
+            [weakSelf.consumer
+                displayButtonsWithRestrictionStatus:isRestricted];
+          });
+
+      _capabilitiesFetcher = [[HistorySyncCapabilitiesFetcher alloc]
+          initWithAuthenticationService:authenticationService
+                        identityManager:identityManager
+                               callback:std::move(callback)];
+
+    } else {
+      _accountCapabilitiesLatencyTracker =
+          std::make_unique<signin::AccountCapabilitiesLatencyTracker>(
+              identityManager);
+    }
   }
+
   return self;
 }
 
@@ -74,6 +101,7 @@
   _identityManagerObserver.reset();
   _authenticationService = nullptr;
   _accountManagerService = nullptr;
+  _identityManager = nullptr;
   _syncService = nullptr;
 }
 
@@ -137,7 +165,9 @@
 }
 
 - (void)onExtendedAccountInfoUpdated:(const AccountInfo&)info {
-  _accountCapabilitiesLatencyTracker->OnExtendedAccountInfoUpdated(info);
+  if (![self useMinorModeRestrictions]) {
+    _accountCapabilitiesLatencyTracker->OnExtendedAccountInfoUpdated(info);
+  }
 }
 
 #pragma mark - Private
@@ -156,6 +186,11 @@
         stringWithFormat:@"%@ %@", identity.userFullName, identity.userEmail];
   }
   [self.consumer setPrimaryIdentityAvatarAccessibilityLabel:accessibilityLabel];
+}
+
+- (BOOL)useMinorModeRestrictions {
+  return base::FeatureList::IsEnabled(
+      switches::kMinorModeRestrictionsForHistorySyncOptIn);
 }
 
 @end

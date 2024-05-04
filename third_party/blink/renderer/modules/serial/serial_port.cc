@@ -116,6 +116,7 @@ class AbortCloseFunction : public ScriptFunction::Callable {
 SerialPort::SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info)
     : ActiveScriptWrappable<SerialPort>({}),
       info_(std::move(info)),
+      connected_(info_->connected),
       parent_(parent),
       port_(parent->GetExecutionContext()),
       client_receiver_(this, parent->GetExecutionContext()) {}
@@ -294,42 +295,45 @@ WritableStream* SerialPort::writable(ScriptState* script_state,
   return writable_.Get();
 }
 
-ScriptPromise SerialPort::getSignals(ScriptState* script_state,
-                                     ExceptionState& exception_state) {
+ScriptPromiseTyped<SerialInputSignals> SerialPort::getSignals(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!port_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kPortClosed);
-    return ScriptPromise();
+    return ScriptPromiseTyped<SerialInputSignals>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<SerialInputSignals>>(
+          script_state, exception_state.GetContext());
   signal_resolvers_.insert(resolver);
   port_->GetControlSignals(resolver->WrapCallbackInScriptScope(
       WTF::BindOnce(&SerialPort::OnGetSignals, WrapPersistent(this))));
   return resolver->Promise();
 }
 
-ScriptPromise SerialPort::setSignals(ScriptState* script_state,
-                                     const SerialOutputSignals* signals,
-                                     ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLUndefined> SerialPort::setSignals(
+    ScriptState* script_state,
+    const SerialOutputSignals* signals,
+    ExceptionState& exception_state) {
   ExecutionContext* context = GetExecutionContext();
   if (!context) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Script context has shut down.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (!port_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kPortClosed);
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   if (!signals->hasDataTerminalReady() && !signals->hasRequestToSend() &&
       !signals->hasBrk()) {
     exception_state.ThrowTypeError(kNoSignals);
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLUndefined>();
   }
 
   auto mojo_signals = device::mojom::blink::SerialHostControlSignals::New();
@@ -357,8 +361,9 @@ ScriptPromise SerialPort::setSignals(ScriptState* script_state,
     mojo_signals->brk = signals->brk();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLUndefined>>(
+          script_state, exception_state.GetContext());
   signal_resolvers_.insert(resolver);
   port_->SetControlSignals(
       std::move(mojo_signals),
@@ -596,7 +601,7 @@ void SerialPort::OnConnectionError() {
     }
   }
 
-  for (ScriptPromiseResolver* resolver : signal_resolvers_) {
+  for (auto& resolver : signal_resolvers_) {
     ScriptState* script_state = resolver->GetScriptState();
     if (IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
                                       script_state)) {
@@ -652,7 +657,7 @@ void SerialPort::OnOpen(
 }
 
 void SerialPort::OnGetSignals(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<SerialInputSignals>* resolver,
     device::mojom::blink::SerialPortControlSignalsPtr mojo_signals) {
   DCHECK(signal_resolvers_.Contains(resolver));
   signal_resolvers_.erase(resolver);
@@ -671,7 +676,9 @@ void SerialPort::OnGetSignals(
   resolver->Resolve(signals);
 }
 
-void SerialPort::OnSetSignals(ScriptPromiseResolver* resolver, bool success) {
+void SerialPort::OnSetSignals(
+    ScriptPromiseResolverTyped<IDLUndefined>* resolver,
+    bool success) {
   DCHECK(signal_resolvers_.Contains(resolver));
   signal_resolvers_.erase(resolver);
 

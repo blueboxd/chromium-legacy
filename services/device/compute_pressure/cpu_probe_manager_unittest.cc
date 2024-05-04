@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/check_op.h"
@@ -20,7 +21,6 @@
 #include "components/system_cpu/pressure_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -40,12 +40,11 @@ class CpuProbeManagerTest : public testing::Test {
   explicit CpuProbeManagerTest(
       std::unique_ptr<base::test::TaskEnvironment> task_environment)
       : task_environment_(std::move(task_environment)),
-        cpu_probe_manager_(std::make_unique<CpuProbeManager>(
+        cpu_probe_manager_(CpuProbeManager::CreateForTesting(
+            std::make_unique<FakeCpuProbe>(),
             base::Milliseconds(1),
             base::BindRepeating(&CpuProbeManagerTest::CollectorCallback,
-                                base::Unretained(this)))) {
-    cpu_probe_manager_->SetCpuProbeForTesting(std::make_unique<FakeCpuProbe>());
-  }
+                                base::Unretained(this)))) {}
 
   void WaitForUpdate() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -96,11 +95,21 @@ class CpuProbeManagerWithMockTimeTest : public CpuProbeManagerTest {
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 };
 
+TEST_F(CpuProbeManagerTest, CreateCpuProbeExists) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::unique_ptr<CpuProbeManager> cpu_probe_manager =
+      CpuProbeManager::Create(base::Milliseconds(1), base::DoNothing());
+  if (cpu_probe_manager) {
+    EXPECT_TRUE(!!cpu_probe_manager->GetCpuProbeForTesting());
+  }
+}
+
 TEST_F(CpuProbeManagerTest, EnsureStarted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   static_cast<FakeCpuProbe*>(cpu_probe_manager_->GetCpuProbeForTesting())
-      ->SetLastSample(absl::make_optional(CpuSample{0.9}));
+      ->SetLastSample(std::make_optional(CpuSample{0.9}));
   cpu_probe_manager_->EnsureStarted();
   WaitForUpdate();
 
@@ -145,11 +154,10 @@ TEST_F(CpuProbeManagerWithMockTimeTest,
   // We noticed that cpu_probe_manager_, with fast sampling (ms), is slowing
   // down testing when using FastForwardBy(), especially on tsan and asan test
   // releases.
-  cpu_probe_manager_ = std::make_unique<CpuProbeManager>(
-      base::Seconds(1),
+  cpu_probe_manager_ = CpuProbeManager::CreateForTesting(
+      std::make_unique<FakeCpuProbe>(), base::Seconds(1),
       base::BindRepeating(&CpuProbeManagerTest::CollectorCallback,
                           base::Unretained(this)));
-  cpu_probe_manager_->SetCpuProbeForTesting(std::make_unique<FakeCpuProbe>());
 
   static_cast<FakeCpuProbe*>(cpu_probe_manager_->GetCpuProbeForTesting())
       ->SetLastSample(CpuSample{0.86});

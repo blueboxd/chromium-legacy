@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.history;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,12 +21,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -110,6 +114,7 @@ public class HistoryManager
      * @param historyProvider Provider of methods for querying and managing browsing history.
      * @param clientPackageName Package name of the client the history UI is launched on top of.
      * @param shouldShowClearData Whether the 'Clear browsing data' button should be shown.
+     * @param appSpecificHistory Whether app specific history features should be used.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public HistoryManager(
@@ -120,7 +125,8 @@ public class HistoryManager
             @Nullable Supplier<Tab> tabSupplier,
             HistoryProvider historyProvider,
             @Nullable String clientPackageName,
-            boolean shouldShowClearData) {
+            boolean shouldShowClearData,
+            boolean appSpecificHistory) {
         mActivity = activity;
         mIsSeparateActivity = isSeparateActivity;
         mSnackbarManager = snackbarManager;
@@ -164,7 +170,8 @@ public class HistoryManager
                         mSelectionDelegate,
                         tabSupplier,
                         historyProvider,
-                        clientPackageName);
+                        clientPackageName,
+                        appSpecificHistory);
         mSelectableListLayout.initializeRecyclerView(
                 mContentManager.getAdapter(), mContentManager.getRecyclerView());
 
@@ -514,6 +521,15 @@ public class HistoryManager
         mShouldShowPrivacyDisclaimerSupplier.set(
                 mContentManager.getShouldShowPrivacyDisclaimersIfAvailable()
                         && mContentManager.hasPrivacyDisclaimers());
+    }
+
+    @Override
+    public void onOpenFullChromeHistoryClicked() {
+        Intent fullHistoryIntent = new Intent(Intent.ACTION_MAIN);
+        fullHistoryIntent.setClass(mActivity, ChromeLauncherActivity.class);
+        fullHistoryIntent.putExtra(IntentHandler.EXTRA_OPEN_HISTORY, true);
+        IntentUtils.addTrustedIntentExtras(fullHistoryIntent);
+        mActivity.startActivity(fullHistoryIntent);
     }
 
     // HistoryContentManager.Observer

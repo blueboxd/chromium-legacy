@@ -22,7 +22,7 @@ struct TaskList;
 
 class ASH_EXPORT FakeTasksClient : public TasksClient {
  public:
-  explicit FakeTasksClient(base::Time tasks_due_time);
+  FakeTasksClient();
   FakeTasksClient(const FakeTasksClient&) = delete;
   FakeTasksClient& operator=(const FakeTasksClient&) = delete;
   ~FakeTasksClient() override;
@@ -34,7 +34,10 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
   int completed_task_count() { return completed_tasks_; }
 
   // TasksClient:
+  const ui::ListModel<api::TaskList>* GetCachedTaskLists() override;
   void GetTaskLists(bool force_fetch, GetTaskListsCallback callback) override;
+  const ui::ListModel<api::Task>* GetCachedTasksInTaskList(
+      const std::string& task_list_id) override;
   void GetTasks(const std::string& task_list_id,
                 bool force_fetch,
                 GetTasksCallback callback) override;
@@ -50,8 +53,22 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
                   bool completed,
                   TasksClient::OnTaskSavedCallback callback) override;
   void InvalidateCache() override {}
+  std::optional<base::Time> GetTasksLastUpdateTime(
+      const std::string& task_list_id) const override;
   void OnGlanceablesBubbleClosed(OnAllPendingCompletedTasksSavedCallback
                                      callback = base::DoNothing()) override;
+
+  // Helper function for loading in pre-built `TaskList` objects.
+  void AddTaskList(std::unique_ptr<TaskList> task_list_data);
+
+  // Helper function for loading in pre-built `Task` objects.
+  void AddTask(const std::string& task_list_id,
+               std::unique_ptr<Task> task_data);
+
+  // Deletes the task list with `task_list_id` from `task_lists_`.
+  void DeleteTaskList(const std::string& task_list_id);
+
+  void SetTasksLastUpdateTime(base::Time time);
 
   // Returns `bubble_closed_count_`, while also resetting the counter.
   int GetAndResetBubbleClosedCount();
@@ -69,6 +86,7 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
   size_t RunPendingUpdateTaskCallbacks();
 
   void set_paused(bool paused) { paused_ = paused; }
+  void set_paused_on_fetch(bool paused) { paused_on_fetch_ = paused; }
   void set_run_with_errors(bool run_with_errors) {
     run_with_errors_ = run_with_errors;
   }
@@ -85,11 +103,26 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
                       bool completed,
                       TasksClient::OnTaskSavedCallback callback);
 
-  void PopulateTasks(base::Time tasks_due_time);
-  void PopulateTaskLists(base::Time tasks_due_time);
+  // Copies `task_lists_` to `cached_task_lists_` to save the task lists
+  // state when the glanceables are closed.
+  void CacheTaskLists();
+
+  // Copies the current showing tasks to `cached_tasks_` to save the tasks state
+  // when the glanceables are closed.
+  void CacheTasks();
 
   // All available task lists.
   std::unique_ptr<ui::ListModel<TaskList>> task_lists_;
+
+  // The cached task lists that is used before `task_lists_` is simulated to be
+  // fetched.
+  std::unique_ptr<ui::ListModel<TaskList>> cached_task_lists_;
+
+  // The cached tasks that was shown when the glanceables are closed.
+  std::unique_ptr<ui::ListModel<Task>> cached_tasks_;
+
+  // The id of the task list that was shown when the glanceables are closed.
+  std::string cached_task_list_id_;
 
   // Tracks completed tasks and the task list they belong to.
   std::vector<std::string> pending_completed_tasks_;
@@ -106,10 +139,19 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
   // simulated error (currently works for `AddTask` and `UpdateTask` only).
   bool run_with_errors_ = false;
 
+  // The last time when the tasks were updated. This is manually set by
+  // `SetTasksLastUpdateTime`.
+  base::Time last_updated_time_;
+
   // If `false` - callbacks are executed immediately; if `true` - callbacks get
   // saved to the corresponding list and executed once
   // `RunPending**Callbacks()` is called.
   bool paused_ = false;
+
+  // Similar to `paused_`, but only moves callbacks to pending callbacks when
+  // data fetching is simulated, that is, callbacks are run immediately if the
+  // cached data is used.
+  bool paused_on_fetch_ = false;
   std::list<base::OnceClosure> pending_get_tasks_callbacks_;
   std::list<base::OnceClosure> pending_get_task_lists_callbacks_;
   std::list<base::OnceClosure> pending_add_task_callbacks_;

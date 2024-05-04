@@ -79,7 +79,10 @@ import java.util.List;
 
 /** Unit tests for {@link CompositorViewHolder}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@DisableFeatures(ChromeFeatureList.FULLSCREEN_INSETS_API_MIGRATION)
+@DisableFeatures({
+    ChromeFeatureList.FULLSCREEN_INSETS_API_MIGRATION,
+    ChromeFeatureList.FULLSCREEN_INSETS_API_MIGRATION_ON_AUTOMOTIVE
+})
 public class CompositorViewHolderUnitTest {
     // Since these tests don't depend on the heights being pixels, we can use these as dpi directly.
     private static final int TOOLBAR_HEIGHT = 56;
@@ -298,7 +301,10 @@ public class CompositorViewHolderUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.FULLSCREEN_INSETS_API_MIGRATION)
+    @EnableFeatures({
+        ChromeFeatureList.FULLSCREEN_INSETS_API_MIGRATION,
+        ChromeFeatureList.FULLSCREEN_INSETS_API_MIGRATION_ON_AUTOMOTIVE
+    })
     public void testHandleSystemUiVisibilityChangesWithUpdatedFullscreenApis() {
         when(mWindowAndroid.getActivity()).thenReturn(new WeakReference<>(mActivity));
 
@@ -687,20 +693,7 @@ public class CompositorViewHolderUnitTest {
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.DEFER_NOTIFY_IN_MOTION)
-    public void testInMotionOrdering_NoDefer() {
-        // With the 'defer in motion' experiment disabled, touch events are routed to android UI
-        // before being sent to native/web content.
-        List<EventSource> eventSequence = observeTouchAndMotionEvents();
-        mCompositorViewHolder.dispatchTouchEvent(MOTION_EVENT_DOWN);
-        assertEquals(
-                Arrays.asList(EventSource.IN_MOTION, EventSource.TOUCH_EVENT_OBSERVER),
-                eventSequence);
-    }
-
-    @Test
-    @EnableFeatures(ChromeFeatureList.DEFER_NOTIFY_IN_MOTION)
-    public void testInMotionOrdering_WithDefer() {
+    public void testInMotionOrdering() {
         // With the 'defer in motion' experiment enabled, touch events are routed to android UI
         // after being sent to native/web content.
         List<EventSource> eventSequence = observeTouchAndMotionEvents();

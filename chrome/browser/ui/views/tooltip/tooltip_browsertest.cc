@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/test/ui_controls.h"
@@ -215,8 +216,16 @@ class TooltipBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };  // class TooltipBrowserTest
 
+// TOOD(crbug.com/40768202): Flakily fails on Windows
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_ShowTooltipFromWebContentWithCursor \
+  DISABLED_ShowTooltipFromWebContentWithCursor
+#else
+#define MAYBE_ShowTooltipFromWebContentWithCursor \
+  ShowTooltipFromWebContentWithCursor
+#endif
 IN_PROC_BROWSER_TEST_F(TooltipBrowserTest,
-                       ShowTooltipFromWebContentWithCursor) {
+                       MAYBE_ShowTooltipFromWebContentWithCursor) {
   NavigateToURL("/tooltip.html");
   std::u16string expected_text = u"my tooltip";
 

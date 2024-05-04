@@ -37,7 +37,7 @@ class KeyboardModifierEventRewriterDelegateImpl
       ui::EventRewriterAsh::Delegate* event_rewriter_delegate)
       : event_rewriter_delegate_(event_rewriter_delegate) {}
 
-  absl::optional<ui::mojom::ModifierKey> GetKeyboardRemappedModifierValue(
+  std::optional<ui::mojom::ModifierKey> GetKeyboardRemappedModifierValue(
       int device_id,
       ui::mojom::ModifierKey modifier_key,
       const std::string& pref_name) const override {
@@ -127,8 +127,6 @@ void EventRewriterControllerImpl::Initialize(
     AddEventRewriter(std::move(peripheral_customization_event_rewriter));
   }
   AddEventRewriter(std::move(prerewritten_event_forwarder));
-  AddEventRewriter(std::move(accessibility_event_rewriter));
-  AddEventRewriter(std::move(keyboard_driven_event_rewriter));
   AddEventRewriter(std::move(keyboard_device_id_event_rewriter));
   if (features::IsKeyboardRewriterFixEnabled()) {
     auto keyboard_modifier_event_rewriter =
@@ -139,6 +137,13 @@ void EventRewriterControllerImpl::Initialize(
             ash::input_method::InputMethodManager::Get()->GetImeKeyboard());
     AddEventRewriter(std::move(keyboard_modifier_event_rewriter));
   }
+  // Accessibility rewriter is applied between modifier event rewriters and
+  // EventRewriterAsh. Specifically, Search modifier is captured by the
+  // accessibility rewriter, that should be the ones after modifier remapping.
+  // However, accessibility rewriter wants to capture it before it is rewritten
+  // into 6-pack keys, which is done in EventRewriterAsh.
+  AddEventRewriter(std::move(accessibility_event_rewriter));
+  AddEventRewriter(std::move(keyboard_driven_event_rewriter));
   AddEventRewriter(std::move(event_rewriter_ash));
 }
 

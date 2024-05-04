@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -146,6 +147,7 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using tabs::TabModel;
 using zoom::ZoomController;
 
 namespace extensions {
@@ -350,9 +352,9 @@ int MoveTabToWindow(ExtensionFunction* function,
     return -1;
   }
 
-  std::unique_ptr<content::WebContents> web_contents =
-      source_tab_strip->DetachWebContentsAtForInsertion(source_index);
-  if (!web_contents) {
+  std::unique_ptr<TabModel> detached_tab =
+      source_tab_strip->DetachTabAtForInsertion(source_index);
+  if (!detached_tab) {
     *error = ErrorUtils::FormatErrorMessage(tabs_constants::kTabNotFoundError,
                                             base::NumberToString(tab_id));
     return -1;
@@ -369,8 +371,8 @@ int MoveTabToWindow(ExtensionFunction* function,
   if (target_index > target_tab_strip->count() || target_index < 0)
     target_index = target_tab_strip->count();
 
-  return target_tab_strip->InsertWebContentsAt(
-      target_index, std::move(web_contents), AddTabTypes::ADD_NONE);
+  return target_tab_strip->InsertDetachedTabAt(
+      target_index, std::move(detached_tab), AddTabTypes::ADD_NONE);
 }
 
 // This function sets the state of the browser window to a "locked"
@@ -436,6 +438,12 @@ void NotifyExtensionTelemetry(Profile* profile,
   if (!extension_telemetry_service || !extension_telemetry_service->enabled() ||
       !base::FeatureList::IsEnabled(
           safe_browsing::kExtensionTelemetryTabsApiSignal)) {
+    return;
+  }
+
+  if (api_method == safe_browsing::TabsApiInfo::CAPTURE_VISIBLE_TAB &&
+      !base::FeatureList::IsEnabled(
+          safe_browsing::kExtensionTelemetryTabsApiSignalCaptureVisibleTab)) {
     return;
   }
 
@@ -559,7 +567,8 @@ ExtensionFunction::ResponseAction WindowsGetAllFunction::Run() {
   ExtensionTabUtil::PopulateTabBehavior populate_tab_behavior =
       extractor.populate_tabs() ? ExtensionTabUtil::kPopulateTabs
                                 : ExtensionTabUtil::kDontPopulateTabs;
-  for (auto* controller : WindowControllerList::GetInstance()->windows()) {
+  for (WindowController* controller :
+       WindowControllerList::GetInstance()->windows()) {
     if (!controller->GetBrowser() ||
         !windows_util::CanOperateOnWindow(this, controller,
                                           extractor.type_filters())) {
@@ -824,26 +833,26 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     Navigate(&navigate_params);
   }
 
-  WebContents* contents = nullptr;
+  const TabModel* tab = nullptr;
   // Move the tab into the created window only if it's an empty popup or it's
   // a tabbed window.
   if (window_type == Browser::TYPE_NORMAL || urls.empty()) {
     if (source_tab_strip) {
       CHECK(!isolated_web_app_url_info.has_value());
-      std::unique_ptr<content::WebContents> detached_tab =
-          source_tab_strip->DetachWebContentsAtForInsertion(tab_index);
-      contents = detached_tab.get();
+      std::unique_ptr<TabModel> detached_tab =
+          source_tab_strip->DetachTabAtForInsertion(tab_index);
+      tab = detached_tab.get();
       TabStripModel* target_tab_strip =
           ExtensionTabUtil::GetEditableTabStripModel(new_window);
       if (!target_tab_strip)
         return RespondNow(Error(tabs_constants::kTabStripNotEditableError));
-      target_tab_strip->InsertWebContentsAt(
+      target_tab_strip->InsertDetachedTabAt(
           urls.size(), std::move(detached_tab), AddTabTypes::ADD_NONE);
     }
   }
   // Create a new tab if the created window is still empty. Don't create a new
   // tab when it is intended to create an empty popup.
-  if (!contents && urls.empty() && window_type == Browser::TYPE_NORMAL) {
+  if (!tab && urls.empty() && window_type == Browser::TYPE_NORMAL) {
     chrome::NewTab(new_window);
   }
   chrome::SelectNumberedTab(
@@ -1546,53 +1555,24 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
 
   web_contents_ = contents;
 
-  // Check that the tab is not part of a SavedTabGroup.
-  if (contents && ExtensionTabUtil::TabIsInSavedTabGroup(
-                      web_contents_, browser->tab_strip_model())) {
-    return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
-  }
-
-  // TODO(rafaelw): handle setting remaining tab properties:
-  // -title
-  // -favIconUrl
-
-  // Navigate the tab to a new location if the url is different.
-  if (params->update_properties.url) {
-    std::string updated_url = *params->update_properties.url;
-    if (browser->profile()->IsIncognitoProfile() &&
-        !IsURLAllowedInIncognito(GURL(updated_url), browser->profile())) {
-      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-          tabs_constants::kURLsNotAllowedInIncognitoError, updated_url)));
-    }
-
-    // Get last committed or pending URL.
-    std::string current_url = contents->GetVisibleURL().is_valid()
-                                  ? contents->GetVisibleURL().spec()
-                                  : std::string();
-
-    if (!UpdateURL(updated_url, tab_id, &error))
-      return RespondNow(Error(std::move(error)));
-
-    NotifyExtensionTelemetry(Profile::FromBrowserContext(browser_context()),
-                             extension(), safe_browsing::TabsApiInfo::UPDATE,
-                             current_url, updated_url);
-  }
-
   bool active = false;
   // TODO(rafaelw): Setting |active| from js doesn't make much sense.
   // Move tab selection management up to window.
-  if (params->update_properties.selected)
+  if (params->update_properties.selected) {
     active = *params->update_properties.selected;
+  }
 
   // The 'active' property has replaced 'selected'.
-  if (params->update_properties.active)
+  if (params->update_properties.active) {
     active = *params->update_properties.active;
+  }
 
   if (active) {
-    // Bug fix for crbug.com/1197888. Don't let the extension update the tab if
-    // the user is dragging tabs.
-    if (!ExtensionTabUtil::IsTabStripEditable())
+    // Bug fix for crbug.com/1197888. Don't let the extension update the tab
+    // if the user is dragging tabs.
+    if (!ExtensionTabUtil::IsTabStripEditable()) {
       return RespondNow(Error(tabs_constants::kTabStripNotEditableError));
+    }
 
     if (tab_strip->active_index() != tab_index) {
       tab_strip->ActivateTabAt(tab_index);
@@ -1601,28 +1581,16 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
   }
 
   if (params->update_properties.highlighted) {
-    // Bug fix for crbug.com/1197888. Don't let the extension update the tab if
-    // the user is dragging tabs.
-    if (!ExtensionTabUtil::IsTabStripEditable())
+    // Bug fix for crbug.com/1197888. Don't let the extension update the tab
+    // if the user is dragging tabs.
+    if (!ExtensionTabUtil::IsTabStripEditable()) {
       return RespondNow(Error(tabs_constants::kTabStripNotEditableError));
+    }
 
     bool highlighted = *params->update_properties.highlighted;
     if (highlighted != tab_strip->IsTabSelected(tab_index)) {
       tab_strip->ToggleSelectionAt(tab_index);
     }
-  }
-
-  if (params->update_properties.pinned) {
-    // Bug fix for crbug.com/1197888. Don't let the extension update the tab if
-    // the user is dragging tabs.
-    if (!ExtensionTabUtil::IsTabStripEditable())
-      return RespondNow(Error(tabs_constants::kTabStripNotEditableError));
-
-    bool pinned = *params->update_properties.pinned;
-    tab_strip->SetTabPinned(tab_index, pinned);
-
-    // Update the tab index because it may move when being pinned.
-    tab_index = tab_strip->GetIndexOfWebContents(contents);
   }
 
   if (params->update_properties.muted &&
@@ -1636,8 +1604,9 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
   if (params->update_properties.opener_tab_id) {
     int opener_id = *params->update_properties.opener_tab_id;
     WebContents* opener_contents = nullptr;
-    if (opener_id == tab_id)
+    if (opener_id == tab_id) {
       return RespondNow(Error("Cannot set a tab's opener to itself."));
+    }
     if (!ExtensionTabUtil::GetTabById(opener_id, browser_context(),
                                       include_incognito_information(), nullptr,
                                       nullptr, &opener_contents, nullptr)) {
@@ -1645,10 +1614,11 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
           tabs_constants::kTabNotFoundError, base::NumberToString(opener_id))));
     }
 
-    // Bug fix for crbug.com/1197888. Don't let the extension update the tab if
-    // the user is dragging tabs.
-    if (!ExtensionTabUtil::IsTabStripEditable())
+    // Bug fix for crbug.com/1197888. Don't let the extension update the tab
+    // if the user is dragging tabs.
+    if (!ExtensionTabUtil::IsTabStripEditable()) {
       return RespondNow(Error(tabs_constants::kTabStripNotEditableError));
+    }
 
     if (tab_strip->GetIndexOfWebContents(opener_contents) ==
         TabStripModel::kNoTab) {
@@ -1663,6 +1633,62 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
     resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
         web_contents_)
         ->SetAutoDiscardable(state);
+  }
+
+  const bool contents_in_an_uneditable_saved_group =
+      contents && ExtensionTabUtil::TabIsInSavedTabGroup(
+                      web_contents_, browser->tab_strip_model()) &&
+                  !ExtensionHasLockedFullscreenPermission(extension());
+
+  if (params->update_properties.pinned) {
+    // Pinning will result in changes to the tabs index/group affiliation in
+    // some cases, Throw an error if a tab is attempting to be pinned.
+    if (contents_in_an_uneditable_saved_group) {
+      return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
+    }
+
+    // Bug fix for crbug.com/1197888. Don't let the extension update the tab if
+    // the user is dragging tabs.
+    if (!ExtensionTabUtil::IsTabStripEditable()) {
+      return RespondNow(Error(tabs_constants::kTabStripNotEditableError));
+    }
+
+    bool pinned = *params->update_properties.pinned;
+    tab_strip->SetTabPinned(tab_index, pinned);
+
+    // Update the tab index because it may move when being pinned.
+    tab_index = tab_strip->GetIndexOfWebContents(contents);
+  }
+
+  // TODO(rafaelw): handle setting remaining tab properties:
+  // -title
+  // -favIconUrl
+
+  // Navigate the tab to a new location if the url is different.
+  if (params->update_properties.url) {
+    if (contents_in_an_uneditable_saved_group) {
+      return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
+    }
+
+    std::string updated_url = *params->update_properties.url;
+    if (browser->profile()->IsIncognitoProfile() &&
+        !IsURLAllowedInIncognito(GURL(updated_url), browser->profile())) {
+      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+          tabs_constants::kURLsNotAllowedInIncognitoError, updated_url)));
+    }
+
+    // Get last committed or pending URL.
+    std::string current_url = contents->GetVisibleURL().is_valid()
+                                  ? contents->GetVisibleURL().spec()
+                                  : std::string();
+
+    if (!UpdateURL(updated_url, tab_id, &error)) {
+      return RespondNow(Error(std::move(error)));
+    }
+
+    NotifyExtensionTelemetry(Profile::FromBrowserContext(browser_context()),
+                             extension(), safe_browsing::TabsApiInfo::UPDATE,
+                             current_url, updated_url);
   }
 
   return RespondNow(GetResult());
@@ -1735,8 +1761,10 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
       if (!error.empty()) {
         return RespondNow(Error(std::move(error)));
       }
-      if (web_contents && ExtensionTabUtil::TabIsInSavedTabGroup(
-                              web_contents, tab_strip_model)) {
+      if (web_contents &&
+          ExtensionTabUtil::TabIsInSavedTabGroup(web_contents,
+                                                 tab_strip_model) &&
+          !ExtensionHasLockedFullscreenPermission(extension())) {
         return RespondNow(
             Error(tabs_constants::kSavedTabGroupNotEditableError));
       }
@@ -1890,8 +1918,10 @@ ExtensionFunction::ResponseAction TabsReloadFunction::Run() {
   }
 
   // Prevent Reloading if the tab is in a savedTabGroup.
-  if (web_contents && ExtensionTabUtil::TabIsInSavedTabGroup(
-                          web_contents, browser->tab_strip_model())) {
+  if (web_contents &&
+      ExtensionTabUtil::TabIsInSavedTabGroup(web_contents,
+                                             browser->tab_strip_model()) &&
+      !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
   }
 
@@ -2067,8 +2097,10 @@ ExtensionFunction::ResponseAction TabsGroupFunction::Run() {
       return RespondNow(Error(std::move(error)));
     }
 
-    if (web_contents && ExtensionTabUtil::TabIsInSavedTabGroup(
-                            web_contents, tab_browser->tab_strip_model())) {
+    if (web_contents &&
+        ExtensionTabUtil::TabIsInSavedTabGroup(
+            web_contents, tab_browser->tab_strip_model()) &&
+        !ExtensionHasLockedFullscreenPermission(extension())) {
       return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
     }
 
@@ -2152,7 +2184,8 @@ ExtensionFunction::ResponseAction TabsUngroupFunction::Run() {
       return RespondNow(Error(std::move(error)));
     }
     if (web_contents &&
-        ExtensionTabUtil::TabIsInSavedTabGroup(web_contents, tab_strip_model)) {
+        ExtensionTabUtil::TabIsInSavedTabGroup(web_contents, tab_strip_model) &&
+        !ExtensionHasLockedFullscreenPermission(extension())) {
       return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
     }
 
@@ -2258,6 +2291,15 @@ ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
   WebContents* contents = GetWebContentsForID(context_id, &error);
   if (!contents)
     return RespondNow(Error(std::move(error)));
+
+  // Get last committed URL.
+  std::string current_url = contents->GetLastCommittedURL().is_valid()
+                                ? contents->GetLastCommittedURL().spec()
+                                : std::string();
+  NotifyExtensionTelemetry(Profile::FromBrowserContext(browser_context()),
+                           extension(),
+                           safe_browsing::TabsApiInfo::CAPTURE_VISIBLE_TAB,
+                           current_url, /*new_url=*/std::string());
 
   // NOTE: CaptureAsync() may invoke its callback from a background thread,
   // hence the BindPostTask().
@@ -2757,7 +2799,8 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
   }
 
   // Check that the tab is not in a SavedTabGroup.
-  if (contents && ExtensionTabUtil::TabIsInSavedTabGroup(contents, nullptr)) {
+  if (contents && ExtensionTabUtil::TabIsInSavedTabGroup(contents, nullptr) &&
+      !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
   }
 
@@ -2800,7 +2843,8 @@ ExtensionFunction::ResponseAction TabsGoForwardFunction::Run() {
     return RespondNow(Error(tabs_constants::kNotFoundNextPageError));
 
   // Check that the tab is not in a SavedTabGroup.
-  if (ExtensionTabUtil::TabIsInSavedTabGroup(web_contents, nullptr)) {
+  if (ExtensionTabUtil::TabIsInSavedTabGroup(web_contents, nullptr) &&
+      !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
   }
 
@@ -2825,7 +2869,8 @@ ExtensionFunction::ResponseAction TabsGoBackFunction::Run() {
     return RespondNow(Error(tabs_constants::kNotFoundNextPageError));
 
   // Check that the tab is not part of a saved tab group.
-  if (ExtensionTabUtil::TabIsInSavedTabGroup(web_contents, nullptr)) {
+  if (ExtensionTabUtil::TabIsInSavedTabGroup(web_contents, nullptr) &&
+      !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
   }
 

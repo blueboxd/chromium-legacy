@@ -68,7 +68,7 @@ class FakePlusAddressService : public PlusAddressService {
                           .is_confirmed = false}));
   }
 
-  absl::optional<std::string> GetPrimaryEmail() override {
+  std::optional<std::string> GetPrimaryEmail() override {
     // Ensure the value is present without requiring identity setup.
     return "plus+primary@plus.plus";
   }
@@ -216,7 +216,7 @@ TEST_F(PlusAddressBottomSheetMediatorTest, openManagementUrlOnNewTab) {
                            incognito:incognito_];
   [mediator openNewTab:PlusAddressURLType::kManagement];
 
-  EXPECT_EQ(GURL(plus_addresses::kPlusAddressManagementUrl.Get()),
+  EXPECT_EQ(GURL(plus_addresses::features::kPlusAddressManagementUrl.Get()),
             url_loader_->last_params.web_params.url);
   // Ensure one new tab is opened.
   EXPECT_EQ(1, url_loader_->load_new_tab_call_count);
@@ -234,7 +234,7 @@ TEST_F(PlusAddressBottomSheetMediatorTest, openErrorReportUrlOnNewTab) {
                            incognito:incognito_];
   [mediator openNewTab:PlusAddressURLType::kErrorReport];
 
-  EXPECT_EQ(GURL(plus_addresses::kPlusAddressErrorReportUrl.Get()),
+  EXPECT_EQ(GURL(plus_addresses::features::kPlusAddressErrorReportUrl.Get()),
             url_loader_->last_params.web_params.url);
   // Ensure one new tab is opened.
   EXPECT_EQ(1, url_loader_->load_new_tab_call_count);

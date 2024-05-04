@@ -15,6 +15,7 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.lifetime.Destroyable;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.ColorPickerCoordinator.ColorPickerLayoutType;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
@@ -203,16 +205,29 @@ public interface TabManagementDelegate {
             @NonNull DoubleConsumer onToolbarAlphaChange);
 
     /**
-     * Create a {@link TabGroupCreationDialog} when creating a new tab group.
+     * *
+     *
+     * @param context Used to inflate UI.
+     * @param tabModelSelector Used to pull tab data from.
+     * @param onToolbarAlphaChange Observer to notify when alpha changes during animations.
+     * @return The pane implementation that displays and allows interactions with tab groups.
+     */
+    Pane createTabGroupsPane(
+            @NonNull Context context,
+            @NonNull TabModelSelector tabModelSelector,
+            @NonNull DoubleConsumer onToolbarAlphaChange);
+
+    /**
+     * Create a TabGroupCreationDialogManager when creating a new tab group.
      *
      * @param activity The {@link Activity} that hosts this dialog.
      * @param modalDialogManager The modal dialog manager for the activity.
-     * @param tabModelSelectorSupplier The supplier for the {@link TabModelSelector}.
+     * @param tabModelSelector The current {@link TabModelSelector}.
      */
-    TabGroupCreationDialog createTabGroupCreationDialogDelegate(
+    Destroyable createTabGroupCreationDialogManager(
             @NonNull Activity activity,
             @NonNull ModalDialogManager modalDialogManager,
-            @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier);
+            @NonNull TabModelSelector tabModelSelector);
 
     /**
      * Create a {@link ColorPicker} when creating a custom color picker component.
@@ -222,11 +237,15 @@ public interface TabManagementDelegate {
      * @param colorPickerLayout The layout resource to be inflated.
      * @param colorPickerType The {@link ColorPickerType} that this color picker use.
      * @param isIncognito Whether the current tab model is in incognito mode.
+     * @param layoutType The {@ColorPickerLayoutType} that the component will be arranged as.
+     * @param onColorItemClicked The runnable for performing an action on each color click event.
      */
     ColorPicker createColorPickerCoordinator(
             @NonNull Context context,
             @NonNull List<Integer> colors,
             @NonNull @LayoutRes int colorPickerLayout,
             @NonNull @ColorPickerType int colorPickerType,
-            @NonNull boolean isIncognito);
+            @NonNull boolean isIncognito,
+            @NonNull @ColorPickerLayoutType int layoutType,
+            @Nullable Runnable onColorItemClicked);
 }

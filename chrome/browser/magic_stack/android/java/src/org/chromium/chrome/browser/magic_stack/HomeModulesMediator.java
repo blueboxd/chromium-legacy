@@ -168,6 +168,12 @@ public class HomeModulesMediator {
     @VisibleForTesting
     void addToRecyclerViewOrCache(
             @ModuleType int moduleType, @Nullable PropertyModel propertyModel) {
+        if (!mModuleTypeToRankingIndexMap.containsKey(moduleType)) {
+            // TODO(b/326081541): add an assert here to prevent a module add itself to the magic
+            // stack after sending a onDataFetchFailed() response.
+            return;
+        }
+
         int index = mModuleTypeToRankingIndexMap.get(moduleType);
         long duration = SystemClock.elapsedRealtime() - mShowModuleStartTimeMs[index];
         if (!mIsFetchingModules) {
@@ -176,12 +182,17 @@ public class HomeModulesMediator {
             return;
         }
 
+        // When the magic stack receives a onDataFetchFailed() response, it calls
+        // ModuleProvider#hideModule() to allow the module to clean up.
+        boolean isHideModuleCalled = false;
         // If this module has responded before, update its data on the RecyclerView.
         if (index < mModuleResultsWaitingIndex) {
             if (propertyModel != null) {
                 updateRecyclerView(moduleType, index, propertyModel);
             } else {
                 remove(moduleType, index);
+                // In remove(), ModuleProvider#hideModule() has been called.
+                isHideModuleCalled = true;
             }
         } else if (index == mModuleResultsWaitingIndex) {
             if (propertyModel != null) {
@@ -206,6 +217,11 @@ public class HomeModulesMediator {
         }
 
         if (propertyModel == null) {
+            if (!isHideModuleCalled) {
+                // When a module has no data to show, call ModuleProvider#hideModule() to allow the
+                // module to clean up.
+                hideModuleOnDataFetchFailed(moduleType);
+            }
             HomeModulesMetricsUtils.recordFetchDataFailedDuration(
                     mHostSurface, moduleType, duration);
         } else {
@@ -265,9 +281,12 @@ public class HomeModulesMediator {
         while (mModuleResultsWaitingIndex < mModuleFetchResultsIndicator.length) {
             var hasResult = mModuleFetchResultsIndicator[mModuleResultsWaitingIndex];
             if (hasResult == null) {
-                HomeModulesMetricsUtils.recordFetchDataTimeOutType(
-                        mHostSurface, mModuleListToShow.get(mModuleResultsWaitingIndex));
+                // Case 1: no response received.
+                @ModuleType int moduleType = mModuleListToShow.get(mModuleResultsWaitingIndex);
+                HomeModulesMetricsUtils.recordFetchDataTimeOutType(mHostSurface, moduleType);
+                hideModuleOnDataFetchFailed(moduleType);
             } else if (hasResult) {
+                // Case 2: received a response with data to show.
                 var cachedResponse = mModuleFetchResultsCache[mModuleResultsWaitingIndex];
                 assert cachedResponse != null;
                 // append() will change the visibility of the recyclerview if there isn't any module
@@ -287,6 +306,10 @@ public class HomeModulesMediator {
     @VisibleForTesting
     void append(@NonNull SimpleRecyclerViewAdapter.ListItem item) {
         mModel.add(item);
+
+        HomeModulesMetricsUtils.recordModuleBuiltPosition(
+                mHostSurface, item.type, mModel.size() - 1);
+
         if (mModel.size() == 1) {
             mSetVisibilityCallback.onResult(true);
 
@@ -294,6 +317,13 @@ public class HomeModulesMediator {
             long duration = SystemClock.elapsedRealtime() - mShowModuleStartTimeMs[0];
             HomeModulesMetricsUtils.recordFirstModuleShownDuration(mHostSurface, duration);
         }
+    }
+
+    // Called to hide the module when a module responds without any data to show.
+    private void hideModuleOnDataFetchFailed(@ModuleType int moduleType) {
+        ModuleProvider moduleProvider = mModuleTypeToModuleProviderMap.get(moduleType);
+        moduleProvider.hideModule();
+        mModuleTypeToModuleProviderMap.remove(moduleType);
     }
 
     /**
@@ -339,6 +369,8 @@ public class HomeModulesMediator {
      * stack.
      */
     void hide() {
+        if (!mIsShown) return;
+
         mIsFetchingModules = false;
         mIsShown = false;
         for (int i = 0; i < mModel.size(); i++) {
@@ -363,6 +395,25 @@ public class HomeModulesMediator {
     /** Returns the instance of a module {@link ModuleProvider} of the given type. */
     ModuleProvider getModuleProvider(int moduleType) {
         return mModuleTypeToModuleProviderMap.get(moduleType);
+    }
+
+    /* Gets the rank of the module based on the given type. */
+    int getModuleRank(@ModuleType int moduleType) {
+        return findModuleIndexInRecyclerView(
+                moduleType, mModuleTypeToRankingIndexMap.get(moduleType));
+    }
+
+    /**
+     * Records whether the magic stack is scrollable and has been scrolled or not before it is
+     * hidden or destroyed.
+     */
+    void recordMagicStackScroll(boolean hasHomeModulesBeenScrolled) {
+        if (mModel.size() < 1) {
+            return;
+        }
+
+        HomeModulesMetricsUtils.recordHomeModulesScrollState(
+                mHostSurface, mModel.size() > 1, hasHomeModulesBeenScrolled);
     }
 
     Map<Integer, ModuleProvider> getModuleTypeToModuleProviderMapForTesting() {

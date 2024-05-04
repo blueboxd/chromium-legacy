@@ -15,19 +15,22 @@ import 'chrome://resources/ash/common/sea_pen/surface_effects/sparkle_placeholde
 import 'chrome://resources/ash/common/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/ash/common/cr_elements/icons.html.js';
-import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './sea_pen_feedback_element.js';
+import './sea_pen_image_loading_element.js';
+import './sea_pen_zero_state_svg_element.js';
 
-import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
-
-import {Query} from './constants.js';
+import {Query, SeaPenImageId} from './constants.js';
 import {MantaStatusCode, SeaPenThumbnail} from './sea_pen.mojom-webui.js';
 import {clearSeaPenThumbnails, openFeedbackDialog, selectSeaPenWallpaper} from './sea_pen_controller.js';
 import {SeaPenTemplateId} from './sea_pen_generated.mojom-webui.js';
 import {getTemplate} from './sea_pen_images_element.html.js';
 import {getSeaPenProvider} from './sea_pen_interface_provider.js';
 import {WithSeaPenStore} from './sea_pen_store.js';
-import {isNonEmptyArray, isNonEmptyFilePath, logSeaPenTemplateFeedback} from './sea_pen_utils.js';
+import {isNonEmptyArray, isSeaPenImageId, logSeaPenTemplateFeedback} from './sea_pen_utils.js';
+
+const kLoadingPlaceholderCount = 8;
+
+type Tile = 'loading'|SeaPenThumbnail;
 
 export class SeaPenImagesElement extends WithSeaPenStore {
   static get is() {
@@ -45,12 +48,30 @@ export class SeaPenImagesElement extends WithSeaPenStore {
         observer: 'onTemplateIdChanged_',
       },
 
-      thumbnails_: Object,
+      thumbnails_: {
+        type: Object,
+        observer: 'onThumbnailsChanged_',
+      },
 
-      thumbnailsLoading_: Boolean,
+      thumbnailsLoading_: {
+        type: Boolean,
+        observer: 'onThumbnailsLoadingChanged_',
+      },
+
+      /**
+       * List of tiles to be displayed to the user. Updated when `thumbnails_`
+       * or `thumbnailsLoading_` changed.
+       */
+      tiles_: {
+        type: Array,
+        value() {
+          // Pre-populate the tiles with placeholders.
+          return new Array(kLoadingPlaceholderCount).fill('loading');
+        },
+      },
 
       currentSelected_: {
-        type: String,
+        type: Number,
         value: null,
       },
 
@@ -72,8 +93,9 @@ export class SeaPenImagesElement extends WithSeaPenStore {
   private templateId: SeaPenTemplateId|Query;
   private thumbnails_: SeaPenThumbnail[]|null;
   private thumbnailsLoading_: boolean;
-  private currentSelected_: string|null;
-  private pendingSelected_: SeaPenThumbnail|FilePath|null;
+  private tiles_: Tile[];
+  private currentSelected_: SeaPenImageId|null;
+  private pendingSelected_: SeaPenImageId|SeaPenThumbnail|null;
   private thumbnailResponseStatusCode_: MantaStatusCode|null;
   private showError_: boolean;
 
@@ -119,26 +141,82 @@ export class SeaPenImagesElement extends WithSeaPenStore {
     }
   }
 
+  private getPoweredByGoogleMessage_(): string {
+    return window.location.origin === 'chrome://personalization' ?
+        this.i18n('seaPenWallpaperPoweredByGoogle') :
+        this.i18n('vcBackgroundPoweredByGoogle');
+  }
+
   private onTemplateIdChanged_() {
     clearSeaPenThumbnails(this.getStore());
   }
 
-  private shouldShowThumbnailPlaceholders_(
+  private shouldShowZeroState_(
       thumbnailsLoading: boolean, thumbnails: SeaPenThumbnail[]|null): boolean {
-    // Use placeholders before and during loading thumbnails.
     return !thumbnails && !thumbnailsLoading;
+  }
+
+  private isSeaPenThumbnail_(item: Tile|null|
+                             undefined): item is SeaPenThumbnail {
+    return !!item && typeof item === 'object' && 'id' in item &&
+        typeof item.id === 'number';
   }
 
   private shouldShowImageThumbnails_(
       thumbnailsLoading: boolean, thumbnails: SeaPenThumbnail[]|null): boolean {
-    return !thumbnailsLoading && isNonEmptyArray(thumbnails);
+    return thumbnailsLoading || isNonEmptyArray(thumbnails);
   }
 
   private getPlaceholders_(x: number) {
     return new Array(x).fill(0);
   }
 
-  private onThumbnailSelected_(event: Event&{model: {item: SeaPenThumbnail}}) {
+  private isTileVisible_(tile: Tile|null|undefined, thumbnailsLoading: boolean):
+      boolean {
+    if (thumbnailsLoading) {
+      return false;
+    }
+    return this.isSeaPenThumbnail_(tile);
+  }
+
+  private onThumbnailsChanged_(thumbnails: SeaPenThumbnail[]) {
+    if (!isNonEmptyArray(thumbnails)) {
+      return;
+    }
+
+    this.updateList(
+        /*propertyPath=*/ 'tiles_',
+        /*identityGetter=*/
+        (tile: Tile) => {
+          if (this.isSeaPenThumbnail_(tile)) {
+            return tile.id.toString();
+          }
+          return tile;
+        },
+        /*newList=*/ thumbnails,
+        /*identityBasedUpdate=*/ true,
+    );
+  }
+
+  private onThumbnailsLoadingChanged_(thumbnailsLoading: boolean) {
+    if (!thumbnailsLoading) {
+      return;
+    }
+
+    this.updateList(
+        /*propertyPath=*/ 'tiles_',
+        /*identityGetter=*/
+        () => 'loading',
+        /*newList=*/ new Array(kLoadingPlaceholderCount).fill('loading'),
+        /*identityBasedUpdate=*/ false,
+    );
+  }
+
+  private onThumbnailSelected_(event: Event&{model: {item: Tile}}) {
+    if (!this.isSeaPenThumbnail_(event.model.item)) {
+      return;
+    }
+
     selectSeaPenWallpaper(
         event.model.item, getSeaPenProvider(), this.getStore());
   }
@@ -148,9 +226,9 @@ export class SeaPenImagesElement extends WithSeaPenStore {
   }
 
   private isThumbnailSelected_(
-      thumbnail: SeaPenThumbnail|undefined, currentSelected: string|null,
-      pendingSelected: FilePath|SeaPenThumbnail|null): boolean {
-    if (!thumbnail) {
+      thumbnail: Tile|undefined, currentSelected: SeaPenImageId|null,
+      pendingSelected: SeaPenImageId|SeaPenThumbnail|null): boolean {
+    if (!thumbnail || thumbnail === 'loading') {
       return false;
     }
 
@@ -159,26 +237,26 @@ export class SeaPenImagesElement extends WithSeaPenStore {
       return true;
     }
 
-    const fileName = `${thumbnail.id}.jpg`;
-
     // Image was previously selected, and was just clicked again via the "Recent
     // Images" section. This can arise if the user quickly navigates back and
     // forth from SeaPen root and results page while selecting images.
-    if (isNonEmptyFilePath(pendingSelected)) {
-      return pendingSelected.path.endsWith(fileName);
+    if (isSeaPenImageId(pendingSelected)) {
+      return thumbnail.id === pendingSelected;
     }
 
     // No pending image in progress. Currently selected image matches the
     // thumbnail id.
-    return pendingSelected === null && !!currentSelected?.endsWith(fileName);
+    return pendingSelected === null && currentSelected === thumbnail.id;
   }
 
-  private isThumbnailLoading_(
-      thumbnail: SeaPenThumbnail|undefined,
-      pendingSelected: FilePath|SeaPenThumbnail|null): boolean {
-    return !!thumbnail && thumbnail === pendingSelected;
+  private isThumbnailPendingSelected_(
+      thumbnail: Tile|undefined,
+      pendingSelected: SeaPenImageId|SeaPenThumbnail|null): boolean {
+    return this.isSeaPenThumbnail_(thumbnail) && !!thumbnail &&
+        thumbnail === pendingSelected;
   }
 
+  // START AUTOGENERATED - DO NOT EDIT!
   // Get the name of the template for metrics. Must match histograms.xml
   // SeaPenTemplateName.
   private getTemplateNameFromId_(templateId: SeaPenTemplateId|Query): string {
@@ -187,40 +265,50 @@ export class SeaPenImagesElement extends WithSeaPenStore {
         return 'Flower';
       case SeaPenTemplateId.kMineral:
         return 'Mineral';
-      case SeaPenTemplateId.kScifi:
-        return 'Scifi';
       case SeaPenTemplateId.kArt:
         return 'Art';
       case SeaPenTemplateId.kCharacters:
         return 'Characters';
       case SeaPenTemplateId.kTerrain:
-        return 'Landscape';
+        return 'Terrain';
       case SeaPenTemplateId.kCurious:
         return 'Curious';
       case SeaPenTemplateId.kDreamscapes:
         return 'Dreamscapes';
       case SeaPenTemplateId.kTranslucent:
         return 'Translucent';
+      case SeaPenTemplateId.kScifi:
+        return 'Scifi';
+      case SeaPenTemplateId.kLetters:
+        return 'Letters';
+      case SeaPenTemplateId.kGlowscapes:
+        return 'Glowscapes';
+      case SeaPenTemplateId.kSurreal:
+        return 'Surreal';
+      case SeaPenTemplateId.kTerrainAlternate:
+        return 'TerrainAlternate';
 
       case SeaPenTemplateId.kVcBackgroundSimple:
         return 'VcBackgroundSimple';
       case SeaPenTemplateId.kVcBackgroundOffice:
         return 'VcBackgroundOffice';
       case SeaPenTemplateId.kVcBackgroundTerrainVc:
-        return 'VcBackgroundTerrain';
+        return 'VcBackgroundTerrainVc';
       case SeaPenTemplateId.kVcBackgroundCafe:
         return 'VcBackgroundCafe';
       case SeaPenTemplateId.kVcBackgroundArt:
         return 'VcBackgroundArt';
       case SeaPenTemplateId.kVcBackgroundDreamscapesVc:
-        return 'VcBackgroundDreamscapes';
+        return 'VcBackgroundDreamscapesVc';
       case SeaPenTemplateId.kVcBackgroundCharacters:
         return 'VcBackgroundCharacters';
-
+      case SeaPenTemplateId.kVcBackgroundGlowscapes:
+        return 'VcBackgroundGlowscapes';
       case 'Query':
         return 'Query';
     }
   }
+  // END AUTOGENERATED - DO NOT EDIT!
 
   private onSelectedFeedbackChanged_(event:
                                          CustomEvent<{isThumbsUp: boolean}>) {

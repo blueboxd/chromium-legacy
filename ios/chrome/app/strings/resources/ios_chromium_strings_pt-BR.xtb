@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Inicie uma pesquisa em uma nova guia do Chromium.</translation>
 <translation id="1431818719585918472">Permita que o Chromium bloqueie suas guias anônimas.</translation>
 <translation id="1472013873724362412">Sua conta não funciona com o Chromium. Entre em contato com o administrador do domínio ou use uma Conta do Google normal para fazer login.</translation>
+<translation id="1503199973012840174">O Chromium está desatualizado. Atualize para se proteger.</translation>
 <translation id="1507010443238049608">Ajudar a melhorar os recursos e o desempenho do Chromium</translation>
 <translation id="1513122820609681462">Definir o Chromium como o navegador padrão</translation>
 <translation id="1531155317299575425">Mostra solicitações para fazer login no Chromium.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Este endereço está salvo no Chromium. Para usá-lo nos produtos do Google, salve-o na sua conta, <ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">Isso significa que o Chromium vai solicitar sempre o site para computador.</translation>
 <translation id="2313870531055795960">Confere se os URLs estão em uma lista de sites não seguros armazenada no Chromium. Se um site tentar roubar sua senha ou se você fizer o download de um arquivo nocivo, o Chromium também poderá enviar os URLs, incluindo partes do conteúdo da página, para o Navegação segura.</translation>
+<translation id="231828342043114302">Para receber conteúdo personalizado com base nos seus interesses, faça login no Chromium.</translation>
 <translation id="2374627437126809292">O Chromium usa o Google Maps para fornecer rotas e informações locais sobre endereços detectados.</translation>
 <translation id="2386292341327187942">Na caixa "Widgets da Pesquisa", digite "Chromium"</translation>
 <translation id="2426113998523353159">Sua organização exige que você faça login para usar o Chromium.</translation>
@@ -78,7 +80,6 @@ Para conferir mais configurações que usam dados para melhorar sua experiência
 <translation id="3219277919172823720">Pesquisar com voz no Chromium</translation>
 <translation id="3228349498066165585">Alguns dos seus dados do Chromium ainda não foram salvos na sua Conta do Google.
         Aguarde alguns minutos antes de sair. Se você sair agora, esses dados serão excluídos.</translation>
-<translation id="3256316712990552818">Copiado no Chromium</translation>
 <translation id="328933489847748230">{count,plural, =1{Mostrando agora 1 janela do Chromium}one{Mostrando agora {count} janela do Chromium}other{Mostrando agora {count} janelas do Chromium}}</translation>
 <translation id="3344973607274501920">Não foi possível verificar suas senhas com o Chromium. Verifique sua conexão de Internet.</translation>
 <translation id="3366305173356742781">Dados do Chromium na sua conta</translation>
@@ -213,6 +214,7 @@ Só uma pessoa com sua senha longa pode ler seus dados criptografados. Essa senh
 <translation id="6752854822223394465">Sua organização está configurando o Chromium…</translation>
 <translation id="6794054469102824109">Abre o jogo do dinossauro do Chromium.</translation>
 <translation id="6820823224820483452">Não foi possível verificar todas as senhas com o Chromium. Tente novamente amanhã.</translation>
+<translation id="6830362027989570433">Visualização aberta do preenchimento automático do Chromium</translation>
 <translation id="6852799557929001644">Acesse suas senhas do Chromium e muito mais em outros apps neste dispositivo.</translation>
 <translation id="6887138405044152640">Para enviar esta guia a outro dispositivo, faça login no Chromium no outro aparelho.</translation>
 <translation id="6911341667534646387">Continue usando os dados do Chromium na sua Conta do Google</translation>
@@ -312,7 +314,6 @@ Seus dados foram criptografados com a senha longa em <ph name="TIME" />. Digite-
 <translation id="9059693977935746710">Você não terá que se lembrar dessa senha. Ela vai ficar salva na conta <ph name="EMAIL" /> do Gerenciador de senhas</translation>
 <translation id="9089354809943900324">O Chromium está desatualizado</translation>
 <translation id="9110075932708282655">Usar o Chromium por padrão</translation>
-<translation id="9137114218472648150">O Chromium está desatualizado. Atualize para a versão mais recente para manter a segurança.</translation>
 <translation id="921174536258924340">Não foi possível verificar todas as senhas com o Chromium. Tente novamente amanhã ou <ph name="BEGIN_LINK" />verifique-as na sua Conta do Google<ph name="END_LINK" />.</translation>
 <translation id="971488683725792095">Use o Chromium automaticamente ao tocar em links de mensagens, documentos e outros apps.</translation>
 <translation id="981812233959540767">Iniciar o jogo do dinossauro do Chromium</translation>

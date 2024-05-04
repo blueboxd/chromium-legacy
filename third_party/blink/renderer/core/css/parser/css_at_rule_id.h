@@ -24,6 +24,7 @@ enum class CSSAtRuleID {
   kCSSAtRuleNamespace,
   kCSSAtRulePage,
   kCSSAtRulePositionFallback,
+  kCSSAtRulePositionTry,
   kCSSAtRuleProperty,
   kCSSAtRuleContainer,
   kCSSAtRuleCounterStyle,
@@ -57,6 +58,8 @@ enum class CSSAtRuleID {
   kCSSAtRuleRightTop,
   kCSSAtRuleRightMiddle,
   kCSSAtRuleRightBottom,
+  // CSS Functions
+  kCSSAtRuleFunction,
 };
 
 CSSAtRuleID CssAtRuleID(StringView name);

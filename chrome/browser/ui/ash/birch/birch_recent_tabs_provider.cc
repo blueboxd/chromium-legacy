@@ -15,12 +15,31 @@
 
 namespace ash {
 
+namespace {
+
+BirchTabItem::DeviceFormFactor GetTabItemFormFactor(
+    syncer::DeviceInfo::FormFactor form_factor) {
+  // Convert to a BirchTabItem specific form factor to ensure any changes
+  // to DeviceInfo::FormFactor won't break the BirchTabItem's form factor.
+  switch (form_factor) {
+    case syncer::DeviceInfo::FormFactor::kUnknown:
+    case syncer::DeviceInfo::FormFactor::kDesktop:
+      return BirchTabItem::DeviceFormFactor::kDesktop;
+    case syncer::DeviceInfo::FormFactor::kPhone:
+      return BirchTabItem::DeviceFormFactor::kPhone;
+    case syncer::DeviceInfo::FormFactor::kTablet:
+      return BirchTabItem::DeviceFormFactor::kTablet;
+  }
+}
+
+}  // namespace
+
 BirchRecentTabsProvider::BirchRecentTabsProvider(Profile* profile)
     : profile_(profile) {}
 
 BirchRecentTabsProvider::~BirchRecentTabsProvider() = default;
 
-void BirchRecentTabsProvider::GetRecentTabs() {
+void BirchRecentTabsProvider::RequestBirchDataFetch() {
   auto* session_sync_service =
       SessionSyncServiceFactory::GetInstance()->GetForProfile(profile_);
 
@@ -30,6 +49,7 @@ void BirchRecentTabsProvider::GetRecentTabs() {
       remote_sessions;
 
   if (!open_tabs || !open_tabs->GetAllForeignSessions(&remote_sessions)) {
+    Shell::Get()->birch_model()->SetRecentTabItems({});
     return;
   }
 
@@ -46,7 +66,8 @@ void BirchRecentTabsProvider::GetRecentTabs() {
         items.emplace_back(
             current_navigation.title(), current_navigation.virtual_url(),
             current_navigation.timestamp(), current_navigation.favicon_url(),
-            session->GetSessionName());
+            session->GetSessionName(),
+            GetTabItemFormFactor(session->GetDeviceFormFactor()));
       }
     }
   }

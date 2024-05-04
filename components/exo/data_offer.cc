@@ -23,6 +23,7 @@
 #include "components/exo/data_exchange_delegate.h"
 #include "components/exo/data_offer_delegate.h"
 #include "components/exo/data_offer_observer.h"
+#include "components/exo/security_delegate.h"
 #include "net/base/filename_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -37,10 +38,7 @@ namespace exo {
 namespace {
 
 constexpr char kTextMimeTypeUtf16[] = "text/plain;charset=utf-16";
-constexpr char kTextHtmlMimeTypeUtf8[] = "text/html;charset=utf-8";
 constexpr char kTextHtmlMimeTypeUtf16[] = "text/html;charset=utf-16";
-constexpr char kTextRtfMimeType[] = "text/rtf";
-constexpr char kImagePngMimeType[] = "image/png";
 
 constexpr char kUTF8[] = "utf8";
 constexpr char kUTF16[] = "utf16";
@@ -265,9 +263,9 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
   if (!filenames.empty()) {
     data_callbacks_.emplace(
         uri_list_mime_type,
-        base::BindOnce(&DataExchangeDelegate::SendFileInfo,
-                       base::Unretained(data_exchange_delegate), endpoint_type,
-                       std::move(filenames)));
+        base::BindOnce(&SecurityDelegate::SendFileInfo,
+                       base::Unretained(delegate_->GetSecurityDelegate()),
+                       endpoint_type, std::move(filenames)));
     delegate_->OnOffer(uri_list_mime_type);
     return;
   }
@@ -276,9 +274,9 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
       data_exchange_delegate->HasUrlsInPickle(pickle)) {
     data_callbacks_.emplace(
         uri_list_mime_type,
-        base::BindOnce(&DataExchangeDelegate::SendPickle,
-                       base::Unretained(data_exchange_delegate), endpoint_type,
-                       pickle));
+        base::BindOnce(&SecurityDelegate::SendPickle,
+                       base::Unretained(delegate_->GetSecurityDelegate()),
+                       endpoint_type, pickle));
     delegate_->OnOffer(uri_list_mime_type);
     return;
   }
@@ -327,7 +325,7 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
   std::u16string html_content;
   GURL url_content;
   if (data.HasHtml() && data.GetHtml(&html_content, &url_content)) {
-    const std::string utf8_html_mime_type = std::string(kTextHtmlMimeTypeUtf8);
+    const std::string utf8_html_mime_type = std::string(ui::kMimeTypeHTMLUtf8);
     data_callbacks_.emplace(utf8_html_mime_type,
                             AsyncEncodeAsRefCountedString(html_content, kUTF8));
     delegate_->OnOffer(utf8_html_mime_type);
@@ -373,25 +371,29 @@ void DataOffer::SetClipboardData(DataExchangeDelegate* data_exchange_delegate,
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::HtmlType(),
                              ui::ClipboardBuffer::kCopyPaste, &data_dst)) {
-    delegate_->OnOffer(std::string(kTextHtmlMimeTypeUtf8));
+    delegate_->OnOffer(std::string(ui::kMimeTypeHTMLUtf8));
     data_callbacks_.emplace(
-        std::string(kTextHtmlMimeTypeUtf8),
+        std::string(ui::kMimeTypeHTMLUtf8),
         base::BindOnce(&ReadHTMLFromClipboard, std::string(kUTF8), data_dst));
     delegate_->OnOffer(std::string(kTextHtmlMimeTypeUtf16));
     data_callbacks_.emplace(
         std::string(kTextHtmlMimeTypeUtf16),
         base::BindOnce(&ReadHTMLFromClipboard, std::string(kUTF16), data_dst));
+    delegate_->OnOffer(std::string(ui::kMimeTypeHTML));
+    data_callbacks_.emplace(
+        std::string(ui::kMimeTypeHTML),
+        base::BindOnce(&ReadHTMLFromClipboard, std::string(kUTF8), data_dst));
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::RtfType(),
                              ui::ClipboardBuffer::kCopyPaste, &data_dst)) {
-    delegate_->OnOffer(std::string(kTextRtfMimeType));
-    data_callbacks_.emplace(std::string(kTextRtfMimeType),
+    delegate_->OnOffer(std::string(ui::kMimeTypeRTF));
+    data_callbacks_.emplace(std::string(ui::kMimeTypeRTF),
                             base::BindOnce(&ReadRTFFromClipboard, data_dst));
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::BitmapType(),
                              ui::ClipboardBuffer::kCopyPaste, &data_dst)) {
-    delegate_->OnOffer(std::string(kImagePngMimeType));
-    data_callbacks_.emplace(std::string(kImagePngMimeType),
+    delegate_->OnOffer(std::string(ui::kMimeTypePNG));
+    data_callbacks_.emplace(std::string(ui::kMimeTypePNG),
                             base::BindOnce(&ReadPNGFromClipboard, data_dst));
   }
 
@@ -406,9 +408,9 @@ void DataOffer::SetClipboardData(DataExchangeDelegate* data_exchange_delegate,
     delegate_->OnOffer(std::string(ui::kMimeTypeURIList));
     data_callbacks_.emplace(
         std::string(ui::kMimeTypeURIList),
-        base::BindOnce(&DataExchangeDelegate::SendFileInfo,
-                       base::Unretained(data_exchange_delegate), endpoint_type,
-                       std::move(filenames)));
+        base::BindOnce(&SecurityDelegate::SendFileInfo,
+                       base::Unretained(delegate_->GetSecurityDelegate()),
+                       endpoint_type, std::move(filenames)));
   }
 }
 

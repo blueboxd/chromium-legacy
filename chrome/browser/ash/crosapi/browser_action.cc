@@ -5,12 +5,14 @@
 #include "chrome/browser/ash/crosapi/browser_action.h"
 
 #include <optional>
+#include <string_view>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/desk_template_ash.h"
+#include "chrome/browser/ash/floating_workspace/floating_workspace_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
@@ -74,8 +76,8 @@ class NewWindowAction final : public BrowserAction {
 
 class NewWindowForDetachingTabAction final : public BrowserAction {
  public:
-  NewWindowForDetachingTabAction(base::StringPiece16 tab_id_str,
-                                 base::StringPiece16 group_id_str,
+  NewWindowForDetachingTabAction(std::u16string_view tab_id_str,
+                                 std::u16string_view group_id_str,
                                  NewWindowForDetachingTabCallback callback)
       : BrowserAction(false),
         tab_id_str_(tab_id_str),
@@ -220,6 +222,29 @@ class OpenUrlAction final : public BrowserAction {
   base::WeakPtrFactory<OpenUrlAction> weak_ptr_factory_;
 };
 
+class OpenCaptivePortalSigninAction final : public BrowserAction {
+ public:
+  explicit OpenCaptivePortalSigninAction(const GURL& url)
+      : BrowserAction(true), url_(url), weak_ptr_factory_(this) {}
+
+  void Perform(const VersionedBrowserService& service,
+               BrowserManagerCallback on_performed) override {
+    if (service.interface_version <
+        mojom::BrowserService::kOpenCaptivePortalSigninMinVersion) {
+      LOG(ERROR) << "BrowserService does not support OpenCaptivePortalSignin";
+      return;
+    }
+    service.service->OpenCaptivePortalSignin(
+        url_, base::BindOnce(&OpenCaptivePortalSigninAction::OnPerformed,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             std::move(on_performed)));
+  }
+
+ private:
+  const GURL url_;
+  base::WeakPtrFactory<OpenCaptivePortalSigninAction> weak_ptr_factory_;
+};
+
 class NewGuestWindowAction final : public BrowserAction {
  public:
   explicit NewGuestWindowAction(int64_t target_display_id)
@@ -349,7 +374,7 @@ class CreateBrowserWithRestoredDataAction final : public BrowserAction {
       ui::WindowShowState show_state,
       int32_t active_tab_index,
       int32_t first_non_pinned_tab_index,
-      base::StringPiece app_name,
+      std::string_view app_name,
       int32_t restore_window_id,
       uint64_t lacros_profile_id)
       : BrowserAction(true),
@@ -423,8 +448,8 @@ std::unique_ptr<BrowserAction> BrowserAction::Launch(
 
 // static
 std::unique_ptr<BrowserAction> BrowserAction::NewWindowForDetachingTab(
-    base::StringPiece16 tab_id_str,
-    base::StringPiece16 group_id_str,
+    std::u16string_view tab_id_str,
+    std::u16string_view group_id_str,
     NewWindowForDetachingTabCallback callback) {
   return std::make_unique<NewWindowForDetachingTabAction>(
       tab_id_str, group_id_str, std::move(callback));
@@ -455,6 +480,12 @@ std::unique_ptr<BrowserAction> BrowserAction::OpenUrl(
 }
 
 // static
+std::unique_ptr<BrowserAction> BrowserAction::OpenCaptivePortalSignin(
+    const GURL& url) {
+  return std::make_unique<OpenCaptivePortalSigninAction>(url);
+}
+
+// static
 std::unique_ptr<BrowserAction> BrowserAction::OpenForFullRestore(
     bool skip_crash_restore) {
   return std::make_unique<OpenForFullRestoreAction>(skip_crash_restore);
@@ -481,7 +512,7 @@ std::unique_ptr<BrowserAction> BrowserAction::CreateBrowserWithRestoredData(
     ui::WindowShowState show_state,
     int32_t active_tab_index,
     int32_t first_non_pinned_tab_index,
-    base::StringPiece app_name,
+    std::string_view app_name,
     int32_t restore_window_id,
     uint64_t lacros_profile_id) {
   return std::make_unique<CreateBrowserWithRestoredDataAction>(
@@ -496,8 +527,9 @@ std::unique_ptr<BrowserAction> BrowserAction::OpenProfileManager() {
 }
 
 // No window will be opened in the following circumstances:
-// 1. Lacros-chrome is initialized in the Kiosk session
+// 1. Lacros-chrome is initialized in the Kiosk session.
 // 2. Full restore is responsible for restoring/launching Lacros.
+// 3. Floating Workspace Service is responsible for restoring/launching lacros.
 // static
 std::unique_ptr<BrowserAction> BrowserAction::GetActionForSessionStart() {
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
@@ -505,6 +537,7 @@ std::unique_ptr<BrowserAction> BrowserAction::GetActionForSessionStart() {
         /*incognito=*/false, /*should_trigger_session_restore=*/false, -1);
   }
   if (chromeos::IsKioskSession() ||
+      ash::floating_workspace_util::ShouldHandleRestartRestore() ||
       ash::full_restore::MaybeCreateFullRestoreServiceForLacros()) {
     return std::make_unique<NoOpAction>();
   }
@@ -512,38 +545,5 @@ std::unique_ptr<BrowserAction> BrowserAction::GetActionForSessionStart() {
       /*incognito=*/false, /*should_trigger_session_restore=*/true, -1);
 }
 
-BrowserActionQueue::BrowserActionQueue() = default;
-BrowserActionQueue::~BrowserActionQueue() = default;
-
-bool BrowserActionQueue::IsEmpty() const {
-  return actions_.empty();
-}
-
-void BrowserActionQueue::PushOrCancel(std::unique_ptr<BrowserAction> action,
-                                      mojom::CreationResult cancel_reason) {
-  if (action->IsQueueable()) {
-    actions_.push(std::move(action));
-  } else {
-    action->Cancel(cancel_reason);
-  }
-}
-
-void BrowserActionQueue::Push(std::unique_ptr<BrowserAction> action) {
-  DCHECK(action->IsQueueable());
-  actions_.push(std::move(action));
-}
-
-std::unique_ptr<BrowserAction> BrowserActionQueue::Pop() {
-  DCHECK(!IsEmpty());
-  std::unique_ptr<BrowserAction> action = std::move(actions_.front());
-  actions_.pop();
-  return action;
-}
-
-void BrowserActionQueue::Clear() {
-  base::queue<std::unique_ptr<BrowserAction>> empty;
-  actions_.swap(empty);
-  DCHECK(IsEmpty());
-}
 
 }  // namespace crosapi

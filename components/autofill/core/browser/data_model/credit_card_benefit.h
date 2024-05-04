@@ -42,6 +42,10 @@ class CreditCardBenefitBase {
   base::Time start_time() const { return start_time_; }
   base::Time expiry_time() const { return expiry_time_; }
 
+  // Returns whether the current time is within the benefit's `start_time` and
+  // `end_time`, indicating that the benefit is active.
+  bool IsActiveBenefit() const;
+
  protected:
   friend class CreditCardBenefitBaseTestApi;
 
@@ -59,12 +63,14 @@ class CreditCardBenefitBase {
                         base::Time expiry_time);
 
   // The following is intentional:
-  // - operator==() is defined as member so that it's not publicly accessible.
-  // - The friendships are necessary to allow the subclass's operator==() to
-  //   call the base class's protected operator==(). Limiting friendship to
-  //   the derived class's operator==() does not work nicely until Clang
-  //   implements https://reviews.llvm.org/D103929.
+  // - operator<=>() and ==() are defined as member so that it's not publicly
+  // accessible.
+  // - The friendships are necessary to allow the subclass's operators to call
+  //   the base class's protected operators. Limiting friendship to the derived
+  //   class's operators does not work nicely until Clang implements
+  //   https://reviews.llvm.org/D103929.
   bool operator==(const CreditCardBenefitBase& b) const = default;
+  auto operator<=>(const CreditCardBenefitBase& b) const = default;
   friend class CreditCardFlatRateBenefit;
   friend class CreditCardCategoryBenefit;
   friend class CreditCardMerchantBenefit;
@@ -106,6 +112,8 @@ class CreditCardFlatRateBenefit : public CreditCardBenefitBase {
 
   friend bool operator==(const CreditCardFlatRateBenefit&,
                          const CreditCardFlatRateBenefit&) = default;
+  friend auto operator<=>(const CreditCardFlatRateBenefit&,
+                          const CreditCardFlatRateBenefit&) = default;
 
   bool IsValid() const;
 };
@@ -143,6 +151,8 @@ class CreditCardCategoryBenefit : public CreditCardBenefitBase {
 
   friend bool operator==(const CreditCardCategoryBenefit&,
                          const CreditCardCategoryBenefit&) = default;
+  friend auto operator<=>(const CreditCardCategoryBenefit&,
+                          const CreditCardCategoryBenefit&) = default;
 
   bool IsValid() const;
 
@@ -173,6 +183,8 @@ class CreditCardMerchantBenefit : public CreditCardBenefitBase {
 
   friend bool operator==(const CreditCardMerchantBenefit&,
                          const CreditCardMerchantBenefit&) = default;
+  friend auto operator<=>(const CreditCardMerchantBenefit&,
+                          const CreditCardMerchantBenefit&) = default;
 
   bool IsValid() const;
 

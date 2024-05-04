@@ -763,6 +763,8 @@ void SellerWorklet::ScoreAd(
         trusted_signals_request_manager_->RequestScoringSignals(
             browser_signal_render_url,
             score_ad_task->browser_signal_ad_components,
+            score_ad_task->auction_ad_config_non_shared_params
+                .max_trusted_scoring_signals_url_length,
             base::BindOnce(&SellerWorklet::OnTrustedScoringSignalsDownloaded,
                            base::Unretained(this), score_ad_task));
     return;
@@ -966,6 +968,15 @@ void SellerWorklet::V8State::ScoreAd(
   // Don't need to run `cleanup_score_ad_task` if this method is invoked;
   // it's bound to the closure to clean things up if this method got cancelled.
   cleanup_score_ad_task.ReplaceClosure(base::OnceClosure());
+
+  // We may not be allowed any time to run.
+  if (seller_timeout.has_value() && !seller_timeout->is_positive()) {
+    PostScoreAdCallbackToUserThreadOnError(
+        std::move(callback),
+        /*scoring_latency=*/base::TimeDelta(),
+        /*errors=*/{"scoreAd() aborted due to zero timeout."});
+    return;
+  }
 
   AuctionV8Helper::FullIsolateScope isolate_scope(v8_helper_.get());
   v8::Isolate* isolate = v8_helper_->isolate();

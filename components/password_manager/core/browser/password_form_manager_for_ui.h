@@ -29,8 +29,7 @@ class PasswordFormManagerForUI {
   virtual const GURL& GetURL() const = 0;
 
   // Returns the best saved matches for the observed form.
-  virtual const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-  GetBestMatches() const = 0;
+  virtual base::span<const PasswordForm> GetBestMatches() const = 0;
 
   // Returns the federated saved matches for the observed form.
   // TODO(crbug.com/831123): merge with GetBestMatches.
@@ -74,6 +73,10 @@ class PasswordFormManagerForUI {
   // |credentials_to_update| should be one of the best matches or the pending
   // credentials.
   virtual void Update(const PasswordForm& credentials_to_update) = 0;
+
+  // This method returns true if the current "update" is to a password that is
+  // saved in Google Account.
+  virtual bool IsUpdateAffectingPasswordsStoredInTheGoogleAccount() const = 0;
 
   // Updates the username value. Called when user edits the username and clicks
   // the save button. Updates the username and modifies internal state

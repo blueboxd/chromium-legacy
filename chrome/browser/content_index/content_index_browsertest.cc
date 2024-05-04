@@ -25,6 +25,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,7 +95,10 @@ class ContentIndexTest : public InProcessBrowserTest,
     NOTREACHED();
   }
 
-  void OnContentProviderGoingDown() override {}
+  void OnContentProviderGoingDown() override {
+    // Clear the cached pointer to avoid a dangling pointer error later.
+    provider_ = nullptr;
+  }
 
   // TabStripModelObserver implementation:
   void TabChangedAt(content::WebContents* contents,
@@ -151,7 +155,7 @@ class ContentIndexTest : public InProcessBrowserTest,
 
  private:
   std::map<std::string, OfflineItem> offline_items_;
-  raw_ptr<ContentIndexProviderImpl, DanglingUntriaged> provider_;
+  raw_ptr<ContentIndexProviderImpl> provider_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   base::OnceClosure wait_for_tab_change_;
 };

@@ -24,14 +24,13 @@ class TimeDelta;
 
 namespace attribution_reporting {
 
-enum class AggregationKeyPieceError {
-  kWrongType,
-  kWrongFormat,
+struct ParseError {
+  friend bool operator==(ParseError, ParseError) = default;
 };
 
 COMPONENT_EXPORT(ATTRIBUTION_REPORTING)
-base::expected<absl::uint128, AggregationKeyPieceError>
-ParseAggregationKeyPiece(const base::Value&);
+base::expected<absl::uint128, ParseError> ParseAggregationKeyPiece(
+    const base::Value&);
 
 COMPONENT_EXPORT(ATTRIBUTION_REPORTING)
 std::string HexEncodeAggregationKey(absl::uint128);
@@ -44,10 +43,6 @@ template <typename T>
 constexpr T ValueOrZero(std::optional<T> value) {
   return value.value_or(0);
 }
-
-struct ParseError {
-  friend bool operator==(ParseError, ParseError) = default;
-};
 
 COMPONENT_EXPORT(ATTRIBUTION_REPORTING)
 base::expected<std::optional<uint64_t>, ParseError> ParseUint64(
@@ -96,8 +91,7 @@ void SerializeTimeDeltaInSeconds(base::Value::Dict& dict,
 
 base::expected<uint32_t, mojom::SourceRegistrationError> ParseUint32(
     const base::Value&,
-    mojom::SourceRegistrationError wrong_type_error,
-    mojom::SourceRegistrationError out_of_range_error);
+    mojom::SourceRegistrationError error);
 
 base::Value Uint32ToJson(uint32_t);
 

@@ -351,6 +351,16 @@ bool SharedContextState::IsUsingGL() const {
          gr_context_type_ == GrContextType::kNone;
 }
 
+bool SharedContextState::IsGraphiteDawnMetal() const {
+#if BUILDFLAG(SKIA_USE_DAWN)
+  return gr_context_type_ == GrContextType::kGraphiteDawn &&
+         dawn_context_provider_ &&
+         dawn_context_provider_->backend_type() == wgpu::BackendType::Metal;
+#else
+  return false;
+#endif
+}
+
 bool SharedContextState::IsGraphiteDawnVulkan() const {
 #if BUILDFLAG(SKIA_USE_DAWN)
   return gr_context_type_ == GrContextType::kGraphiteDawn &&
@@ -511,11 +521,17 @@ bool SharedContextState::InitializeGraphite(
       GetDefaultGraphiteContextOptions(workarounds);
   if (gr_context_type_ == GrContextType::kGraphiteDawn) {
 #if BUILDFLAG(SKIA_USE_DAWN)
-    if (dawn_context_provider_ &&
-        dawn_context_provider_->InitializeGraphiteContext(context_options)) {
+    CHECK(dawn_context_provider_);
+    if (dawn_context_provider_->InitializeGraphiteContext(context_options)) {
       graphite_context_ = dawn_context_provider_->GetGraphiteContext();
     } else {
-      DLOG(ERROR) << "Failed to create Graphite Context for Dawn";
+      // There is currently no way for the GPU process to gracefully handle
+      // failure to initialize Dawn, leaving the user in an unknown state if we
+      // allow GPU process initialization to continue. Intentionally crash the
+      // GPU process in this case to trigger browser-side fallback logic (either
+      // to software or to Ganesh depending on the platform).
+      // TODO(crbug.com/325000752): Handle this case within the GPU process.
+      CHECK(0);
     }
 #endif
   } else {

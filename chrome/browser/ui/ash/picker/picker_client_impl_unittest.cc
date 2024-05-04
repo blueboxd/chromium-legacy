@@ -5,39 +5,74 @@
 #include "chrome/browser/ui/ash/picker/picker_client_impl.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/picker/picker_controller.h"
 #include "base/functional/bind.h"
 #include "base/test/test_future.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/test/test_history_database.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-struct TestServerSetup {
-  std::unique_ptr<net::test_server::EmbeddedTestServer> server;
-  net::test_server::EmbeddedTestServerHandle handle;
-};
+using ::testing::_;
+using ::testing::AllOf;
+using ::testing::AnyNumber;
+using ::testing::Contains;
+using ::testing::Field;
+using ::testing::IsEmpty;
+using ::testing::IsSupersetOf;
+using ::testing::NiceMock;
+using ::testing::Not;
+using ::testing::Property;
+using ::testing::VariantWith;
 
-TestServerSetup CreateAndStartTestServer(
-    net::test_server::EmbeddedTestServer::HandleRequestCallback
-        handle_request_callback) {
-  auto test_server = std::make_unique<net::test_server::EmbeddedTestServer>();
-  test_server->RegisterRequestHandler(std::move(handle_request_callback));
-  net::test_server::EmbeddedTestServerHandle handle =
-      test_server->StartAndReturnHandle();
-  return {
-      .server = std::move(test_server),
-      .handle = std::move(handle),
-  };
+using MockSearchResultsCallback =
+    testing::MockFunction<PickerClientImpl::CrosSearchResultsCallback>;
+
+std::unique_ptr<KeyedService> BuildTestHistoryService(
+    base::FilePath profile_path,
+    content::BrowserContext* context) {
+  auto service = std::make_unique<history::HistoryService>();
+  service->Init(history::TestHistoryDatabaseParamsForPath(profile_path));
+  return std::move(service);
+}
+
+void AddSearchToHistory(TestingProfile* profile, GURL url) {
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  history->AddPageWithDetails(url, /*title=*/u"", /*visit_count=*/1,
+                              /*typed_count=*/1,
+                              /*last_visit=*/base::Time::Now(),
+                              /*hidden=*/false, history::SOURCE_BROWSED);
+  profile->BlockUntilHistoryProcessesPendingRequests();
+}
+
+void AddBookmarks(TestingProfile* profile,
+                  std::u16string_view title,
+                  GURL url) {
+  auto* bookmark_model = BookmarkModelFactory::GetForBrowserContext(profile);
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+
+  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
+                         std::u16string(title), url);
 }
 
 class PickerClientImplTest : public testing::Test {
@@ -49,15 +84,24 @@ class PickerClientImplTest : public testing::Test {
         fake_user_manager_(std::make_unique<user_manager::FakeUserManager>()),
         testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
-  void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
+  void SetUp() override {
+    ASSERT_TRUE(testing_profile_manager_.SetUp());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
   void TearDown() override {
     for (const user_manager::User* user : fake_user_manager_->GetUsers()) {
       fake_user_manager_->OnUserProfileWillBeDestroyed(user->GetAccountId());
     }
   }
 
-  // Returns the user manager used in this test, logged into a fake user.
-  user_manager::UserManager* GetUserManagerLoggedInAsFakeUser() {
+  struct LoginState {
+    raw_ptr<user_manager::UserManager> user_manager;
+    raw_ptr<TestingProfile> profile;
+  };
+
+  // Returns the user manager and profile used in this test, logged into a fake
+  // user.
+  LoginState LogInAsFakeUser() {
     AccountId account_id = AccountId::FromUserEmail("test@test");
 
     const user_manager::User* user = fake_user_manager_->AddUser(account_id);
@@ -66,16 +110,31 @@ class PickerClientImplTest : public testing::Test {
                                      /*is_child=*/false);
     TestingProfile* profile = CreateTestingProfileForAccount(account_id);
     fake_user_manager_->OnUserProfileCreated(account_id, profile->GetPrefs());
-    return fake_user_manager_.Get();
+
+    return {
+        .user_manager = fake_user_manager_.Get(),
+        .profile = profile,
+    };
+  }
+
+  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory() {
+    return test_shared_url_loader_factory_;
   }
 
  private:
   TestingProfile* CreateTestingProfileForAccount(const AccountId& account_id) {
     return testing_profile_manager_.CreateTestingProfile(
-        account_id.GetUserEmail(), /*is_main_profile=*/false,
-        test_shared_url_loader_factory_);
+        account_id.GetUserEmail(),
+        {{HistoryServiceFactory::GetInstance(),
+          base::BindRepeating(&BuildTestHistoryService, temp_dir_.GetPath())},
+         {BookmarkModelFactory::GetInstance(),
+          BookmarkModelFactory::GetDefaultFactory()},
+         {TemplateURLServiceFactory::GetInstance(),
+          base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor)}},
+        /*is_main_profile=*/false, test_shared_url_loader_factory_);
   }
 
+  base::ScopedTempDir temp_dir_;
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
@@ -88,46 +147,111 @@ class PickerClientImplTest : public testing::Test {
   TestingProfileManager testing_profile_manager_;
 };
 
-TEST_F(PickerClientImplTest, DownloadGifReturnsGifOnSuccess) {
+TEST_F(PickerClientImplTest, GetsSharedURLLoaderFactory) {
   ash::PickerController controller;
-  PickerClientImpl client(&controller, GetUserManagerLoggedInAsFakeUser());
-  TestServerSetup server_setup = CreateAndStartTestServer(base::BindRepeating(
-      [](const net::test_server::HttpRequest& request)
-          -> std::unique_ptr<net::test_server::HttpResponse> {
-        auto http_response =
-            std::make_unique<net::test_server::BasicHttpResponse>();
-        http_response->set_code(net::HTTP_OK);
-        http_response->set_content("hello");
-        http_response->set_content_type("text/plain");
-        return http_response;
-      }));
+  PickerClientImpl client(&controller, LogInAsFakeUser().user_manager);
 
-  base::test::TestFuture<const std::string&> future;
-  client.DownloadGifToString(ash::ValidGifUrl::CreateForTesting(
-                                 server_setup.server->GetURL("/test.gif")),
-                             future.GetCallback());
-
-  EXPECT_EQ(future.Get(), "hello");
+  EXPECT_EQ(client.GetSharedURLLoaderFactory(), GetSharedURLLoaderFactory());
 }
 
-TEST_F(PickerClientImplTest, DownloadGifReturnsEmptyOnFailure) {
+TEST_F(PickerClientImplTest, StartCrosSearch) {
   ash::PickerController controller;
-  PickerClientImpl client(&controller, GetUserManagerLoggedInAsFakeUser());
-  TestServerSetup server_setup = CreateAndStartTestServer(base::BindRepeating(
-      [](const net::test_server::HttpRequest& request)
-          -> std::unique_ptr<net::test_server::HttpResponse> {
-        auto http_response =
-            std::make_unique<net::test_server::BasicHttpResponse>();
-        http_response->set_code(net::HTTP_NOT_FOUND);
-        return http_response;
-      }));
+  LoginState login = LogInAsFakeUser();
+  PickerClientImpl client(&controller, login.user_manager);
+  AddSearchToHistory(login.profile, GURL("http://foo.com/history"));
+  AddBookmarks(login.profile, u"Foobaz", GURL("http://foo.com/bookmarks"));
+  base::test::TestFuture<void> test_done;
 
-  base::test::TestFuture<const std::string&> future;
-  client.DownloadGifToString(ash::ValidGifUrl::CreateForTesting(
-                                 server_setup.server->GetURL("/test.gif")),
-                             future.GetCallback());
+  NiceMock<MockSearchResultsCallback> mock_search_callback;
+  EXPECT_CALL(mock_search_callback, Call(_, _)).Times(AnyNumber());
+  EXPECT_CALL(
+      mock_search_callback,
+      Call(ash::AppListSearchResultType::kOmnibox,
+           IsSupersetOf({
+               Property(
+                   "data", &ash::PickerSearchResult::data,
+                   VariantWith<ash::PickerSearchResult::BrowsingHistoryData>(
+                       Field("url",
+                             &ash::PickerSearchResult::BrowsingHistoryData::url,
+                             GURL("http://foo.com/history")))),
+               Property(
+                   "data", &ash::PickerSearchResult::data,
+                   VariantWith<
+                       ash::PickerSearchResult::BrowsingHistoryData>(AllOf(
+                       Field(
+                           "title",
+                           &ash::PickerSearchResult::BrowsingHistoryData::title,
+                           u"Foobaz"),
+                       Field("url",
+                             &ash::PickerSearchResult::BrowsingHistoryData::url,
+                             GURL("http://foo.com/bookmarks"))))),
+           })))
+      .WillOnce([&]() { test_done.SetValue(); });
 
-  EXPECT_EQ(future.Get(), "");
+  client.StartCrosSearch(
+      u"foo", /*category=*/std::nullopt,
+      base::BindRepeating(&MockSearchResultsCallback::Call,
+                          base::Unretained(&mock_search_callback)));
+
+  ASSERT_TRUE(test_done.Wait());
 }
+
+TEST_F(PickerClientImplTest, StartCrosSearchFilteredByBrowsingHistory) {
+  ash::PickerController controller;
+  LoginState login = LogInAsFakeUser();
+  PickerClientImpl client(&controller, login.user_manager);
+  AddSearchToHistory(login.profile, GURL("http://foo.com/history"));
+  AddBookmarks(login.profile, u"Foobaz", GURL("http://foo.com/bookmarks"));
+  base::test::TestFuture<void> test_done;
+
+  NiceMock<MockSearchResultsCallback> mock_search_callback;
+  EXPECT_CALL(mock_search_callback, Call(_, _)).Times(AnyNumber());
+  EXPECT_CALL(
+      mock_search_callback,
+      Call(ash::AppListSearchResultType::kOmnibox,
+           Not(Contains(Property(
+               "data", &ash::PickerSearchResult::data,
+               VariantWith<ash::PickerSearchResult::BrowsingHistoryData>(Field(
+                   "url", &ash::PickerSearchResult::BrowsingHistoryData::url,
+                   GURL("http://foo.com/bookmarks"))))))))
+      .WillOnce([&]() { test_done.SetValue(); });
+
+  client.StartCrosSearch(
+      u"foo", /*category=*/ash::PickerCategory::kBrowsingHistory,
+      base::BindRepeating(&MockSearchResultsCallback::Call,
+                          base::Unretained(&mock_search_callback)));
+
+  ASSERT_TRUE(test_done.Wait());
+}
+
+TEST_F(PickerClientImplTest, StartCrosSearchFilteredByBookmarks) {
+  ash::PickerController controller;
+  LoginState login = LogInAsFakeUser();
+  PickerClientImpl client(&controller, login.user_manager);
+  AddSearchToHistory(login.profile, GURL("http://foo.com/history"));
+  AddBookmarks(login.profile, u"Foobaz", GURL("http://foo.com/bookmarks"));
+  base::test::TestFuture<void> test_done;
+
+  NiceMock<MockSearchResultsCallback> mock_search_callback;
+  EXPECT_CALL(mock_search_callback, Call(_, _)).Times(AnyNumber());
+  EXPECT_CALL(
+      mock_search_callback,
+      Call(ash::AppListSearchResultType::kOmnibox,
+           Not(Contains(Property(
+               "data", &ash::PickerSearchResult::data,
+               VariantWith<ash::PickerSearchResult::BrowsingHistoryData>(Field(
+                   "url", &ash::PickerSearchResult::BrowsingHistoryData::url,
+                   GURL("http://foo.com/history"))))))))
+      .WillOnce([&]() { test_done.SetValue(); });
+
+  client.StartCrosSearch(
+      u"foo", /*category=*/ash::PickerCategory::kBookmarks,
+      base::BindRepeating(&MockSearchResultsCallback::Call,
+                          base::Unretained(&mock_search_callback)));
+
+  ASSERT_TRUE(test_done.Wait());
+}
+
+// TODO: b/325540366 - Add PickerClientImpl tests.
 
 }  // namespace

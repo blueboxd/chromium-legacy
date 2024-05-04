@@ -9,6 +9,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -26,6 +27,8 @@
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
@@ -54,6 +57,11 @@ const char kChromeHeadlessURL[] = "chrome://headless/";
 
 const char kHeadlessCommandHtml[] = "headless_command.html";
 const char kHeadlessCommandJs[] = "headless_command.js";
+
+// Specifies the initial window size: --window-size=w,h. Headless Chrome users
+// historically use this to specify expected screenshot size. Originally defined
+// in //chrome/common/chrome_switches.h which we cannot include from here.
+const char kWindowSize[] = "window-size";
 
 HeadlessCommandHandler::DoneCallback& GetGlobalDoneCallback() {
   static base::NoDestructor<HeadlessCommandHandler::DoneCallback> done_callback;
@@ -112,6 +120,18 @@ base::Value::Dict GetColorDictFromHexColor(uint32_t color, bool has_alpha) {
   return dict;
 }
 
+bool ParseWindowSize(const std::string& window_size, int* width, int* height) {
+  std::vector<base::StringPiece> width_and_height = base::SplitStringPiece(
+      window_size, ",x", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (width_and_height.size() != 2 ||
+      !base::StringToInt(width_and_height[0], width) ||
+      !base::StringToInt(width_and_height[1], height)) {
+    return false;
+  }
+
+  return *width > 0 && *height > 0;
+}
+
 bool GetCommandDictAndOutputPaths(base::Value::Dict* commands,
                                   base::FilePath* pdf_file_path,
                                   base::FilePath* screenshot_file_path) {
@@ -168,7 +188,7 @@ bool GetCommandDictAndOutputPaths(base::Value::Dict* commands,
             {FILE_PATH_LITERAL(".webp"), "webp"},
         });
 
-    auto* it = kImageFileTypes.find(extension);
+    auto it = kImageFileTypes.find(extension);
     if (it == kImageFileTypes.cend()) {
       LOG(ERROR) << "Unsupported screenshot image file type: "
                  << path.FinalExtension();
@@ -177,6 +197,18 @@ bool GetCommandDictAndOutputPaths(base::Value::Dict* commands,
 
     base::Value::Dict params;
     params.Set("format", it->second);
+
+    if (command_line->HasSwitch(kWindowSize)) {
+      int width, height;
+      if (ParseWindowSize(command_line->GetSwitchValueASCII(kWindowSize),
+                          &width, &height)) {
+        params.Set("width", width);
+        params.Set("height", height);
+      } else {
+        LOG(ERROR) << "Invalid --" << kWindowSize << " specification ignored";
+      }
+    }
+
     commands->Set("screenshot", std::move(params));
   }
 

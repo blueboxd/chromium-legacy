@@ -314,6 +314,9 @@ def main():
           'lib/clang/$V/lib/x86_64-unknown-fuchsia/libclang_rt.asan_static.a')
   if sys.platform == 'darwin':
     want.extend([
+      # Add llvm-objcopy for its use as install_name_tool.
+      'bin/llvm-objcopy',
+
       # AddressSanitizer runtime.
       'lib/clang/$V/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib',
       'lib/clang/$V/lib/darwin/libclang_rt.asan_osx_dynamic.dylib',
@@ -482,6 +485,9 @@ def main():
   # on. This can include shared libraries, as well as other dependencies not
   # explicitly mentioned in the source code (those would be found by reclient's
   # include scanner) such as sanitizer ignore lists.
+  #
+  # These paths are written relative to the package root, and will be rebased
+  # to wherever the reclient config file is written when added to the file.
   reclient_inputs = {
       'clang': [
         'lib/clang/$V/share/asan_*list.txt',
@@ -565,8 +571,12 @@ def main():
     os.symlink('lld', os.path.join(pdir, 'bin', 'wasm-ld'))
     os.symlink('llvm-readobj', os.path.join(pdir, 'bin', 'llvm-readelf'))
 
-  if sys.platform.startswith('linux'):
+  if sys.platform.startswith('linux') or sys.platform == 'darwin':
     os.symlink('llvm-objcopy', os.path.join(pdir, 'bin', 'llvm-strip'))
+    os.symlink('llvm-objcopy',
+               os.path.join(pdir, 'bin', 'llvm-install-name-tool'))
+    os.symlink('llvm-install-name-tool',
+               os.path.join(pdir, 'bin', 'install_name_tool'))
 
     # Make `--target=*-cros-linux-gnu` work with
     # LLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON.

@@ -906,17 +906,9 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
       return {UIALocalizationStrategy::kDeferToAriaRole, UIA_GroupControlTypeId,
               L"definition"};
 
-    case ax::mojom::Role::kDescriptionListDetail:
-      return {UIALocalizationStrategy::kDeferToAriaRole, UIA_TextControlTypeId,
-              L"description"};
-
     case ax::mojom::Role::kDescriptionList:
       return {UIALocalizationStrategy::kDeferToControlType,
               UIA_ListControlTypeId, L"list"};
-
-    case ax::mojom::Role::kDescriptionListTerm:
-      return {UIALocalizationStrategy::kDeferToControlType,
-              UIA_ListItemControlTypeId, L"listitem"};
 
     case ax::mojom::Role::kDesktop:
       return {UIALocalizationStrategy::kSupply, UIA_DocumentControlTypeId,
@@ -1458,6 +1450,8 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
       return {UIALocalizationStrategy::kSupply, UIA_PaneControlTypeId,
               L"region"};
 
+    case ax::mojom::Role::kDescriptionListTermDeprecated:
+    case ax::mojom::Role::kDescriptionListDetailDeprecated:
     case ax::mojom::Role::kPreDeprecated:
       NOTREACHED_NORETURN();
   }
@@ -2017,6 +2011,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_uniqueID(LONG* id) {
   // convention here and when we fire events via
   // ::NotifyWinEvent().
   *id = -GetUniqueId();
+  DCHECK(*id < 0);
   return S_OK;
 }
 
@@ -2781,9 +2776,15 @@ IFACEMETHODIMP AXPlatformNodeWin::GetItem(int row,
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRID_GETITEM);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  AXPlatformNodeBase* cell = GetTableCell(row, column);
-  if (!cell)
+  // While UIA is 0-based, aria is 1-based, so correct here.
+  AXPlatformNodeBase* cell = GetAriaTableCell(row + 1, column + 1);
+  if (!cell) {
+    cell = GetTableCell(row, column);
+  }
+
+  if (!cell) {
     return E_INVALIDARG;
+  }
 
   auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
   node_win->AddRef();
@@ -6446,14 +6447,8 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kDefinition:
       return ROLE_SYSTEM_GROUPING;
 
-    case ax::mojom::Role::kDescriptionListDetail:
-      return ROLE_SYSTEM_TEXT;
-
     case ax::mojom::Role::kDescriptionList:
       return ROLE_SYSTEM_LIST;
-
-    case ax::mojom::Role::kDescriptionListTerm:
-      return ROLE_SYSTEM_LISTITEM;
 
     case ax::mojom::Role::kDesktop:
       return ROLE_SYSTEM_PANE;
@@ -6874,6 +6869,8 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kUnknown:
       return ROLE_SYSTEM_PANE;
+    case ax::mojom::Role::kDescriptionListTermDeprecated:
+    case ax::mojom::Role::kDescriptionListDetailDeprecated:
     case ax::mojom::Role::kPreDeprecated:
       NOTREACHED_NORETURN();
   }
@@ -7006,12 +7003,6 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
       ia2_role = IA2_ROLE_DATE_EDITOR;
-      break;
-    case ax::mojom::Role::kDefinition:
-      ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ax::mojom::Role::kDescriptionListDetail:
-      ia2_role = IA2_ROLE_PARAGRAPH;
       break;
     case ax::mojom::Role::kDocPageFooter:
       ia2_role = IA2_ROLE_FOOTER;
@@ -7176,6 +7167,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
     case ax::mojom::Role::kTime:
       ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
+    case ax::mojom::Role::kDescriptionListDetailDeprecated:
     case ax::mojom::Role::kPreDeprecated:
       NOTREACHED_NORETURN();
     default:

@@ -64,6 +64,10 @@ namespace container_internal {
 
 struct RawHashSetTestOnlyAccess {
   template <typename C>
+  static auto GetCommon(const C& c) -> decltype(c.common()) {
+    return c.common();
+  }
+  template <typename C>
   static auto GetSlots(const C& c) -> decltype(c.slot_array()) {
     return c.slot_array();
   }
@@ -303,6 +307,25 @@ TEST(Group, MaskFull) {
   }
 }
 
+TEST(Group, MaskNonFull) {
+  if (Group::kWidth == 16) {
+    ctrl_t group[] = {
+        ctrl_t::kEmpty, CtrlT(1),          ctrl_t::kDeleted,  CtrlT(3),
+        ctrl_t::kEmpty, CtrlT(5),          ctrl_t::kSentinel, CtrlT(7),
+        CtrlT(7),       CtrlT(5),          ctrl_t::kDeleted,  CtrlT(1),
+        CtrlT(1),       ctrl_t::kSentinel, ctrl_t::kEmpty,    CtrlT(1)};
+    EXPECT_THAT(Group{group}.MaskNonFull(),
+                ElementsAre(0, 2, 4, 6, 10, 13, 14));
+  } else if (Group::kWidth == 8) {
+    ctrl_t group[] = {ctrl_t::kEmpty,    CtrlT(1), ctrl_t::kEmpty,
+                      ctrl_t::kDeleted,  CtrlT(2), ctrl_t::kSentinel,
+                      ctrl_t::kSentinel, CtrlT(1)};
+    EXPECT_THAT(Group{group}.MaskNonFull(), ElementsAre(0, 2, 3, 5, 6));
+  } else {
+    FAIL() << "No test coverage for Group::kWidth==" << Group::kWidth;
+  }
+}
+
 TEST(Group, MaskEmptyOrDeleted) {
   if (Group::kWidth == 16) {
     ctrl_t group[] = {ctrl_t::kEmpty,   CtrlT(1), ctrl_t::kEmpty,    CtrlT(3),
@@ -405,6 +428,11 @@ struct ValuePolicy {
     return absl::container_internal::DecomposeValue(
         std::forward<F>(f), std::forward<Args>(args)...);
   }
+
+  template <class Hash>
+  static constexpr HashSlotFn get_hash_slot_fn() {
+    return nullptr;
+  }
 };
 
 using IntPolicy = ValuePolicy<int64_t>;
@@ -467,6 +495,11 @@ class StringPolicy {
                              PairArgs(std::forward<Args>(args)...))) {
     return apply_impl(std::forward<F>(f),
                       PairArgs(std::forward<Args>(args)...));
+  }
+
+  template <class Hash>
+  static constexpr HashSlotFn get_hash_slot_fn() {
+    return nullptr;
   }
 };
 
@@ -767,10 +800,10 @@ TYPED_TEST_P(SmallTableResizeTest, InsertIntoSmallTable) {
 }
 
 TYPED_TEST_P(SmallTableResizeTest, ResizeGrowSmallTables) {
-  TypeParam t;
   for (size_t source_size = 0; source_size < 32; ++source_size) {
     for (size_t target_size = source_size; target_size < 32; ++target_size) {
       for (bool rehash : {false, true}) {
+        TypeParam t;
         for (size_t i = 0; i < source_size; ++i) {
           t.insert(static_cast<int>(i));
         }
@@ -789,9 +822,10 @@ TYPED_TEST_P(SmallTableResizeTest, ResizeGrowSmallTables) {
 }
 
 TYPED_TEST_P(SmallTableResizeTest, ResizeReduceSmallTables) {
-  TypeParam t;
   for (size_t source_size = 0; source_size < 32; ++source_size) {
     for (size_t target_size = 0; target_size <= source_size; ++target_size) {
+      TypeParam t;
+      t.reserve(source_size);
       size_t inserted_count = std::min<size_t>(source_size, 5);
       for (size_t i = 0; i < inserted_count; ++i) {
         t.insert(static_cast<int>(i));
@@ -922,6 +956,11 @@ struct DecomposePolicy {
   template <class F, class T>
   static auto apply(F&& f, const T& x) -> decltype(std::forward<F>(f)(x, x)) {
     return std::forward<F>(f)(x, x);
+  }
+
+  template <class Hash>
+  static constexpr HashSlotFn get_hash_slot_fn() {
+    return nullptr;
   }
 };
 
@@ -1083,7 +1122,7 @@ size_t MaxDensitySize(size_t n) {
 }
 
 struct Modulo1000Hash {
-  size_t operator()(int x) const { return x % 1000; }
+  size_t operator()(int64_t x) const { return static_cast<size_t>(x) % 1000; }
 };
 
 struct Modulo1000HashTable
@@ -1746,6 +1785,40 @@ TEST(Table, CopyConstruct) {
   }
 }
 
+TEST(Table, CopyDifferentSizes) {
+  IntTable t;
+
+  for (int i = 0; i < 100; ++i) {
+    t.emplace(i);
+    IntTable c = t;
+    for (int j = 0; j <= i; ++j) {
+      ASSERT_TRUE(c.find(j) != c.end()) << "i=" << i << " j=" << j;
+    }
+    // Testing find miss to verify that table is not full.
+    ASSERT_TRUE(c.find(-1) == c.end());
+  }
+}
+
+TEST(Table, CopyDifferentCapacities) {
+  for (int cap = 1; cap < 100; cap = cap * 2 + 1) {
+    IntTable t;
+    t.reserve(static_cast<size_t>(cap));
+    for (int i = 0; i <= cap; ++i) {
+      t.emplace(i);
+      if (i != cap && i % 5 != 0) {
+        continue;
+      }
+      IntTable c = t;
+      for (int j = 0; j <= i; ++j) {
+        ASSERT_TRUE(c.find(j) != c.end())
+            << "cap=" << cap << " i=" << i << " j=" << j;
+      }
+      // Testing find miss to verify that table is not full.
+      ASSERT_TRUE(c.find(-1) == c.end());
+    }
+  }
+}
+
 TEST(Table, CopyConstructWithAlloc) {
   StringTable t;
   t.emplace("a", "b");
@@ -2210,20 +2283,34 @@ TEST(Table, IterationOrderChangesByInstance) {
 }
 
 TEST(Table, IterationOrderChangesOnRehash) {
-  std::vector<IntTable> garbage;
-  for (int i = 0; i < 5000; ++i) {
-    auto t = MakeSimpleTable(20);
-    const auto reference = OrderOfIteration(t);
-    // Force rehash to the same size.
-    t.rehash(0);
-    auto trial = OrderOfIteration(t);
-    if (trial != reference) {
-      // We are done.
-      return;
+  // We test different sizes with many small numbers, because small table
+  // resize has a different codepath.
+  // Note: iteration order for size() <= 1 is always the same.
+  for (size_t size : std::vector<size_t>{2, 3, 6, 7, 12, 15, 20, 50}) {
+    for (size_t rehash_size : {
+             size_t{0},  // Force rehash is guaranteed.
+             size * 10   // Rehash to the larger capacity is guaranteed.
+         }) {
+      std::vector<IntTable> garbage;
+      bool ok = false;
+      for (int i = 0; i < 5000; ++i) {
+        auto t = MakeSimpleTable(size);
+        const auto reference = OrderOfIteration(t);
+        // Force rehash.
+        t.rehash(rehash_size);
+        auto trial = OrderOfIteration(t);
+        if (trial != reference) {
+          // We are done.
+          ok = true;
+          break;
+        }
+        garbage.push_back(std::move(t));
+      }
+      EXPECT_TRUE(ok)
+          << "Iteration order remained the same across many attempts " << size
+          << "->" << rehash_size << ".";
     }
-    garbage.push_back(std::move(t));
   }
-  FAIL() << "Iteration order remained the same across many attempts.";
 }
 
 // Verify that pointers are invalidated as soon as a second element is inserted.
@@ -2664,7 +2751,7 @@ using RawHashSetAlloc = raw_hash_set<IntPolicy, hash_default_hash<int64_t>,
 TEST(Table, AllocatorPropagation) { TestAllocPropagation<RawHashSetAlloc>(); }
 
 struct CountedHash {
-  size_t operator()(int value) const {
+  size_t operator()(int64_t value) const {
     ++count;
     return static_cast<size_t>(value);
   }
@@ -2723,6 +2810,45 @@ TEST(Table, CountedHash) {
     Table dst;
     dst.merge(src);
     EXPECT_EQ(HashCount(dst), 1);
+  }
+}
+
+TEST(Table, IterateOverFullSlotsEmpty) {
+  IntTable t;
+  auto fail_if_any = [](const ctrl_t*, int64_t* i) {
+    FAIL() << "expected no slots " << i;
+  };
+  container_internal::IterateOverFullSlots(
+      RawHashSetTestOnlyAccess::GetCommon(t),
+      RawHashSetTestOnlyAccess::GetSlots(t), fail_if_any);
+  for (size_t i = 0; i < 256; ++i) {
+    t.reserve(i);
+    container_internal::IterateOverFullSlots(
+        RawHashSetTestOnlyAccess::GetCommon(t),
+        RawHashSetTestOnlyAccess::GetSlots(t), fail_if_any);
+  }
+}
+
+TEST(Table, IterateOverFullSlotsFull) {
+  IntTable t;
+
+  std::vector<int64_t> expected_slots;
+  for (int64_t i = 0; i < 128; ++i) {
+    t.insert(i);
+    expected_slots.push_back(i);
+
+    std::vector<int64_t> slots;
+    container_internal::IterateOverFullSlots(
+        RawHashSetTestOnlyAccess::GetCommon(t),
+        RawHashSetTestOnlyAccess::GetSlots(t),
+        [&t, &slots](const ctrl_t* ctrl, int64_t* i) {
+          ptrdiff_t ctrl_offset =
+              ctrl - RawHashSetTestOnlyAccess::GetCommon(t).control();
+          ptrdiff_t slot_offset = i - RawHashSetTestOnlyAccess::GetSlots(t);
+          ASSERT_EQ(ctrl_offset, slot_offset);
+          slots.push_back(*i);
+        });
+    EXPECT_THAT(slots, testing::UnorderedElementsAreArray(expected_slots));
   }
 }
 

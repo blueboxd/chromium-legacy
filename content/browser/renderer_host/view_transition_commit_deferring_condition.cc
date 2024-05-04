@@ -15,25 +15,12 @@
 namespace content {
 namespace {
 
-void OnSnapshotAck(base::OnceClosure closure,
-                   base::WeakPtr<NavigationRequest> navigation_request,
-                   const blink::ViewTransitionState& view_transition_state) {
-  if (navigation_request && view_transition_state.HasElements()) {
-    navigation_request->SetViewTransitionState(
-        std::move(view_transition_state));
-  }
-  std::move(closure).Run();
-}
-
 }  // namespace
 
 // static
 std::unique_ptr<CommitDeferringCondition>
 ViewTransitionCommitDeferringCondition::MaybeCreate(
     NavigationRequest& navigation_request) {
-  // TODO(khushalsagar): This shouldn't be done for every navigation. We'll need
-  // a meta tag (or another way) in the API to know whether this Document is
-  // interested in enabling transitions for same-origin navigations.
   if (!base::FeatureList::IsEnabled(
           blink::features::kViewTransitionOnNavigation)) {
     return nullptr;
@@ -41,6 +28,10 @@ ViewTransitionCommitDeferringCondition::MaybeCreate(
 
   if (!navigation_request.IsInPrimaryMainFrame())
     return nullptr;
+
+  if (!navigation_request.ShouldDispatchPageSwapEvent()) {
+    return nullptr;
+  }
 
   RenderFrameHostImpl* rfh =
       navigation_request.frame_tree_node()->current_frame_host();
@@ -52,9 +43,9 @@ ViewTransitionCommitDeferringCondition::MaybeCreate(
 
   const url::Origin& current_request_origin = rfh->GetLastCommittedOrigin();
   const url::Origin& new_request_origin =
-      navigation_request.state() >= NavigationRequest::WILL_PROCESS_RESPONSE
-          ? navigation_request.GetOriginToCommit().value_or(url::Origin())
-          : navigation_request.GetTentativeOriginAtRequestTime();
+      navigation_request.is_running_potential_prerender_activation_checks()
+          ? navigation_request.GetTentativeOriginAtRequestTime()
+          : *navigation_request.GetOriginToCommit();
   // Only support same origin.
   // TODO(khushalsagar): We need to be able to deal with redirects.
   // https://github.com/WICG/view-transitions/issues/200
@@ -62,6 +53,13 @@ ViewTransitionCommitDeferringCondition::MaybeCreate(
     return nullptr;
   }
   CHECK(!current_request_origin.opaque());
+
+  // Per-spec, reloads are excluded from the `auto` value which sets the
+  // boolean opt in. If a value specific to reloads is added, we'll need a
+  // finer-grained opt-in from the renderer.
+  if (navigation_request.GetReloadType() != ReloadType::NONE) {
+    return nullptr;
+  }
 
   return base::WrapUnique(
       new ViewTransitionCommitDeferringCondition(navigation_request));
@@ -81,18 +79,54 @@ ViewTransitionCommitDeferringCondition::WillCommitNavigation(
   auto* render_frame_host =
       navigation_request->frame_tree_node()->current_frame_host();
 
-  blink::mojom::PageConcealEventParamsPtr page_conceal_event_params =
-      navigation_request->WillDispatchPageConceal();
-  CHECK(page_conceal_event_params);
+  blink::mojom::PageSwapEventParamsPtr page_swap_event_params =
+      navigation_request->WillDispatchPageSwap();
+  CHECK(page_swap_event_params);
 
-  // TODO(crbug.com/1372584):  Implement a timeout, to avoid blocking the
-  // navigation for too long.
+  CHECK(render_frame_host->IsRenderFrameLive());
+  resume_processing_callback_ = std::move(resume);
+
+  // Request a snapshot. This includes running any associaged script in the
+  // renderer process.
   render_frame_host->GetAssociatedLocalFrame()
       ->SnapshotDocumentForViewTransition(
-          std::move(page_conceal_event_params),
-          base::BindOnce(&OnSnapshotAck, std::move(resume),
+          std::move(page_swap_event_params),
+          base::BindOnce(&ViewTransitionCommitDeferringCondition::OnSnapshotAck,
+                         weak_factory_.GetWeakPtr(),
                          navigation_request->GetWeakPtr()));
+  // Also post a timeout task to resume even if the renderer has not acked.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ViewTransitionCommitDeferringCondition::OnSnapshotTimeout,
+                     weak_factory_.GetWeakPtr()),
+      GetSnapshotCallbackTimeout());
   return Result::kDefer;
+}
+
+void ViewTransitionCommitDeferringCondition::OnSnapshotAck(
+    base::WeakPtr<NavigationRequest> navigation_request,
+    const blink::ViewTransitionState& view_transition_state) {
+  if (!resume_processing_callback_) {
+    return;
+  }
+
+  if (navigation_request && view_transition_state.HasElements()) {
+    navigation_request->SetViewTransitionState(
+        std::move(view_transition_state));
+  }
+  std::move(resume_processing_callback_).Run();
+}
+
+void ViewTransitionCommitDeferringCondition::OnSnapshotTimeout() {
+  if (resume_processing_callback_) {
+    std::move(resume_processing_callback_).Run();
+  }
+}
+
+base::TimeDelta
+ViewTransitionCommitDeferringCondition::GetSnapshotCallbackTimeout() const {
+  // TODO(vmpstr): Figure out if we need to increase this in tests.
+  return base::Seconds(4);
 }
 
 }  // namespace content

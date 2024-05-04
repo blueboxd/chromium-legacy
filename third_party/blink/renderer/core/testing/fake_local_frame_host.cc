@@ -293,6 +293,12 @@ void FakeLocalFrameHost::CreateFencedFrame(
                   "unit tests, so this path should not be hit";
 }
 
+void FakeLocalFrameHost::ForwardFencedFrameEventToEmbedder(
+    const WTF::String& event_type) {
+  NOTREACHED() << "ForwardFencedFrameEventToEmbedder is tested above the unit "
+                  "test layer";
+}
+
 void FakeLocalFrameHost::StartDragging(
     const blink::WebDragData& drag_data,
     blink::DragOperationsMask operations_allowed,
@@ -300,5 +306,9 @@ void FakeLocalFrameHost::StartDragging(
     const gfx::Vector2d& cursor_offset_in_dip,
     const gfx::Rect& drag_obj_rect_in_dip,
     mojom::blink::DragEventSourceInfoPtr event_info) {}
+
+void FakeLocalFrameHost::IssueKeepAliveHandle(
+    mojo::PendingReceiver<mojom::blink::NavigationStateKeepAliveHandle>
+        receiver) {}
 
 }  // namespace blink

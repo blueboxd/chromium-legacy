@@ -172,12 +172,6 @@ int ErrorToMessageId(SigninError error) {
       return IDS_LOGIN_FATAL_ERROR_NO_AUTH_TOKEN;
     case SigninError::kFailedToFetchSamlRedirect:
       return IDS_FAILED_TO_FETCH_SAML_REDIRECT;
-    case SigninError::kActiveDirectoryNetworkProblem:
-      return IDS_AD_AUTH_NETWORK_ERROR;
-    case SigninError::kActiveDirectoryNotSupportedEncryption:
-      return IDS_AD_AUTH_NOT_SUPPORTED_ENCRYPTION;
-    case SigninError::kActiveDirectoryUnknownError:
-      return IDS_AD_AUTH_UNKNOWN_ERROR;
   }
 }
 
@@ -198,8 +192,8 @@ class AccessibilityManagerWrapper
   AccessibilityManagerWrapper& operator=(AccessibilityManagerWrapper&) = delete;
   ~AccessibilityManagerWrapper() override = default;
 
-  bool IsSpokenFeedbackEnabled() const override {
-    return ash::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
+  bool AllowQRCodeUX() const override {
+    return ash::AccessibilityManager::Get()->AllowQRCodeUX();
   }
 };
 

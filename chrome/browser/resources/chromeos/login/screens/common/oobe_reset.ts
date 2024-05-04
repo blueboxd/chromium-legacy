@@ -22,7 +22,7 @@ import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/p
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
 import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
 
 import {getTemplate} from './oobe_reset.html.js';
@@ -85,9 +85,9 @@ const POWERWASH_MODE_DETAILS: Map<number, DialogRessources> = new Map([
 
 const ResetScreenElementBase =
     mixinBehaviors(
-        [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
-        PolymerElement) as {
-      new (): PolymerElement & OobeI18nBehaviorInterface &
+        [LoginScreenBehavior, MultiStepBehavior],
+        OobeI18nMixin(PolymerElement)) as {
+      new (): PolymerElement & OobeI18nMixinInterface &
           LoginScreenBehaviorInterface & MultiStepBehaviorInterface,
     };
 
@@ -302,13 +302,13 @@ export class OobeReset extends ResetScreenElementBase {
   }
 
   private onScreenStateChanged(): void {
-    if (this.uiStep == ResetScreenUiState.REVERT_PROMISE) {
+    if (this.uiStep === ResetScreenUiState.REVERT_PROMISE) {
       getAnnouncerInstance().announce(this.i18n('resetRevertSpinnerMessage'));
       this.classList.add('revert-promise-view');
     } else {
       this.classList.remove('revert-promise-view');
     }
-    this.inRevertState_ = this.uiStep == ResetScreenUiState.REVERT_PROMISE;
+    this.inRevertState_ = this.uiStep === ResetScreenUiState.REVERT_PROMISE;
   }
 
   /**
@@ -340,7 +340,7 @@ export class OobeReset extends ResetScreenElementBase {
   private isPowerwashDisabled(
       _mode: PowerwashMode, _tpmUpdateChecked: boolean): boolean {
     return this.tpmUpdateChecked_ &&
-        (this.powerwashMode_ == PowerwashMode.POWERWASH_WITH_ROLLBACK);
+        (this.powerwashMode_ === PowerwashMode.POWERWASH_WITH_ROLLBACK);
   }
 
   /* ---------- CONFIRMATION DIALOG ---------- */

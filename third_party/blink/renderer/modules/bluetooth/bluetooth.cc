@@ -323,30 +323,30 @@ void ConvertRequestDeviceOptions(
 
 }  // namespace
 
-ScriptPromise Bluetooth::getAvailability(ScriptState* script_state,
-                                         ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLBoolean> Bluetooth::getAvailability(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   LocalDOMWindow* window = GetSupplementable()->DomWindow();
 
   if (IsRequestDenied(window, exception_state)) {
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLBoolean>();
   }
 
   // If Bluetooth is disallowed by Permissions Policy, getAvailability should
   // return false.
   if (!IsFeatureEnabled(window)) {
-    return ScriptPromise::Cast(
-        script_state, v8::Boolean::New(script_state->GetIsolate(), false));
+    return ToResolvedPromise<IDLBoolean>(script_state, false);
   }
 
   CHECK(window->IsSecureContext());
   EnsureServiceConnection(window);
 
   // Subsequent steps are handled in the browser process.
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLBoolean>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
   service_->GetAvailability(
-      WTF::BindOnce([](ScriptPromiseResolver* resolver,
+      WTF::BindOnce([](ScriptPromiseResolverTyped<IDLBoolean>* resolver,
                        bool result) { resolver->Resolve(result); },
                     WrapPersistent(resolver)));
   return promise;
@@ -370,7 +370,7 @@ void Bluetooth::GetDevicesCallback(
 }
 
 void Bluetooth::RequestDeviceCallback(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<BluetoothDevice>* resolver,
     mojom::blink::WebBluetoothResult result,
     mojom::blink::WebBluetoothDevicePtr device) {
   if (!resolver->GetExecutionContext() ||
@@ -417,18 +417,19 @@ ScriptPromiseTyped<IDLSequence<BluetoothDevice>> Bluetooth::getDevices(
 }
 
 // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetooth-requestdevice
-ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
-                                       const RequestDeviceOptions* options,
-                                       ExceptionState& exception_state) {
+ScriptPromiseTyped<BluetoothDevice> Bluetooth::requestDevice(
+    ScriptState* script_state,
+    const RequestDeviceOptions* options,
+    ExceptionState& exception_state) {
   LocalDOMWindow* window = GetSupplementable()->DomWindow();
 
   if (IsRequestDenied(window, exception_state)) {
-    return ScriptPromise();
+    return ScriptPromiseTyped<BluetoothDevice>();
   }
 
   if (!IsFeatureEnabled(window)) {
     exception_state.ThrowSecurityError(kPermissionsPolicyBlocked);
-    return ScriptPromise();
+    return ScriptPromiseTyped<BluetoothDevice>();
   }
 
   AddUnsupportedPlatformConsoleMessage(window);
@@ -440,7 +441,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   DCHECK(frame);
   if (!LocalFrame::HasTransientUserActivation(frame)) {
     exception_state.ThrowSecurityError(kHandleGestureForPermissionRequest);
-    return ScriptPromise();
+    return ScriptPromiseTyped<BluetoothDevice>();
   }
 
   EnsureServiceConnection(window);
@@ -452,12 +453,13 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
                               exception_state);
 
   if (exception_state.HadException())
-    return ScriptPromise();
+    return ScriptPromiseTyped<BluetoothDevice>();
 
   // Subsequent steps are handled in the browser process.
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<BluetoothDevice>>(
+          script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
 
   service_->RequestDevice(
       std::move(device_options),
@@ -502,7 +504,7 @@ static void ConvertRequestLEScanOptions(
 }
 
 void Bluetooth::RequestScanningCallback(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<BluetoothLEScan>* resolver,
     mojo::ReceiverId id,
     mojom::blink::WebBluetoothRequestLEScanOptionsPtr options,
     mojom::blink::WebBluetoothResult result) {
@@ -522,18 +524,19 @@ void Bluetooth::RequestScanningCallback(
 }
 
 // https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetooth-requestlescan
-ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
-                                       const BluetoothLEScanOptions* options,
-                                       ExceptionState& exception_state) {
+ScriptPromiseTyped<BluetoothLEScan> Bluetooth::requestLEScan(
+    ScriptState* script_state,
+    const BluetoothLEScanOptions* options,
+    ExceptionState& exception_state) {
   LocalDOMWindow* window = GetSupplementable()->DomWindow();
 
   if (IsRequestDenied(window, exception_state)) {
-    return ScriptPromise();
+    return ScriptPromiseTyped<BluetoothLEScan>();
   }
 
   if (!IsFeatureEnabled(window)) {
     exception_state.ThrowSecurityError(kPermissionsPolicyBlocked);
-    return ScriptPromise();
+    return ScriptPromiseTyped<BluetoothLEScan>();
   }
 
   // Remind developers when they are using Web Bluetooth on unsupported
@@ -555,7 +558,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   DCHECK(frame);
   if (!LocalFrame::HasTransientUserActivation(frame)) {
     exception_state.ThrowSecurityError(kHandleGestureForPermissionRequest);
-    return ScriptPromise();
+    return ScriptPromiseTyped<BluetoothLEScan>();
   }
 
   EnsureServiceConnection(window);
@@ -564,12 +567,13 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   ConvertRequestLEScanOptions(options, scan_options, exception_state);
 
   if (exception_state.HadException())
-    return ScriptPromise();
+    return ScriptPromiseTyped<BluetoothLEScan>();
 
   // Subsequent steps are handled in the browser process.
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<BluetoothLEScan>>(
+          script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
 
   mojo::PendingAssociatedRemote<mojom::blink::WebBluetoothAdvertisementClient>
       client;

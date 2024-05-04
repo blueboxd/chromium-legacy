@@ -7,6 +7,9 @@
 
 namespace extensions {
 
+class Dispatcher;
+class ModuleSystem;
+class NativeExtensionBindingsSystem;
 class ScriptContext;
 class ResourceBundleSourceMap;
 
@@ -18,16 +21,31 @@ class ExtensionsRendererAPIProvider {
  public:
   virtual ~ExtensionsRendererAPIProvider() = default;
 
-  // Blink maintains an allowlist for custom element names. This method
-  // provides the delegate the ability to add more names to that allowlist.
-  virtual void EnableCustomElementAllowlist() = 0;
+  // Registers any native handlers to provide additional functionality for
+  // native bindings. Called each time a new ScriptContext is created, since
+  // native handlers are per-context.
+  virtual void RegisterNativeHandlers(
+      ModuleSystem* module_system,
+      NativeExtensionBindingsSystem* bindings_system,
+      ScriptContext* context) = 0;
+
+  // Registers any additional hooks associated with specific APIs to the API
+  // bindings system. Called once per NativeExtensionBindingsSystem, which is
+  // one-per-thread and re-used across ScriptContexts.
+  virtual void AddBindingsSystemHooks(
+      Dispatcher* dispatcher,
+      NativeExtensionBindingsSystem* bindings_system) = 0;
 
   // Includes additional source resources into the resource map.
   virtual void PopulateSourceMap(ResourceBundleSourceMap* source_map) = 0;
 
+  // Blink maintains an allowlist for custom element names. This method
+  // provides the delegate the ability to add more names to that allowlist.
+  virtual void EnableCustomElementAllowlist() = 0;
+
   // Requires modules for defining WebView APIs within a ScriptContext's
   // ModuleSystem.
-  virtual bool RequireWebViewModules(ScriptContext* context) = 0;
+  virtual void RequireWebViewModules(ScriptContext* context) = 0;
 };
 
 }  // namespace extensions

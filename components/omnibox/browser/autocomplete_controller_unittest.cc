@@ -90,6 +90,8 @@ class AutocompleteControllerTest : public testing::Test {
                                 allowed_to_be_default_match, false,
                                 traditional_relevance, std::nullopt);
     match.keyword = u"keyword";
+    match.search_terms_args = std::make_unique<TemplateURLRef::SearchTermsArgs>(
+        base::UTF8ToUTF16(name));
     return match;
   }
 
@@ -100,6 +102,8 @@ class AutocompleteControllerTest : public testing::Test {
         name, AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED, false, false,
         traditional_relevance, std::nullopt);
     match.keyword = u"keyword";
+    match.search_terms_args =
+        std::make_unique<TemplateURLRef::SearchTermsArgs>(std::u16string());
     match.suggestion_group_id = omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST;
     match.subtypes.emplace(omnibox::SUBTYPE_PERSONAL);
     match.subtypes.emplace(omnibox::SUBTYPE_ZERO_PREFIX);
@@ -629,6 +633,15 @@ TEST_F(AutocompleteControllerTest, UpdateResult_Ranking) {
 }
 
 TEST_F(AutocompleteControllerTest, UpdateResult_ZPSEnabledAndShownInSession) {
+  // Populate TemplateURLService with a keyword.
+  TemplateURLData turl_data;
+  turl_data.SetShortName(u"Keyword");
+  turl_data.SetKeyword(u"keyword");
+  turl_data.SetURL("https://google.com/search?q={searchTerms}");
+  controller_.template_url_service_->Add(
+      std::make_unique<TemplateURL>(turl_data));
+
+  // Create a zero-suggest input.
   auto zps_input = FakeAutocompleteController::CreateInput(u"");
   zps_input.set_focus_type(metrics::OmniboxFocusType::INTERACTION_CLOBBER);
 
@@ -645,11 +658,24 @@ TEST_F(AutocompleteControllerTest, UpdateResult_ZPSEnabledAndShownInSession) {
                     "zps_1",
                     "zps_2",
                 }));
-    // Whether zero-prefix suggestions were enabled in the session is updated.
-    EXPECT_TRUE(controller_.published_result_.zero_prefix_enabled_in_session());
-    // The count of zero-prefix suggestions offered in the session is updated.
+    // Whether zero-suggest was enabled and the number of zero-prefix
+    // suggestions shown in the session are updated in the internal result set.
+    EXPECT_TRUE(controller_.internal_result_.zero_prefix_enabled_in_session());
+    EXPECT_EQ(controller_.internal_result_
+                  .num_zero_prefix_suggestions_shown_in_session(),
+              2u);
+    // Published result set does not get the session data.
+    EXPECT_FALSE(
+        controller_.published_result_.zero_prefix_enabled_in_session());
     EXPECT_EQ(controller_.published_result_
                   .num_zero_prefix_suggestions_shown_in_session(),
+              0u);
+    // Published matches contain the relevant session data in searchboxstats.
+    EXPECT_TRUE(controller_.published_result_.match_at(0)
+                    ->search_terms_args->searchbox_stats.zero_prefix_enabled());
+    EXPECT_EQ(controller_.published_result_.match_at(0)
+                  ->search_terms_args->searchbox_stats
+                  .num_zero_prefix_suggestions_shown(),
               2u);
   }
   {
@@ -669,24 +695,52 @@ TEST_F(AutocompleteControllerTest, UpdateResult_ZPSEnabledAndShownInSession) {
                     "zps_3",
                     "zps_4",
                 }));
-    EXPECT_TRUE(controller_.published_result_.zero_prefix_enabled_in_session());
     // If zero-prefix suggestions are offered multiple times in the session, the
     // most recent count is logged.
+    EXPECT_TRUE(controller_.internal_result_.zero_prefix_enabled_in_session());
+    EXPECT_EQ(controller_.internal_result_
+                  .num_zero_prefix_suggestions_shown_in_session(),
+              4u);
+    // Published result set does not get the session data.
+    EXPECT_FALSE(
+        controller_.published_result_.zero_prefix_enabled_in_session());
     EXPECT_EQ(controller_.published_result_
                   .num_zero_prefix_suggestions_shown_in_session(),
+              0u);
+    // Published matches contain the relevant session data in searchboxstats.
+    EXPECT_TRUE(controller_.published_result_.match_at(0)
+                    ->search_terms_args->searchbox_stats.zero_prefix_enabled());
+    EXPECT_EQ(controller_.published_result_.match_at(0)
+                  ->search_terms_args->searchbox_stats
+                  .num_zero_prefix_suggestions_shown(),
               4u);
   }
   {
     SCOPED_TRACE("Stop with clear_result=false is called due to user idleness");
     controller_.Stop(/*clear_result=*/false);
-    // Stop with clear_result=false does not clear the result set or notify
-    // `OnResultChanged()`.
+    // Stop with clear_result=false does not clear the internal result set and
+    // does not notify `OnResultChanged()`.
+    EXPECT_FALSE(controller_.internal_result_.empty());
     EXPECT_FALSE(controller_.published_result_.empty());
-    // Whether zero-prefix suggestions were enabled in the session is unchanged.
-    EXPECT_TRUE(controller_.published_result_.zero_prefix_enabled_in_session());
-    // The count of zero-prefix suggestions offered in the session is unchanged.
+    // Whether zero-suggest was enabled and the number of zero-prefix
+    // suggestions shown in the session are unchanged in the internal result
+    // set.
+    EXPECT_TRUE(controller_.internal_result_.zero_prefix_enabled_in_session());
+    EXPECT_EQ(controller_.internal_result_
+                  .num_zero_prefix_suggestions_shown_in_session(),
+              4u);
+    // Published result set does not get the session data.
+    EXPECT_FALSE(
+        controller_.published_result_.zero_prefix_enabled_in_session());
     EXPECT_EQ(controller_.published_result_
                   .num_zero_prefix_suggestions_shown_in_session(),
+              0u);
+    // Published matches contain the relevant session data in searchboxstats.
+    EXPECT_TRUE(controller_.published_result_.match_at(0)
+                    ->search_terms_args->searchbox_stats.zero_prefix_enabled());
+    EXPECT_EQ(controller_.published_result_.match_at(0)
+                  ->search_terms_args->searchbox_stats
+                  .num_zero_prefix_suggestions_shown(),
               4u);
   }
   {
@@ -699,20 +753,41 @@ TEST_F(AutocompleteControllerTest, UpdateResult_ZPSEnabledAndShownInSession) {
                 testing::ElementsAreArray({
                     "search_1",
                 }));
-    // Whether zero-prefix suggestions were enabled in the session is unchanged.
-    EXPECT_TRUE(controller_.published_result_.zero_prefix_enabled_in_session());
-    // The count of zero-prefix suggestions offered in the session is unchanged.
+    // Whether zero-suggest was enabled and the number of zero-prefix
+    // suggestions shown in the session are unchanged in the internal result
+    // set.
+    EXPECT_TRUE(controller_.internal_result_.zero_prefix_enabled_in_session());
+    EXPECT_EQ(controller_.internal_result_
+                  .num_zero_prefix_suggestions_shown_in_session(),
+              4u);
+    // Published result set does not get the session data.
+    EXPECT_FALSE(
+        controller_.published_result_.zero_prefix_enabled_in_session());
     EXPECT_EQ(controller_.published_result_
                   .num_zero_prefix_suggestions_shown_in_session(),
+              0u);
+    // Published matches contain the relevant session data in searchboxstats.
+    EXPECT_TRUE(controller_.published_result_.match_at(0)
+                    ->search_terms_args->searchbox_stats.zero_prefix_enabled());
+    EXPECT_EQ(controller_.published_result_.match_at(0)
+                  ->search_terms_args->searchbox_stats
+                  .num_zero_prefix_suggestions_shown(),
               4u);
   }
   {
     SCOPED_TRACE("Stop with clear_result=true is called due to popup closing");
     controller_.Stop(/*clear_result=*/true);
-    // Stop with clear_result=true clears the result set and notifies
-    // `OnResultChanged()`. Whether zero-prefix suggestions were enabled and the
-    // count of zero-prefix suggestions offered in the session is also reset.
+    // Stop with clear_result=true clears the internal result set and notifies
+    // `OnResultChanged()`.
+    EXPECT_TRUE(controller_.internal_result_.empty());
     EXPECT_TRUE(controller_.published_result_.empty());
+    // Whether zero-suggest was enabled and the number of zero-prefix
+    // suggestions shown in the session are reset in the internal result set.
+    EXPECT_FALSE(controller_.internal_result_.zero_prefix_enabled_in_session());
+    EXPECT_EQ(controller_.internal_result_
+                  .num_zero_prefix_suggestions_shown_in_session(),
+              0u);
+    // Published result set does not get the session data.
     EXPECT_FALSE(
         controller_.published_result_.zero_prefix_enabled_in_session());
     EXPECT_EQ(controller_.published_result_
@@ -1765,6 +1840,83 @@ TEST_F(AutocompleteControllerTest, UpdateResult_ForceAllowedToBeDefault) {
             "search",
             "history",
         }));
+  }
+}
+
+TEST_F(AutocompleteControllerTest, ExtraHeaders) {
+  // Populate TemplateURLService with a keyword.
+  {
+    TemplateURLData turl_data;
+    turl_data.SetShortName(u"Keyword");
+    turl_data.SetKeyword(u"keyword");
+    turl_data.SetURL("https://google.com/search?q={searchTerms}");
+    controller_.template_url_service_->Add(
+        std::make_unique<TemplateURL>(turl_data));
+  }
+
+  // Populate template URL service with starter pack entries.
+  for (auto& turl_data : TemplateURLStarterPackData::GetStarterPackEngines()) {
+    controller_.template_url_service_->Add(
+        std::make_unique<TemplateURL>(std::move(*turl_data)));
+  }
+
+  {
+    SCOPED_TRACE("@gemini starter pack match gets an extra header.");
+    auto match = CreateStarterPackMatch(u"@gemini");
+    // search_terms_args need to have been set.
+    match.search_terms_args =
+        std::make_unique<TemplateURLRef::SearchTermsArgs>(u"search term");
+
+    controller_.SetMatchDestinationURL(&match);
+    EXPECT_EQ(match.extra_headers, "X-Omnibox-Gemini:search term");
+    EXPECT_EQ(match.destination_url, "https://gemini.google.com/prompt");
+  }
+  {
+    SCOPED_TRACE("@gemini starter pack match with url override");
+
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kStarterPackExpansion,
+        {{"StarterPackGeminiUrlOverride", "https://example.com/"}});
+
+    auto match = CreateStarterPackMatch(u"@gemini");
+    // search_terms_args need to have been set.
+    match.search_terms_args =
+        std::make_unique<TemplateURLRef::SearchTermsArgs>(u"search term");
+
+    controller_.SetMatchDestinationURL(&match);
+    EXPECT_EQ(match.extra_headers, "X-Omnibox-Gemini:search term");
+    EXPECT_EQ(match.destination_url, "https://example.com/");
+  }
+  {
+    SCOPED_TRACE("@gemini starter pack with invalid input");
+    auto match = CreateStarterPackMatch(u"@gemini");
+    // search_terms_args need to have been set.
+    match.search_terms_args =
+        std::make_unique<TemplateURLRef::SearchTermsArgs>(u"search term\n");
+
+    controller_.SetMatchDestinationURL(&match);
+    EXPECT_EQ(match.extra_headers, "");
+    EXPECT_EQ(match.destination_url, "https://gemini.google.com/prompt");
+  }
+  {
+    SCOPED_TRACE("@bookmarks starter pack match does not get an extra header.");
+    auto match = CreateStarterPackMatch(u"@bookmarks");
+    // search_terms_args need to have been set.
+    match.search_terms_args =
+        std::make_unique<TemplateURLRef::SearchTermsArgs>(u"search term");
+
+    controller_.SetMatchDestinationURL(&match);
+    EXPECT_EQ(match.extra_headers, "");
+    EXPECT_EQ(match.destination_url, "chrome://bookmarks/?q=search+term");
+  }
+  {
+    SCOPED_TRACE("search match does not get an extra header.");
+    auto match = CreateSearchMatch("search term", true, 1300);
+
+    controller_.SetMatchDestinationURL(&match);
+    EXPECT_EQ(match.extra_headers, "");
+    EXPECT_EQ(match.destination_url, "https://google.com/search?q=search+term");
   }
 }
 

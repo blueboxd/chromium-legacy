@@ -7,6 +7,7 @@
 #include "chrome/renderer/accessibility/read_anything_app_model.h"
 
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "read_anything_app_model.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 
@@ -200,6 +201,8 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
     return base::Contains(model_->display_node_ids(), ax_node_id);
   }
 
+  bool DisplayNodeIdsIsEmpty() { return model_->display_node_ids().empty(); }
+
   bool SelectionNodeIdsContains(ui::AXNodeID ax_node_id) {
     return base::Contains(model_->selection_node_ids(), ax_node_id);
   }
@@ -253,8 +256,9 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
   }
 
   ui::AXNodePosition::AXPositionInstance GetNextNodePosition() {
-    return model_->GetNextValidPositionFromCurrentPosition(
-        ReadAnythingAppModel::ReadAloudCurrentGranularity());
+    ReadAnythingAppModel::ReadAloudCurrentGranularity granularity =
+        ReadAnythingAppModel::ReadAloudCurrentGranularity();
+    return model_->GetNextValidPositionFromCurrentPosition(granularity);
   }
 
   ui::AXNodePosition::AXPositionInstance GetNextNodePosition(
@@ -283,7 +287,7 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
  private:
   // ReadAnythingAppModel constructor and destructor are private so it's
   // not accessible by std::make_unique.
-  raw_ptr<ReadAnythingAppModel, ExperimentalRenderer> model_ = nullptr;
+  raw_ptr<ReadAnythingAppModel> model_ = nullptr;
 };
 
 TEST_F(ReadAnythingAppModelTest, Theme) {
@@ -790,6 +794,53 @@ TEST_F(ReadAnythingAppModelTest,
 }
 
 TEST_F(ReadAnythingAppModelTest,
+       DisplayNodeIdsEmpty_WhenContentNodesAreAllHeadings) {
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+
+  // All content nodes are heading nodes.
+  update.nodes.resize(3);
+  update.nodes[0].id = 2;
+  update.nodes[0].role = ax::mojom::Role::kHeading;
+  update.nodes[1].id = 3;
+  update.nodes[1].role = ax::mojom::Role::kHeading;
+  update.nodes[2].id = 4;
+  update.nodes[2].role = ax::mojom::Role::kHeading;
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({2, 3, 4});
+  EXPECT_TRUE(DisplayNodeIdsIsEmpty());
+
+  // Content node is static text node with heading parent.
+  update.nodes.resize(3);
+  update.nodes[0].id = 1;
+  update.nodes[0].child_ids = {2};
+  update.nodes[1].id = 2;
+  update.nodes[1].role = ax::mojom::Role::kHeading;
+  update.nodes[1].child_ids = {3};
+  update.nodes[2].id = 3;
+  update.nodes[2].role = ax::mojom::Role::kStaticText;
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({3});
+  EXPECT_TRUE(DisplayNodeIdsIsEmpty());
+
+  // Content node is inline text box with heading grandparent.
+  update.nodes.resize(4);
+  update.nodes[0].id = 1;
+  update.nodes[0].child_ids = {2};
+  update.nodes[1].id = 2;
+  update.nodes[1].role = ax::mojom::Role::kHeading;
+  update.nodes[1].child_ids = {3};
+  update.nodes[2].id = 3;
+  update.nodes[2].role = ax::mojom::Role::kStaticText;
+  update.nodes[2].child_ids = {4};
+  update.nodes[3].id = 4;
+  update.nodes[3].role = ax::mojom::Role::kInlineTextBox;
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({4});
+  EXPECT_TRUE(DisplayNodeIdsIsEmpty());
+}
+
+TEST_F(ReadAnythingAppModelTest,
        SelectionNodeIdsContains_SelectionAndNearbyNodes) {
   ui::AXTreeUpdate update;
   SetUpdateTreeID(&update);
@@ -991,6 +1042,23 @@ TEST_F(ReadAnythingAppModelTest, PostProcessSelectionFromAction_DoesNotDraw) {
   AccessibilityEventReceived({update});
   ProcessDisplayNodes({2, 3});
   SetSelectionFromAction(true);
+
+  ASSERT_FALSE(ProcessSelection());
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       PostProcessSelectionFromAction_DoesNotDrawWithNoSelection) {
+  // Initial state.
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  update.tree_data.sel_anchor_object_id = ui::kInvalidAXNodeID;
+  update.tree_data.sel_focus_object_id = ui::kInvalidAXNodeID;
+  update.tree_data.sel_anchor_offset = 0;
+  update.tree_data.sel_focus_offset = 0;
+  update.tree_data.sel_is_backward = false;
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({2, 3});
+  SetSelectionFromAction(false);
 
   ASSERT_FALSE(ProcessSelection());
 }

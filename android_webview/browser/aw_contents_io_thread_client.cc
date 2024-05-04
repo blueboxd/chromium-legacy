@@ -6,9 +6,9 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <utility>
 
-#include <optional>
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/network_service/aw_web_resource_intercept_response.h"
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
@@ -22,6 +22,7 @@
 #include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -57,7 +58,8 @@ namespace {
 typedef map<content::GlobalRenderFrameHostToken, JavaObjectWeakGlobalRef>
     RenderFrameHostToWeakGlobalRefType;
 
-typedef pair<base::flat_set<RenderFrameHost*>, JavaObjectWeakGlobalRef>
+typedef pair<base::flat_set<raw_ptr<RenderFrameHost, CtnExperimental>>,
+             JavaObjectWeakGlobalRef>
     HostsAndWeakGlobalRefPair;
 
 // When browser side navigation is enabled, RenderFrameIDs do not have
@@ -387,10 +389,7 @@ bool AwContentsIoThreadClient::ShouldAcceptThirdPartyCookies() const {
 }
 
 bool AwContentsIoThreadClient::GetSafeBrowsingEnabled() const {
-  DCHECK_CURRENTLY_ON(
-      base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)
-          ? content::BrowserThread::UI
-          : content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   JNIEnv* env = AttachCurrentThread();
   return Java_AwContentsIoThreadClient_getSafeBrowsingEnabled(env,

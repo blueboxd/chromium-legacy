@@ -22,8 +22,10 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
-#include "components/services/storage/privileged/mojom/indexed_db_bucket_types.mojom.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "components/services/storage/privileged/mojom/indexed_db_client_state_checker.mojom.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control_test.mojom.h"
+#include "components/services/storage/privileged/mojom/indexed_db_internals_types.mojom.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
 #include "components/services/storage/public/cpp/quota_error_or.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
@@ -36,6 +38,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace storage {
@@ -48,8 +51,6 @@ class IndexedDBBucketContextHandle;
 class IndexedDBDatabase;
 class IndexedDBDataItemReader;
 class IndexedDBPreCloseTaskQueue;
-
-constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
 
 // IndexedDBBucketContext manages the per-bucket IndexedDB state, and other
 // important context like the backing store and lock manager.
@@ -135,8 +136,20 @@ class CONTENT_EXPORT IndexedDBBucketContext
     Delegate(const Delegate&) = delete;
     Delegate& operator=(const Delegate&) = delete;
 
-    // Called when the bucket context is ready to be destroyed.
-    base::RepeatingCallback<void()> on_ready_for_destruction;
+    // Called when the bucket context is ready to be destroyed. After this is
+    // called, the bucket context will no longer accept new IDBFactory
+    // connections (receivers in `receivers_`).
+    base::OnceCallback<void()> on_ready_for_destruction;
+
+    // Called when `IndexedDBBucketContext` can't handle an `AddReceiver()`
+    // call: specifically, if destruction has already been initiated by calling
+    // `on_ready_for_destruction`.
+    base::RepeatingCallback<void(
+        mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
+        /*client_state_checker_remote*/,
+        const base::UnguessableToken& /*client_token*/,
+        mojo::PendingReceiver<blink::mojom::IDBFactory> /*pending_receiver*/)>
+        on_receiver_bounced;
 
     // Called when database content has changed. Technically this is called when
     // the content *probably will* change --- it's invoked before a transaction
@@ -296,10 +309,15 @@ class CONTENT_EXPORT IndexedDBBucketContext
       storage::mojom::IdbBucketMetadataPtr info,
       base::OnceCallback<void(storage::mojom::IdbBucketMetadataPtr)> result);
 
+  // This exists to facilitate unit tests. Since `this` is owned via a
+  // `SequenceBound`, it's not possible to directly grab pointer to `this`.
+  IndexedDBBucketContext* GetReferenceForTesting();
+
   void CompactBackingStoreForTesting();
   void WriteToIndexedDBForTesting(const std::string& key,
-                                  const std::string& value,
-                                  base::OnceClosure callback);
+                                  const std::string& value);
+  void BindMockFailureSingletonForTesting(
+      mojo::PendingReceiver<storage::mojom::MockFailureInjector> receiver);
 
   // Called when a fatal error has occurred that should result in tearing down
   // the backing store. `IndexedDBBucketContext` *may* be synchronously
@@ -315,6 +333,10 @@ class CONTENT_EXPORT IndexedDBBucketContext
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   bool force_close_called_for_testing() const { return skip_closing_sequence_; }
+
+  TransactionalLevelDBFactory& transactional_leveldb_factory() const {
+    return *transactional_leveldb_factory_;
+  }
 
  private:
   friend IndexedDBBucketContextHandle;
@@ -443,6 +465,8 @@ class CONTENT_EXPORT IndexedDBBucketContext
   ClosingState closing_stage_ = ClosingState::kNotClosing;
   base::OneShotTimer close_timer_;
   std::unique_ptr<PartitionedLockManager> lock_manager_;
+  std::unique_ptr<TransactionalLevelDBFactory> transactional_leveldb_factory_;
+  const leveldb_env::Options leveldb_options_;
   std::unique_ptr<IndexedDBBackingStore> backing_store_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
@@ -478,7 +502,10 @@ class CONTENT_EXPORT IndexedDBBucketContext
   // thread.
   mojo::Remote<storage::mojom::FileSystemAccessContext>
       file_system_access_context_;
-  std::map<base::FilePath, std::unique_ptr<IndexedDBDataItemReader>>
+  // This map's value type contains a closure which will run on destruction.
+  std::map<base::FilePath,
+           std::tuple<std::unique_ptr<IndexedDBDataItemReader>,
+                      base::ScopedClosureRunner /*release_callback*/>>
       file_reader_map_;
 
   std::unique_ptr<IndexedDBPreCloseTaskQueue> pre_close_task_queue_;

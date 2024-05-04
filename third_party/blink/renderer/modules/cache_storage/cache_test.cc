@@ -62,10 +62,10 @@ class ScopedFetcherForTests final
  public:
   ScopedFetcherForTests() = default;
 
-  ScriptPromise Fetch(ScriptState* script_state,
-                      const V8RequestInfo* request_info,
-                      const RequestInit*,
-                      ExceptionState& exception_state) override {
+  ScriptPromiseTyped<Response> Fetch(ScriptState* script_state,
+                                     const V8RequestInfo* request_info,
+                                     const RequestInit*,
+                                     ExceptionState& exception_state) override {
     ++fetch_count_;
     if (expected_url_) {
       switch (request_info->GetContentType()) {
@@ -79,16 +79,11 @@ class ScopedFetcherForTests final
     }
 
     if (response_) {
-      auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-          script_state, exception_state.GetContext());
-      const ScriptPromise promise = resolver->Promise();
-      resolver->Resolve(response_);
-      response_ = nullptr;
-      return promise;
+      return ToResolvedPromise<Response>(script_state, response_);
     }
     exception_state.ThrowTypeError(
         "Unexpected call to fetch, no response available.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<Response>();
   }
 
   // This does not take ownership of its parameter. The provided sample object
@@ -107,7 +102,7 @@ class ScopedFetcherForTests final
 
  private:
   uint32_t fetch_count_ = 0;
-  const String* expected_url_ = nullptr;
+  raw_ptr<const String> expected_url_ = nullptr;
   Member<Response> response_;
 };
 
@@ -259,10 +254,9 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
 
   const mojom::blink::CacheStorageError error_;
 
-  raw_ptr<const String, ExperimentalRenderer> expected_url_;
-  raw_ptr<const mojom::blink::CacheQueryOptionsPtr, ExperimentalRenderer>
-      expected_query_options_;
-  raw_ptr<const Vector<mojom::blink::BatchOperationPtr>, ExperimentalRenderer>
+  raw_ptr<const String> expected_url_;
+  raw_ptr<const mojom::blink::CacheQueryOptionsPtr> expected_query_options_;
+  raw_ptr<const Vector<mojom::blink::BatchOperationPtr>>
       expected_batch_operations_;
 
   std::string last_error_web_cache_method_called_;

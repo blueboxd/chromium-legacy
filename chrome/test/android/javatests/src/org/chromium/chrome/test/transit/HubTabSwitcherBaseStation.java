@@ -25,11 +25,12 @@ import org.chromium.base.test.transit.StationFacility;
 import org.chromium.base.test.transit.Trip;
 import org.chromium.base.test.transit.ViewElement;
 import org.chromium.base.test.util.ViewActionOnDescendant;
+import org.chromium.chrome.browser.hub.HubToolbarView;
 import org.chromium.chrome.browser.hub.PaneId;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.ClosableTabGridView;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 
 /** The base station for Hub tab switcher stations. */
 public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
@@ -38,6 +39,12 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
                     allOf(
                             isDescendantOfA(HubBaseStation.HUB_PANE_HOST.getViewMatcher()),
                             withId(R.id.tab_list_recycler_view)));
+
+    public static final ViewElement TOOLBAR_NEW_TAB_BUTTON =
+            sharedViewElement(
+                    allOf(
+                            withId(R.id.toolbar_action_button),
+                            isDescendantOfA(instanceOf(HubToolbarView.class))));
 
     public static final Matcher<View> TAB_CLOSE_BUTTON =
             allOf(
@@ -56,17 +63,22 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
                                     withParent(instanceOf(ClosableTabGridView.class)))),
                     isDisplayed());
 
+    private final boolean mIsIncognito;
+
     /**
      * @param chromeTabbedActivityTestRule The activity rule under test.
      */
-    public HubTabSwitcherBaseStation(ChromeTabbedActivityTestRule chromeTabbedActivityTestRule) {
+    public HubTabSwitcherBaseStation(
+            ChromeTabbedActivityTestRule chromeTabbedActivityTestRule, boolean isIncognito) {
         super(chromeTabbedActivityTestRule);
+        mIsIncognito = isIncognito;
     }
 
     @Override
     public void declareElements(Elements.Builder elements) {
         super.declareElements(elements);
 
+        elements.declareView(TOOLBAR_NEW_TAB_BUTTON);
         elements.declareView(TAB_LIST_RECYCLER_VIEW);
     }
 
@@ -76,7 +88,7 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
      * @return the {@link HubTabSwitcherAppMenuFacility} for the Hub.
      */
     public HubTabSwitcherAppMenuFacility openAppMenu() {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         HubTabSwitcherAppMenuFacility menu =
                 new HubTabSwitcherAppMenuFacility(this, mChromeTabbedActivityTestRule);
@@ -92,7 +104,7 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
      * @return the {@link BasePageStation} for the tab that was selected.
      */
     public BasePageStation selectTabAtIndex(int index) {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         PageStation destination =
                 new PageStation(
@@ -103,7 +115,6 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
                 this,
                 destination,
                 (t) -> {
-                    t.addCondition(new HubLayoutNotShowing());
                     ViewActionOnDescendant.performOnRecyclerViewNthItemDescendant(
                             TAB_LIST_RECYCLER_VIEW.getViewMatcher(), index, TAB_THUMBNAIL, click());
                 });
@@ -148,5 +159,13 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
                             TAB_CLOSE_BUTTON,
                             click());
                 });
+    }
+
+    /** Open a new tab using the New Tab action button. */
+    public PageStation openNewTab() {
+        recheckActiveConditions();
+
+        PageStation page = new PageStation(mChromeTabbedActivityTestRule, mIsIncognito, true);
+        return Trip.travelSync(this, page, t -> TOOLBAR_NEW_TAB_BUTTON.perform(click()));
     }
 }

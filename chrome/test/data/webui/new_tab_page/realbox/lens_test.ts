@@ -20,7 +20,9 @@ function createAutocompleteMatch(): AutocompleteMatch {
     a11yLabel: mojoString16(''),
     actions: [],
     allowedToBeDefaultMatch: false,
+    answer: null,
     isSearchType: false,
+    isWeatherAnswerSuggestion: null,
     swapContentsAndDescription: false,
     supportsDeletion: false,
     suggestionGroupId: -1,  // Indicates a missing suggestion group Id.
@@ -35,6 +37,7 @@ function createAutocompleteMatch(): AutocompleteMatch {
     imageDominantColor: '',
     imageUrl: '',
     removeButtonA11yLabel: mojoString16(''),
+    tailSuggestCommonPrefix: null,
     type: '',
     isRichSuggestion: false,
   };
@@ -77,14 +80,14 @@ suite('Lens search', () => {
     BrowserProxyImpl.setInstance(testMetricsReporterProxy);
     MetricsReporterImpl.setInstanceForTest(new MetricsReporterImpl());
 
-    realbox = document.createElement('ntp-realbox');
+    realbox = document.createElement('cr-realbox');
     document.body.appendChild(realbox);
   });
 
   test('Lens search button is visible by default', async () => {
     // Arrange.
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
-    realbox = document.createElement('ntp-realbox');
+    realbox = document.createElement('cr-realbox');
     document.body.appendChild(realbox);
     await testProxy.callbackRouterRemote.$.flushForTesting();
 
@@ -100,7 +103,7 @@ suite('Lens search', () => {
       realboxLensSearch: true,
     });
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
-    realbox = document.createElement('ntp-realbox');
+    realbox = document.createElement('cr-realbox');
     document.body.appendChild(realbox);
 
     // Act.
@@ -137,7 +140,7 @@ suite('Lens search', () => {
       realboxLensSearch: true,
     });
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
-    realbox = document.createElement('ntp-realbox');
+    realbox = document.createElement('cr-realbox');
     document.body.appendChild(realbox);
     const whenOpenLensSearch = eventToPromise('open-lens-search', realbox);
     await testProxy.callbackRouterRemote.$.flushForTesting();

@@ -18,6 +18,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -62,7 +63,8 @@ class AlertIndicatorButtonBrowserTest
   }
 
   raw_ptr<content::WebContents, DanglingUntriaged> web_contents_ = nullptr;
-  raw_ptr<AlertIndicatorButton> alert_indicator_button_ = nullptr;
+  raw_ptr<AlertIndicatorButton, DanglingUntriaged> alert_indicator_button_ =
+      nullptr;
 };
 
 // ToDo(b/323446918): this test fails for startScreenSharing on win10.

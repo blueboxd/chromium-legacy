@@ -28,6 +28,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
+#include "components/webapps/browser/banners/web_app_banner_data.h"
 #include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -45,6 +46,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/ash/app_install/app_install_dialog.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "ui/base/webui/web_ui_util.h"
 #endif
 
 namespace web_app {
@@ -79,6 +81,7 @@ const GURL& GetIconUrl(const std::vector<apps::IconInfo>& manifest_icons) {
 
 void OnManifestFetchedShowCrosDialog(
     base::WeakPtr<ash::app_install::AppInstallDialog> dialog_handle,
+    std::vector<webapps::Screenshot> screenshots,
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     WebAppInstallationAcceptanceCallback web_app_acceptance_callback) {
@@ -90,6 +93,10 @@ void OnManifestFetchedShowCrosDialog(
   args->name = base::UTF16ToUTF8(web_app_info->title);
   args->description = base::UTF16ToUTF8(web_app_info->description);
   args->icon_url = GetIconUrl(web_app_info->manifest_icons);
+  for (const auto& screenshot : screenshots) {
+    args->screenshot_urls.push_back(
+        GURL(webui::GetBitmapDataUrl(screenshot.image)));
+  }
 
   dialog_handle->Show(
       initiator_web_contents->GetNativeView(), std::move(args),
@@ -126,6 +133,7 @@ void OnWebAppInstallShowInstallDialog(
     webapps::WebappInstallSource install_source,
     PwaInProductHelpState iph_state,
     std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker,
+    std::vector<webapps::Screenshot> screenshots,
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     WebAppInstallationAcceptanceCallback web_app_acceptance_callback) {
@@ -145,20 +153,17 @@ void OnWebAppInstallShowInstallDialog(
                 .SetAppId(app_id)));
       }
 #endif
-      if (webapps::AppBannerManager::FromWebContents(initiator_web_contents)
-              ->screenshots()
-              .size()) {
+      if (!screenshots.empty()) {
         ShowWebAppDetailedInstallDialog(
             initiator_web_contents, std::move(web_app_info),
             std::move(install_tracker), std::move(web_app_acceptance_callback),
-            webapps::AppBannerManager::FromWebContents(initiator_web_contents)
-                ->screenshots(),
-            iph_state);
+            std::move(screenshots), iph_state);
         return;
       } else {
-        ShowPWAInstallBubble(initiator_web_contents, std::move(web_app_info),
-                             std::move(install_tracker),
-                             std::move(web_app_acceptance_callback), iph_state);
+        ShowSimpleInstallDialogForWebApps(
+            initiator_web_contents, std::move(web_app_info),
+            std::move(install_tracker), std::move(web_app_acceptance_callback),
+            iph_state);
         return;
       }
     case WebAppInstallFlow::kCreateShortcut:
@@ -209,8 +214,9 @@ bool CanCreateWebApp(const Browser* browser) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!IsValidWebAppUrl(web_contents->GetLastCommittedURL()) ||
-      web_contents->IsCrashed())
+      web_contents->IsCrashed()) {
     return false;
+  }
   content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
   if (entry && entry->GetPageType() == content::PAGE_TYPE_ERROR)
@@ -244,6 +250,15 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
     return;
   }
 
+  webapps::AppBannerManager* app_banner_manager =
+      webapps::AppBannerManager::FromWebContents(web_contents);
+  if (!app_banner_manager) {
+    return;
+  }
+
+  std::optional<webapps::WebAppBannerData> data =
+      app_banner_manager->GetCurrentWebAppBannerData();
+
   webapps::WebappInstallSource install_source =
       webapps::InstallableMetrics::GetInstallSource(
           web_contents, flow == WebAppInstallFlow::kCreateShortcut
@@ -264,10 +279,12 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
         ash::app_install::AppInstallDialog::CreateDialog();
     provider->scheduler().FetchManifestAndInstall(
         install_source, web_contents->GetWeakPtr(),
-        base::BindOnce(OnManifestFetchedShowCrosDialog, dialog_handle),
+        base::BindOnce(OnManifestFetchedShowCrosDialog, dialog_handle,
+                       data.has_value() ? std::move(data->screenshots)
+                                        : std::vector<webapps::Screenshot>()),
         base::BindOnce(OnWebAppInstalledFromCrosDialog, dialog_handle,
                        std::move(callback)),
-        /*use_fallback=*/true);
+        FallbackBehavior::kAllowFallbackDataAlways);
     return;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -276,9 +293,11 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
       install_source, web_contents->GetWeakPtr(),
       base::BindOnce(OnWebAppInstallShowInstallDialog, flow, install_source,
                      PwaInProductHelpState::kNotShown,
-                     std::move(install_tracker)),
+                     std::move(install_tracker),
+                     data.has_value() ? std::move(data->screenshots)
+                                      : std::vector<webapps::Screenshot>()),
       base::BindOnce(OnWebAppInstalled, std::move(callback)),
-      /*use_fallback=*/true);
+      FallbackBehavior::kAllowFallbackDataAlways);
 }
 
 bool CreateWebAppFromManifest(content::WebContents* web_contents,
@@ -299,13 +318,24 @@ bool CreateWebAppFromManifest(content::WebContents* web_contents,
     return false;
   }
 
+  webapps::AppBannerManager* app_banner_manager =
+      webapps::AppBannerManager::FromWebContents(web_contents);
+  if (!app_banner_manager) {
+    return false;
+  }
+
+  std::optional<webapps::WebAppBannerData> data =
+      app_banner_manager->GetCurrentWebAppBannerData();
+
   std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker =
       promoter->RegisterCurrentInstallForWebContents(install_source);
 
   // If the source is from ML, there may not be a manifest, so allow the command
   // to use the metadata from the page too.
-  bool use_fallback =
-      install_source == webapps::WebappInstallSource::ML_PROMOTION;
+  FallbackBehavior fallback_behavior =
+      install_source == webapps::WebappInstallSource::ML_PROMOTION
+          ? FallbackBehavior::kUseFallbackInfoWhenNotInstallable
+          : FallbackBehavior::kCraftedManifestOnly;
 
   // TODO(b/307145346): Eventually, this should also be primary install for
   // Lacros.
@@ -316,10 +346,12 @@ bool CreateWebAppFromManifest(content::WebContents* web_contents,
         ash::app_install::AppInstallDialog::CreateDialog();
     provider->scheduler().FetchManifestAndInstall(
         install_source, web_contents->GetWeakPtr(),
-        base::BindOnce(OnManifestFetchedShowCrosDialog, dialog_handle),
+        base::BindOnce(OnManifestFetchedShowCrosDialog, dialog_handle,
+                       data.has_value() ? std::move(data->screenshots)
+                                        : std::vector<webapps::Screenshot>()),
         base::BindOnce(OnWebAppInstalledFromCrosDialog, dialog_handle,
                        std::move(installed_callback)),
-        /*use_fallback=*/use_fallback);
+        fallback_behavior);
     return true;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -328,9 +360,11 @@ bool CreateWebAppFromManifest(content::WebContents* web_contents,
       install_source, web_contents->GetWeakPtr(),
       base::BindOnce(OnWebAppInstallShowInstallDialog,
                      WebAppInstallFlow::kInstallSite, install_source, iph_state,
-                     std::move(install_tracker)),
+                     std::move(install_tracker),
+                     data.has_value() ? std::move(data->screenshots)
+                                      : std::vector<webapps::Screenshot>()),
       base::BindOnce(OnWebAppInstalled, std::move(installed_callback)),
-      /*use_fallback=*/use_fallback);
+      fallback_behavior);
   return true;
 }
 

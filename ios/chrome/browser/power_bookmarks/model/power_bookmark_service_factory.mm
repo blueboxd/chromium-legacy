@@ -41,7 +41,7 @@ PowerBookmarkServiceFactory::BuildServiceInstanceFor(
       ChromeBrowserState::FromBrowserState(state);
   return std::make_unique<power_bookmarks::PowerBookmarkService>(
       ios::LocalOrSyncableBookmarkModelFactory::GetInstance()
-          ->GetForBrowserState(chrome_state),
+          ->GetDedicatedUnderlyingModelForBrowserState(chrome_state),
       state->GetStatePath().AppendASCII("power_bookmarks"),
       web::GetUIThreadTaskRunner({}),
       base::ThreadPool::CreateSequencedTaskRunner(

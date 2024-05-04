@@ -22,7 +22,6 @@
 #include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/registration_eligibility.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
-#include "content/browser/attribution_reporting/attribution_beacon_id.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
@@ -125,7 +124,10 @@ AttributionInputEvent AttributionHost::GetMostRecentNavigationInputEvent()
   AttributionInputEvent input;
 #if BUILDFLAG(IS_ANDROID)
   if (input_event_tracker_android_) {
-    input.input_event = input_event_tracker_android_->GetMostRecentEvent();
+    AttributionInputEventTrackerAndroid::InputEvent input_event =
+        input_event_tracker_android_->GetMostRecentEvent();
+    input.input_event = std::move(input_event.event);
+    input.input_event_id = input_event.id;
   }
 #endif
   return input;
@@ -172,11 +174,10 @@ void AttributionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
 
   auto* navigation_request = static_cast<NavigationRequest*>(navigation_handle);
 
-  suitable_context->data_host_manager()->NotifyNavigationRegistrationStarted(
-      impression->attribution_src_token, suitable_context->last_input_event(),
-      suitable_context->context_origin(),
-      suitable_context->is_nested_within_fenced_frame(),
-      suitable_context->root_render_frame_id(),
+  AttributionDataHostManager* manager = suitable_context->data_host_manager();
+  manager->NotifyNavigationRegistrationStarted(
+      std::move(*suitable_context), impression->attribution_src_token,
+
       navigation_handle->GetNavigationId(),
       // The devtools_navigation_token is going to be used as the
       // navigation's request devtools inspector ID if there is an enabled
@@ -282,11 +283,9 @@ void AttributionHost::RegisterDataHost(
     return;
   }
 
-  suitable_context->data_host_manager()->RegisterDataHost(
-      std::move(data_host), suitable_context->context_origin(),
-      suitable_context->is_nested_within_fenced_frame(),
-      registration_eligibility, suitable_context->root_render_frame_id(),
-      suitable_context->last_navigation_id());
+  AttributionDataHostManager* manager = suitable_context->data_host_manager();
+  manager->RegisterDataHost(std::move(data_host), std::move(*suitable_context),
+                            registration_eligibility);
 }
 
 void AttributionHost::NotifyNavigationWithBackgroundRegistrationsWillStart(
@@ -340,33 +339,6 @@ void AttributionHost::BindReceiver(
     return;
   }
   attribution_host->receivers_.Bind(rfh, std::move(receiver));
-}
-
-bool AttributionHost::NotifyFencedFrameReportingBeaconStarted(
-    BeaconId beacon_id,
-    std::optional<int64_t> navigation_id,
-    RenderFrameHostImpl* initiator_frame_host,
-    std::string devtools_request_id) {
-  if (!base::FeatureList::IsEnabled(
-          features::kAttributionFencedFrameReportingBeacon)) {
-    return false;
-  }
-
-  auto suitable_context =
-      AttributionSuitableContext::Create(initiator_frame_host);
-  if (!suitable_context.has_value()) {
-    return false;
-  }
-
-  suitable_context->data_host_manager()
-      ->NotifyFencedFrameReportingBeaconStarted(
-          beacon_id, navigation_id, suitable_context->context_origin(),
-          suitable_context->is_nested_within_fenced_frame(),
-          navigation_id.has_value() ? suitable_context->last_input_event()
-                                    : AttributionInputEvent(),
-          suitable_context->root_render_frame_id(),
-          std::move(devtools_request_id));
-  return true;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AttributionHost);

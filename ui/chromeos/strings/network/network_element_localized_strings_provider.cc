@@ -154,11 +154,20 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kElementLocalizedStrings);
+
+  html_source->AddLocalizedString(
+      "OncTypeTether", ash::features::IsInstantHotspotRebrandEnabled()
+                           ? IDS_NETWORK_TYPE_HOTSPOT
+                           : IDS_NETWORK_TYPE_TETHER);
 }
 
 void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {
   for (const auto& entry : kElementLocalizedStrings)
     builder->Add(entry.name, entry.id);
+
+  builder->Add("OncTypeTether", ash::features::IsInstantHotspotRebrandEnabled()
+                                    ? IDS_NETWORK_TYPE_HOTSPOT
+                                    : IDS_NETWORK_TYPE_TETHER);
 }
 
 void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
@@ -327,7 +336,8 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"internetApnPageTitle", IDS_SETTINGS_ACCESS_POINT_NAME_APN},
       {"apn", IDS_SETTINGS_APN_INPUT_LABEL},
-      {"apnPageAddNewApn", IDS_SETTINGS_ADD_NEW_APN},
+      {"apnPageCreateNewApn", IDS_SETTINGS_CREATE_NEW_APN},
+      {"apnPageDiscoverMoreApns", IDS_SETTINGS_DISCOVER_MORE_APNS},
       {"apnSettingsDescriptionNoLink", IDS_SETTINGS_APN_DESCRIPTION_NO_LINK},
       {"customApnLimitReached", IDS_SETTINGS_CUSTOM_APN_LIMIT_REACHED},
       {"apnSettingsZeroStateDescription",
@@ -352,6 +362,17 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"apnDetailAddApnDialogTitle", IDS_SETTINGS_ADD_APN_DIALOG_TITLE},
       {"apnDetailViewApnDialogTitle", IDS_SETTINGS_VIEW_APN_DIALOG_TITLE},
       {"apnDetailEditApnDialogTitle", IDS_SETTINGS_EDIT_APN_DIALOG_TITLE},
+      {"apnSelectionDialogTitle", IDS_SETTINGS_APN_SELECTION_DIALOG_TITLE},
+      {"apnSelectionDialogDescription",
+       IDS_SETTINGS_APN_SELECTION_DIALOG_DESCRIPTION},
+      {"apnSelectionDialogUseApn",
+       IDS_SETTINGS_APN_SELECTION_DIALOG_BUTTON_USE_APN},
+      {"apnSelectionDialogA11yUseApnEnabled",
+       IDS_SETTINGS_APN_SELECTION_DIALOG_A11Y_USE_APN_ENABLED},
+      {"apnSelectionDialogA11yUseApnDisabled",
+       IDS_SETTINGS_APN_SELECTION_DIALOG_A11Y_USE_APN_DISABLED},
+      {"apnSelectionDialogListItemSelected",
+       IDS_SETTINGS_APN_SELECTION_DIALOG_LIST_ITEM_SELECTED},
       {"apnDetailApnErrorMaxChars",
        IDS_SETTINGS_APN_INPUT_LABEL_ERROR_MAX_CHARS},
       {"apnDetailApnErrorInvalidChar",

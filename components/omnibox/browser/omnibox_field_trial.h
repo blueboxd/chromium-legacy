@@ -288,16 +288,6 @@ bool HUPSearchDatabase();
 // ---------------------------------------------------------
 // For UI experiments.
 
-// Returns true if the OmniboxActionsUISimplification feature is enabled.
-bool IsActionsUISimplificationEnabled();
-// Indicates whether to include changes that affect the NTP realbox.
-extern const base::FeatureParam<bool> kActionsUISimplificationIncludeRealbox;
-// Indicates whether to delete extra matches produced by splitting
-// actions out to become independent suggestions. Note, this will only
-// apply if `IsActionsUISimplificationEnabled` returns true and the
-// total number of matches exceeds the limit (i.e. there are extra matches).
-extern const base::FeatureParam<bool> kActionsUISimplificationTrimExtra;
-
 // Returns true if the OmniboxKeywordModeRefresh feature is enabled.
 bool IsKeywordModeRefreshEnabled();
 
@@ -661,6 +651,12 @@ struct MLConfig {
   int mapped_search_blending_min{600};
   int mapped_search_blending_max{2800};
   int mapped_search_blending_grouping_threshold{1400};
+
+  // If true, ML scoring service will utilize in-memory ML score cache.
+  // Equivalent to omnibox::kMlUrlScoreCaching.
+  bool ml_url_score_caching{false};
+  // Maximum number of cached entries to store in the ML score cache.
+  int max_ml_score_cache_size{30};
 };
 
 // A testing utility class for overriding the current configuration returned
@@ -709,6 +705,9 @@ bool IsMlUrlScoringUnlimitedNumCandidatesEnabled();
 // Whether the URL scoring model is enabled.
 bool IsUrlScoringModelEnabled();
 
+// Whether ML URL score caching is enabled.
+bool IsMlUrlScoreCachingEnabled();
+
 // <- ML Relevance Scoring
 // ---------------------------------------------------------
 // Inspire Me ->
@@ -723,7 +722,7 @@ constexpr base::FeatureParam<int> kInspireMeAdditionalRelatedQueries(
 constexpr base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
     &omnibox::kInspireMe,
     "AdditionalTrendingQueries",
-    0);
+    5);
 
 constexpr base::FeatureParam<int> kInspireMePsuggestQueries(
     &omnibox::kInspireMe,
@@ -770,6 +769,21 @@ constexpr base::FeatureParam<omnibox::ActionInfo::ActionType>
         {},
         &kActionsInSuggestRemoveActionTypesVariants);
 
+constexpr base::FeatureParam<bool> kAnswerActionsShowAboveKeyboard(
+    &omnibox::kOmniboxAnswerActions,
+    "ShowAboveKeyboard",
+    false);
+
+constexpr base::FeatureParam<bool> kAnswerActionsShowIfUrlsPresent(
+    &omnibox::kOmniboxAnswerActions,
+    "ShowIfUrlsPresent",
+    false);
+
+constexpr base::FeatureParam<bool> kAnswerActionsShowRichCard(
+    &omnibox::kOmniboxAnswerActions,
+    "ShowRichCard",
+    false);
+
 // Controls the placement of Reviews and Call actions position.
 // false => Call, Directions, Reviews.
 // true  => Reviews, Directions, Call.
@@ -790,6 +804,10 @@ extern const base::FeatureParam<int>
 // <- Touch Down Trigger For Prefetch
 // ---------------------------------------------------------
 // Site Search Starter Pack ->
+// When non-empty, the value of this param overrides the `search_url` for the
+// @gemini scope. This happens when the URL gets served, it does not affect the
+// DB or TemplateURLService's copy of the URL.
+extern const base::FeatureParam<std::string> kGeminiUrlOverride;
 
 // Whether the expansion pack for the site search starter pack is enabled.
 bool IsStarterPackExpansionEnabled();

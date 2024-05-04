@@ -160,7 +160,7 @@ class FocusModeTray::TaskItemView : public views::BoxLayoutView {
   raw_ptr<views::Label> task_title_ = nullptr;
 };
 
-BEGIN_METADATA(FocusModeTray, TaskItemView, views::BoxLayoutView)
+BEGIN_METADATA(FocusModeTray, TaskItemView)
 END_METADATA
 
 FocusModeTray::FocusModeTray(Shelf* shelf)
@@ -193,6 +193,10 @@ FocusModeTray::FocusModeTray(Shelf* shelf)
             // `kProgressComplete` is only returned by an ending moment, so that
             // we can know when the pulse animation is done.
             if (controller->in_ending_moment()) {
+              if (!view->bounce_in_animation_finished_) {
+                return ProgressIndicator::kForcedShow;
+              }
+
               bool is_animating = false;
               if (auto* progress_ring_animation =
                       view->progress_indicator_->animation_registry()
@@ -243,15 +247,17 @@ FocusModeTray::~FocusModeTray() {
   FocusModeController::Get()->RemoveObserver(this);
 }
 
-const views::ImageButton* FocusModeTray::GetRadioButtonForTesting() const {
-  return task_item_view_->GetRadioButton();
-}
+void FocusModeTray::ClickedOutsideBubble(const ui::LocatedEvent& event) {
+  Shelf* target_shelf =
+      Shelf::ForWindow(static_cast<aura::Window*>(event.target()));
+  auto* target_tray = target_shelf->status_area_widget()->focus_mode_tray();
+  // Do not reset the focus session if the located event is on a different
+  // `FocusModeTray` view.
+  if (shelf() != target_shelf && target_tray->EventTargetsTray(event)) {
+    CloseBubbleAndMaybeReset(/*should_reset=*/false);
+    return;
+  }
 
-const views::Label* FocusModeTray::GetTaskTitleForTesting() const {
-  return task_item_view_->GetTaskTitle();
-}
-
-void FocusModeTray::ClickedOutsideBubble() {
   CloseBubble();
 }
 
@@ -288,27 +294,7 @@ TrayBubbleView* FocusModeTray::GetBubbleView() {
 }
 
 void FocusModeTray::CloseBubble() {
-  if (!bubble_) {
-    return;
-  }
-
-  if (auto* bubble_view = bubble_->GetBubbleView()) {
-    bubble_view->ResetDelegate();
-  }
-
-  bubble_.reset();
-  countdown_view_ = nullptr;
-  ending_moment_view_ = nullptr;
-  task_item_view_ = nullptr;
-  bubble_view_container_ = nullptr;
-  SetIsActive(false);
-  progress_indicator_->layer()->SetOpacity(1);
-  UpdateProgressRing();
-
-  if (auto* controller = FocusModeController::Get();
-      !controller->in_focus_session()) {
-    controller->ResetFocusSession();
-  }
+  CloseBubbleAndMaybeReset(/*should_reset=*/true);
 }
 
 void FocusModeTray::ShowBubble() {
@@ -374,6 +360,22 @@ void FocusModeTray::OnThemeChanged() {
   UpdateTrayIcon();
 }
 
+void FocusModeTray::OnAnimationEnded() {
+  TrayBackgroundView::OnAnimationEnded();
+
+  // The bounce-in animation can happen on a session start or on an ending
+  // moment start. Only for the bounce-in animation during the ending moment, we
+  // will set `bounce_in_animation_finished_` to tell the progress callback the
+  // animation was ended.
+  auto* controller = FocusModeController::Get();
+  if (!visible_preferred() || !controller->in_ending_moment()) {
+    return;
+  }
+
+  bounce_in_animation_finished_ = true;
+  controller->MaybeShowEndingMomentNudge();
+}
+
 void FocusModeTray::OnFocusModeChanged(bool in_focus_session) {
   UpdateProgressRing();
   show_progress_ring_after_animation_ = false;
@@ -389,6 +391,9 @@ void FocusModeTray::OnFocusModeChanged(bool in_focus_session) {
 
   if (bubble_) {
     UpdateBubbleViews(session_snapshot_.value());
+  } else if (session_snapshot_->state == FocusModeSession::State::kEnding) {
+    bounce_in_animation_finished_ = false;
+    BounceInAnimation();
   }
 }
 
@@ -420,6 +425,14 @@ void FocusModeTray::Layout(PassKey) {
       /*target=*/tray_container(), image_view_->GetImageBounds()));
   progress_bounds.Inset(kProgressIndicatorInsets);
   progress_indicator_->layer()->SetBounds(progress_bounds);
+}
+
+const views::ImageButton* FocusModeTray::GetRadioButtonForTesting() const {
+  return task_item_view_->GetRadioButton();
+}
+
+const views::Label* FocusModeTray::GetTaskTitleForTesting() const {
+  return task_item_view_->GetTaskTitle();
 }
 
 void FocusModeTray::UpdateTrayIcon() {
@@ -532,6 +545,40 @@ void FocusModeTray::AnimateBubbleResize() {
 void FocusModeTray::UpdateProgressRing() {
   // Schedule a repaint of the indicator.
   progress_indicator_->InvalidateLayer();
+}
+
+bool FocusModeTray::EventTargetsTray(const ui::LocatedEvent& event) const {
+  if (event.target() != GetWidget()->GetNativeWindow()) {
+    return false;
+  }
+
+  gfx::Point location_in_status_area = event.location();
+  views::View::ConvertPointFromWidget(this, &location_in_status_area);
+  return bounds().Contains(location_in_status_area);
+}
+
+void FocusModeTray::CloseBubbleAndMaybeReset(bool should_reset) {
+  if (!bubble_) {
+    return;
+  }
+
+  if (auto* bubble_view = bubble_->GetBubbleView()) {
+    bubble_view->ResetDelegate();
+  }
+
+  bubble_.reset();
+  countdown_view_ = nullptr;
+  ending_moment_view_ = nullptr;
+  task_item_view_ = nullptr;
+  bubble_view_container_ = nullptr;
+  SetIsActive(false);
+  progress_indicator_->layer()->SetOpacity(1);
+  UpdateProgressRing();
+
+  if (auto* controller = FocusModeController::Get();
+      !controller->in_focus_session() && should_reset) {
+    controller->ResetFocusSession();
+  }
 }
 
 BEGIN_METADATA(FocusModeTray)

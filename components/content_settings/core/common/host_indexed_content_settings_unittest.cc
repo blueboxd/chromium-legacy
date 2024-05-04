@@ -67,6 +67,8 @@ TEST_F(HostIndexedContentSettingsTest, EmptyHostIndexedContentSettings) {
 
   EXPECT_EQ(index.Find(test_primary_url, test_secondary_url), nullptr);
   EXPECT_EQ(index.begin(), index.end());
+  EXPECT_TRUE(index.empty());
+  EXPECT_EQ(index.size(), 0u);
   EXPECT_THAT(ToVector(index), ::testing::IsEmpty());
 }
 
@@ -147,6 +149,7 @@ TEST_F(HostIndexedContentSettingsTest, SetDelete) {
                                               GURL("https://toplevel.com"))
                                         ->second.value),
               CONTENT_SETTING_ALLOW);
+    EXPECT_FALSE(index.empty());
 
     // Check that inserting the same setting returns false.
     EXPECT_FALSE(index.SetValue(ContentSettingsPattern::FromString(primary),
@@ -167,6 +170,8 @@ TEST_F(HostIndexedContentSettingsTest, SetDelete) {
     EXPECT_EQ(
         index.Find(GURL("https://example.com"), GURL("https://toplevel.com")),
         nullptr);
+    EXPECT_TRUE(index.empty());
+
     // Check that deleting the setting again returns false.
     EXPECT_FALSE(
         index.DeleteValue(ContentSettingsPattern::FromString(primary),
@@ -366,14 +371,17 @@ TEST_F(FindContentSettingTest, VectorOfIndices) {
   ContentSettingsForOneType expected_0 = {
       CreateSetting("https://example.com:*/*", "*", CONTENT_SETTING_BLOCK),
       CreateSetting("*", "*", CONTENT_SETTING_ALLOW)};
+  EXPECT_EQ(indices[0].source(), "policy");
   EXPECT_EQ(ToVector(indices[0]), expected_0);
 
   ContentSettingsForOneType expected_1 = {CreateSetting(
       "[*.]example.com", "[*.]example.com", CONTENT_SETTING_BLOCK)};
+  EXPECT_EQ(indices[1].source(), "pref");
   EXPECT_EQ(ToVector(indices[1]), expected_1);
 
   ContentSettingsForOneType expected_2 = {
       CreateSetting("*", "*", CONTENT_SETTING_SESSION_ONLY)};
+  EXPECT_EQ(indices[2].source(), "default");
   EXPECT_EQ(ToVector(indices[2]), expected_2);
 }
 

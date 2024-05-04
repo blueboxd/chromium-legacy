@@ -528,6 +528,10 @@ class PixelTestPages():
                       base_name + '_OffscreenCanvasIBRCWorker',
                       test_rect=[0, 0, 100, 100],
                       grace_period_end=date(2023, 8, 5)),
+        PixelTestPage('pixel_webgl_resized_canvas.html',
+                      base_name + '_WebglResizedCanvas',
+                      test_rect=[0, 0, 300, 300],
+                      grace_period_end=date(2024, 3, 5)),
     ]
 
   @staticmethod
@@ -751,6 +755,11 @@ class PixelTestPages():
     srgb_fuzzy_algo = algo.FuzzyMatchingAlgorithm(
         max_different_pixels=20000, pixel_per_channel_delta_threshold=2)
 
+    # Small number of differing pixels. May need to be upgraded to sobel in the
+    # future since there are a number of hard edges in the image.
+    offscreen_canvas_algo = algo.FuzzyMatchingAlgorithm(
+        max_different_pixels=100, pixel_per_channel_delta_threshold=3)
+
     return [
         PixelTestPage('pixel_offscreenCanvas_transfer_after_style_resize.html',
                       base_name + '_OffscreenCanvasTransferAfterStyleResize',
@@ -799,11 +808,13 @@ class PixelTestPages():
         PixelTestPage('pixel_offscreenCanvas_2d_commit_main.html',
                       base_name + '_OffscreenCanvasAccelerated2D',
                       test_rect=[0, 0, 360, 200],
-                      browser_args=browser_args + accelerated_args),
+                      browser_args=browser_args + accelerated_args,
+                      matching_algorithm=offscreen_canvas_algo),
         PixelTestPage('pixel_offscreenCanvas_2d_commit_worker.html',
                       base_name + '_OffscreenCanvasAccelerated2DWorker',
                       test_rect=[0, 0, 360, 200],
-                      browser_args=browser_args + accelerated_args),
+                      browser_args=browser_args + accelerated_args,
+                      matching_algorithm=offscreen_canvas_algo),
         PixelTestPage('pixel_offscreenCanvas_2d_commit_main.html',
                       base_name + '_OffscreenCanvasUnaccelerated2D',
                       test_rect=[0, 0, 360, 200],

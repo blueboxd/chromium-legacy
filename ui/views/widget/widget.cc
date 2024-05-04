@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/base_tracing.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/base/cursor/cursor.h"
@@ -41,7 +42,6 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/views_features.h"
 #include "ui/views/widget/any_widget_observer_singleton.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -437,10 +437,7 @@ void Widget::Init(InitParams params) {
   background_elevation_ = params.background_elevation;
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kWidgetLayering)) {
-    sublevel_manager_ =
-        std::make_unique<SublevelManager>(this, params.sublevel);
-  }
+  sublevel_manager_ = std::make_unique<SublevelManager>(this, params.sublevel);
 
   if (params.native_theme) {
     native_theme_ = params.native_theme;
@@ -517,9 +514,8 @@ void Widget::Init(InitParams params) {
     }
   }
 
-  if (base::FeatureList::IsEnabled(features::kWidgetLayering)) {
-    if (parent_)
-      parent_->GetSublevelManager()->TrackChildWidget(this);
+  if (parent_) {
+    parent_->GetSublevelManager()->TrackChildWidget(this);
   }
 
   native_theme_observation_.Observe(GetNativeTheme());
@@ -901,6 +897,10 @@ void Widget::Deactivate() {
 
 bool Widget::IsActive() const {
   return native_widget_ ? native_widget_->IsActive() : false;
+}
+
+bool Widget::ShouldViewsStyleFollowWidgetActivation() const {
+  return CanActivate();
 }
 
 void Widget::SetZOrderLevel(ui::ZOrderLevel order) {
@@ -1982,6 +1982,7 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
 
 void Widget::LayoutRootViewIfNecessary() {
   if (root_view_ && root_view_->needs_layout()) {
+    // Widget name is only collected in local traces.
     TRACE_EVENT1("ui", "Widget::LayoutRootViewIfNecessary", "widget name",
                  GetName());
     root_view_->LayoutImmediately();
@@ -2205,11 +2206,11 @@ void Widget::SetParent(Widget* parent) {
                                 base::Unretained(this)));
   }
 
-  if (base::FeatureList::IsEnabled(features::kWidgetLayering)) {
-    if (old_parent)
-      old_parent->GetSublevelManager()->UntrackChildWidget(this);
-    if (parent)
-      parent->GetSublevelManager()->TrackChildWidget(this);
+  if (old_parent) {
+    old_parent->GetSublevelManager()->UntrackChildWidget(this);
+  }
+  if (parent) {
+    parent->GetSublevelManager()->TrackChildWidget(this);
   }
 }
 
@@ -2265,9 +2266,7 @@ void Widget::ClearFocusFromWidget() {
 }
 
 void Widget::HandleShowRequested() {
-  if (base::FeatureList::IsEnabled(features::kWidgetLayering))
-    sublevel_manager_->EnsureOwnerSublevel();
-
+  sublevel_manager_->EnsureOwnerSublevel();
   internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetShown(this);
 }
 

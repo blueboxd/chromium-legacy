@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">在新的 Chromium 分頁上開始搜尋。</translation>
 <translation id="1431818719585918472">讓 Chromium 鎖定您的無痕式分頁。</translation>
 <translation id="1472013873724362412">您的帳戶不適用於 Chromium。請聯絡網域管理員，或使用一般的 Google 帳戶登入。</translation>
+<translation id="1503199973012840174">Chromium 版本過舊，請更新以確保安全。</translation>
 <translation id="1507010443238049608">協助改善 Chromium 的功能和效能</translation>
 <translation id="1513122820609681462">將 Chromium 設定為預設瀏覽器</translation>
 <translation id="1531155317299575425">顯示登入 Chromium 的指示。</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">此地址目前儲存在 Chromium 中。如要在各項 Google 產品中使用此資料，請儲存至 Google 帳戶 (<ph name="USER_EMAIL" />)。</translation>
 <translation id="2236584955986023187">這代表 Chromium 每次都會要求取得桌面版網站。</translation>
 <translation id="2313870531055795960">使用儲存在 Chromium 中的不安全網站清單來檢查網址。如果有網站試圖盜取您的密碼，或當您下載有害檔案時，Chromium 亦可能將網址 (包括部分網頁內容) 傳送至「安全瀏覽」功能。</translation>
+<translation id="231828342043114302">如要根據個人興趣接收個人化內容，請登入 Chromium。</translation>
 <translation id="2374627437126809292">偵測到地址後，Chromium 會使用「Google 地圖」規劃路線及提供當地資訊。</translation>
 <translation id="2386292341327187942">在「搜尋小工具」框中輸入「Chromium」</translation>
 <translation id="2426113998523353159">您的機構要求您登入才能使用 Chromium。</translation>
@@ -78,7 +80,6 @@
 <translation id="3219277919172823720">在 Chromium 中使用語音搜尋</translation>
 <translation id="3228349498066165585">部分 Chromium 資料尚未儲存至 Google 帳戶。
         請等待幾分鐘後再嘗試登出。如果你現在登出，系統將刪除此資料。</translation>
-<translation id="3256316712990552818">已複製至 Chromium</translation>
 <translation id="328933489847748230">{count,plural, =1{宜家顯示緊 1 個 Chromium 視窗}other{宜家顯示緊 {count} 個 Chromium 視窗}}</translation>
 <translation id="3344973607274501920">Chromium 無法檢查密碼，請檢查互聯網連線。</translation>
 <translation id="3366305173356742781">帳戶中的 Chromium 資料</translation>
@@ -313,7 +314,6 @@
 <translation id="9059693977935746710">您不需記住此密碼。密碼將會儲存至 <ph name="EMAIL" /> 的「密碼管理工具」</translation>
 <translation id="9089354809943900324">Chromium 版本過舊</translation>
 <translation id="9110075932708282655">預設為使用 Chromium</translation>
-<translation id="9137114218472648150">Chromium 版本過舊，請更新至最新版本以確保安全。</translation>
 <translation id="921174536258924340">Chromium 無法檢查所有密碼。請明天再試，或<ph name="BEGIN_LINK" />檢查 Google 帳戶中的密碼<ph name="END_LINK" />。</translation>
 <translation id="971488683725792095">當您輕按訊息、文件和其他應用程式中的連結時，自動使用 Chromium 開啟網頁。</translation>
 <translation id="981812233959540767">暢玩 Chromium 恐龍遊戲</translation>

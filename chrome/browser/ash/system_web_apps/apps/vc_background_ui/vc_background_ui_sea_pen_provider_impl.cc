@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/system_web_apps/apps/vc_background_ui/vc_background_ui_sea_pen_provider_impl.h"
 
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
@@ -31,7 +32,7 @@ void GetImageSkiaFromBackgroundImageInfo(
     personalization_app::DecodeImageCallback callback,
     const std::optional<CameraEffectsController::BackgroundImageInfo>& info) {
   if (!info.has_value()) {
-    std::move(callback).Run(gfx::ImageSkia());
+    std::move(callback).Run(gfx::ImageSkia(), base::Value::Dict());
     return;
   }
 
@@ -42,8 +43,10 @@ void GetImageSkiaFromBackgroundImageInfo(
 
   auto image = gfx::ImageSkia::CreateFrom1xBitmap(*bitmap);
 
-  std::move(callback).Run(image);
+  // TODO(b/325393647): update the value for sea_pen_metadata param.
+  std::move(callback).Run(image, /*sea_pen_metadata=*/base::Value::Dict());
 }
+
 }  // namespace
 
 VcBackgroundUISeaPenProviderImpl::VcBackgroundUISeaPenProviderImpl(
@@ -67,35 +70,37 @@ void VcBackgroundUISeaPenProviderImpl::BindInterface(
 }
 
 void VcBackgroundUISeaPenProviderImpl::SelectRecentSeaPenImageInternal(
-    const base::FilePath& path,
+    const uint32_t id,
     SelectRecentSeaPenImageCallback callback) {
-  GetCameraEffectsController()->SetBackgroundImage(path, std::move(callback));
+  GetCameraEffectsController()->SetBackgroundImage(
+      CameraEffectsController::SeaPenIdToRelativePath(id), std::move(callback));
 }
 
 void VcBackgroundUISeaPenProviderImpl::GetRecentSeaPenImagesInternal(
     GetRecentSeaPenImagesCallback callback) {
   GetCameraEffectsController()->GetBackgroundImageFileNames(
-      std::move(callback));
+      base::BindOnce(&GetIdsFromFilePaths).Then(std::move(callback)));
 }
 
 void VcBackgroundUISeaPenProviderImpl::GetRecentSeaPenImageThumbnailInternal(
-    const base::FilePath& path,
+    const uint32_t id,
     personalization_app::DecodeImageCallback callback) {
   GetCameraEffectsController()->GetBackgroundImageInfo(
-      path, base::BindOnce(&GetImageSkiaFromBackgroundImageInfo,
-                           std::move(callback)));
+      CameraEffectsController::SeaPenIdToRelativePath(id),
+      base::BindOnce(&GetImageSkiaFromBackgroundImageInfo,
+                     std::move(callback)));
 }
 
 void VcBackgroundUISeaPenProviderImpl::DeleteRecentSeaPenImage(
-    const base::FilePath& path,
+    const uint32_t id,
     DeleteRecentSeaPenImageCallback callback) {
-  if (recent_sea_pen_images_.count(path) == 0) {
+  if (recent_sea_pen_image_ids_.count(id) == 0) {
     sea_pen_receiver_.ReportBadMessage("Invalid Sea Pen image received");
     return;
   }
 
-  GetCameraEffectsController()->RemoveBackgroundImage(path,
-                                                      std::move(callback));
+  GetCameraEffectsController()->RemoveBackgroundImage(
+      CameraEffectsController::SeaPenIdToRelativePath(id), std::move(callback));
 }
 
 void VcBackgroundUISeaPenProviderImpl::OnFetchWallpaperDoneInternal(

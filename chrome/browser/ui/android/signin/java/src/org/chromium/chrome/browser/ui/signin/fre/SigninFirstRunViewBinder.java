@@ -113,7 +113,7 @@ class SigninFirstRunViewBinder {
             view.getContinueButtonView().setText(R.string.signin_add_account_to_device);
         } else {
             ExistingAccountRowViewBinder.bindAccountView(
-                    profileData, view.getSelectedAccountView());
+                    profileData, view.getSelectedAccountView(), /* isCurrentlySelected= */ true);
             view.getContinueButtonView()
                     .setText(SigninUtils.getContinueAsButtonText(view.getContext(), profileData));
         }
@@ -126,6 +126,7 @@ class SigninFirstRunViewBinder {
         final boolean isSelectedAccountSupervised =
                 model.get(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED);
         final boolean hasPolicy = model.get(SigninFirstRunProperties.FRE_POLICY) != null;
+        view.getTitle().setVisibility(showInitialLoadProgressSpinner ? View.GONE : View.VISIBLE);
         view.getSubtitle()
                 .setVisibility(
                         !showInitialLoadProgressSpinner

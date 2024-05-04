@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
 #include "components/autofill/core/browser/metrics/form_events/form_event_logger_base.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -1187,45 +1188,31 @@ void AutofillMetrics::LogOverallPredictionQualityMetrics(
       true /*log_rationalization_metrics*/);
 }
 
-// static
-void AutofillMetrics::LogEditedAutofilledFieldAtSubmissionDeprecated(
-    FormInteractionsUkmLogger* form_interactions_ukm_logger,
-    const FormStructure& form,
+void AutofillMetrics::LogEmailFieldPredictionMetrics(
     const AutofillField& field) {
-  const std::string aggregate_histogram =
-      "Autofill.EditedAutofilledFieldAtSubmission.Aggregate";
-  const std::string type_specific_histogram =
-      "Autofill.EditedAutofilledFieldAtSubmission.ByFieldType";
-
-  AutofilledFieldUserEditingStatusMetric editing_metric =
-      field.previously_autofilled()
-          ? AutofilledFieldUserEditingStatusMetric::AUTOFILLED_FIELD_WAS_EDITED
-          : AutofilledFieldUserEditingStatusMetric::
-                AUTOFILLED_FIELD_WAS_NOT_EDITED;
-
-  // Record the aggregated UMA statistics.
-  base::UmaHistogramEnumeration(aggregate_histogram, editing_metric);
-
-  // Record the type specific UMA statistics.
-  base::UmaHistogramSparse(type_specific_histogram,
-                           GetFieldTypeUserEditStatusMetric(
-                               field.Type().GetStorableType(), editing_metric));
-
-  // Record the UMA statistics spliced by the autocomplete attribute value.
-  FormType form_type = FieldTypeGroupToFormType(field.Type().group());
-  if (form_type == FormType::kAddressForm ||
-      form_type == FormType::kCreditCardForm) {
-    bool autocomplete_off = field.autocomplete_attribute == "off";
-    const std::string autocomplete_histogram = base::StrCat(
-        {"Autofill.Autocomplete.", autocomplete_off ? "Off" : "NotOff",
-         ".EditedAutofilledFieldAtSubmission.",
-         form_type == FormType::kAddressForm ? "Address" : "CreditCard"});
-    base::UmaHistogramEnumeration(autocomplete_histogram, editing_metric);
+  // If the field has no value, there is no need to record any of the metrics.
+  if (field.value.empty()) {
+    return;
   }
 
-  // If the field was edited, record the event to UKM.
-  // TODO(crbug.com/1368096): Recording of this metric is stopped and moved to
-  // the LogEditedAutofilledFieldAtSubmission method.
+  bool is_valid_email = IsValidEmailAddress(field.value);
+  bool is_email_prediction = field.Type().GetStorableType() == EMAIL_ADDRESS;
+
+  if (is_email_prediction) {
+    EmailPredictionConfusionMatrix prediction_precision =
+        is_valid_email ? EmailPredictionConfusionMatrix::kTruePositive
+                       : EmailPredictionConfusionMatrix::kFalsePositive;
+    base::UmaHistogramEnumeration(
+        "Autofill.EmailPredictionCorrectness.Precision", prediction_precision);
+  }
+
+  if (is_valid_email) {
+    EmailPredictionConfusionMatrix prediction_recall =
+        is_email_prediction ? EmailPredictionConfusionMatrix::kTruePositive
+                            : EmailPredictionConfusionMatrix::kFalseNegative;
+    base::UmaHistogramEnumeration("Autofill.EmailPredictionCorrectness.Recall",
+                                  prediction_recall);
+  }
 }
 
 // static
@@ -2969,19 +2956,6 @@ void AutofillMetrics::
       number_of_corrected_fields, 50);
 }
 
-// static
-void AutofillMetrics::LogPhoneNumberGrammarMatched(int grammar_id,
-                                                   bool suffix_matched,
-                                                   int num_grammars) {
-  DCHECK(0 <= grammar_id && grammar_id < num_grammars);
-  int metric = 2 * grammar_id + suffix_matched;
-  int max_metric = 2 * (num_grammars - 1) + 1;
-  // Add 1 everywhere, because UmaHistogramExactLinear is 1-based.
-  base::UmaHistogramExactLinear(
-      "Autofill.FieldPrediction.PhoneNumberGrammarUsage", metric + 1,
-      /*exclusive_max=*/max_metric + 2);
-}
-
 void AutofillMetrics::LogVerificationStatusOfNameTokensOnProfileUsage(
     const AutofillProfile& profile) {
   constexpr std::string_view base_histogram_name =
@@ -3099,26 +3073,6 @@ void AutofillMetrics::LogAutocompletePredictionCollisionTypes(
       kHistogramName + "ServerOrHeuristics." + autocomplete_suffix,
       server_type != NO_SERVER_DATA ? server_type : heuristic_type,
       FieldType::MAX_VALID_FIELD_TYPE);
-}
-
-// static
-void AutofillMetrics::LogContextMenuImpressionsForField(
-    FieldType field_type,
-    AutocompleteState autocomplete_state) {
-  base::UmaHistogramEnumeration(
-      "Autofill.FieldContextMenuImpressions.ByAutocomplete",
-      autocomplete_state);
-  base::UmaHistogramSparse(
-      "Autofill.FieldContextMenuImpressions.ByAutofillType", field_type);
-}
-
-// static
-void AutofillMetrics::LogContextMenuImpressionsForForm(
-    int num_of_fields_with_context_menu_shown) {
-  base::UmaHistogramSparse(
-      "Autofill.FormContextMenuImpressions.ByNumberOfFields",
-      base::ranges::clamp(num_of_fields_with_context_menu_shown, 0,
-                          kMaxBucketsCount));
 }
 
 const std::string PaymentsRpcResultToMetricsSuffix(

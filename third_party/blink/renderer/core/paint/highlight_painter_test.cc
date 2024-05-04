@@ -71,14 +71,15 @@ TEST_P(HighlightPainterTest, FastSpellingGrammarPaintCase) {
     LineRelativeRect rotated_rect =
         LineRelativeRect::CreateFromLineBox(physical_rect, true);
     TextPainter text_painter(
-        graphics_context, text_item.ScaledFont(), rect,
+        graphics_context, /*svg_context_paints*/ nullptr,
+        text_item.ScaledFont(), rect,
         LineRelativeOffset::CreateFromBoxOrigin(physical_offset), true);
     TextDecorationPainter decoration_painter(text_painter, &inline_context,
                                              paint_info, style, text_style,
                                              rotated_rect, selection);
     HighlightPainter highlight_painter(
         cursor.Current()->TextPaintInfo(cursor.Items()), text_painter,
-        decoration_painter, paint_info, cursor, text_item, {}, physical_offset,
+        decoration_painter, paint_info, cursor, text_item, physical_offset,
         style, text_style, selection);
 
     EXPECT_EQ(highlight_painter.PaintCase(), expected)

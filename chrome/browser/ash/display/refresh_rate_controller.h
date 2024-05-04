@@ -5,16 +5,14 @@
 #ifndef CHROME_BROWSER_ASH_DISPLAY_REFRESH_RATE_CONTROLLER_H_
 #define CHROME_BROWSER_ASH_DISPLAY_REFRESH_RATE_CONTROLLER_H_
 
+#include "ash/display/display_performance_mode_controller.h"
 #include "ash/system/power/power_status.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/game_mode/game_mode_controller.h"
+#include "ui/display/display_observer.h"
 #include "ui/display/manager/display_configurator.h"
 
 namespace ash {
-
-namespace {
-using GameMode = ash::ResourcedClient::GameMode;
-}  // namespace
 
 // RefreshRateController manages features related to display refresh rate, such
 // as the VRR enabled/disabled state and refresh rate throttling. It is
@@ -25,33 +23,68 @@ using GameMode = ash::ResourcedClient::GameMode;
 // active.
 class RefreshRateController
     : public PowerStatus::Observer,
-      public game_mode::GameModeController::Observer {
+      public game_mode::GameModeController::Observer,
+      public aura::WindowObserver,
+      public display::DisplayObserver,
+      public display::DisplayConfigurator::Observer,
+      public DisplayPerformanceModeController::Observer {
  public:
-  RefreshRateController(display::DisplayConfigurator* display_configurator,
-                        PowerStatus* power_status,
-                        game_mode::GameModeController* game_mode_controller,
-                        bool force_throttle = false);
+  RefreshRateController(
+      display::DisplayConfigurator* display_configurator,
+      PowerStatus* power_status,
+      game_mode::GameModeController* game_mode_controller,
+      DisplayPerformanceModeController* display_performance_mode_controller,
+      bool force_throttle = false);
 
   RefreshRateController(const RefreshRateController&) = delete;
-  RefreshRateController& operator=(
-      const RefreshRateController&) = delete;
+  RefreshRateController& operator=(const RefreshRateController&) = delete;
 
   ~RefreshRateController() override;
 
-  // PowerStatus::Observer:
+  // PowerStatus::Observer implementation.
   void OnPowerStatusChanged() override;
 
   // GameModeController::Observer implementation.
-  void OnSetGameMode(GameMode game_mode) override;
+  void OnSetGameMode(ResourcedClient::GameMode game_mode,
+                     WindowState* window_state) override;
+
+  // WindowObserver implementation.
+  void OnWindowAddedToRootWindow(aura::Window* window) override;
+
+  // DisplayObserver implementation.
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
+  // DisplayConfigurator::Observer implementation.
+  void OnDisplayModeChanged(
+      const display::DisplayConfigurator::DisplayStateList& displays) override;
+
+  // DisplayPerformanceModeController::Observer:
+  void OnDisplayPerformanceModeChanged(
+      DisplayPerformanceModeController::ModeState new_state) override;
 
  private:
-  void RefreshState();
+  void UpdateSeamlessRefreshRates(int64_t display_id);
+  void OnSeamlessRefreshRangeReceived(
+      int64_t display_id,
+      const std::optional<display::RefreshRange>& refresh_ranges);
 
-  GameMode game_mode_ = GameMode::OFF;
+  void UpdateStates();
+  void RefreshThrottleState();
+  void RefreshVrrState();
+  display::RefreshRateThrottleState GetDesiredThrottleState();
+  display::RefreshRateThrottleState GetDynamicThrottleState();
 
   // Not owned.
   raw_ptr<display::DisplayConfigurator> display_configurator_;
   const raw_ptr<PowerStatus> power_status_;
+
+  raw_ptr<DisplayPerformanceModeController>
+      display_performance_mode_controller_;
+  DisplayPerformanceModeController::DisplayPerformanceModeController::ModeState
+      current_performance_mode_ = DisplayPerformanceModeController::
+          DisplayPerformanceModeController::ModeState::kDefault;
+
   bool force_throttle_ = false;
 
   base::ScopedObservation<ash::PowerStatus, ash::PowerStatus::Observer>
@@ -59,6 +92,12 @@ class RefreshRateController
   base::ScopedObservation<game_mode::GameModeController,
                           game_mode::GameModeController::Observer>
       game_mode_observer_{this};
+  base::ScopedObservation<aura::Window, aura::WindowObserver>
+      borealis_window_observer_{this};
+  display::ScopedDisplayObserver display_observer_{this};
+  base::ScopedObservation<display::DisplayConfigurator,
+                          display::DisplayConfigurator::Observer>
+      display_configurator_observer_{this};
 
   base::WeakPtrFactory<RefreshRateController> weak_ptr_factory_{this};
 };

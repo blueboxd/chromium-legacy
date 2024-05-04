@@ -10,7 +10,6 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
-#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -44,6 +43,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/scoped_animation_disabler.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -154,7 +154,7 @@ gfx::RectF GetUnionScreenBoundsForWindow(aura::Window* window) {
 void MaximizeIfSnapped(aura::Window* window) {
   auto* window_state = WindowState::Get(window);
   if (window_state && window_state->IsSnapped()) {
-    ScopedAnimationDisabler disabler(window);
+    wm::ScopedAnimationDisabler disabler(window);
     WMEvent event(WM_EVENT_MAXIMIZE);
     window_state->OnWMEvent(&event);
   }
@@ -299,10 +299,10 @@ gfx::Rect GetGridBoundsInScreen(
 
 std::optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio() {
   if (!ShouldAllowSplitView()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   if (!display::Screen::GetScreen()->InTabletMode()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   auto* overview_session = OverviewController::Get()->overview_session();
   DCHECK(overview_session);
@@ -336,7 +336,13 @@ gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect) {
 
 void MoveFocusToView(OverviewFocusableView* target_view) {
   auto* overview_session = OverviewController::Get()->overview_session();
-  CHECK(overview_session);
+  // Events should not be processed on overview widgets after it has shutdown.
+  // However, there are some edge cases where the gesture stream has started
+  // almost immediately before overview shutdown, and the rest of the stream
+  // still reaches the widget. See http://b/302708219.
+  if (!overview_session) {
+    return;
+  }
 
   auto* focus_cycler = overview_session->focus_cycler();
   CHECK(focus_cycler);

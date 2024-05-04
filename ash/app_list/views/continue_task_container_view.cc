@@ -131,9 +131,10 @@ ContinueTaskContainerView::ContinueTaskContainerView(
     columns_ = columns;
     InitializeClamshellLayout();
   }
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kList);
-  GetViewAccessibility().OverrideName(
-      l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL));
+  GetViewAccessibility().SetRole(ax::mojom::Role::kList);
+  GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL),
+      ax::mojom::NameFrom::kAttribute);
 }
 
 ContinueTaskContainerView::~ContinueTaskContainerView() = default;

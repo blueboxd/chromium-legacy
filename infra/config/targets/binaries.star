@@ -212,11 +212,6 @@ targets.binaries.console_test_launcher(
     label = "//third_party/blink/renderer/controller:blink_unittests",
 )
 
-targets.binaries.console_test_launcher(
-    name = "blink_unittests_v2",
-    label = "//third_party/blink/renderer/controller:blink_unittests_v2",
-)
-
 targets.binaries.generated_script(
     name = "blink_web_tests",
     label = "//:blink_web_tests",
@@ -1206,6 +1201,11 @@ targets.binaries.console_test_launcher(
     label = "//components/minidump_uploader:minidump_uploader_test",
 )
 
+targets.binaries.console_test_launcher(
+    name = "test_sample_jni_apk",
+    label = "//third_party/jni_zero/sample:test_sample_jni_apk",
+)
+
 targets.binaries.generated_script(
     name = "model_validation_tests",
     label = "//components/optimization_guide/internal/testing:model_validation_tests",
@@ -2123,10 +2123,13 @@ targets.binaries.script(
     args = [
         "--cts-gcs-path",
         "../../android_webview/tools/cts_config/webview_cts_hostside_gcs_path.json",
+        "--skip-expected-failures",
         "--additional-apk",
         "apks/TrichromeLibrary64.apk",
         "--use-webview-provider",
         "apks/TrichromeWebView64.apk",
+        "--module-apk",
+        "CtsHostsideWebViewTests.apk",
     ],
 )
 

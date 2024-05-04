@@ -29,6 +29,9 @@ BASE_DECLARE_FEATURE(kWebViewForceDarkModeMatchTheme);
 BASE_DECLARE_FEATURE(kWebViewHitTestInBlinkOnTouchStart);
 BASE_DECLARE_FEATURE(kWebViewImageDrag);
 BASE_DECLARE_FEATURE(kWebViewInjectPlatformJsApis);
+// Feature parameter for `network::features::kMaskedDomainList` which is
+// defined in //services/network.
+extern const base::FeatureParam<int> kWebViewIpProtectionExclusionCriteria;
 BASE_DECLARE_FEATURE(kWebViewJavaJsBridgeMojo);
 BASE_DECLARE_FEATURE(kWebViewMediaIntegrityApi);
 BASE_DECLARE_FEATURE(kWebViewMixedContentAutoupgrades);
@@ -50,6 +53,7 @@ BASE_DECLARE_FEATURE(kWebViewXRequestedWithHeaderControl);
 extern const base::FeatureParam<int> kWebViewXRequestedWithHeaderMode;
 BASE_DECLARE_FEATURE(kWebViewXRequestedWithHeaderManifestAllowList);
 BASE_DECLARE_FEATURE(kWebViewUmaUploadQualityOfServiceSetToDefault);
+BASE_DECLARE_FEATURE(kWebViewUseInitialNetworkStateAtStartup);
 BASE_DECLARE_FEATURE(kWebViewZoomKeyboardShortcuts);
 
 }  // namespace features

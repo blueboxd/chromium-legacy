@@ -11,9 +11,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/digital_identity_provider.h"
 #include "content/public/browser/document_service.h"
 #include "third_party/blink/public/mojom/webid/digital_identity_request.mojom.h"
-#include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -52,7 +52,16 @@ class CONTENT_EXPORT DigitalIdentityRequestImpl
       RenderFrameHost&,
       mojo::PendingReceiver<blink::mojom::DigitalIdentityRequest>);
 
-  void CompleteRequest(const std::string& response);
+  // Infers one of [kError, kSuccess] for RequestDigitalIdentityStatus based on
+  // `status_for_metrics`.
+  void CompleteRequest(
+      const std::string& response,
+      DigitalIdentityProvider::RequestStatusForMetrics status_for_metrics);
+
+  void CompleteRequestWithStatus(
+      blink::mojom::RequestDigitalIdentityStatus status,
+      const std::string& response,
+      DigitalIdentityProvider::RequestStatusForMetrics status_for_metrics);
 
   std::unique_ptr<DigitalIdentityProvider> CreateProvider();
 

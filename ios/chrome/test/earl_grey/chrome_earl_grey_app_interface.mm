@@ -57,6 +57,7 @@
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_provider.h"
+#import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/unified_consent/model/unified_consent_service_factory.h"
@@ -819,6 +820,8 @@ base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
 }
 
 + (void)stopAllWebStatesLoading {
+  // TODO(crbug.com/327330181): Avoid using
+  // mainController.browserProviderInterface.
   WebStateList* web_state_list =
       chrome_test_util::GetMainController()
           .browserProviderInterface.currentBrowserProvider.browser
@@ -1387,6 +1390,8 @@ base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
 #pragma mark - Keyboard Command Utilities
 
 + (NSInteger)registeredKeyCommandCount {
+  // TODO(crbug.com/327330181): Avoid using
+  // mainController.browserProviderInterface.
   UIViewController* browserViewController =
       chrome_test_util::GetMainController()
           .browserProviderInterface.mainBrowserProvider.viewController;
@@ -1552,6 +1557,11 @@ int watchRunNumber = 0;
     FirstRun::ClearStateForTesting();
     FirstRun::IsChromeFirstRun();
   }
+}
+
++ (bool)hasFirstRunSentinel {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  return HasFirstRunSentinel();
 }
 
 @end

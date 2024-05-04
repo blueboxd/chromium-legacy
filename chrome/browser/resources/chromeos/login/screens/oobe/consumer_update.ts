@@ -9,7 +9,6 @@
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/paper-progress/paper-progress.js';
 import '//resources/polymer/v3_0/paper-styles/color.js';
-import {OobeCrLottie} from '../../components/oobe_cr_lottie.js';
 import '../../components/oobe_icons.html.js';
 import '../../components/buttons/oobe_back_button.js';
 import '../../components/buttons/oobe_next_button.js';
@@ -24,8 +23,9 @@ import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/p
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
+import {OobeUiState} from '../../components/display_manager_types.js';
+import {OobeCrLottie} from '../../components/oobe_cr_lottie.js';
 
 import {getTemplate} from './consumer_update.html.js';
 
@@ -34,9 +34,9 @@ import {getTemplate} from './consumer_update.html.js';
  */
 const ConsumerUpdateScreenElementBase =
     mixinBehaviors(
-        [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
-        PolymerElement) as {
-      new (): PolymerElement & OobeI18nBehaviorInterface
+        [LoginScreenBehavior, MultiStepBehavior],
+        OobeI18nMixin(PolymerElement)) as {
+      new (): PolymerElement & OobeI18nMixinInterface
       & LoginScreenBehaviorInterface & MultiStepBehaviorInterface,
     };
 
@@ -194,8 +194,8 @@ class ConsumerUpdateScreen extends ConsumerUpdateScreenElementBase {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  override getOobeUIInitialState() {
-    return OOBE_UI_STATE.ONBOARDING;
+  override getOobeUIInitialState(): OobeUiState {
+    return OobeUiState.ONBOARDING;
   }
 
   /**
@@ -204,6 +204,13 @@ class ConsumerUpdateScreen extends ConsumerUpdateScreenElementBase {
    */
   setIsUpdateMandatory(visible: boolean): void {
     this.isUpdateMandatory = visible;
+  }
+
+  onBeforeHide(): void {
+    const animation = this.shadowRoot?.querySelector('#checkingAnimation');
+    if (animation instanceof OobeCrLottie) {
+      animation.playing = false;
+    }
   }
 
   /**
@@ -290,7 +297,7 @@ class ConsumerUpdateScreen extends ConsumerUpdateScreenElementBase {
    */
   private getAutoTransition(step: ConsumerUpdateStep,
       autoTransition: boolean): boolean {
-    return step == ConsumerUpdateStep.UPDATE && autoTransition;
+    return step === ConsumerUpdateStep.UPDATE && autoTransition;
   }
 
   private onBackClicked(): void {

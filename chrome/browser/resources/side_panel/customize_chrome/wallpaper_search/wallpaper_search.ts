@@ -341,6 +341,12 @@ export class WallpaperSearchElement extends WallpaperSearchElementBase {
               this.i18n('offlineDescription'),
           callToAction: this.i18n('ok'),
         };
+      case WallpaperSearchStatus.kSignedOut:
+        return {
+          title: this.i18n('signedOutTitle'),
+          description: this.i18n('signedOutDescription'),
+          callToAction: this.i18n('ok'),
+        };
     }
   }
 
@@ -388,7 +394,9 @@ export class WallpaperSearchElement extends WallpaperSearchElementBase {
         this.errorCallback_ = undefined;
         recordStatusChange(WallpaperSearchStatus.kOk);
       } else {
-        this.errorCallback_ = () => this.fetchDescriptors_();
+        // Wallpaper search cannot render properly without descriptors, so the
+        // error callback takes the user back a page.
+        this.errorCallback_ = () => this.dispatchEvent(new Event('back-click'));
         this.status_ = WindowProxy.getInstance().onLine ?
             WallpaperSearchStatus.kError :
             WallpaperSearchStatus.kOffline;
@@ -631,7 +639,9 @@ export class WallpaperSearchElement extends WallpaperSearchElementBase {
     recordCustomizeChromeAction(
         CustomizeChromeAction.WALLPAPER_SEARCH_HISTORY_IMAGE_SELECTED);
     this.wallpaperSearchHandler_.setBackgroundToHistoryImage(
-        e.model.item.id, e.model.item.descriptors ?? {});
+        e.model.item.id,
+        e.model.item.descriptors ??
+            {subject: null, style: null, mood: null, color: null});
   }
 
   private onInspirationGroupTitleClick_(e: DomRepeatEvent<InspirationGroup>) {
@@ -699,9 +709,9 @@ export class WallpaperSearchElement extends WallpaperSearchElementBase {
     announcer.announce(this.i18n('wallpaperSearchLoadingA11yMessage'));
     const descriptors: ResultDescriptors = {
       subject: this.selectedDescriptorA_!,
-      style: this.selectedDescriptorB_ ?? undefined,
-      mood: this.selectedDescriptorC_ ?? undefined,
-      color: this.selectedDescriptorD_ ?? undefined,
+      style: this.selectedDescriptorB_ ?? null,
+      mood: this.selectedDescriptorC_ ?? null,
+      color: this.selectedDescriptorD_ ?? null,
     };
     this.resultsPromises_.push(
         this.wallpaperSearchHandler_.getWallpaperSearchResults(descriptors));

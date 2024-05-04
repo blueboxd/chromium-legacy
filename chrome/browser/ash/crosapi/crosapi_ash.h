@@ -112,6 +112,7 @@ class NetworkSettingsServiceAsh;
 class NetworkingAttributesAsh;
 class NetworkingPrivateAsh;
 class OneDriveNotificationServiceAsh;
+class OneDriveIntegrationServiceAsh;
 class PasskeyAuthenticator;
 class ParentAccessAsh;
 class PaymentAppInstanceAsh;
@@ -148,15 +149,16 @@ class VpnExtensionObserverAsh;
 // crosapi clients, such as lacros-chrome, can call into.
 class CrosapiAsh : public mojom::Crosapi {
  public:
-  explicit CrosapiAsh(CrosapiDependencyRegistry* registry);
-  ~CrosapiAsh() override;
-
   // Abstract base class to support dependency injection for tests.
   class TestControllerReceiver {
    public:
+    virtual ~TestControllerReceiver();
     virtual void BindReceiver(
         mojo::PendingReceiver<mojom::TestController> receiver) = 0;
   };
+
+  explicit CrosapiAsh(CrosapiDependencyRegistry* registry);
+  ~CrosapiAsh() override;
 
   // Binds the given receiver to this instance.
   // |disconnected_handler| is called on the connection lost.
@@ -336,6 +338,9 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::NetworkingPrivate> receiver) override;
   void BindOneDriveNotificationService(
       mojo::PendingReceiver<mojom::OneDriveNotificationService> receiver)
+      override;
+  void BindOneDriveIntegrationService(
+      mojo::PendingReceiver<mojom::OneDriveIntegrationService> receiver)
       override;
   void BindPasskeyAuthenticator(
       mojo::PendingReceiver<mojom::PasskeyAuthenticator> receiver) override;
@@ -626,7 +631,8 @@ class CrosapiAsh : public mojom::Crosapi {
   }
 
   // Caller is responsible for ensuring that the pointer stays valid.
-  void SetTestControllerForTesting(TestControllerReceiver* test_controller);
+  void SetTestControllerForTesting(
+      std::unique_ptr<TestControllerReceiver> test_controller);
 
  private:
   // Called when a connection is lost.
@@ -704,6 +710,8 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<NetworkSettingsServiceAsh> network_settings_service_ash_;
   std::unique_ptr<OneDriveNotificationServiceAsh>
       one_drive_notification_service_ash_;
+  std::unique_ptr<OneDriveIntegrationServiceAsh>
+      one_drive_integration_service_ash_;
   std::unique_ptr<ParentAccessAsh> parent_access_ash_;
   std::unique_ptr<PaymentAppInstanceAsh> payment_app_instance_ash_;
   std::unique_ptr<PolicyServiceAsh> policy_service_ash_;
@@ -745,8 +753,8 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<WebPageInfoFactoryAsh> web_page_info_factory_ash_;
 
   // Only set in the test ash chrome binary. In production ash this is always
-  // nullptr.
-  raw_ptr<TestControllerReceiver> test_controller_ = nullptr;
+  // unset.
+  std::unique_ptr<TestControllerReceiver> test_controller_;
 
   mojo::ReceiverSet<mojom::Crosapi, CrosapiId> receiver_set_;
   std::map<mojo::ReceiverId, base::OnceClosure> disconnect_handler_map_;

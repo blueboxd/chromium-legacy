@@ -11,6 +11,7 @@
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
+#include "ash/game_dashboard/game_dashboard_metrics.h"
 #include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/window_properties.h"
@@ -79,14 +80,22 @@ std::string GameDashboardController::GetArcAppName(
 GameDashboardContext* GameDashboardController::GetGameDashboardContext(
     aura::Window* window) const {
   DCHECK(window);
-  game_window_contexts_.find(window);
   auto it = game_window_contexts_.find(window);
   return it != game_window_contexts_.end() ? it->second.get() : nullptr;
 }
 
+void GameDashboardController::MaybeStackAboveWidget(aura::Window* window,
+                                                    views::Widget* widget) {
+  DCHECK(widget);
+  DCHECK(window);
+
+  if (auto* context = GetGameDashboardContext(window)) {
+    context->MaybeStackAboveWidget(widget);
+  }
+}
+
 void GameDashboardController::StartCaptureSession(
-    GameDashboardContext* game_context,
-    bool record_instantly) {
+    GameDashboardContext* game_context) {
   CHECK(!active_recording_context_);
   auto* game_window = game_context->game_window();
   CHECK(game_window_contexts_.contains(game_window));
@@ -94,12 +103,7 @@ void GameDashboardController::StartCaptureSession(
   CHECK(capture_mode_controller->can_start_new_recording());
 
   active_recording_context_ = game_context;
-  if (record_instantly) {
-    capture_mode_controller->StartRecordingInstantlyForGameDashboard(
-        game_window);
-  } else {
-    capture_mode_controller->StartForGameDashboard(game_window);
-  }
+  capture_mode_controller->StartForGameDashboard(game_window);
 }
 
 void GameDashboardController::ShowResizeToggleMenu(aura::Window* window) {
@@ -184,7 +188,7 @@ void GameDashboardController::OnOverviewModeWillStart() {
   for (auto const& [_, context] : game_window_contexts_) {
     context->game_dashboard_button_widget()->Hide();
     if (context->main_menu_view()) {
-      context->CloseMainMenu();
+      context->CloseMainMenu(GameDashboardMainMenuToggleMethod::kOverview);
     }
   }
 }

@@ -230,6 +230,14 @@ chromium-metrics-reviews@google.com.
   <int value="8" label="(obsolete) kImageJXL"/>
 </enum>
 
+<enum name="DigitalIdentityRequestStatus">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kErrorOther"/>
+  <int value="2" label="kErrorNoCredential"/>
+  <int value="3" label="kErrorUserDeclined"/>
+  <int value="4" label="kErrorAborted"/>
+</enum>
+
 <enum name="FedCmAccountsResponseInvalidReason">
   <int value="0" label="Response is not JSON or dict"/>
   <int value="1" label="No accounts key"/>
@@ -495,6 +503,13 @@ chromium-metrics-reviews@google.com.
   <int value="7"
       label="At least one tag in the first, second, and third groupings was
              encountered"/>
+</enum>
+
+<enum name="IntersectionObservationUpdateType">
+  <int value="0" label="No update"/>
+  <int value="1" label="Scroll only"/>
+  <int value="2" label="CachedRectInvalid"/>
+  <int value="3" label="Full update"/>
 </enum>
 
 <enum name="KeyboardLockMethods">

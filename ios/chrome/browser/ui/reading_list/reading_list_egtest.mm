@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_constants.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
-#import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_app_interface.h"
@@ -36,7 +35,6 @@
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_actions_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -629,8 +627,8 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
       assertWithMatcher:grey_notNil()];
 
   // Verify that the webState's title is correct.
-  GREYAssertEqualObjects([ChromeEarlGreyAppInterface currentTabTitle],
-                         kDistillableTitle, @"Wrong page name");
+  GREYAssertEqualObjects([ChromeEarlGrey currentTabTitle], kDistillableTitle,
+                         @"Wrong page name");
 }
 
 // Tests that URL can be added in the incognito mode and that a snackbar
@@ -684,8 +682,8 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   GREYAssert(checkImage.GetBool(), @"Incorrect image loading.");
 
   // Verify that the webState's title is correct.
-  GREYAssertEqualObjects([ChromeEarlGreyAppInterface currentTabTitle],
-                         kDistillableTitle, @"Wrong page name");
+  GREYAssertEqualObjects([ChromeEarlGrey currentTabTitle], kDistillableTitle,
+                         @"Wrong page name");
 }
 
 // Tests that sharing a web page to the Reading List results in a snackbar
@@ -716,7 +714,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   self.serverRespondsWithContent = NO;
   base::test::ios::SpinRunLoopWithMinDelay(kServerOperationDelay);
 
-  [ChromeEarlGreyAppInterface startReloading];
+  [ChromeEarlGrey startReloading];
   AssertIsShowingDistillablePage(false, distillableURL);
 }
 
@@ -750,7 +748,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   AssertIsShowingDistillablePage(false, distillableURL);
 
   // Reload. As server is still down, the offline page should show again.
-  [ChromeEarlGreyAppInterface startReloading];
+  [ChromeEarlGrey startReloading];
   AssertIsShowingDistillablePage(false, distillableURL);
 
   [ChromeEarlGrey goBack];
@@ -761,7 +759,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   self.serverRespondsWithContent = YES;
   base::test::ios::SpinRunLoopWithMinDelay(kServerOperationDelay);
 
-  [ChromeEarlGreyAppInterface startReloading];
+  [ChromeEarlGrey startReloading];
   AssertIsShowingDistillablePage(true, distillableURL);
 }
 
@@ -798,10 +796,10 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   AssertIsShowingDistillablePage(false, distillableURL);
 
   // Reload should load online page.
-  [ChromeEarlGreyAppInterface startReloading];
+  [ChromeEarlGrey startReloading];
   AssertIsShowingDistillablePage(true, distillableURL);
   // Reload should load offline page.
-  [ChromeEarlGreyAppInterface startReloading];
+  [ChromeEarlGrey startReloading];
   AssertIsShowingDistillablePage(false, distillableURL);
 }
 
@@ -1281,13 +1279,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // the toggle.
 - (void)testReviewAccountSettingsPromoWithReadingListToggleDisabled {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   // By default, `signinWithFakeIdentity` above enables reading list data type,
   // so turn it off.
-  [SigninEarlGreyAppInterface
-      setSelectedType:(syncer::UserSelectableType::kReadingList)
-              enabled:NO];
+  [SigninEarlGrey setSelectedType:(syncer::UserSelectableType::kReadingList)
+                          enabled:NO];
 
   OpenReadingList();
   [SigninEarlGreyUI verifySigninPromoVisibleWithMode:
@@ -1322,7 +1319,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // in only and reading list account storage is already enabled.
 - (void)testAccountSettingsPromoIfSyncToSigninEnabledWithReadingListOn {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   OpenReadingList();
   [SigninEarlGreyUI verifySigninPromoNotVisible];
@@ -1332,13 +1329,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // account gets removed.
 - (void)testAccountSettingsViewedFroReadingListManager {
   FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
 
   // By default, `signinWithFakeIdentity` above enables reading list data type,
   // so turn it off.
-  [SigninEarlGreyAppInterface
-      setSelectedType:(syncer::UserSelectableType::kReadingList)
-              enabled:NO];
+  [SigninEarlGrey setSelectedType:(syncer::UserSelectableType::kReadingList)
+                          enabled:NO];
   OpenReadingList();
   [SigninEarlGreyUI verifySigninPromoVisibleWithMode:
                         SigninPromoViewModeSignedInWithPrimaryAccount];
@@ -1372,13 +1368,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // out from account settings.
 - (void)testSignOutFromAccountSettingsFromReadingListManager {
   FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
 
   // By default, `signinWithFakeIdentity` above enables reading list data type,
   // so turn it off.
-  [SigninEarlGreyAppInterface
-      setSelectedType:(syncer::UserSelectableType::kReadingList)
-              enabled:NO];
+  [SigninEarlGrey setSelectedType:(syncer::UserSelectableType::kReadingList)
+                          enabled:NO];
   OpenReadingList();
   [SigninEarlGreyUI verifySigninPromoVisibleWithMode:
                         SigninPromoViewModeSignedInWithPrimaryAccount];
@@ -1438,13 +1433,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // in.
 - (void)testSigninToReviewAccountSettingsPromo {
   FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
 
   // By default, `signinWithFakeIdentity` above enables reading list data type,
   // so turn it off.
-  [SigninEarlGreyAppInterface
-      setSelectedType:(syncer::UserSelectableType::kReadingList)
-              enabled:NO];
+  [SigninEarlGrey setSelectedType:(syncer::UserSelectableType::kReadingList)
+                          enabled:NO];
 
   // Sign out.
   [SigninEarlGreyUI signOut];

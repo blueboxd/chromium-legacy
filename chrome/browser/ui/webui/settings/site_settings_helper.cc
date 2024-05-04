@@ -8,6 +8,7 @@
 #include <functional>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
@@ -139,6 +140,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::AUTO_PICTURE_IN_PICTURE, "auto-picture-in-picture"},
     {ContentSettingsType::CAPTURED_SURFACE_CONTROL, "captured-surface-control"},
     {ContentSettingsType::WEB_PRINTING, "web-printing"},
+    {ContentSettingsType::SPEAKER_SELECTION, "speaker-selection"},
+    {ContentSettingsType::AUTOMATIC_FULLSCREEN, "automatic-fullscreen"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required, for example if the content setting
@@ -211,9 +214,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::SMART_CARD_GUARD, nullptr},
     {ContentSettingsType::SMART_CARD_DATA, nullptr},
     {ContentSettingsType::TOP_LEVEL_TPCD_TRIAL, nullptr},
-    // TODO(crbug.com/1501130): Add WebUI for Automatic Fullscreen.
-    {ContentSettingsType::AUTOMATIC_FULLSCREEN, nullptr},
     {ContentSettingsType::SUB_APP_INSTALLATION_PROMPTS, nullptr},
+    {ContentSettingsType::DIRECT_SOCKETS, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -508,7 +510,9 @@ base::StringPiece ContentSettingsTypeToGroupName(ContentSettingsType type) {
   return base::StringPiece();
 }
 
-const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
+std::vector<ContentSettingsType> GetVisiblePermissionCategories(
+    const std::string& origin,
+    Profile* profile) {
   // First build the list of permissions that will be shown regardless of
   // `origin`. Some categories such as COOKIES store their data in a custom way,
   // so are not included here.
@@ -582,10 +586,32 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
       base_types->push_back(ContentSettingsType::WEB_PRINTING);
     }
 
+    if (base::FeatureList::IsEnabled(blink::features::kSpeakerSelection)) {
+      base_types->push_back(ContentSettingsType::SPEAKER_SELECTION);
+    }
+
     initialized = true;
   }
 
-  return *base_types;
+  // The permission categories below are only shown for certain origins.
+  std::vector<ContentSettingsType> types_for_origin = *base_types;
+  if (base::FeatureList::IsEnabled(
+          features::kAutomaticFullscreenContentSetting)) {
+    // Show for non-origin-specific lists, IWAs, and non-default values.
+    if (origin.empty() || GURL(origin).SchemeIs(chrome::kIsolatedAppScheme)) {
+      types_for_origin.push_back(ContentSettingsType::AUTOMATIC_FULLSCREEN);
+    } else if (profile) {
+      std::string source;
+      GetContentSettingForOrigin(
+          profile, HostContentSettingsMapFactory::GetForProfile(profile),
+          GURL(origin), ContentSettingsType::AUTOMATIC_FULLSCREEN, &source);
+      if (source != SiteSettingSourceToString(SiteSettingSource::kDefault)) {
+        types_for_origin.push_back(ContentSettingsType::AUTOMATIC_FULLSCREEN);
+      }
+    }
+  }
+
+  return types_for_origin;
 }
 
 std::string SiteSettingSourceToString(const SiteSettingSource source) {
@@ -1082,7 +1108,7 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
       CalculateSiteSettingSource(profile, content_type, origin, info, result));
 
   if (info.metadata.session_model() ==
-      content_settings::SessionModel::OneTime) {
+      content_settings::mojom::SessionModel::ONE_TIME) {
     DCHECK(
         permissions::PermissionUtil::CanPermissionBeAllowedOnce(content_type));
     DCHECK_EQ(result.status, PermissionStatus::GRANTED);
@@ -1098,7 +1124,7 @@ GetSingleOriginExceptionsForContentType(HostContentSettingsMap* map,
   ContentSettingsForOneType entries = map->GetSettingsForOneType(content_type);
   // Exclude any entries that are allowlisted or don't represent a single
   // top-frame origin.
-  base::EraseIf(entries, [](const ContentSettingPatternSource& e) {
+  std::erase_if(entries, [](const ContentSettingPatternSource& e) {
     return !content_settings::PatternAppliesToSingleOrigin(
                e.primary_pattern, e.secondary_pattern) ||
            IsFromWebUIAllowlistSource(e);

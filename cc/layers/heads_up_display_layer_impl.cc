@@ -313,7 +313,6 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       auto* sii = raster_context_provider->SharedImageInterface();
       backing->shared_image_interface = sii;
       backing->overlay_candidate = raster_caps.tile_overlay_candidate;
-      backing->texture_target = raster_caps.tile_texture_target;
 
       uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
                        gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
@@ -324,9 +323,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
         flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
       }
       backing->shared_image = sii->CreateSharedImage(
-          pool_resource.format(), pool_resource.size(),
-          pool_resource.color_space(), kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, flags, "HeadsUpDisplayLayer",
+          {pool_resource.format(), pool_resource.size(),
+           pool_resource.color_space(), flags, "HeadsUpDisplayLayer"},
           gpu::kNullSurfaceHandle);
       CHECK(backing->shared_image);
       auto* ri = raster_context_provider->RasterInterface();
@@ -352,10 +350,9 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
         auto backing = std::make_unique<HudSoftwareBacking>();
         backing->layer_tree_frame_sink = layer_tree_frame_sink;
         auto shared_image_mapping = sii->CreateSharedImage(
-            pool_resource.format(), pool_resource.size(),
-            pool_resource.color_space(), kTopLeft_GrSurfaceOrigin,
-            kPremul_SkAlphaType, gpu::SHARED_IMAGE_USAGE_CPU_WRITE,
-            "HeadsUpDisplayLayer");
+            {pool_resource.format(), pool_resource.size(),
+             pool_resource.color_space(), gpu::SHARED_IMAGE_USAGE_CPU_WRITE,
+             "HeadsUpDisplayLayer"});
 
         backing->shared_image = std::move(shared_image_mapping.shared_image);
         backing->shared_mapping = std::move(shared_image_mapping.mapping);
@@ -439,9 +436,11 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       SkPixmap pixmap;
       staging_surface_->peekPixels(&pixmap);
 
+      uint32_t texture_target =
+          backing->shared_image->GetTextureTarget(gfx::BufferUsage::SCANOUT);
       ri->WritePixels(backing->shared_image->mailbox(), /*dst_x_offset=*/0,
                       /*dst_y_offset=*/0,
-                      /*dst_plane_index=*/0, backing->texture_target, pixmap);
+                      /*dst_plane_index=*/0, texture_target, pixmap);
     }
 
     backing->mailbox_sync_token =
@@ -1214,13 +1213,25 @@ SkRect HeadsUpDisplayLayerImpl::DrawWebVitalMetrics(PaintCanvas* canvas,
                                                     int left,
                                                     int top,
                                                     int width) const {
-  const int height = ComputeTotalHeight(3);
+  const int height = ComputeTotalHeight(5);
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
   PaintFlags flags;
   DrawGraphBackground(canvas, &flags, area);
 
   int current_top = top + metrics_sizes.kTopPadding + metrics_sizes.kFontHeight;
+
+  // Add a deprecation notice
+  flags.setColor(DebugColors::PlatformLayerTreeTextColor());
+  std::string line1 = "This overlay is deprecated. Use the";
+  DrawText(canvas, flags, line1, TextAlign::kLeft, metrics_sizes.kFontHeight,
+           left + metrics_sizes.kSidePadding, current_top);
+  current_top += metrics_sizes.kFontHeight * 1.2;
+  std::string line2 = "Web Vitals Extension: goo.gle/wve";
+  DrawText(canvas, flags, line2, TextAlign::kLeft, metrics_sizes.kFontHeight,
+           left + metrics_sizes.kSidePadding, current_top);
+  current_top += metrics_sizes.kTopPadding;
+
   double metric_value = 0.f;
   bool has_lcp = web_vital_metrics_ && web_vital_metrics_->has_lcp;
   if (has_lcp)

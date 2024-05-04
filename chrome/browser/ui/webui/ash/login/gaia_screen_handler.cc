@@ -84,6 +84,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/login/auth/auth_events_recorder.h"
 #include "chromeos/ash/components/login/auth/challenge_response/cert_utils.h"
 #include "chromeos/ash/components/login/auth/public/challenge_response_key.h"
@@ -244,10 +245,12 @@ user_manager::UserType CalculateUserType(const AccountId& account_id) {
 }
 
 chromeos::PinDialogManager* GetLoginScreenPinDialogManager() {
-  DCHECK(ProfileHelper::IsSigninProfileInitialized());
+  auto* browser_context =
+      BrowserContextHelper::Get()->GetSigninBrowserContext();
+  DCHECK(browser_context);
   chromeos::CertificateProviderService* certificate_provider_service =
       chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
-          ProfileHelper::GetSigninProfile());
+          browser_context);
   return certificate_provider_service->pin_dialog_manager();
 }
 
@@ -627,19 +630,6 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("samlChangeProviderButton",
                IDS_LOGIN_SAML_CHANGE_PROVIDER_BUTTON);
 
-  builder->Add("adPassChangeOldPasswordHint",
-               IDS_AD_PASSWORD_CHANGE_OLD_PASSWORD_HINT);
-  builder->Add("adPassChangeNewPasswordHint",
-               IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_HINT);
-  builder->Add("adPassChangeRepeatNewPasswordHint",
-               IDS_AD_PASSWORD_CHANGE_REPEAT_NEW_PASSWORD_HINT);
-  builder->Add("adPassChangeOldPasswordError",
-               IDS_AD_PASSWORD_CHANGE_INVALID_PASSWORD_ERROR);
-  builder->Add("adPassChangeNewPasswordRejected",
-               IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_REJECTED_SHORT_ERROR);
-  builder->Add("adPassChangePasswordsMismatch",
-               IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH_ERROR);
-
   builder->Add("securityTokenPinDialogTitle",
                IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TITLE);
   builder->Add("securityTokenPinDialogSubtitle",
@@ -893,15 +883,14 @@ void GaiaScreenHandler::CompleteAuthentication(
       gaia::SanitizeEmail(signin_artifacts.email);
   LoginDisplayHost::default_host()->SetDisplayEmail(sanitized_email);
 
-  auto user_context = std::make_unique<UserContext>();
-
-  login::BuildUserContextForGaiaSignIn(
-      user_type, account_id, signin_artifacts.using_saml, using_saml_api_,
-      signin_artifacts.password.value_or(std::string()),
-      signin_artifacts.saml_password_attributes.value_or(
-          SamlPasswordAttributes()),
-      signin_artifacts.sync_trusted_vault_keys,
-      signin_artifacts.challenge_response_key, user_context.get());
+  std::unique_ptr<UserContext> user_context =
+      login::BuildUserContextForGaiaSignIn(
+          user_type, account_id, signin_artifacts.using_saml, using_saml_api_,
+          signin_artifacts.password.value_or(std::string()),
+          signin_artifacts.saml_password_attributes.value_or(
+              SamlPasswordAttributes()),
+          signin_artifacts.sync_trusted_vault_keys,
+          signin_artifacts.challenge_response_key);
 
   // Transfer the received cookies into the UserContext
   signin_artifacts.cookies->TransferCookiesToUserContext(*user_context);
@@ -1145,15 +1134,14 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
     challenge_response_key = challenge_response_key_or_error.value();
   }
 
-  UserContext user_context;
-  login::BuildUserContextForGaiaSignIn(
-      user ? user->GetType() : CalculateUserType(account_id),
-      login::GetAccountId(typed_email, gaia_id, AccountType::GOOGLE),
-      using_saml, using_saml_api_, password, SamlPasswordAttributes(),
-      /*sync_trusted_vault_keys=*/std::nullopt, challenge_response_key,
-      &user_context);
+  std::unique_ptr<UserContext> user_context =
+      login::BuildUserContextForGaiaSignIn(
+          user ? user->GetType() : CalculateUserType(account_id),
+          login::GetAccountId(typed_email, gaia_id, AccountType::GOOGLE),
+          using_saml, using_saml_api_, password, SamlPasswordAttributes(),
+          /*sync_trusted_vault_keys=*/std::nullopt, challenge_response_key);
 
-  LoginDisplayHost::default_host()->CompleteLogin(user_context);
+  LoginDisplayHost::default_host()->CompleteLogin(*user_context);
 }
 
 void GaiaScreenHandler::StartClearingDnsCache() {
@@ -1318,6 +1306,10 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
 
 void GaiaScreenHandler::Reset() {
   CallExternalAPI("reset");
+}
+
+base::WeakPtr<GaiaView> GaiaScreenHandler::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void GaiaScreenHandler::ShowSecurityTokenPinDialog(

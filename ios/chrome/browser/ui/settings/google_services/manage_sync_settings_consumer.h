@@ -18,12 +18,11 @@
 
 // Inserts sections at `sections` indexes. Does nothing if the model is not
 // loaded yet.
-- (void)insertSections:(NSIndexSet*)sections;
+- (void)insertSections:(NSIndexSet*)sections rowAnimation:(BOOL)rowAnimation;
 
 // Deletes sections at `sections` indexes. Does nothing if the model is not
 // loaded yet.
-- (void)deleteSections:(NSIndexSet*)section
-      withRowAnimation:(BOOL)withRowAnimation;
+- (void)deleteSections:(NSIndexSet*)section rowAnimation:(BOOL)rowAnimation;
 
 // Reloads only a specific `item`. Does nothing if the model is not loaded
 // yet.
@@ -31,6 +30,11 @@
 
 // Reloads `sections`. Does nothing if the model is not loaded yet.
 - (void)reloadSections:(NSIndexSet*)sections;
+
+// Updates the primary account details.
+- (void)updatePrimaryAccountWithAvatarImage:(UIImage*)avatarImage
+                                       name:(NSString*)name
+                                      email:(NSString*)email;
 
 @end
 

@@ -173,10 +173,10 @@ std::vector<mojom::TextAcceleratorPartPtr> GenerateTextAcceleratorParts(
     const std::vector<size_t>& offsets,
     size_t str_size) {
   // |str_size| should be the sum of the lengths of |plain_text_parts|.
-  DCHECK_EQ(str_size, std::accumulate(
+  DCHECK_EQ(str_size, std::transform_reduce(
                           plain_text_parts.begin(), plain_text_parts.end(), 0u,
-                          [](size_t accumulator, const std::u16string& part) {
-                            return accumulator + part.size();
+                          std::plus<>(), [](const std::u16string& part) {
+                            return part.length();
                           }));
 
   DCHECK(std::is_sorted(offsets.begin(), offsets.end()));
@@ -383,7 +383,7 @@ std::optional<AcceleratorConfigResult> ValidateAccelerator(
   }
 
   // Case: Non-standard keys cannot have search as a modifier.
-  absl::optional<AcceleratorKeycodeLookupCache::KeyCodeLookupEntry>
+  std::optional<AcceleratorKeycodeLookupCache::KeyCodeLookupEntry>
       key_code_entry = FindKeyCodeEntry(accelerator.key_code());
   if (key_code_entry.has_value()) {
     const ui::KeyEvent key_event(

@@ -234,7 +234,6 @@ bool StaticSocketDataHelper::VerifyWriteData(const std::string& data,
   //   This is a success, and the function returns true.
   std::string expected_data(next_write.data, next_write.data_len);
   std::string actual_data(data.substr(0, next_write.data_len));
-  EXPECT_GE(data.length(), expected_data.length());
   if (printer) {
     EXPECT_TRUE(actual_data == expected_data)
         << "Actual formatted write data:\n"
@@ -847,10 +846,6 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
   if (next_ssl_data->expected_network_anonymization_key) {
     EXPECT_EQ(*next_ssl_data->expected_network_anonymization_key,
               ssl_config.network_anonymization_key);
-  }
-  if (next_ssl_data->expected_disable_sha1_server_signatures) {
-    EXPECT_EQ(*next_ssl_data->expected_disable_sha1_server_signatures,
-              ssl_config.disable_sha1_server_signatures);
   }
   if (next_ssl_data->expected_ech_config_list) {
     EXPECT_EQ(*next_ssl_data->expected_ech_config_list,

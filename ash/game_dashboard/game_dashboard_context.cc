@@ -5,13 +5,16 @@
 #include "ash/game_dashboard/game_dashboard_context.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "ash/constants/ash_pref_names.h"
 #include "ash/game_dashboard/game_dashboard_button.h"
 #include "ash/game_dashboard/game_dashboard_constants.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
+#include "ash/game_dashboard/game_dashboard_main_menu_cursor_handler.h"
 #include "ash/game_dashboard/game_dashboard_main_menu_view.h"
+#include "ash/game_dashboard/game_dashboard_metrics.h"
 #include "ash/game_dashboard/game_dashboard_toolbar_view.h"
 #include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/game_dashboard/game_dashboard_welcome_dialog.h"
@@ -19,6 +22,7 @@
 #include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/i18n/time_formatting.h"
@@ -91,7 +95,7 @@ GameDashboardContext::GameDashboardContext(aura::Window* game_window)
     : game_window_(game_window),
       toolbar_snap_location_(ToolbarSnapLocation::kTopRight) {
   DCHECK(game_window_);
-  show_welcome_dialog_ = ShouldShowWelcomeDialog();
+  show_welcome_dialog_ = game_dashboard_utils::ShouldShowWelcomeDialog();
   CreateAndAddGameDashboardButtonWidget();
   // ARC windows handle displaying the welcome dialog once the
   // `game_dashboard_button_` becomes available.
@@ -111,6 +115,21 @@ GameDashboardContext::~GameDashboardContext() {
 const std::u16string& GameDashboardContext::GetRecordingDuration() const {
   return recording_duration_.empty() ? kDefaultRecordingDuration
                                      : recording_duration_;
+}
+
+void GameDashboardContext::MaybeStackAboveWidget(views::Widget* widget) {
+  DCHECK(widget);
+  if (welcome_dialog_widget_) {
+    welcome_dialog_widget_->StackAboveWidget(widget);
+  }
+
+  if (main_menu_widget_) {
+    main_menu_widget_->StackAboveWidget(widget);
+  }
+
+  if (toolbar_widget_) {
+    toolbar_widget_->StackAboveWidget(widget);
+  }
 }
 
 void GameDashboardContext::SetToolbarSnapLocation(
@@ -143,7 +162,12 @@ void GameDashboardContext::UpdateForGameControlsFlags() {
   }
 }
 
-void GameDashboardContext::ToggleMainMenu() {
+void GameDashboardContext::ToggleMainMenuByAccelerator() {
+  ToggleMainMenu(GameDashboardMainMenuToggleMethod::kSearchPlusG);
+}
+
+void GameDashboardContext::ToggleMainMenu(
+    GameDashboardMainMenuToggleMethod toggle_method) {
   if (!main_menu_widget_) {
     auto widget_delegate = std::make_unique<GameDashboardMainMenuView>(this);
     DCHECK(!main_menu_view_);
@@ -154,19 +178,26 @@ void GameDashboardContext::ToggleMainMenu() {
     main_menu_widget_->AddObserver(this);
     main_menu_widget_->Show();
     game_dashboard_button_->SetToggled(true);
+    AddCursorHandler();
+    RecordGameDashboardToggleMainMenu(toggle_method, /*toggled_on=*/true);
   } else {
     DCHECK(main_menu_view_);
     DCHECK(main_menu_widget_);
-    CloseMainMenu();
+    CloseMainMenu(toggle_method);
   }
 }
 
-void GameDashboardContext::CloseMainMenu() {
-  main_menu_view_ = nullptr;
+void GameDashboardContext::CloseMainMenu(
+    GameDashboardMainMenuToggleMethod toggle_method) {
   DCHECK(main_menu_widget_);
   main_menu_widget_->RemoveObserver(this);
+  // Since the `WidgetObserver` has been removed, `OnWidgetDestroyed` will not
+  // be called. Explicitly call `UpdateOnMainMenuClosed()` to update the
+  // `main_menu_view_`, remove the cursor handler, and update the
+  // `game_dashboard_button_` UI.
+  UpdateOnMainMenuClosed();
   main_menu_widget_.reset();
-  game_dashboard_button_->SetToggled(false);
+  RecordGameDashboardToggleMainMenu(toggle_method, /*toggled_on=*/false);
 }
 
 bool GameDashboardContext::ToggleToolbar() {
@@ -191,6 +222,7 @@ bool GameDashboardContext::ToggleToolbar() {
     } else {
       toolbar_widget_->Show();
     }
+    RecordGameDashboardToolbarToggleState(/*toggled_on=*/true);
     return true;
   }
 
@@ -203,6 +235,7 @@ void GameDashboardContext::CloseToolbar() {
   DCHECK(toolbar_widget_);
   toolbar_view_ = nullptr;
   toolbar_widget_.reset();
+  RecordGameDashboardToolbarToggleState(/*toggled_on=*/false);
 }
 
 void GameDashboardContext::MaybeUpdateToolbarWidgetBounds() {
@@ -225,6 +258,13 @@ void GameDashboardContext::OnRecordingStarted(bool is_recording_game_window) {
     OnUpdateRecordingTimer();
     recording_timer_.Start(FROM_HERE, kCountUpTimerRefreshInterval, this,
                            &GameDashboardContext::OnUpdateRecordingTimer);
+    CHECK(recording_from_main_menu_);
+    RecordGameDashboardRecordingStartSource(*recording_from_main_menu_
+                                                ? GameDashboardMenu::kMainMenu
+                                                : GameDashboardMenu::kToolbar);
+    // `recording_from_main_menu_` is used to record the histogram for starting
+    // recording only. Reset it after the histogram is recorded.
+    recording_from_main_menu_ = std::nullopt;
   }
   if (main_menu_view_) {
     main_menu_view_->OnRecordingStarted(is_recording_game_window);
@@ -260,11 +300,51 @@ void GameDashboardContext::OnViewPreferredSizeChanged(
   MaybeUpdateWelcomeDialogBounds();
 }
 
-void GameDashboardContext::OnWidgetDestroying(views::Widget* widget) {
+void GameDashboardContext::OnWidgetDestroyed(views::Widget* widget) {
   DCHECK(main_menu_view_);
   DCHECK_EQ(widget, main_menu_view_->GetWidget());
-  main_menu_view_ = nullptr;
-  game_dashboard_button_->SetToggled(false);
+  UpdateOnMainMenuClosed();
+
+  // Record main menu toggle off metrics.
+  switch (widget->closed_reason()) {
+    case views::Widget::ClosedReason::kLostFocus:
+      // The main menu is closed explicitly in the overview mode and the
+      // observer is removed before this event.
+      DCHECK(!OverviewController::Get()->InOverviewSession());
+      // Close reason for clicking outside or closing game window by clicking
+      // close button on the caption.
+      RecordGameDashboardToggleMainMenu(
+          GameDashboardMainMenuToggleMethod::kOthers,
+          /*toggled_on=*/false);
+      break;
+    case views::Widget::ClosedReason::kCancelButtonClicked:
+      // Close reason for key Esc pressed.
+      RecordGameDashboardToggleMainMenu(GameDashboardMainMenuToggleMethod::kEsc,
+                                        /*toggled_on=*/false);
+      break;
+    case views::Widget::ClosedReason::kUnspecified:
+      // Close reason when the game window is closed unspecified.
+      RecordGameDashboardToggleMainMenu(
+          GameDashboardMainMenuToggleMethod::kOthers,
+          /*toggled_on=*/false);
+      break;
+    default:
+      break;
+  }
+}
+
+void GameDashboardContext::AddCursorHandler() {
+  DCHECK(!main_menu_cursor_handler_);
+  main_menu_cursor_handler_ =
+      std::make_unique<GameDashboardMainMenuCursorHandler>(this);
+  game_window_->AddPreTargetHandler(main_menu_cursor_handler_.get());
+}
+
+void GameDashboardContext::RemoveCursorHandler() {
+  if (main_menu_cursor_handler_) {
+    game_window_->RemovePreTargetHandler(main_menu_cursor_handler_.get());
+    main_menu_cursor_handler_.reset();
+  }
 }
 
 void GameDashboardContext::CreateAndAddGameDashboardButtonWidget() {
@@ -311,7 +391,7 @@ void GameDashboardContext::OnGameDashboardButtonPressed() {
   // physically pressed.
   // Close the welcome dialog if it's open when a user opens the main menu view.
   CloseWelcomeDialog();
-  ToggleMainMenu();
+  ToggleMainMenu(GameDashboardMainMenuToggleMethod::kGameDashboardButton);
 }
 
 void GameDashboardContext::MaybeShowWelcomeDialog() {
@@ -323,9 +403,10 @@ void GameDashboardContext::MaybeShowWelcomeDialog() {
   show_welcome_dialog_ = false;
   auto view = std::make_unique<GameDashboardWelcomeDialog>();
   GameDashboardWelcomeDialog* welcome_dialog_view = view.get();
+  // Activatable for accessibility screen reader.
   welcome_dialog_widget_ = CreateTransientChildWidget(
       game_window_, "GameDashboardWelcomeDialog", std::move(view),
-      /*activatable=*/views::Widget::InitParams::Activatable::kNo);
+      /*activatable=*/views::Widget::InitParams::Activatable::kDefault);
   welcome_dialog_widget_->AddObserver(this);
   MaybeUpdateWelcomeDialogBounds();
   welcome_dialog_widget_->Show();
@@ -458,12 +539,11 @@ void GameDashboardContext::CloseWelcomeDialog() {
   }
 }
 
-bool GameDashboardContext::ShouldShowWelcomeDialog() const {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetActivePrefService();
-  DCHECK(prefs) << "A valid PrefService is needed to determine whether to show "
-                   "the welcome dialog.";
-  return prefs->GetBoolean(prefs::kGameDashboardShowWelcomeDialog);
+void GameDashboardContext::UpdateOnMainMenuClosed() {
+  DCHECK(main_menu_view_);
+  RemoveCursorHandler();
+  main_menu_view_ = nullptr;
+  game_dashboard_button_->SetToggled(false);
 }
 
 }  // namespace ash

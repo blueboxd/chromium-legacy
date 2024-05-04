@@ -119,6 +119,7 @@
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/top_container_loading_bar.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
@@ -161,7 +162,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
-#include "chrome/browser/ui/views/toolbar/chrome_labs_button.h"
+#include "chrome/browser/ui/views/toolbar/chrome_labs/chrome_labs_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_controller.h"
@@ -172,6 +173,7 @@
 #include "chrome/browser/ui/views/user_education/browser_user_education_service.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/webui/top_chrome/webui_contents_preload_manager.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/user_education/user_education_service.h"
 #include "chrome/browser/user_education/user_education_service_factory.h"
@@ -213,10 +215,13 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/user_education/common/feature_promo_handle.h"
 #include "components/user_education/common/help_bubble_factory_registry.h"
+#include "components/user_education/common/new_badge_controller.h"
 #include "components/user_education/views/help_bubble_view.h"
 #include "components/version_info/channel.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
+#include "components/webapps/browser/banners/installable_web_app_check_result.h"
+#include "components/webapps/browser/banners/web_app_banner_data.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/permission_controller.h"
@@ -336,6 +341,7 @@
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if BUILDFLAG(ENTERPRISE_WATERMARK)
+#include "chrome/browser/enterprise/data_protection/data_protection_navigation_observer.h"
 #include "chrome/browser/enterprise/watermark/watermark_view.h"
 #endif  // BUILDFLAG(ENTERPRISE_WATERMARK)
 
@@ -571,6 +577,12 @@ class OverlayWidget : public ThemeCopyingWidget {
     DCHECK(parent());
     return parent()->GetAccelerator(cmd_id, accelerator);
   }
+
+  // Instances of OverlayWidget do not activate directly but their views style
+  // should follow the parent (browser frame) activation state. In other words,
+  // when the browser frame is not activate the overlay widget views will
+  // appear disabled.
+  bool ShouldViewsStyleFollowWidgetActivation() const override { return true; }
 };
 
 // TabContainerOverlayView is a view that hosts the TabStripRegionView during
@@ -863,8 +875,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 
   // Not all browsers do feature promos. Conditionally create one (or don't) for
   // this browser window.
-  feature_promo_controller_ =
-      BrowserFeaturePromoController::MaybeCreateForBrowserView(this);
+  feature_promo_controller_ = CreateUserEducationResources(this);
 
   browser_->tab_strip_model()->AddObserver(this);
   immersive_mode_controller_ = chrome::CreateImmersiveModeController(this);
@@ -922,18 +933,15 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       contents_container->AddChildView(std::move(contents_web_view));
   contents_web_view_->set_is_primary_web_contents_for_window(true);
 
-  views::View* watermark_view = nullptr;
-
 #if BUILDFLAG(ENTERPRISE_WATERMARK)
   if (base::FeatureList::IsEnabled(features::kEnableWatermarkView)) {
-    watermark_view = contents_container->AddChildView(
-        std::make_unique<enterprise_watermark::WatermarkView>(
-            "Private! Confidential!"));
+    watermark_view_ = contents_container->AddChildView(
+        std::make_unique<enterprise_watermark::WatermarkView>());
   }
 #endif  // BUILDFLAG(ENTERPRISE_WATERMARK)
 
   contents_container->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
-      devtools_web_view_, contents_web_view_, watermark_view));
+      devtools_web_view_, contents_web_view_, watermark_view_));
 
   toolbar_ = top_container_->AddChildView(
       std::make_unique<ToolbarView>(browser_.get(), this));
@@ -1001,6 +1009,9 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       base::BindRepeating(&BrowserView::UpdateFullscreenAllowedFromPolicy,
                           base::Unretained(this), CanFullscreen()));
   UpdateFullscreenAllowedFromPolicy(CanFullscreen());
+
+  WebUIContentsPreloadManager::GetInstance()->WarmupForBrowserContext(
+      GetProfile());
 }
 
 BrowserView::~BrowserView() {
@@ -1151,6 +1162,14 @@ bool BrowserView::UsesImmersiveFullscreenTabbedMode() const {
           base::FeatureList::IsEnabled(features::kImmersiveFullscreen) &&
           base::FeatureList::IsEnabled(features::kImmersiveFullscreenTabs)) &&
          !GetIsWebAppType() && __builtin_available(macOS 10.14, *);
+}
+#endif
+
+#if BUILDFLAG(ENTERPRISE_WATERMARK)
+void BrowserView::SetWatermarkString(const std::string& text) {
+  if (watermark_view_) {
+    watermark_view_->SetString(text);
+  }
 }
 #endif
 
@@ -1388,6 +1407,11 @@ void BrowserView::Close() {
 }
 
 void BrowserView::Activate() {
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Update the list managed by `BrowserList` synchronously the same way
+  // `BrowserView::Show()` does.
+  BrowserList::SetLastActive(browser());
+#endif
   frame_->Activate();
 }
 
@@ -1772,6 +1796,14 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   if (AppUsesBorderlessMode() && !old_contents) {
     SetWindowManagementPermissionSubscriptionForBorderlessMode(new_contents);
   }
+
+#if BUILDFLAG(ENTERPRISE_WATERMARK)
+  enterprise_data_protection::DataProtectionNavigationObserver::
+      GetDataProtectionSettings(
+          GetProfile(), web_contents(),
+          base::BindOnce(&BrowserView::ApplyDataProtectionSettings,
+                         weak_ptr_factory_.GetWeakPtr()));
+#endif
 }
 
 void BrowserView::OnTabDetached(content::WebContents* contents,
@@ -2696,6 +2728,19 @@ void BrowserView::TouchModeChanged() {
   MaybeInitializeWebUITabStrip();
   MaybeShowWebUITabStripIPH();
 }
+
+#if BUILDFLAG(ENTERPRISE_WATERMARK)
+void BrowserView::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (base::FeatureList::IsEnabled(features::kEnableWatermarkView)) {
+    enterprise_data_protection::DataProtectionNavigationObserver::
+        CreateForNavigationIfNeeded(
+            GetProfile(), navigation_handle,
+            base::BindOnce(&BrowserView::ApplyDataProtectionSettings,
+                           weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+#endif
 
 void BrowserView::MaybeShowWebUITabStripIPH() {
   if (!webui_tab_strip_)
@@ -3906,6 +3951,7 @@ views::View* BrowserView::CreateMacOverlayView() {
     params.child = true;
     params.parent = parent->GetNativeView();
     params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
+    params.activatable = views::Widget::InitParams::Activatable::kNo;
     OverlayWidget* overlay_widget = new OverlayWidget(GetWidget());
 
     // When the overlay is used some Views are moved to the overlay_widget. When
@@ -5017,6 +5063,19 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 }
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton(bool is_source_accelerator) {
+  // TODO(b/323362927): rename the function and equivalent shortcut ID name to
+  // be more precise -- about being the same as button being pressed instead of
+  // just showing the avatar bubble since the action can be modified within the
+  // button itself, like dismissing some other bubbles.
+  if (AvatarToolbarButton* avatar_button =
+          toolbar_button_provider_
+              ? toolbar_button_provider_->GetAvatarToolbarButton()
+              : nullptr) {
+    avatar_button->ButtonPressed(is_source_accelerator);
+    return;
+  }
+
+  // Default behavior -- show the profile menu.
   ProfileMenuCoordinator::GetOrCreateForBrowser(browser())->Show(
       is_source_accelerator);
 }
@@ -5160,12 +5219,23 @@ void BrowserView::NotifyFeatureEngagementEvent(const char* event_name) {
       event_name);
 }
 
-void BrowserView::NotifyPromoFeatureUsed(const base::Feature& iph_feature) {
-  if (!feature_promo_controller_) {
-    return;
+void BrowserView::NotifyPromoFeatureUsed(const base::Feature& feature) {
+  if (feature_promo_controller_) {
+    feature_promo_controller_->NotifyFeatureUsedIfValid(feature);
   }
-  feature_promo_controller_->feature_engagement_tracker()->NotifyUsedEvent(
-      iph_feature);
+  auto* const service =
+      UserEducationServiceFactory::GetForBrowserContext(GetProfile());
+  if (service->new_badge_registry() &&
+      service->new_badge_registry()->IsFeatureRegistered(feature)) {
+    service->new_badge_controller()->NotifyFeatureUsedIfValid(feature);
+  }
+}
+
+bool BrowserView::MaybeShowNewBadgeFor(const base::Feature& feature) {
+  auto* const controller =
+      UserEducationServiceFactory::GetForBrowserContext(GetProfile())
+          ->new_badge_controller();
+  return controller && controller->MaybeShowNewBadge(feature);
 }
 
 bool BrowserView::DoCutCopyPasteForWebContents(WebContents* contents,
@@ -5355,7 +5425,9 @@ void BrowserView::OnImmersiveModeControllerDestroyed() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, webapps::AppBannerManager::Observer implementation:
-void BrowserView::OnInstallableWebAppStatusUpdated() {
+void BrowserView::OnInstallableWebAppStatusUpdated(
+    webapps::InstallableWebAppCheckResult result,
+    const std::optional<webapps::WebAppBannerData>& data) {
   UpdatePageActionIcon(PageActionIconType::kPwaInstall);
 }
 
@@ -5393,6 +5465,11 @@ void BrowserView::UpdateFullscreenAllowedFromPolicy(
         allowed_without_policy &&
         GetProfile()->GetPrefs()->GetBoolean(fullscreen_pref_path));
   }
+}
+
+void BrowserView::ApplyDataProtectionSettings(
+    const std::string& watermark_text) {
+  SetWatermarkString(watermark_text);
 }
 
 BEGIN_METADATA(BrowserView)

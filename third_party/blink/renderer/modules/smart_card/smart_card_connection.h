@@ -16,7 +16,8 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 
 namespace blink {
-
+class DOMArrayBuffer;
+class SmartCardConnectionStatus;
 class SmartCardContext;
 class SmartCardTransactionOptions;
 class SmartCardTransmitOptions;
@@ -40,19 +41,21 @@ class SmartCardConnection final : public ScriptWrappable,
   ScriptPromise disconnect(ScriptState* script_state,
                            const V8SmartCardDisposition& disposition,
                            ExceptionState& exception_state);
-  ScriptPromise transmit(ScriptState* script_state,
-                         const DOMArrayPiece& send_buffer,
-                         SmartCardTransmitOptions* options,
-                         ExceptionState& exception_state);
-  ScriptPromise status(ScriptState* script_state,
-                       ExceptionState& exception_state);
-  ScriptPromise control(ScriptState* script_state,
-                        uint32_t control_code,
-                        const DOMArrayPiece& data,
-                        ExceptionState& exception_state);
-  ScriptPromise getAttribute(ScriptState* script_state,
-                             uint32_t tag,
-                             ExceptionState& exception_state);
+  ScriptPromiseTyped<DOMArrayBuffer> transmit(ScriptState* script_state,
+                                              const DOMArrayPiece& send_buffer,
+                                              SmartCardTransmitOptions* options,
+                                              ExceptionState& exception_state);
+  ScriptPromiseTyped<SmartCardConnectionStatus> status(
+      ScriptState* script_state,
+      ExceptionState& exception_state);
+  ScriptPromiseTyped<DOMArrayBuffer> control(ScriptState* script_state,
+                                             uint32_t control_code,
+                                             const DOMArrayPiece& data,
+                                             ExceptionState& exception_state);
+  ScriptPromiseTyped<DOMArrayBuffer> getAttribute(
+      ScriptState* script_state,
+      uint32_t tag,
+      ExceptionState& exception_state);
   ScriptPromise setAttribute(ScriptState* script_state,
                              uint32_t tag,
                              const DOMArrayPiece& data,
@@ -79,9 +82,9 @@ class SmartCardConnection final : public ScriptWrappable,
                         device::mojom::blink::SmartCardResultPtr result);
   void OnPlainResult(ScriptPromiseResolver* resolver,
                      device::mojom::blink::SmartCardResultPtr result);
-  void OnDataResult(ScriptPromiseResolver* resolver,
+  void OnDataResult(ScriptPromiseResolverTyped<DOMArrayBuffer>* resolver,
                     device::mojom::blink::SmartCardDataResultPtr result);
-  void OnStatusDone(ScriptPromiseResolver* resolver,
+  void OnStatusDone(ScriptPromiseResolverTyped<SmartCardConnectionStatus>*,
                     device::mojom::blink::SmartCardStatusResultPtr result);
   void OnBeginTransactionDone(
       ScriptPromiseResolver* resolver,

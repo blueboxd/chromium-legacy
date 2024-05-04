@@ -29,9 +29,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/zero_suggest_cache_service.h"
-#include "components/optimization_guide/content/browser/in_memory_text_embedding_manager.h"
 #include "components/optimization_guide/content/browser/page_content_annotator.h"
-#include "components/optimization_guide/core/entity_metadata_provider.h"
 #include "components/optimization_guide/core/model_info.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/page_content_annotations_common.h"
@@ -113,7 +111,6 @@ enum class PageContentAnnotationsType {
 
 // A KeyedService that annotates page content.
 class PageContentAnnotationsService : public KeyedService,
-                                      public EntityMetadataProvider,
                                       public history::HistoryServiceObserver,
                                       public ZeroSuggestCacheService::Observer {
  public:
@@ -165,11 +162,6 @@ class PageContentAnnotationsService : public KeyedService,
   // available.
   std::optional<ModelInfo> GetModelInfoForType(AnnotationType type) const;
 
-  // EntityMetadataProvider:
-  void GetMetadataForEntityId(
-      const std::string& entity_id,
-      EntityMetadataRetrievedCallback callback) override;
-
   // history::HistoryServiceObserver:
   void OnURLsModified(history::HistoryService* history_service,
                       const history::URLRows& changed_urls) override;
@@ -186,14 +178,6 @@ class PageContentAnnotationsService : public KeyedService,
   // Specifies whether PageContentAnnotationsService should extract "related
   // searches" data from the ZPS response cache.
   bool ShouldExtractRelatedSearchesFromZPSCache();
-
-  // Queries text embeddings for all the visits in
-  // |InMemoryTextEmbeddingManager|. |callback_to_history_page| will be invoked
-  // to write the results to |history_service| once the visits related to the
-  // given search text have returned.
-  void QueryEmbeddings(
-      base::OnceCallback<void(history::QueryResults&)> callback_to_history_page,
-      const std::string& query);
 
   // ZeroSuggestCacheService::Observer:
   void OnZeroSuggestResponseUpdated(
@@ -248,8 +232,6 @@ class PageContentAnnotationsService : public KeyedService,
       AnnotationType type,
       std::vector<std::optional<history::VisitContentModelAnnotations>>*
           merge_to_output,
-      std::vector<std::optional<std::vector<float>>>*
-          merge_embeddings_to_output,
       base::OnceClosure signal_merge_complete_callback,
       const std::vector<BatchAnnotationResult>& batch_result);
 
@@ -258,9 +240,7 @@ class PageContentAnnotationsService : public KeyedService,
   void OnBatchVisitsAnnotated(
       std::unique_ptr<
           std::vector<std::optional<history::VisitContentModelAnnotations>>>
-          merged_annotation_outputs,
-      std::unique_ptr<std::vector<std::optional<std::vector<float>>>>
-          merged_embedding_outputs);
+          merged_annotation_outputs);
 
   std::unique_ptr<PageContentAnnotationsModelManager> model_manager_;
 
@@ -314,14 +294,6 @@ class PageContentAnnotationsService : public KeyedService,
       const HistoryVisit& visit,
       const proto::SalientImageMetadata& salient_image_metadata);
 
-  // Called when entity metadata for |entity_id| that had weight |weight| on
-  // page with |url| has been retrieved.
-  void OnEntityMetadataRetrieved(
-      const GURL& url,
-      const std::string& entity_id,
-      int weight,
-      const std::optional<EntityMetadata>& entity_metadata);
-
   using PersistAnnotationsCallback = base::OnceCallback<void(history::VisitID)>;
   // Queries |history_service| for all the visits to the visited URL of |visit|.
   // |callback| will be invoked to write the bound content annotations to
@@ -338,13 +310,6 @@ class PageContentAnnotationsService : public KeyedService,
                     PersistAnnotationsCallback callback,
                     PageContentAnnotationsType annotation_type,
                     history::QueryURLResult url_result);
-
-  // Callback invoked when |InMemoryTextEmbeddingManager| has returned results
-  // for the visits to a URL. In turn invokes |callback_to_history_page| to
-  // write the QueryResults to |history_service|.
-  void OnQueryEmbedded(
-      base::OnceCallback<void(history::QueryResults&)> callback_to_history_page,
-      const std::vector<BatchAnnotationResult>& result);
 
   // Notifies the PageContentAnnotationsResult to the observers for
   // |annotation_type|.
@@ -449,10 +414,6 @@ class PageContentAnnotationsService : public KeyedService,
   // AnnotationType.
   std::map<AnnotationType, base::ObserverList<PageContentAnnotationsObserver>>
       page_content_annotations_observers_;
-
-  // An instance of InMemoryTextEmbeddingManager which will hold embeddings for
-  // history visits.
-  std::unique_ptr<InMemoryTextEmbeddingManager> text_embeddings_for_visits_;
 
   base::WeakPtrFactory<PageContentAnnotationsService> weak_ptr_factory_{this};
 };

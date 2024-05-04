@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.password_manager;
 
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.PASSKEY_MANAGEMENT_USING_ACCOUNT_SETTINGS_ANDROID;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -29,13 +27,13 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.loading_modal.LoadingModalDialogCoordinator;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerBackendException;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerError;
 import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelper.PasswordCheckBackendException;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileKeyedMap;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.prefs.PrefService;
@@ -120,6 +118,29 @@ public class PasswordManagerHelper {
         int NUM_ENTRIES = 4;
     }
 
+    private static ProfileKeyedMap<PasswordManagerHelper> sProfileMap;
+
+    private final Profile mProfile;
+
+    @VisibleForTesting
+    PasswordManagerHelper(Profile profile) {
+        assert profile != null;
+        mProfile = profile;
+    }
+
+    /**
+     * Return the {@link PasswordManagerHelper} associated with the passed in {@link
+     * Profile#getOriginalProfile()}.
+     */
+    public static PasswordManagerHelper getForProfile(Profile profile) {
+        if (sProfileMap == null) {
+            sProfileMap = new ProfileKeyedMap<>(ProfileKeyedMap.NO_REQUIRED_CLEANUP_ACTION);
+        }
+        Profile originalProfile = profile.getOriginalProfile();
+        return sProfileMap.getForProfile(
+                originalProfile, () -> new PasswordManagerHelper(originalProfile));
+    }
+
     /**
      * Launches the password settings or, if available, the credential manager from Google Play
      * Services.
@@ -128,17 +149,17 @@ public class PasswordManagerHelper {
      * @param managePasskeys indicates whether passkey management is needed, which when true will
      *     attempt to launch the credential manager even without syncing enabled.
      */
-    public static void showPasswordSettings(
+    public void showPasswordSettings(
             Context context,
             @ManagePasswordsReferrer int referrer,
             SettingsLauncher settingsLauncher,
-            SyncService syncService,
             Supplier<ModalDialogManager> modalDialogManagerSupplier,
             boolean managePasskeys) {
         RecordHistogram.recordEnumeratedHistogram(
                 "PasswordManager.ManagePasswordsReferrer",
                 referrer,
                 ManagePasswordsReferrer.MAX_VALUE + 1);
+        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
 
         if (canUseUpm()) {
             LoadingModalDialogCoordinator loadingDialogCoordinator =
@@ -196,14 +217,11 @@ public class PasswordManagerHelper {
      * check whether UPM can be used (for password check as well as for all other cases that share
      * the same preconditions, e.g. launching the credential manager).
      *
-     * <p>TODO(crbug.com/1345232): pass syncService and prefService instances as parameters
-     *
      * @return True if Unified Password Manager can be used, false otherwise.
      */
-    public static boolean canUseUpm() {
-        Profile profile = Profile.getLastUsedRegularProfile();
-        SyncService syncService = SyncServiceFactory.getForProfile(profile);
-        PrefService prefService = UserPrefs.get(profile);
+    public boolean canUseUpm() {
+        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
+        PrefService prefService = UserPrefs.get(mProfile);
         // TODO(crbug.com/1327294): Reevaluate if passing the syncService instead of the boolean is
         // better.
         // TODO(crbug.com/1327294): Move the syncService and backend presence checks in the util.
@@ -224,8 +242,7 @@ public class PasswordManagerHelper {
      * @return True if the AccountSettings intent is available for use, false otherwise.
      */
     public static boolean canUseAccountSettings() {
-        return ChromeFeatureList.isEnabled(PASSKEY_MANAGEMENT_USING_ACCOUNT_SETTINGS_ANDROID)
-                && PasswordManagerBackendSupportHelper.getInstance().isBackendPresent();
+        return PasswordManagerBackendSupportHelper.getInstance().isBackendPresent();
     }
 
     /**
@@ -233,7 +250,6 @@ public class PasswordManagerHelper {
      *
      * @param context used to show the loading dialog.
      * @param referrer the place that requested to show the UI.
-     * @param syncService the service to query about the sync status.
      * @param modalDialogManagerSupplier The supplier of the ModalDialogManager to be used by
      *     loading dialog.
      * @param accountEmail is the email of the account syncing passwords. If it's empty, the checkup
@@ -241,10 +257,9 @@ public class PasswordManagerHelper {
      *     storage if the password checkup is launched from the leak detection dialog and the leaked
      *     credential is only saved in the local password storage.
      */
-    public static void showPasswordCheckup(
+    public void showPasswordCheckup(
             Context context,
             @PasswordCheckReferrer int referrer,
-            SyncService syncService,
             Supplier<ModalDialogManager> modalDialogManagerSupplier,
             @Nullable String accountEmail) {
         assert accountEmail == null || !accountEmail.isEmpty();
@@ -272,7 +287,7 @@ public class PasswordManagerHelper {
      * @param successCallback callback called when password check finishes successfully
      * @param failureCallback callback called if password check encountered an error
      */
-    public static void runPasswordCheckupInBackground(
+    public void runPasswordCheckupInBackground(
             @PasswordCheckReferrer int referrer,
             String accountName,
             Callback<Void> successCallback,
@@ -313,7 +328,7 @@ public class PasswordManagerHelper {
      * @param successCallback callback called with the number of breached passwords.
      * @param failureCallback callback called if encountered an error.
      */
-    public static void getBreachedCredentialsCount(
+    public void getBreachedCredentialsCount(
             @PasswordCheckReferrer int referrer,
             String accountName,
             Callback<Integer> successCallback,
@@ -391,8 +406,8 @@ public class PasswordManagerHelper {
 
     // TODO(http://crbug.com/1371422): Remove method and manage eviction from native code
     // as this is covered by chrome://password-manager-internals page.
-    public static void resetUpmUnenrollment() {
-        PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
+    public void resetUpmUnenrollment() {
+        PrefService prefs = UserPrefs.get(mProfile);
 
         // Exit early if the user is not unenrolled.
         if (!prefs.getBoolean(Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS)) return;
@@ -424,7 +439,7 @@ public class PasswordManagerHelper {
     }
 
     @VisibleForTesting
-    static void launchTheCredentialManager(
+    void launchTheCredentialManager(
             @ManagePasswordsReferrer int referrer,
             SyncService syncService,
             LoadingModalDialogCoordinator loadingDialogCoordinator,
@@ -473,7 +488,7 @@ public class PasswordManagerHelper {
     }
 
     @VisibleForTesting
-    static void launchPasswordCheckup(
+    void launchPasswordCheckup(
             @PasswordCheckReferrer int referrer,
             Optional<String> account,
             LoadingModalDialogCoordinator loadingDialogCoordinator,

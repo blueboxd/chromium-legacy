@@ -299,8 +299,9 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-win-archive",
     ),
-    # TODO(kuanhuang): Add back to sheriff rotation after verified green.
-    sheriff_rotations = args.ignore_default(None),
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
+    ),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
@@ -379,6 +380,9 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-win-archive",
     ),
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
+    ),
     # TODO(crbug.com/1383380): Enable sheriff when stable and green.
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
@@ -449,6 +453,9 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-win-archive",
+    ),
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
     ),
     # TODO(crbug.com/1383380): Enable sheriff when stable and green.
     sheriff_rotations = args.ignore_default(None),

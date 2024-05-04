@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/geometry/infinite_int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 
@@ -34,10 +34,7 @@ const ClipPaintPropertyNode& ClipPaintPropertyNode::Root() {
   return *root;
 }
 
-template <bool (TransformPaintPropertyNodeOrAlias::*ChangedMethod)(
-    PaintPropertyChangeType,
-    const TransformPaintPropertyNodeOrAlias&) const>
-bool ClipPaintPropertyNodeOrAlias::ChangedInternal(
+bool ClipPaintPropertyNodeOrAlias::Changed(
     PaintPropertyChangeType change,
     const PropertyTreeState& relative_to_state,
     const TransformPaintPropertyNodeOrAlias* transform_not_to_check) const {
@@ -51,21 +48,13 @@ bool ClipPaintPropertyNodeOrAlias::ChangedInternal(
     }
     const auto* unaliased = static_cast<const ClipPaintPropertyNode*>(node);
     if (&unaliased->LocalTransformSpace() != transform_not_to_check &&
-        (unaliased->LocalTransformSpace().*ChangedMethod)(
+        unaliased->LocalTransformSpace().Changed(
             change, relative_to_state.Transform())) {
       return true;
     }
   }
 
   return false;
-}
-
-bool ClipPaintPropertyNodeOrAlias::Changed(
-    PaintPropertyChangeType change,
-    const PropertyTreeState& relative_to_state,
-    const TransformPaintPropertyNodeOrAlias* transform_not_to_check) const {
-  return ChangedInternal<&TransformPaintPropertyNodeOrAlias::Changed>(
-      change, relative_to_state, transform_not_to_check);
 }
 
 void ClipPaintPropertyNodeOrAlias::ClearChangedToRoot(
@@ -82,7 +71,7 @@ void ClipPaintPropertyNodeOrAlias::ClearChangedToRoot(
 }
 
 std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
-  auto json = ToJSONBase();
+  auto json = ClipPaintPropertyNodeOrAlias::ToJSON();
   if (NodeChanged() != PaintPropertyChangeType::kUnchanged)
     json->SetString("changed", PaintPropertyChangeTypeToString(NodeChanged()));
   json->SetString("localTransformSpace",

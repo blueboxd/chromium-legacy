@@ -31,7 +31,6 @@ build_webui("build") {
       "cr_drawer/cr_drawer.ts",
       "cr_expand_button/cr_expand_button.ts",
       "cr_feedback_buttons/cr_feedback_buttons.ts",
-      "cr_fingerprint/cr_fingerprint_progress_arc.ts",
       "cr_grid/cr_grid.ts",
       "cr_icon_button/cr_icon_button.ts",
       "cr_input/cr_input.ts",
@@ -62,13 +61,7 @@ build_webui("build") {
       "policy/cr_tooltip_icon.ts",
     ]
 
-    if (is_chromeos) {
-      web_component_files +=
-          [ "cr_searchable_drop_down/cr_searchable_drop_down.ts" ]
-    }
-
     icons_html_files = [
-      "cr_fingerprint/cr_fingerprint_icons.html",
       "icons.html",
       "mwb_shared_icons.html",
     ]
@@ -81,8 +74,10 @@ build_webui("build") {
       "cr_menu_selector/cr_menu_selector.ts",
       "cr_paper_ripple_mixin.ts",
       "cr_radio_button/cr_radio_button_mixin.ts",
+      "cr_radio_button/cr_radio_button_mixin_lit.ts",
       "cr_scrollable_mixin.ts",
       "cr_search_field/cr_search_field_mixin.ts",
+      "cr_search_field/cr_search_field_mixin_lit.ts",
       "find_shortcut_mixin.ts",
       "focus_row_mixin.ts",
       "i18n_mixin.ts",
@@ -103,9 +98,14 @@ build_webui("build") {
       "cr_icons_lit.css",
       "cr_nav_menu_item_style.css",
       "cr_page_host_style.css",
+      "cr_radio_button/cr_radio_button.css",
+      "cr_radio_button/cr_card_radio_button.css",
       "cr_radio_button/cr_radio_button_style.css",
+      "cr_radio_button/cr_radio_button_style_lit.css",
+      "cr_radio_group/cr_radio_group.css",
       "cr_screen_reader_only.css",
       "cr_shared_style.css",
+      "cr_shared_style_lit.css",
       "cr_shared_vars.css",
       "md_select.css",
       "mwb_element_shared_style.css",
@@ -113,11 +113,22 @@ build_webui("build") {
       "mwb_shared_vars.css",
       "search_highlight_style.css",
       "cr_action_menu/cr_action_menu.css",
+      "cr_checkbox/cr_checkbox.css",
       "cr_dialog/cr_dialog.css",
       "cr_drawer/cr_drawer.css",
       "cr_expand_button/cr_expand_button.css",
+      "cr_icon_button/cr_icon_button.css",
+      "cr_input/cr_input.css",
       "cr_input/cr_input_style.css",
+      "cr_input/cr_input_style_lit.css",
+      "cr_search_field/cr_search_field.css",
+      "cr_slider/cr_slider.css",
+      "cr_tabs/cr_tabs.css",
+      "cr_toast/cr_toast.css",
+      "cr_toast/cr_toast_manager.css",
+      "cr_toggle/cr_toggle.css",
       "cr_toolbar/cr_toolbar.css",
+      "cr_toolbar/cr_toolbar_search_field.css",
       "cr_toolbar/cr_toolbar_selection_overlay.css",
       "cr_view_manager/cr_view_manager.css",
     ]
@@ -135,6 +146,7 @@ build_webui("build") {
     ]
   }
   ts_definitions = [
+    "//tools/typescript/definitions/chrome_event.d.ts",
     "//tools/typescript/definitions/pending.d.ts",
     "//tools/typescript/definitions/settings_private.d.ts",
   ]

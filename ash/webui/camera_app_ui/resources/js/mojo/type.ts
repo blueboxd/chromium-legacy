@@ -18,6 +18,7 @@ export {
   DocumentOutputFormat,
   ExternalScreenMonitorCallbackRouter,
   FileMonitorResult,
+  LidStateMonitorCallbackRouter,
   ScreenState,
   ScreenStateMonitorCallbackRouter,
   StorageMonitorCallbackRouter,
@@ -35,10 +36,30 @@ export type {
   WifiConfig,
 } from '../../mojom/ash/webui/camera_app_ui/camera_app_helper.mojom-webui.js';
 export {
+  AndroidIntentResultType,
+  AspectRatioSet,
+  DocScanActionType,
+  DocScanFixType,
+  DocScanResultType,
+  Facing,
+  GifResultType,
+  GridType,
+  LaunchType,
+  Mode,
+  RecordType,
+  ResolutionLevel,
+  ShutterType,
+  TimerType,
+} from '../../mojom/ash/webui/camera_app_ui/events_sender.mojom-webui.js';
+export type {
+  CaptureEventParams,
+  EventsSenderRemote,
+} from '../../mojom/ash/webui/camera_app_ui/events_sender.mojom-webui.js';
+export {
   Rotation,
 } from
     '../../mojom/chromeos/services/machine_learning/public/mojom/document_scanner_param_types.mojom-webui.js';
-export type{
+export type {
   Blob as MojoBlob,
 } from '../../mojom/media/capture/mojom/image_capture.mojom-webui.js';
 export {
@@ -60,7 +81,9 @@ export {
   CameraFacing,
 } from
     '../../mojom/media/capture/video/chromeos/mojom/camera_common.mojom-webui.js';
-export type{CameraInfo} from
+export type {
+  CameraInfo,
+} from
     '../../mojom/media/capture/video/chromeos/mojom/camera_common.mojom-webui.js';
 export {
   PortraitModeSegResult,
@@ -70,7 +93,10 @@ export {
   EntryType,
 } from
     '../../mojom/media/capture/video/chromeos/mojom/camera_metadata.mojom-webui.js';
-export type{CameraMetadata, CameraMetadataEntry} from
+export type {
+  CameraMetadata,
+  CameraMetadataEntry,
+} from
     '../../mojom/media/capture/video/chromeos/mojom/camera_metadata.mojom-webui.js';
 export {
   AndroidControlAeAntibandingMode,
@@ -85,3 +111,7 @@ export {
   CameraMetadataTag,
 } from
     '../../mojom/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-webui.js';
+export {
+  LidState,
+} from
+    '../../mojom/media/capture/video/chromeos/mojom/system_event_monitor.mojom-webui.js';

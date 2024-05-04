@@ -35,9 +35,8 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -52,7 +51,6 @@ import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
-import org.chromium.components.permissions.PermissionsAndroidFeatureList;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.url.GURL;
 
@@ -202,7 +200,6 @@ public class SingleWebsiteSettingsTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS)
     public void testStorageAccessPermission() {
         int type = ContentSettingsType.STORAGE_ACCESS;
         GURL example = new GURL("https://example.com");
@@ -258,7 +255,7 @@ public class SingleWebsiteSettingsTest {
                 () -> {
                     result[0] =
                             WebsitePreferenceBridge.getContentSetting(
-                                    Profile.getLastUsedRegularProfile(),
+                                    ProfileManager.getLastUsedRegularProfile(),
                                     contentSettingType,
                                     primaryUrl,
                                     secondaryUrl);
@@ -356,7 +353,7 @@ public class SingleWebsiteSettingsTest {
         // Set setting explicitly to write it to prefs.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    info.setContentSetting(Profile.getLastUsedRegularProfile(), setting);
+                    info.setContentSetting(ProfileManager.getLastUsedRegularProfile(), setting);
                 });
         website.addEmbeddedPermission(info);
         return website;

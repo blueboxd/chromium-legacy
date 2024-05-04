@@ -84,7 +84,6 @@ class AutofillOfferManager;
 class AutofillOptimizationGuide;
 class AutofillPopupDelegate;
 class AutofillProfile;
-enum class AutofillProgressDialogType;
 struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
 struct CardUnmaskPromptOptions;
@@ -203,7 +202,7 @@ class AutofillClient {
     kFido = 2,
   };
 
-  enum class SaveAddressProfileOfferUserDecision {
+  enum class AddressPromptUserDecision {
     kUndefined,
     // No prompt is shown and no decision is needed to proceed with the process.
     kUserNotAsked,
@@ -307,7 +306,8 @@ class AutofillClient {
     PopupOpenArgs(const gfx::RectF& element_bounds,
                   base::i18n::TextDirection text_direction,
                   std::vector<Suggestion> suggestions,
-                  AutofillSuggestionTriggerSource trigger_source);
+                  AutofillSuggestionTriggerSource trigger_source,
+                  int32_t form_control_ax_id);
     PopupOpenArgs(const PopupOpenArgs&);
     PopupOpenArgs(PopupOpenArgs&&);
     PopupOpenArgs& operator=(const PopupOpenArgs&);
@@ -318,8 +318,9 @@ class AutofillClient {
     base::i18n::TextDirection text_direction =
         base::i18n::TextDirection::UNKNOWN_DIRECTION;
     std::vector<Suggestion> suggestions;
-    AutofillSuggestionTriggerSource trigger_source{
-        AutofillSuggestionTriggerSource::kUnspecified};
+    AutofillSuggestionTriggerSource trigger_source =
+        AutofillSuggestionTriggerSource::kUnspecified;
+    int32_t form_control_ax_id = 0;
   };
 
   // Describes the position of the Autofill popup on the screen.
@@ -374,7 +375,7 @@ class AutofillClient {
   // edited version of the profile should be passed as the second parameter. No
   // Autofill profile is passed otherwise.
   using AddressProfileSavePromptCallback =
-      base::OnceCallback<void(SaveAddressProfileOfferUserDecision,
+      base::OnceCallback<void(AddressPromptUserDecision,
                               base::optional_ref<const AutofillProfile>)>;
 
   // The callback accepts the boolean parameter indicating whether the user has
@@ -802,18 +803,7 @@ class AutofillClient {
   // `server_returned_title` and `server_returned_description` in `context` are
   // both set, the error dialog that is displayed will have these fields
   // displayed for the title and description, respectively.
-  virtual void ShowAutofillErrorDialog(
-      const AutofillErrorDialogContext& context);
-
-  // Show/dismiss the progress dialog which contains a throbber and a text
-  // message indicating that something is in progress.
-  virtual void ShowAutofillProgressDialog(
-      AutofillProgressDialogType autofill_progress_dialog_type,
-      base::OnceClosure cancel_callback);
-  virtual void CloseAutofillProgressDialog(
-      bool show_confirmation_before_closing,
-      base::OnceClosure no_interactive_authentication_callback =
-          base::OnceClosure());
+  virtual void ShowAutofillErrorDialog(AutofillErrorDialogContext context);
 
   // Maybe triggers a hats survey that measures the user's perception of
   // Autofill. When triggering happens, the survey dialog will be displayed with
@@ -855,6 +845,10 @@ class AutofillClient {
   // AutofillAgent::queryAutofillForForm() was called. See crbug.com/1097015.
   virtual bool IsLastQueriedField(FieldGlobalId field_id) = 0;
 #endif
+
+  // Whether we can add more information to the contents of suggestions text due
+  // to the use of a large keyboard accessory view. See b/40942168.
+  virtual bool ShouldFormatForLargeKeyboardAccessory() const;
 
   // Navigates to |url| in a new tab. |url| links to the promo code offer
   // details page for the offers in a promo code suggestions popup. Every offer

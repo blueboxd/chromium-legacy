@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_grid_test_api.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/window_restore/pine_contents_data.h"
@@ -31,7 +32,7 @@ namespace {
 
 constexpr char kTestUserEmail[] = "testuser@pine";
 
-constexpr size_t kMenuItemCount = 3u;
+constexpr size_t kMenuItemCount = 5u;
 
 }  // namespace
 
@@ -86,13 +87,15 @@ class PineContextMenuModelTest : public AshTestBase {
 TEST_F(PineContextMenuModelTest, LayoutAndCommands) {
   PineContextMenuModel menu;
   ASSERT_EQ(kMenuItemCount, menu.GetItemCount());
+  EXPECT_EQ(ui::MenuModel::kTitleId, menu.GetCommandIdAt(0));
   EXPECT_EQ(full_restore::RestoreOption::kAskEveryTime,
-            static_cast<full_restore::RestoreOption>(menu.GetCommandIdAt(0)));
-  EXPECT_EQ(full_restore::RestoreOption::kAlways,
             static_cast<full_restore::RestoreOption>(menu.GetCommandIdAt(1)));
-  EXPECT_EQ(full_restore::RestoreOption::kDoNotRestore,
+  EXPECT_EQ(full_restore::RestoreOption::kAlways,
             static_cast<full_restore::RestoreOption>(menu.GetCommandIdAt(2)));
-  for (size_t i = 0; i < kMenuItemCount; ++i) {
+  EXPECT_EQ(full_restore::RestoreOption::kDoNotRestore,
+            static_cast<full_restore::RestoreOption>(menu.GetCommandIdAt(3)));
+  EXPECT_EQ(PineContextMenuModel::kDescriptionId, menu.GetCommandIdAt(4));
+  for (size_t i = 1; i < kMenuItemCount; ++i) {
     EXPECT_TRUE(menu.IsEnabledAt(i));
     EXPECT_TRUE(menu.IsVisibleAt(i));
   }
@@ -109,7 +112,7 @@ TEST_F(PineContextMenuModelTest, ShowContextMenuOnSettingsButtonClicked) {
   // Get the active Pine widget.
   OverviewGrid* grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   ASSERT_TRUE(grid);
-  auto* pine_widget = grid->pine_widget_for_testing();
+  auto* pine_widget = OverviewGridTestApi(grid).pine_widget();
   ASSERT_TRUE(pine_widget);
 
   // The context menu should not be open.
@@ -138,15 +141,15 @@ TEST_F(PineContextMenuModelTest, RestorePreferences) {
   // Activate the other menu options (commands) and ensure the preference is set
   // properly.
   PineContextMenuModel menu;
-  menu.ActivatedAt(1);
+  menu.ActivatedAt(2);
   EXPECT_EQ(full_restore::RestoreOption::kAlways,
             static_cast<full_restore::RestoreOption>(
                 pref_service->GetInteger(prefs::kRestoreAppsAndPagesPrefName)));
-  menu.ActivatedAt(2);
+  menu.ActivatedAt(3);
   EXPECT_EQ(full_restore::RestoreOption::kDoNotRestore,
             static_cast<full_restore::RestoreOption>(
                 pref_service->GetInteger(prefs::kRestoreAppsAndPagesPrefName)));
-  menu.ActivatedAt(0);
+  menu.ActivatedAt(1);
   EXPECT_EQ(full_restore::RestoreOption::kAskEveryTime,
             static_cast<full_restore::RestoreOption>(
                 pref_service->GetInteger(prefs::kRestoreAppsAndPagesPrefName)));

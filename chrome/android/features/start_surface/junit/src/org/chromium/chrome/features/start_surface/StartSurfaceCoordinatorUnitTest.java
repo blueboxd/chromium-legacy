@@ -28,7 +28,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features.DisableFeatures;
-import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.feed.FeedActionDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -74,10 +73,7 @@ public class StartSurfaceCoordinatorUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     public void testShowAndHideWithRefactorEnabled() {
-        assertTrue(ChromeFeatureList.sStartSurfaceRefactor.isEnabled());
-        assertNull(mCoordinator.getTasksSurfaceForTesting());
         TabSwitcher tabSwitcherModule =
                 mCoordinator.getMediatorForTesting().getTabSwitcherModuleForTesting();
         assertNotNull(tabSwitcherModule);
@@ -86,7 +82,7 @@ public class StartSurfaceCoordinatorUnitTest {
                 tabSwitcherModule.getTabListDelegate().getListModeForTesting());
         assertNotNull(mCoordinator.getViewForTesting());
 
-        mCoordinator.showOverview(false);
+        mCoordinator.show(false);
         assertTrue(mCoordinator.isMVTilesInitializedForTesting());
         assertFalse(mCoordinator.isMVTilesCleanedUpForTesting());
         assertNotNull(mCoordinator.getTileGroupDelegateForTesting());
@@ -98,77 +94,26 @@ public class StartSurfaceCoordinatorUnitTest {
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
-    public void testCleanUpMVTilesAfterHiding() {
-        assertFalse(ChromeFeatureList.sStartSurfaceRefactor.isEnabled());
-        assertNotNull(mCoordinator.getTasksSurfaceForTesting());
-        assertNull(mCoordinator.getMediatorForTesting().getTabSwitcherModuleForTesting());
-        assertNull(mCoordinator.getViewForTesting());
-
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWING_HOMEPAGE);
-        mCoordinator.showOverview(false);
-
-        Assert.assertFalse(mCoordinator.isMVTilesCleanedUpForTesting());
-
-        mCoordinator.setStartSurfaceState(StartSurfaceState.NOT_SHOWN);
-        mCoordinator.onHide();
-        Assert.assertTrue(mCoordinator.isMVTilesCleanedUpForTesting());
-    }
-
-    @Test
     public void testMVTilesInitialized() {
-        mCoordinator.setStartSurfaceState(StartSurfaceState.NOT_SHOWN);
         Assert.assertFalse(mCoordinator.isMVTilesInitializedForTesting());
 
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWING_HOMEPAGE);
-        mCoordinator.showOverview(false);
+        mCoordinator.show(false);
         Assert.assertTrue(mCoordinator.isMVTilesInitializedForTesting());
 
-        mCoordinator.setStartSurfaceState(StartSurfaceState.NOT_SHOWN);
         mCoordinator.onHide();
         Assert.assertFalse(mCoordinator.isMVTilesInitializedForTesting());
-
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWN_TABSWITCHER);
-        Assert.assertFalse(mCoordinator.isMVTilesInitializedForTesting());
-    }
-
-    @Test
-    public void testDoNotInitializeSecondaryTasksSurfaceWithoutOpenGridTabSwitcher() {
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWING_HOMEPAGE);
-        mCoordinator.showOverview(false);
-        Assert.assertTrue(mCoordinator.isSecondaryTasksSurfaceEmptyForTesting());
-
-        mCoordinator.setStartSurfaceState(StartSurfaceState.NOT_SHOWN);
-        mCoordinator.onHide();
-        Assert.assertTrue(mCoordinator.isSecondaryTasksSurfaceEmptyForTesting());
-
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWN_TABSWITCHER);
-        Assert.assertFalse(mCoordinator.isSecondaryTasksSurfaceEmptyForTesting());
     }
 
     @Test
     @MediumTest
     public void testFeedSwipeLayoutVisibility() {
-        assert mCoordinator.getStartSurfaceState() == StartSurfaceState.NOT_SHOWN;
         Assert.assertEquals(
                 View.GONE, mCoordinator.getFeedSwipeRefreshLayoutForTesting().getVisibility());
 
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWING_HOMEPAGE);
-        mCoordinator.showOverview(false);
+        mCoordinator.show(false);
         Assert.assertEquals(
                 View.VISIBLE, mCoordinator.getFeedSwipeRefreshLayoutForTesting().getVisibility());
 
-        mCoordinator.setStartSurfaceState(StartSurfaceState.NOT_SHOWN);
-        mCoordinator.onHide();
-        Assert.assertEquals(
-                View.GONE, mCoordinator.getFeedSwipeRefreshLayoutForTesting().getVisibility());
-
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWN_TABSWITCHER);
-        mCoordinator.showOverview(false);
-        Assert.assertEquals(
-                View.VISIBLE, mCoordinator.getFeedSwipeRefreshLayoutForTesting().getVisibility());
-
-        mCoordinator.setStartSurfaceState(StartSurfaceState.NOT_SHOWN);
         mCoordinator.onHide();
         Assert.assertEquals(
                 View.GONE, mCoordinator.getFeedSwipeRefreshLayoutForTesting().getVisibility());
@@ -177,8 +122,7 @@ public class StartSurfaceCoordinatorUnitTest {
     /** Tests the logic of recording time spend in start surface. */
     @Test
     public void testRecordTimeSpendInStart() {
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWING_HOMEPAGE);
-        mCoordinator.showOverview(false);
+        mCoordinator.show(false);
         mCoordinator.onHide();
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramTotalCountForTesting(START_SURFACE_TIME_SPENT));

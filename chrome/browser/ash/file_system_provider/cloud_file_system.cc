@@ -28,6 +28,10 @@ namespace {
 // watcher.
 constexpr base::TimeDelta kFileManagerWatcherInterval = base::Seconds(15);
 
+// TODO(b/317137739): Remove this once a proper API call is introduced.
+// Temp custom action to request ODFS sync with the cloud.
+constexpr char kODFSSyncWithCloudAction[] = "HIDDEN_SYNC_WITH_CLOUD";
+
 const GURL GetContentCacheURL() {
   return GURL("chrome://content-cache/");
 }
@@ -92,18 +96,25 @@ CloudFileSystem::CloudFileSystem(
 
 CloudFileSystem::CloudFileSystem(
     std::unique_ptr<ProvidedFileSystemInterface> file_system,
-    ContentCache* content_cache)
-    : file_system_(std::move(file_system)), content_cache_(content_cache) {
-  if (content_cache_) {
-    // Add watcher to keep content cache up to date. Notifications are received
-    // though Notify() so no notification_callback is needed.
-    AddWatcher(GetContentCacheURL(), RootFilePath(),
-               /*recursive=*/true, /*persistent=*/false,
-               base::BindOnce([](base::File::Error result) {
-                 VLOG(1) << "Added file watcher on root: " << result;
-               }),
-               base::DoNothing());
+    CacheManager* cache_manager)
+    : file_system_(std::move(file_system)) {
+  if (!cache_manager) {
+    return;
   }
+
+  cache_manager->InitializeForProvider(
+      file_system_->GetFileSystemInfo().mount_path().BaseName(),
+      base::BindOnce(&CloudFileSystem::OnContentCacheInitialized,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  // Add watcher to keep content cache up to date. Notifications are received
+  // though Notify() so no notification_callback is needed.
+  AddWatcher(GetContentCacheURL(), RootFilePath(),
+             /*recursive=*/true, /*persistent=*/false,
+             base::BindOnce([](base::File::Error result) {
+               VLOG(1) << "Added file watcher on root: " << result;
+             }),
+             base::DoNothing());
 }
 
 CloudFileSystem::~CloudFileSystem() {
@@ -113,6 +124,15 @@ CloudFileSystem::~CloudFileSystem() {
                   base::BindOnce([](base::File::Error result) {
                     VLOG(1) << "Removed file watcher on root: " << result;
                   }));
+  }
+}
+
+void CloudFileSystem::OnContentCacheInitialized(
+    base::FileErrorOr<std::unique_ptr<ContentCache>> error_or_cache) {
+  LOG_IF(ERROR, !error_or_cache.has_value())
+      << "Error initializing the content cache: " << error_or_cache.error();
+  if (error_or_cache.has_value()) {
+    content_cache_ = std::move(error_or_cache.value());
   }
 }
 
@@ -173,7 +193,10 @@ AbortCallback CloudFileSystem::OpenFile(const base::FilePath& file_path,
                                          OpenFileCallback callback) {
   VLOG(1) << "OpenFile {fsid = '" << GetFileSystemId() << "', file_path = '"
           << file_path << "', mode = '" << mode << "'}";
-  return file_system_->OpenFile(file_path, mode, std::move(callback));
+  return file_system_->OpenFile(
+      file_path, mode,
+      base::BindOnce(&CloudFileSystem::OnOpenFileCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 AbortCallback CloudFileSystem::CloseFile(
@@ -366,7 +389,21 @@ const std::string CloudFileSystem::GetFileSystemId() const {
 
 void CloudFileSystem::OnTimer() {
   VLOG(2) << "OnTimer";
-  // TODO(b/317137739): Sync with the cloud.
+  // TODO(b/317137739): Replace this with a proper API call once one is
+  // introduced.
+  // Request that the file system syncs with the Cloud. The entry path is
+  // insignficant, just pass it root.
+  ExecuteAction({base::FilePath("/")}, kODFSSyncWithCloudAction,
+                base::BindOnce([](base::File::Error result) {
+                  VLOG(1) << "Action " << kODFSSyncWithCloudAction
+                          << " completed: " << result;
+                }));
+}
+
+void CloudFileSystem::OnOpenFileCompleted(OpenFileCallback callback,
+                                          int file_handle,
+                                          base::File::Error result) {
+  std::move(callback).Run(file_handle, result);
 }
 
 }  // namespace ash::file_system_provider

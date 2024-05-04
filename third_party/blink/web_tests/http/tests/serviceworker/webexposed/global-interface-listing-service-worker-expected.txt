@@ -1099,7 +1099,9 @@ interface ImageData
     method constructor
 interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
+    method addRoutes
     method constructor
+    method registerRouter
 interface Lock
     attribute @@toStringTag
     getter mode
@@ -1270,8 +1272,12 @@ interface NotificationEvent : ExtendableEvent
 interface Observable
     attribute @@toStringTag
     method constructor
+    method drop
+    method filter
     method forEach
+    method map
     method subscribe
+    method take
     method takeUntil
     method toArray
 interface OffscreenCanvas : EventTarget
@@ -1321,6 +1327,7 @@ interface OffscreenCanvasRenderingContext2D
     method arcTo
     method beginLayer
     method beginPath
+    method beginWebGPUAccess
     method bezierCurveTo
     method clearRect
     method clip
@@ -1339,11 +1346,13 @@ interface OffscreenCanvasRenderingContext2D
     method drawMesh
     method ellipse
     method endLayer
+    method endWebGPUAccess
     method fill
     method fillRect
     method fillText
     method getImageData
     method getLineDash
+    method getTextureFormat
     method getTransform
     method isContextLost
     method isPointInPath
@@ -1583,12 +1592,14 @@ interface ReadableByteStreamController
 interface ReadableStream
     attribute @@toStringTag
     getter locked
+    method @@asyncIterator
     method cancel
     method constructor
     method getReader
     method pipeThrough
     method pipeTo
     method tee
+    method values
 interface ReadableStreamBYOBReader
     attribute @@toStringTag
     getter closed
@@ -3323,6 +3334,7 @@ interface WebTransport
     method constructor
     method createBidirectionalStream
     method createUnidirectionalStream
+    method getStats
 interface WebTransportBidirectionalStream
     attribute @@toStringTag
     getter readable

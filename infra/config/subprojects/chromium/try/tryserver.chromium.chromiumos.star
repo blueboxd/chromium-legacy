@@ -28,6 +28,7 @@ try_.defaults.set(
     siso_configs = ["builder"],
     siso_enable_cloud_profiler = True,
     siso_enable_cloud_trace = True,
+    siso_enabled = True,
     siso_project = siso.project.DEFAULT_UNTRUSTED,
 )
 
@@ -52,6 +53,13 @@ try_.builder(
     # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
     # when the PFQ has it enabled.
     gn_args = "ci/chromeos-amd64-generic-cfi-thin-lto-rel",
+    # TODO(b/326865026): This build seems to have a high number of fallbacks,
+    # but not enough to trigger the early fail mechanism.  The fallbacks result
+    # in slow builds and timeouts.  Fail in these cases so logs are collected
+    # for debugging.
+    reclient_bootstrap_env = {
+        "RBE_fail_early_min_fallback_ratio": "0.1",
+    },
 )
 
 try_.builder(
@@ -112,7 +120,6 @@ try_.orchestrator_builder(
     compilator = "chromeos-amd64-generic-rel-gtest-compilator",
     contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
     tryjob = try_.job(
         equivalent_builder = "try/chromeos-amd64-generic-rel-gtest-and-tast",
         equivalent_builder_percentage = 100,
@@ -149,7 +156,6 @@ try_.orchestrator_builder(
     compilator = "chromeos-amd64-generic-rel-gtest-and-tast-compilator",
     contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
     tryjob = try_.job(
         omit_from_luci_cv = True,
     ),
@@ -171,7 +177,6 @@ try_.compilator_builder(
     ],
     contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.compilator_builder(
@@ -188,7 +193,6 @@ try_.compilator_builder(
     ],
     contact_team_email = "chromeos-sw-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -215,7 +219,6 @@ try_.builder(
         "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
-    siso_enabled = True,
     tryjob = try_.job(),
 )
 
@@ -248,7 +251,6 @@ try_.orchestrator_builder(
     compilator = "lacros-amd64-generic-rel-gtest-compilator",
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
     # TODO(crbug.com/1471166) Enable on CQ.
     tryjob = try_.job(
         equivalent_builder = "try/lacros-amd64-generic-rel-gtest-and-tast",
@@ -286,7 +288,6 @@ try_.orchestrator_builder(
     compilator = "lacros-amd64-generic-rel-gtest-and-tast-compilator",
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
     tryjob = try_.job(
         omit_from_luci_cv = True,
     ),
@@ -308,7 +309,6 @@ try_.compilator_builder(
     ],
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.compilator_builder(
@@ -325,7 +325,6 @@ try_.compilator_builder(
     ],
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -371,7 +370,6 @@ try_.builder(
         "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
-    siso_enabled = True,
     tryjob = try_.job(),
 )
 
@@ -418,7 +416,7 @@ try_.builder(
     mirrors = [
         "ci/linux-chromeos-dbg",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -442,41 +440,13 @@ try_.builder(
 try_.builder(
     name = "chromeos-jacuzzi-rel",
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = """
+This builder builds chromium and tests it on the public CrOS image on skylab DUTs.
+""",
     mirrors = [
         "ci/chromeos-jacuzzi-rel",
     ],
-    gn_args = gn_args.config(
-        configs = [
-            "ci/chromeos-jacuzzi-rel",
-            "dcheck_always_on",
-        ],
-    ),
-    main_list_view = "try",
-)
-
-try_.builder(
-    name = "chromeos-jacuzzi-rel-skylab",
-    branch_selector = branches.selector.MAIN,
-    description_html = "This is a builder that runs HW test on Skylab." +
-                       " This builder also build Lacros with alternative toolchain.",
-    mirrors = [
-        "ci/chromeos-jacuzzi-rel-skylab",
-    ],
-    gn_args = "ci/chromeos-jacuzzi-rel-skylab",
-    contact_team_email = "chromeos-velocity@google.com",
-    execution_timeout = 8 * time.hour,
-    main_list_view = "try",
-)
-
-try_.builder(
-    name = "chromeos-octopus-rel-skylab",
-    branch_selector = branches.selector.MAIN,
-    description_html = "This builder builds public image and runs tests on octopus DUTs in the lab.<br/>" +
-                       "This is experimental.",
-    mirrors = [
-        "ci/chromeos-octopus-rel-skylab",
-    ],
-    gn_args = "ci/chromeos-octopus-rel-skylab",
+    gn_args = "ci/chromeos-jacuzzi-rel",
     contact_team_email = "chromeos-velocity@google.com",
     execution_timeout = 8 * time.hour,
     main_list_view = "try",
@@ -485,10 +455,15 @@ try_.builder(
 try_.builder(
     name = "chromeos-octopus-rel",
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = """
+This builder builds chromium and tests it on the public CrOS image on skylab DUTs.
+""",
     mirrors = [
         "ci/chromeos-octopus-rel",
     ],
     gn_args = "ci/chromeos-octopus-rel",
+    contact_team_email = "chromeos-velocity@google.com",
+    execution_timeout = 8 * time.hour,
     main_list_view = "try",
 )
 
@@ -521,7 +496,6 @@ try_.orchestrator_builder(
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
-    siso_enabled = True,
     tryjob = try_.job(),
     use_clang_coverage = True,
 )
@@ -531,7 +505,6 @@ try_.compilator_builder(
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
     cores = 32,
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -542,7 +515,6 @@ try_.builder(
         "ci/linux-lacros-dbg",
     ],
     gn_args = "ci/linux-lacros-dbg",
-    siso_enabled = True,
 )
 
 try_.orchestrator_builder(
@@ -573,7 +545,6 @@ try_.orchestrator_builder(
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
-    siso_enabled = True,
     tryjob = try_.job(),
     use_clang_coverage = True,
 )
@@ -583,7 +554,6 @@ try_.compilator_builder(
     branch_selector = branches.selector.CROS_BRANCHES,
     cores = 32,
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -599,7 +569,6 @@ try_.builder(
             "ci/linux-chromeos-dbg",
         ],
     ),
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -619,7 +588,6 @@ try_.builder(
             "enable_backup_ref_ptr_feature_flag",
         ],
     ),
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -634,7 +602,6 @@ try_.builder(
         ],
     ),
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    siso_enabled = True,
     tryjob = try_.job(
         location_filters = [
             "chromeos/ash/components/chromebox_for_meetings/.+",

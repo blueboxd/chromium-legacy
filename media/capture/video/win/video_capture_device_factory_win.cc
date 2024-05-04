@@ -24,6 +24,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -97,8 +98,8 @@ enum BlockedCameraNames {
 
 #define UWP_ENUM_ERROR_HANDLER(hr, err_log)                         \
   DLOG(WARNING) << err_log << logging::SystemErrorCodeToString(hr); \
-  origin_task_runner_->PostTask(FROM_HERE,                          \
-                                base::BindOnce(device_info_callback, nullptr))
+  origin_task_runner_->PostTask(                                    \
+      FROM_HERE, base::BindOnce(std::move(device_info_callback), nullptr))
 
 // Blocked devices are identified by a characteristic prefix of the name.
 // This prefix is used case-insensitively. This list must be kept in sync with
@@ -360,7 +361,9 @@ class VideoCaptureDeviceFactoryWin::ComThreadData
   friend class base::RefCountedThreadSafe<ComThreadData>;
   ~ComThreadData() = default;
 
-  std::unordered_set<IAsyncOperation<DeviceInformationCollection*>*> async_ops_;
+  std::unordered_set<
+      raw_ptr<IAsyncOperation<DeviceInformationCollection*>, CtnExperimental>>
+      async_ops_;
   base::WeakPtr<VideoCaptureDeviceFactoryWin> device_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> com_thread_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
@@ -774,19 +777,20 @@ void VideoCaptureDeviceFactoryWin::ComThreadData::EnumerateDevicesUWP(
   // which is necessary for the below lambda function of |callback| for the
   // asynchronous operation. The reason is to permanently capture anything in a
   // lambda, it must be copyable, merely movable is insufficient.
-  auto device_info_callback = base::BindRepeating(
+  auto device_info_callback = base::BindOnce(
       &VideoCaptureDeviceFactoryWin::ComThreadData::FoundAllDevicesUWP,
-      scoped_refptr<ComThreadData>(this), base::Passed(&devices_info),
-      base::Passed(&result_callback));
+      scoped_refptr<ComThreadData>(this), std::move(devices_info),
+      std::move(result_callback));
   auto callback = Microsoft::WRL::Callback<
       ABI::Windows::Foundation::IAsyncOperationCompletedHandler<
           DeviceInformationCollection*>>(
-      [com_thread_runner = com_thread_runner_, device_info_callback](
+      [com_thread_runner = com_thread_runner_,
+       device_info_callback = std::move(device_info_callback)](
           IAsyncOperation<DeviceInformationCollection*>* operation,
-          AsyncStatus status) -> HRESULT {
+          AsyncStatus status) mutable -> HRESULT {
         com_thread_runner->PostTask(
-            FROM_HERE,
-            base::BindOnce(device_info_callback, base::Unretained(operation)));
+            FROM_HERE, base::BindOnce(std::move(device_info_callback),
+                                      base::Unretained(operation)));
         return S_OK;
       });
 

@@ -86,7 +86,7 @@ class MockAutofillDriver : public TestAutofillDriver {
   // Mock methods to enable testability.
   MOCK_METHOD((base::flat_set<FieldGlobalId>),
               ApplyFormAction,
-              (mojom::ActionType action_type,
+              (mojom::FormActionType action_type,
                mojom::ActionPersistence action_persistence,
                const FormData& data,
                const url::Origin& triggered_origin,
@@ -94,8 +94,8 @@ class MockAutofillDriver : public TestAutofillDriver {
               (override));
   MOCK_METHOD(void,
               ApplyFieldAction,
-              (mojom::ActionPersistence action_persistence,
-               mojom::TextReplacement text_replacement,
+              (mojom::FieldActionType text_replacement,
+               mojom::ActionPersistence action_persistence,
                const FieldGlobalId& field_id,
                const std::u16string& value),
               (override));
@@ -182,8 +182,8 @@ class FormFillerTest : public testing::Test {
           mojom::ActionPersistence::kFill, form, trigger_field, **profile,
           trigger_details);
     } else {
-      browser_autofill_manager_->FillCreditCardForm(
-          form, trigger_field,
+      browser_autofill_manager_->FillOrPreviewCreditCardForm(
+          mojom::ActionPersistence::kFill, form, trigger_field,
           *absl::get<const CreditCard*>(profile_or_credit_card), /*cvc=*/u"",
           trigger_details);
     }
@@ -199,7 +199,8 @@ class FormFillerTest : public testing::Test {
                          Return(std::vector<FieldGlobalId>{}))));
     browser_autofill_manager_->FillOrPreviewCreditCardForm(
         mojom::ActionPersistence::kPreview, input_form, input_field,
-        virtual_card, {.trigger_source = AutofillTriggerSource::kPopup});
+        virtual_card, std::u16string(),
+        {.trigger_source = AutofillTriggerSource::kPopup});
     return filled_form;
   }
 
@@ -218,8 +219,8 @@ class FormFillerTest : public testing::Test {
     card.SetNetworkForMaskedCard(kVisaCard);
 
     EXPECT_CALL(autofill_driver_, ApplyFormAction).Times(AtLeast(1));
-    browser_autofill_manager_->FillOrPreviewCreditCardForm(
-        mojom::ActionPersistence::kFill, form, form.fields.front(), card,
+    browser_autofill_manager_->AuthenticateThenFillCreditCardForm(
+        form, form.fields.front(), card,
         {.trigger_source = AutofillTriggerSource::kPopup});
   }
 
@@ -468,7 +469,7 @@ TEST_F(FormFillerTest, UndoSavesFieldByFieldFillingData) {
 
   EXPECT_CALL(autofill_driver_, ApplyFieldAction);
   browser_autofill_manager_->FillOrPreviewField(
-      mojom::ActionPersistence::kFill, mojom::TextReplacement::kReplaceAll,
+      mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
       form, form.fields.front(), u"Test Value",
       PopupItemId::kAddressFieldByFieldFilling);
   // Undo early returns if it has no filling history for the trigger field,

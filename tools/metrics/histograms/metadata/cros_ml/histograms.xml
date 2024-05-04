@@ -62,12 +62,12 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="MachineLearningService.CpuUsageMilliPercent"
-    units="1/1000ths of %" expires_after="2024-06-30">
+    units="1/1000ths of %" expires_after="2024-09-01">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
-    Fraction of total CPU resources used by Chrome OS ML Service, sampled every
-    5 minutes.
+    Fraction of total CPU resources used by ChromeOS ML Service, sampled every 5
+    minutes.
   </summary>
 </histogram>
 
@@ -157,8 +157,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.MlCore.DlcBeginInstallDlcServiceError"
-    enum="MachineLearningServiceDlcBeginInstallResult"
-    expires_after="2024-09-01">
+    enum="MachineLearningServiceDlcErrorCode" expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>dgrebenyuk@chromium.org</owner>
   <owner>nbowe@chromium.org</owner>
@@ -182,14 +181,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.MlCore.DlcFinalInstallDlcServiceError"
-    enum="MachineLearningServiceDlcFinalInstallResult"
-    expires_after="2024-09-01">
+    enum="MachineLearningServiceDlcErrorCode" expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>dgrebenyuk@chromium.org</owner>
   <owner>nbowe@chromium.org</owner>
   <summary>
-    The final detailed error code received from DLC Service after the completion
-    of a request to install the ML Core DLC.
+    The detailed error code received from DLC Service after a DLC State Change
+    notification from DLC Service, following a request to install the ML Core
+    DLC. &quot;BUSY&quot; code is considered non-final as retries are made in
+    this case.
   </summary>
 </histogram>
 
@@ -207,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.MlCore.DlcInstallAttemptCount"
-    units="attmpts" expires_after="2024-09-01">
+    units="attempts" expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>dgrebenyuk@chromium.org</owner>
   <owner>nbowe@chromium.org</owner>
@@ -220,12 +220,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.MojoConnectionEvent"
-    enum="MachineLearningServiceMojoConnectionEvent" expires_after="2024-06-30">
+    enum="MachineLearningServiceMojoConnectionEvent" expires_after="2024-09-01">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
     Events related to the connection and disconnection of the Mojo IPC channel
-    between Chrome and the Chrome OS ML Service.
+    between Chrome and the ChromeOS ML Service.
   </summary>
 </histogram>
 
@@ -234,29 +234,29 @@ chromium-metrics-reviews@google.com.
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
-    Number of worker processes registered in ml-service. Only used in Chrome OS.
+    Number of worker processes registered in ml-service. Only used in ChromeOS.
     Sampled every 5 minutes.
   </summary>
 </histogram>
 
 <histogram name="MachineLearningService.PeakTotalMemoryKb" units="KB"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
-    Peak total (shared and non-shared) memory used by Chrome OS ML Service over
+    Peak total (shared and non-shared) memory used by ChromeOS ML Service over
     the last 24 hours. Sampled every 5 minutes, so may miss short-lived spikes.
   </summary>
 </histogram>
 
 <histogram name="MachineLearningService.ProcessError"
-    enum="MachineLearningServiceProcessError" expires_after="2024-06-30">
+    enum="MachineLearningServiceProcessError" expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
     Process handling errors of ml-service. Emitted when there is error in
     process handling. For example, &quot;failed to spawning worker process&quot;
-    etc. Only used in Chrome OS.
+    etc. Only used in ChromeOS.
   </summary>
 </histogram>
 
@@ -268,7 +268,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     The &quot;errno&quot; of waitpid calls used by ml-service's control process
     to reap the worker processes. This is only recorded when waitpid meets error
-    and should be rare. This is a Chrome OS only metric. And we only record the
+    and should be rare. This is a ChromeOS only metric. And we only record the
     corresponding enum values of &quot;ECHILD&quot;, &quot;EINTR&quot; and
     &quot;EINVAL&quot; because according to the man page of waitpid, they are
     the only possible errno. All the other &quot;errno&quot; are treated as
@@ -277,7 +277,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.TextSuggester.Suggest.Event"
-    enum="BooleanError" expires_after="2024-06-30">
+    enum="BooleanError" expires_after="2024-09-01">
   <owner>curtismcmullan@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
@@ -286,18 +286,18 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.TotalMemoryKb" units="KB"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
-    Total (shared and non-shared) memory used by Chrome OS ML Service, sampled
+    Total (shared and non-shared) memory used by ChromeOS ML Service, sampled
     every 5 minutes.
   </summary>
 </histogram>
 
 <histogram
     name="MachineLearningService.WebPlatformHandwritingModel.GetPrediction.Event"
-    enum="Boolean" expires_after="2024-06-30">
+    enum="Boolean" expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
@@ -310,7 +310,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="MachineLearningService.WebPlatformHandwritingModel.LoadModelResult.Event"
     enum="MachineLearningServiceLoadHandwritingModelResultEvent"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
@@ -361,22 +361,22 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.WorkerProcessAcceptMojoConnectionTime"
-    units="microseconds" expires_after="2024-06-30">
+    units="microseconds" expires_after="2024-09-01">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
     The wall time used for the worker process to accept the mojo connection to
-    control process in ml-service. Only used in Chrome OS.
+    control process in ml-service. Only used in ChromeOS.
   </summary>
 </histogram>
 
 <histogram name="MachineLearningService.WorkerProcessCleanUpTime"
-    units="microseconds" expires_after="2024-06-30">
+    units="microseconds" expires_after="2024-09-01">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
     The wall time used by the control process to reap and cleanup the worker
-    processes in ml-service. Only used in Chrome OS.
+    processes in ml-service. Only used in ChromeOS.
   </summary>
 </histogram>
 
@@ -395,7 +395,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="MachineLearningService.{ModelName}.CreateGraphExecutorResult.Event"
     enum="MachineLearningServiceCreateGraphExecutorResultEvent"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -418,7 +418,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="MachineLearningService.{ModelName}.LoadModelResult.Event"
     enum="MachineLearningServiceLoadModelResultEvent"
-    expires_after="2024-06-30">
+    expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -441,7 +441,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.{RequestName}.CpuTimeMicrosec"
-    units="microseconds" expires_after="2024-06-30">
+    units="microseconds" expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -453,7 +453,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.{RequestName}.TotalMemoryDeltaKb"
-    units="KB" expires_after="2024-06-30">
+    units="KB" expires_after="2024-09-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>Memory usage increase caused by {RequestName} request.</summary>

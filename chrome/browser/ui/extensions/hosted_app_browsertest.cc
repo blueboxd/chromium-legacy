@@ -312,6 +312,9 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
 
     ASSERT_NO_FATAL_FAILURE(std::move(action).Run());
 
+    // Wait until the main browser set to be the last active one.
+    ui_test_utils::WaitForBrowserSetLastActive(browser());
+
     EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
     EXPECT_EQ(browser(), chrome::FindLastActive());
     EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
@@ -381,13 +384,22 @@ IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, DISABLED_OpenLinkInNewTab) {
 }
 
 // Tests that Ctrl + Clicking a link opens a foreground tab.
-// TODO(crbug.com/1190448): Flaky on Linux.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1190448): Flaky on Linux and LACROS..
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_CtrlClickLink DISABLED_CtrlClickLink
 #else
 #define MAYBE_CtrlClickLink CtrlClickLink
 #endif
 IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, MAYBE_CtrlClickLink) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(b/326134178): Disable the flaky test variant on branded Lacros builder
+  // (ci/linux-lacros-chrome) until the root cause of b/325634285 is fixed.
+  if (GetParam() == AppType::HOSTED_APP) {
+    GTEST_SKIP()
+        << "Disable the flaky test for hosted app on Lacros branded build.";
+  }
+#endif
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Set up an app which covers app.com URLs.
@@ -398,6 +410,9 @@ IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, MAYBE_CtrlClickLink) {
   SetupAppWithURL(app_url);
   // Wait for the URL to load so that we can click on the page.
   url_observer.Wait();
+
+  // Wait until app_browser_ becomes the last active one.
+  ui_test_utils::WaitForBrowserSetLastActive(app_browser_);
 
   const GURL url = embedded_test_server()->GetURL(
       "app.com", "/click_modifier/new_window.html");
@@ -438,9 +453,23 @@ IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   CheckWebContentsDoesNotHaveAppPrefs(current_tab);
 
+  ui_test_utils::BrowserChangeObserver app_browser_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   Browser* app_browser =
       web_app::ReparentWebContentsIntoAppBrowser(current_tab, app_id_);
   ASSERT_NE(browser(), app_browser);
+
+  // Wait for the target parent app browser window to become the last active
+  // one.
+  if (GetParam() == AppType::HOSTED_APP) {
+    // For hosted app, |current_tab| will reparent-ed into the existing
+    // |app_browser_|.
+    ui_test_utils::WaitForBrowserSetLastActive(app_browser_);
+  } else {  // WEB_APP
+    // For web app, |current_tab| will be reparent-ed to a new created app
+    // window.
+    ui_test_utils::WaitForBrowserSetLastActive(app_browser_observer.Wait());
+  }
 
   CheckWebContentsHasAppPrefs(
       chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents());
@@ -489,8 +518,8 @@ using HostedAppTest = HostedOrWebAppTest;
 IN_PROC_BROWSER_TEST_P(HostedAppTest, NotWebApp) {
   SetupApp("app");
   EXPECT_FALSE(registrar().IsInstalled(app_id_));
-  const Extension* app = ExtensionRegistry::Get(profile())->GetExtensionById(
-      app_id_, ExtensionRegistry::ENABLED);
+  const Extension* app =
+      ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(app_id_);
   EXPECT_TRUE(app->is_hosted_app());
 }
 

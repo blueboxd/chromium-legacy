@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_mediator.h"
 
-#import "base/containers/cxx20_erase_vector.h"
 #import "base/i18n/message_formatter.h"
 #import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
@@ -215,7 +214,7 @@ bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
   // example.com"), so those must be filtered before passing to the exporter.
   std::vector<CredentialUIEntry> passwords =
       _savedPasswordsPresenter->GetSavedCredentials();
-  base::EraseIf(passwords, [](const auto& credential) {
+  std::erase_if(passwords, [](const auto& credential) {
     return credential.blocked_by_user;
   });
   [self.passwordExporter startExportFlow:passwords];

@@ -34,7 +34,7 @@ namespace blink {
 
 namespace {
 
-void DidUpdate(ScriptPromiseResolver* resolver,
+void DidUpdate(ScriptPromiseResolverTyped<ServiceWorkerRegistration>* resolver,
                ServiceWorkerRegistration* registration,
                mojom::ServiceWorkerErrorType error,
                const String& error_msg) {
@@ -53,7 +53,7 @@ void DidUpdate(ScriptPromiseResolver* resolver,
   resolver->Resolve(registration);
 }
 
-void DidUnregister(ScriptPromiseResolver* resolver,
+void DidUnregister(ScriptPromiseResolverTyped<IDLBoolean>* resolver,
                    mojom::ServiceWorkerErrorType error,
                    const String& error_msg) {
   if (!resolver->GetExecutionContext() ||
@@ -89,7 +89,7 @@ void DidEnableNavigationPreload(ScriptPromiseResolver* resolver,
 }
 
 void DidGetNavigationPreloadState(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<NavigationPreloadState>* resolver,
     mojom::ServiceWorkerErrorType error,
     const String& error_msg,
     mojom::blink::NavigationPreloadStatePtr state) {
@@ -252,7 +252,7 @@ void ServiceWorkerRegistration::EnableNavigationPreload(
 }
 
 void ServiceWorkerRegistration::GetNavigationPreloadState(
-    ScriptPromiseResolver* resolver) {
+    ScriptPromiseResolverTyped<NavigationPreloadState>* resolver) {
   if (!host_.is_bound()) {
     return;
   }
@@ -271,7 +271,7 @@ void ServiceWorkerRegistration::SetNavigationPreloadHeader(
       WTF::BindOnce(&DidSetNavigationPreloadHeader, WrapPersistent(resolver)));
 }
 
-ScriptPromise ServiceWorkerRegistration::update(
+ScriptPromiseTyped<ServiceWorkerRegistration> ServiceWorkerRegistration::update(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (!GetExecutionContext()) {
@@ -279,7 +279,7 @@ ScriptPromise ServiceWorkerRegistration::update(
         DOMExceptionCode::kInvalidStateError,
         "Failed to update a ServiceWorkerRegistration: No associated provider "
         "is available.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<ServiceWorkerRegistration>();
   }
 
   auto* execution_context = ExecutionContext::From(script_state);
@@ -297,7 +297,8 @@ ScriptPromise ServiceWorkerRegistration::update(
           ? blink::mojom::InsecureRequestsPolicy::kUpgrade
           : blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade);
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver = MakeGarbageCollected<
+      ScriptPromiseResolverTyped<ServiceWorkerRegistration>>(script_state);
 
   // Defer update() from a prerendered page until page activation.
   // https://wicg.github.io/nav-speculation/prerendering.html#patch-service-workers
@@ -315,7 +316,7 @@ ScriptPromise ServiceWorkerRegistration::update(
   return resolver->Promise();
 }
 
-ScriptPromise ServiceWorkerRegistration::unregister(
+ScriptPromiseTyped<IDLBoolean> ServiceWorkerRegistration::unregister(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (!GetExecutionContext()) {
@@ -323,10 +324,11 @@ ScriptPromise ServiceWorkerRegistration::unregister(
                                       "Failed to unregister a "
                                       "ServiceWorkerRegistration: No "
                                       "associated provider is available.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLBoolean>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLBoolean>>(
+      script_state);
 
   // Defer unregister() from a prerendered page until page activation.
   // https://wicg.github.io/nav-speculation/prerendering.html#patch-service-workers
@@ -403,7 +405,7 @@ void ServiceWorkerRegistration::UpdateFound() {
 
 void ServiceWorkerRegistration::UpdateInternal(
     mojom::blink::FetchClientSettingsObjectPtr mojom_settings_object,
-    ScriptPromiseResolver* resolver) {
+    ScriptPromiseResolverTyped<ServiceWorkerRegistration>* resolver) {
   if (!host_.is_bound()) {
     return;
   }
@@ -413,7 +415,7 @@ void ServiceWorkerRegistration::UpdateInternal(
 }
 
 void ServiceWorkerRegistration::UnregisterInternal(
-    ScriptPromiseResolver* resolver) {
+    ScriptPromiseResolverTyped<IDLBoolean>* resolver) {
   if (!host_.is_bound()) {
     return;
   }

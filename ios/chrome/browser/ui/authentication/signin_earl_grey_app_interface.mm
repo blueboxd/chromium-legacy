@@ -11,7 +11,6 @@
 #import "base/functional/callback_helpers.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/titled_url_match.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
@@ -23,6 +22,7 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_controller.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -99,6 +99,16 @@
       AuthenticationServiceFactory::GetForBrowserState(browserState);
   authentication_service->SignOut(signin_metrics::ProfileSignout::kTest,
                                   /*force_clear_browsing_data=*/false, nil);
+}
+
++ (void)signinWithFakeIdentity:(FakeSystemIdentity*)identity {
+  [self addFakeIdentity:identity];
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  AuthenticationService* authenticationService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
+  authenticationService->SignIn(
+      identity, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
 }
 
 + (void)triggerReauthDialogWithFakeIdentity:(FakeSystemIdentity*)identity {

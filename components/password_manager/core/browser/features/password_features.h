@@ -31,10 +31,6 @@ BASE_DECLARE_FEATURE(kButterOnDesktopFollowup);
 // Delete undecryptable passwords from the store when Sync is active.
 BASE_DECLARE_FEATURE(kClearUndecryptablePasswordsOnSync);
 
-// Disables fallback filling if the server or the autocomplete attribute says it
-// is a credit card field.
-BASE_DECLARE_FEATURE(kDisablePasswordsDropdownForCvcFields);
-
 #if BUILDFLAG(IS_ANDROID)
 // Disables eviction from UPM when error occurs and instead disables password
 // manager until the error is gone.
@@ -62,6 +58,9 @@ BASE_DECLARE_FEATURE(kFillOnAccountSelect);
 // Enables filling for sign-in UFF on iOS.
 BASE_DECLARE_FEATURE(kIOSPasswordSignInUff);
 #endif
+
+// Enables saving enterprise password hashes to a local state preference.
+BASE_DECLARE_FEATURE(kLocalStateEnterprisePasswordHashes);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 // Enables new confirmation bubble flow if generated password was used in a
@@ -92,6 +91,9 @@ BASE_DECLARE_FEATURE(kPasswordManagerEnableSenderService);
 // terminal.
 BASE_DECLARE_FEATURE(kPasswordManagerLogToTerminal);
 
+// Enables triggering password suggestions through the context menu.
+BASE_DECLARE_FEATURE(kPasswordManualFallbackAvailable);
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 // Enables "Needs access to keychain, restart chrome" bubble and banner.
 BASE_DECLARE_FEATURE(kRestartToGainAccessToKeychain);
@@ -118,6 +120,9 @@ BASE_DECLARE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
 // users who have local passwords saved.
 // See also kLocalUpmMinGmsVersionParam below.
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration);
+
+// Enables UPM M4 that no longer needs Password sync engine to sync passwords.
+BASE_DECLARE_FEATURE(kUnifiedPasswordManagerSyncOnlyInGMSCore);
 
 // A parameter for both the NoMigration and WithMigration features above. It
 // dictates the min value of base::android::BuildInfo::gms_version_code() for

@@ -20,6 +20,8 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+namespace tab_groups {
+
 SavedTabGroup::SavedTabGroup(
     const std::u16string& title,
     const tab_groups::TabGroupColorId& color,
@@ -398,6 +400,9 @@ SavedTabGroup::TabGroupColorToSyncColor(
       return sync_pb::SavedTabGroup::SAVED_TAB_GROUP_COLOR_CYAN;
     case tab_groups::TabGroupColorId::kOrange:
       return sync_pb::SavedTabGroup::SAVED_TAB_GROUP_COLOR_ORANGE;
+    case tab_groups::TabGroupColorId::kNumEntries:
+      NOTREACHED() << "kNumEntries is not a supported color enum.";
+      return sync_pb::SavedTabGroup::SAVED_TAB_GROUP_COLOR_GREY;
   }
 
   NOTREACHED() << "No known conversion for the supplied color.";
@@ -410,3 +415,5 @@ void SavedTabGroup::RemoveTabImpl(const base::Uuid& saved_tab_guid) {
   CHECK_LT(index.value(), saved_tabs_.size());
   saved_tabs_.erase(saved_tabs_.begin() + index.value());
 }
+
+}  // namespace tab_groups

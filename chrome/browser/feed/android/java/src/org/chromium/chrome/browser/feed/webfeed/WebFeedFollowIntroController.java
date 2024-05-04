@@ -95,9 +95,10 @@ public class WebFeedFollowIntroController {
     private Clock mClock = System::currentTimeMillis;
 
     private final Activity mActivity;
+    private final Profile mProfile;
     private final CurrentTabObserver mCurrentTabObserver;
     private final EmptyTabObserver mTabObserver;
-    private final PrefService mPrefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
+    private final PrefService mPrefService;
     private final SharedPreferencesManager mSharedPreferencesManager =
             ChromeSharedPreferences.getInstance();
     private final Tracker mFeatureEngagementTracker;
@@ -106,8 +107,7 @@ public class WebFeedFollowIntroController {
     private final ObservableSupplier<Tab> mTabSupplier;
     private final WebFeedRecommendationFollowAcceleratorController
             mRecommendationFollowAcceleratorController;
-    private final RecommendationInfoFetcher mRecommendationFetcher =
-            new RecommendationInfoFetcher(mPrefService);
+    private final RecommendationInfoFetcher mRecommendationFetcher;
 
     private final long mAppearanceThresholdMillis;
 
@@ -123,6 +123,7 @@ public class WebFeedFollowIntroController {
      * Constructs an instance of {@link WebFeedFollowIntroController}.
      *
      * @param activity The current {@link Activity}.
+     * @param profile The {@link Profile} associated with the web feed.
      * @param appMenuHandler The {@link AppMenuHandler} to highlight the Web Feed menu item.
      * @param tabSupplier The supplier for the currently active {@link Tab}.
      * @param menuButtonAnchorView The menu button {@link View} to serve as an anchor.
@@ -132,12 +133,16 @@ public class WebFeedFollowIntroController {
      */
     public WebFeedFollowIntroController(
             Activity activity,
+            Profile profile,
             AppMenuHandler appMenuHandler,
             ObservableSupplier<Tab> tabSupplier,
             View menuButtonAnchorView,
             FeedLauncher feedLauncher,
             ModalDialogManager dialogManager,
             SnackbarManager snackbarManager) {
+        mPrefService = UserPrefs.get(profile);
+        mRecommendationFetcher = new RecommendationInfoFetcher(mPrefService);
+
         mRecommendationFollowAcceleratorController =
                 new WebFeedRecommendationFollowAcceleratorController(
                         activity,
@@ -149,9 +154,9 @@ public class WebFeedFollowIntroController {
                         snackbarManager);
 
         mActivity = activity;
+        mProfile = profile;
         mTabSupplier = tabSupplier;
-        mFeatureEngagementTracker =
-                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
+        mFeatureEngagementTracker = TrackerFactory.getTrackerForProfile(profile);
         mWebFeedSnackbarController =
                 new WebFeedSnackbarController(
                         activity, feedLauncher, dialogManager, snackbarManager);
@@ -283,7 +288,7 @@ public class WebFeedFollowIntroController {
     }
 
     private void maybeShowIPH(RecommendedWebFeedInfo recommendedInfo) {
-        UserEducationHelper helper = new UserEducationHelper(mActivity, new Handler());
+        UserEducationHelper helper = new UserEducationHelper(mActivity, mProfile, new Handler());
         mWebFeedFollowIntroView.showIPH(
                 helper, () -> introWasShown(recommendedInfo), this::introWasNotShown);
     }
@@ -506,8 +511,8 @@ public class WebFeedFollowIntroController {
                         if (!meetsVisitRequirement) {
                             Log.i(
                                     TAG,
-                                    "No intro: visit requirement not met. totalVisits=%s (minToShow=%s), "
-                                            + " dailyVisits=%s (minToShow=%s)",
+                                    "No intro: visit requirement not met. totalVisits=%s"
+                                            + " (minToShow=%s),  dailyVisits=%s (minToShow=%s)",
                                     result.visits,
                                     mNumVisitMin,
                                     result.dailyVisits,

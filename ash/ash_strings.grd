@@ -338,9 +338,6 @@ Style notes:
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_NETWORK_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for network settings accessed through the network feature pod.">
         Network Settings
       </message>
-      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_NOTIFIER_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for notification settings accessed through the notification feature pod.">
-        Notification Settings
-      </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_USER_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for user settings accessed through the user avatar button.">
         User Settings
       </message>
@@ -796,6 +793,12 @@ Style notes:
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_DESELECT_BUTTON" translateable="false" desc="The text used for the deselect button accessible name for a selected task view.">
         Remove task as goal for the focus session
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_SOUNDSCAPE_BUTTON" translateable="false" desc="The text on the label slider button used for showing music playlists that help users relax and improve focus.">
+        Soundscape
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_YOUTUBE_MUSIC_BUTTON" translateable="false" desc="The text on the label slider button used for showing personalized YouTube music playlists to help users relax and focus.">
+        YouTube Music
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB" translateable="false" desc="The label text shown on the left side of do not disturb button in Focus mode settings panel.">
         Do not disturb while in Focus
@@ -2687,7 +2690,7 @@ Style notes:
         Close <ph name="DESK_NAME">$1<ex>Desk 2</ex></ph> and windows
       </message>
       <message name="IDS_ASH_DESKS_DESK_PROFILES_BUTTON" desc="The desk profile button's accessible name">
-        Desk profile menu
+        Desk profile menu. <ph name="DESK_NAME">$1<ex>Desk 2</ex></ph>
       </message>
       <message name="IDS_ASH_DESKS_MENU_ITEM_PROFILE_CHECKED" desc="The profile menu item's accessible name">
         <ph name="PROFILE_NAME">$1</ph> <ph name="EMAIL">$2</ph> Check box checked.
@@ -2897,6 +2900,9 @@ Some features are limited to increase battery life.
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_JOIN_WIFI_NETWORK" desc="The label used in the network detailed page for the Join Wi-Fi network entry">
         Join Wi-Fi network
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_SET_UP_YOUR_DEVICE" desc="The label used in the network detailed page for the Set Up Your Device network entry">
+        Set up your device
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_ADD_ESIM" desc="The label used in the network detailed page for the Add eSIM network entry">
         Add eSIM
@@ -3286,13 +3292,13 @@ Some features are limited to increase battery life.
         Keep on
       </message>
       <message name="IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_ONE_DEVICE" desc="Bluetooth pairing message shown to indicate a Bluetooth device will disconnect when Bluetooth is turned off.">
-        When you turn off Bluetooth, "<ph name="DEVICE_NAME">$1<ex>Dell RGB Keyboard</ex></ph>" will disconnect from your Chromebook.
+        When you turn off Bluetooth, this external device will disconnect from your <ph name="DEVICE_TYPE">$1<ex>ChromeBox</ex></ph>:  &#x0D;&#x0D; &#x2022; <ph name="DEVICE_NAME">$2<ex>Mx Mouse</ex></ph>
       </message>
       <message name="IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_TWO_DEVICES" desc="Bluetooth pairing message shown to indicate that two Bluetooth devices will disconnect when Bluetooth is turned off.">
-        When you turn off Bluetooth, "<ph name="DEVICE_NAME_1">$1<ex>Logitech SmartMouse</ex></ph>" and "<ph name="DEVICE_NAME_2">$2<ex>Dell RGB Keyboard</ex></ph>" will disconnect from your Chromebook.
+         When you turn off Bluetooth, these external devices will disconnect from your <ph name="DEVICE_TYPE">$1<ex>ChromeBox</ex></ph>: &#x0D;&#x0D; &#x2022; <ph name="DEVICE_NAME_1">$2<ex>Mano 703</ex></ph> &#x0D; &#x2022; <ph name="DEVICE_NAME_2">$3<ex>RGB Keyboard</ex></ph>
       </message>
       <message name="IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_MULTIPLE_DEVICES" desc="Bluetooth pairing message shown to indicate that multiple Bluetooth devices will disconnect when Bluetooth is turned off.">
-        When you turn off Bluetooth, "<ph name="DEVICE_NAME_1">$1<ex>Logitech SmartMouse</ex></ph>", "<ph name="DEVICE_NAME_2">$2<ex>Dell RGB Keyboard</ex></ph>" and <ph name="DEVICE_COUNT">$3<ex>3</ex></ph> other devices will disconnect from your Chromebook.
+         When you turn off Bluetooth, <ph name="DEVICE_COUNT">$1<ex>2</ex></ph> external devices will disconnect from your <ph name="DEVICE_TYPE">$2<ex>ChromeBox</ex></ph>, including: &#x0D;&#x0D; &#x2022; <ph name="DEVICE_NAME_1">$3<ex>Mano 703</ex></ph> &#x0D; &#x2022; <ph name="DEVICE_NAME_2">$4<ex>RGB Keyboard</ex></ph> &#x0D; &#x2022; <ph name="DEVICE_NAME_3">$5<ex>Logitech Mouse</ex></ph>
       </message>
 
       <!-- Ash multi-user warning dialog -->
@@ -5126,6 +5132,9 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_MAHI_LEARN_MORE_LINK_LABEL_TEXT" desc="Text for the learn more link that user can navigate to learn more about the project information">
         Learn more
       </message>
+      <message name="IDS_ASH_MAHI_REFRESH_BANNER_LABEL_TEXT" desc="Text for the refresh banner shown above the mahi panel.">
+        Refresh <ph name="CONTENT_TITLE">$1<ex>test content title</ex></ph>
+      </message>
 
       <!-- Multi-profiles intro dialog -->
       <message name="IDS_ASH_MULTIPROFILES_INTRO_HEADLINE" desc="Describes which feature multi-profiles intro dialog presents.">
@@ -6349,6 +6358,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SNAP_GROUP_CLICK_TO_UNLOCK_WINDOWS" desc="Click to unlock the locked windows.">
         Unlock the windows
       </message>
+      <message name="IDS_ASH_SNAP_GROUP_SEND_FEEDBACK" desc="Send feedback.">
+        Send feedback
+      </message>
       <message name="IDS_ASH_SNAP_GROUP_MORE_OPTIONS" desc="Click to see more options.">
         More options
       </message>
@@ -6852,7 +6864,7 @@ New install
         <ph name="user">$1<ex>John Doe</ex></ph> modified
       </message>
       <message name="IDS_FILE_SUGGESTION_JUSTIFICATION_GENERIC_SHARED_ACTION" desc="Part of the file suggestion chip UI in Chrome OS launcher. The suggestion chip provides users suggestions for files they may want to open based on the recent activity. The suggestion contains the file name, and a justification describing why the file was suggested (which contains the user action that prompted suggestion, followed by the time the action was taken). The justification is displayed under the file name. This string is the justification action text shown when the file is suggested because another user recently shared the file with the user (file suggestions may be shown for Google Drive files).">
-        Shared
+        Shared with you
       </message>
       <message name="IDS_FILE_SUGGESTION_JUSTIFICATION_USER_SHARED_ACTION" desc="Part of the file suggestion chip UI in Chrome OS launcher. The suggestion chip provides users suggestions for files they may want to open based on the recent activity. The suggestion contains the file name, and a justification describing why the file was suggested (which contains the user action that prompted suggestion, followed by the time the action was taken). The justification is displayed under the file name. This string is the justification action text shown when the file is suggested because another user recently shared the file with the user (file suggestions may be shown for Google Drive files). The string has a placeholder that will be replaced by the name of the user that shared the file with the user seeing the suggestion.">
         <ph name="user">$1<ex>John Doe</ex></ph> shared
@@ -6991,6 +7003,12 @@ New install
       <message name="IDS_PICKER_BOOKMARKS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show bookmark results.">
         Bookmarks
       </message>
+      <message name="IDS_PICKER_DRIVE_FILES_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show Drive results.">
+        Drive Files
+      </message>
+      <message name="IDS_PICKER_LOCAL_FILES_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show local file results.">
+        Files from Chromebook
+      </message>
       <message name="IDS_PICKER_ZERO_STATE_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI.">
         Search to insert
       </message>
@@ -7015,11 +7033,26 @@ New install
       <message name="IDS_PICKER_BOOKMARKS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the bookmarks category is selected.">
         Search Bookmarks
       </message>
+      <message name="IDS_PICKER_DRIVE_FILES_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the drive files category is selected.">
+        Search Drive
+      </message>
+      <message name="IDS_PICKER_LOCAL_FILES_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the local files category is selected.">
+        Search Chromebook
+      </message>
       <message name="IDS_PICKER_EXPRESSIONS_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains expression categories, i.e. emojis, symbols, emoticons and gifs.">
         Expressions
       </message>
       <message name="IDS_PICKER_LINKS_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains link categories, e.g. browsing history, open tabs, bookmarks.">
         Links
+      </message>
+      <message name="IDS_PICKER_FILES_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains files categories, e.g. Drive files and local files">
+        Files
+      </message>
+      <message name="IDS_PICKER_SUGGESTED_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains suggested items.">
+        You may want to insert
+      </message>
+      <message name="IDS_PICKER_FROM_CLIPBOARD_TEXT" translateable="false" desc="Secondary text of the suggested items from the clipboard history.">
+        From clipboard
       </message>
 
       <!-- WM -->
@@ -7034,6 +7067,9 @@ New install
       </message>
       <message name="IDS_WM_RESTORE_SNAPPED_WINDOW_ON_SHORTCUT" desc="Accessibility text read by chromevox when restore a snapped window through shortcut alt+[ or alt+].">
         Active window undocked.
+      </message>
+      <message name="IDS_WM_WINDOW_CYCLER_UNTITLED_WINDOW" desc="Accessibility text read by chromevox when highlighting an untitled window in the window cycler.">
+        Window
       </message>
 
       <!-- Firmware UI notifications -->
@@ -7171,9 +7207,6 @@ New install
       </message>
 
       <!-- Eche feature -->
-      <message name="IDS_ASH_ECHE_TOAST_COPY_PASTE_NOT_IMPLEMENTED" desc="A toast message that we show when user tries to use ctrl+c or ctrl+v in the Eche window.">
-        Can't copy or paste content at this time
-      </message>
       <message name="IDS_ASH_ECHE_TOAST_TABLET_MODE_NOT_SUPPORTED" desc="A toast message that we show when user tries to switch to tablet mode.">
         Can't stream apps in tablet mode. Try again in laptop mode.
       </message>
@@ -7261,8 +7294,8 @@ New install
       <message name="IDS_GLANCEABLES_LIST_FOOTER_ACTION_BUTTON_LABEL" desc="The glanceable displays classroom or tasks items fetched from Google Classroom or Google Tasks API. Glanceables UI renders only limited number of items, the rest of them can be seen by clicking this button, which will open a corresponding website.">
         See all
       </message>
-      <message name="IDS_GLANCEABLES_TASKS_ADD_NEW_TASK_BUTTON_LABEL" desc="Tasks glanceable displays non-completed tasks fetched from Google Tasks API. This text in displayed on the button, which allows creating new tasks (currently it redirects to Tasks Web UI).">
-        Add new task
+      <message name="IDS_GLANCEABLES_TASKS_ADD_NEW_TASK_BUTTON_LABEL" desc="Tasks glanceable displays non-completed tasks fetched from Google Tasks API. This text in displayed on the button, which allows creating new tasks.">
+        Add a task
       </message>
       <message name="IDS_GLANCEABLES_TASKS_EDIT_IN_TASKS_LABEL" desc="A glanceables label button placed under the task title textfield that allows users to edit the task in Google Tasks website.">
         Edit in Google Tasks
@@ -7290,9 +7323,6 @@ New install
       </message>
       <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_COMPLETED_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the checkbox button to mark a task as completed.">
         Mark completed
-      </message>
-      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_NOT_COMPLETED_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the checkbox button to mark a task as not completed.">
-        Mark as not completed
       </message>
       <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_DUE_SOON_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains assigned (pending / not completed) student assignments w/ due date in the future.">
         Due soon
@@ -7342,7 +7372,18 @@ New install
       <message name="IDS_GLANCEABLES_TASKS_TEXTFIELD_PLACEHOLDER" desc="The text used as a placeholder for the textfield used when adding or editing a task.">
         Title
       </message>
-
+      <message name="IDS_GLANCEABLES_TASKS_ERROR_LAST_UPDATE_DATE_AND_TIME" desc="The error message used in the task glanceable to notify users that the task list is not updated since the shown date and time. The date could be a relative one, such as Yesterday, or an actual date like Nov 7, 2007.">
+        Tasks last updated: <ph name="TIME">$1<ex>3:17 PM</ex></ph>, <ph name="DATE">$2<ex>Yesterday</ex></ph>.
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_ERROR_LAST_UPDATE_TIME" desc="The error message used in the task glanceable to notify users that the task list is not updated since the shown time today.">
+        Tasks last updated: <ph name="TIME">$1<ex>3:17 PM</ex></ph>.
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_ERROR_MARK_COMPLETE_FAILED" desc="The error message used in the task glanceable to notify users that clicking on the check button to mark a task as complete failed.">
+        Couldn't mark as complete.
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_ERROR_MARK_COMPLETE_FAILED_WHILE_OFFLINE" desc="The error message used in the task glanceable to notify users that clicking on the check button to mark a task as complete failed because the device is offline. Also guide the user to try again when the device is connected to the network.">
+        Couldn't mark as complete. Try again when online.
+      </message>
       <!-- Do Not Disturb notification -->
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
         Do Not Disturb is on
@@ -7402,25 +7443,46 @@ To shut down the device, press and hold the power button on the device again.
         No thanks
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_DESCRIPTION_TEXT" desc="Text shown in the body of the dialog as part of the System UI Welcome Tour.">
-        Take a quick tour to learn how to get around your Chromebook. Get up and running in 6 steps.
+        Take a quick tour to learn how to get around your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>. Get up and running in 5 steps.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_TITLE_TEXT" desc="Text shown as the Welcome Tour dialog title.">
-        Hi there. Chromebook is a little different.
+        Hi there. <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> is a little different.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Explore app as part of the System UI Welcome Tour.">
-        Those were the basics! Continue in Explore, our built-in app for tips and help. You’ll find tips for getting started, recommended apps, special offers, and the newest Chromebook features.
+        Those were the basics! Continue in Explore, our built-in app for tips and help. You’ll find tips for getting started, recommended apps, special offers, and the newest <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> features.
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the home button as part of the System UI Welcome Tour.">
-        Your Chromebook comes with built-in apps to help you get stuff done. Find your apps in the Launcher.
+      <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the home button as part of the System UI Welcome Tour.">
+        Tour step 3 of 5. Use apps to do everything you need on your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>. You can find your apps in the Launcher. Press Alt + Shift + L to focus on the Launcher button.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT_CHROMEBOOK" desc="Text shown in the body of a help bubble anchored to the home button as part of the System UI Welcome Tour.">
+        Use apps to do everything you need on your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>. You can find your apps in the Launcher. You can also press the Launcher key (above the left Shift key) on the keyboard.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT_OTHER_DEVICE_TYPES" desc="Text shown in the body of a help bubble anchored to the home button as part of the System UI Welcome Tour.">
+        Use apps to do everything you need on your <ph name="PRODUCT_NAME">$1<ex>Chromebox</ex></ph>. You can find your apps in the Launcher.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_OVERRIDDEN_BUBBLE_BODY_TEXT" desc="Text which is overridden and so not shown in the body of a help bubble as part of the System UI Welcome Tour but which is still required to be provided to satisfy API requirements." translateable="false">
+        ''' '''
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the search box as part of the System UI Welcome Tour.">
+        Tour step 4 of 5. Once Launcher is activated, you’ll get an enhanced search bar. You can start typing to search for your files, apps, and more. You can also get answers to questions about your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the search box as part of the System UI Welcome Tour.">
-        Search for your files, apps, and more in the Launcher. You can also get answers to questions about your Chromebook.
+        Search for your files, apps, and more in the Launcher. You can also get answers to questions about your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_SETTINGS_APP_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the Settings app as part of the System UI Welcome Tour">
+        Tour step 5 of 5. You can find your device Settings in Launcher. Try customizing your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> in Settings like changing your wallpaper or setting a screen saver.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SETTINGS_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Settings app as part of the System UI Welcome Tour">
-        Customize and personalize your Chromebook in Settings. Try changing your wallpaper or setting a screen saver.
+        Customize and personalize your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> in Settings. Try changing your wallpaper or setting a screen saver.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_SHELF_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the shelf as part of the System UI Welcome Tour.">
+        Tour step 1 of 5. Your pinned and open apps are on the shelf located at the bottom of your screen. Press Alt + Shift + L then tab to focus on shelf items.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SHELF_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the shelf as part of the System UI Welcome Tour.">
-        Your pinned and open apps are on the Shelf. To pin an app to the Shelf, right-click an app or tap your touchpad with two fingers.
+        Your pinned and open apps are on the shelf. To pin an app to the shelf, right-click an app or tap your touchpad with two fingers.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_STATUS_AREA_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the status area as part of the System UI Welcome Tour.">
+        Tour step 2 of 5. Frequently used controls like Wi-Fi, Bluetooth and volume are in Quick Settings. You can also go here to take screenshots. Press Alt + Shift + S to open Quick Settings.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_STATUS_AREA_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the status area as part of the System UI Welcome Tour.">
         Frequently used controls like Wi-Fi, Bluetooth and volume are in Quick Settings. You can also go here to take screenshots.
@@ -7428,6 +7490,9 @@ To shut down the device, press and hold the power button on the device again.
 
       <!-- TODO(b/286455407): Update strings once finalized with UX Writing -->
       <!-- Game Dashboard strings -->
+      <message name="IDS_ASH_GAME_DASHBOARD_BACK_TOOLTIP" translateable="false" desc="Tooltip for the Game Dashboard back button.">
+        Back
+      </message>
       <message name="IDS_ASH_GAME_DASHBOARD_CONTROLS_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard game controls tile.">
         Controls
       </message>
@@ -7440,8 +7505,17 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_GAME_DASHBOARD_GAME_DASHBOARD_BUTTON_TITLE" desc="The default title of the Game Dashboard button.">
         Game dashboard
       </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_HELP_BUTTON_A11Y_LABEL" translateable="false" desc="Help button a11y label. Spoken by screen readers when the help button gets focus but not visually rendered.">
+        Get help
+      </message>
       <message name="IDS_ASH_GAME_DASHBOARD_HIDDEN_STATUS" translateable="false" desc="The hidden state for compact Game Dashboard tile sub-labels.">
         Hidden
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_TOOLTIPS_RECORD_START" translateable="false" desc="The tooltips for record game tile when recording has not yet started.">
+        Record game
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_TOOLTIPS_RECORD_STOP" translateable="false" desc="The tooltips for record game tile when recording is in progress.">
+        Stop recording
       </message>
       <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard record game tile.">
         Record game
@@ -7452,14 +7526,35 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard screenshot tile.">
         Take screenshot
       </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_BUTTON_A11Y_LABEL" translateable="false" desc="Screen size settings button a11y label. Spoken by screen readers when the screen size settings button button gets focus but not visually rendered.">
+        Edit screen size
+      </message>
       <message name="IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE" translateable="false" desc="The display name for the Game Dashboard screen size settings.">
         Screen size
       </message>
       <message name="IDS_ASH_GAME_DASHBOARD_SEND_FEEDBACK_TITLE" translateable="false" desc="The display name for the Game Dashboard send feedback button.">
         Send feedback
       </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_TITLE" translateable="false" desc="The display name for the Game Dashboard settings.">
+        Game dashboard options
+      </message>
       <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_TOOLTIP" translateable="false" desc="Tooltip for the Game Dashboard settings icon button.">
         Game dashboard settings
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_WELCOME_DIALOG_A11Y_LABEL" translateable="false" desc="The accessibility label for the welcome dialog switch in the Game Dashboard Settings.">
+        Welcome notification is <ph name="STATE">$1<ex>on</ex></ph>
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_WELCOME_DIALOG_TITLE" translateable="false" desc="The label displayed for the welcome dialog row of the Game Dashboard Settings.">
+        Welcome notification
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_TILE_ON" desc="The label for enabled Game Dashboard tiles.">
+        On
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_HIDE_TOOLBAR" translateable="false" desc="The tooltips for toolbar tile when the toolbar is visible.">
+        Hide toolbar
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_SHOW_TOOLBAR" translateable="false" desc="The tooltips for toolbar tile when the toolbar is not visible.">
+        Show toolbar
       </message>
       <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard toolbar tile.">
         Toolbar
@@ -7470,11 +7565,23 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_SHORTCUT" translateable="false" desc="The text displayed in the welcome dialog to show how to toggle the Game Dashboard.">
         Press <ph name="LAUNCHER_KEY_NAME">$1<ex>Launcher</ex></ph> + g at anytime
       </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_A11Y_LABEL" translateable="false" desc="The a11y label for the welcome dialog. Spoken by screen readers when the welcome dialog is a11y focused but not visually rendered.">
+        Welcome dialog
+      </message>
       <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_SUB_LABEL" translateable="false" desc="The additional context added to the welcome dialog about the Game Dashboard.">
         Customize your gaming experience
       </message>
 
       <!-- Game Dashboard / Game Controls strings -->
+      <message name="IDS_ASH_GAME_DASHBOARD_GC_CONTROLS_DETAILS_BUTTON_TOOLTIP" desc="Tooltip for the game controls details row.">
+        Edit game controls
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_GC_FEATURE_SWITCH_TOOLTIPS_OFF" desc="The tooltips for game controls feature switch when game controls is enabled.">
+        Turn off game controls
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_GC_FEATURE_SWITCH_TOOLTIPS_ON" desc="The tooltips for game controls feature switch when game controls is disabled.">
+        Turn on game controls
+      </message>
       <message name="IDS_ASH_GAME_DASHBOARD_GC_TILE_VISIBLE" desc="The sub-label for Game Controls tile when input mapping hint is visible.">
         Visible
       </message>
@@ -7631,6 +7738,24 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_SETTINGS_CUSTOMIZATION_OTHER_BUTTON_DEFAULT_NAME" desc="The default name to give additional buttons on a mouse or graphics tablet">
         Other Button <ph name="BUTTON_NUMBER">$1<ex>1</ex></ph>
       </message>
+      <message name="IDS_SETTINGS_CUSTOMIZATION_PEN_FRONT_BUTTON_NAME" desc="The front button on the side of a graphics tablet stylus.">
+        Front Button
+      </message>
+      <message name="IDS_SETTINGS_CUSTOMIZATION_PEN_REAR_BUTTON_NAME" desc="The rear button on the side of a graphics tablet stylus.">
+        Rear Button
+      </message>
+      <message name="IDS_SETTINGS_CUSTOMIZATION_TABLET_EXPRESS_KEY_1_NAME" desc="The buttons on the face of a graphics tablet, brand name of 'ExpressKey' by Wacom. Will likely be 'ExpressKey' in most cases.">
+        ExpressKey 1
+      </message>
+      <message name="IDS_SETTINGS_CUSTOMIZATION_TABLET_EXPRESS_KEY_2_NAME" desc="The buttons on the face of a graphics tablet, brand name of 'ExpressKey' by Wacom. Will likely be 'ExpressKey' in most cases.">
+        ExpressKey 2
+      </message>
+      <message name="IDS_SETTINGS_CUSTOMIZATION_TABLET_EXPRESS_KEY_3_NAME" desc="The buttons on the face of a graphics tablet, brand name of 'ExpressKey' by Wacom. Will likely be 'ExpressKey' in most cases.">
+        ExpressKey 3
+      </message>
+      <message name="IDS_SETTINGS_CUSTOMIZATION_TABLET_EXPRESS_KEY_4_NAME" desc="The buttons on the face of a graphics tablet, brand name of 'ExpressKey' by Wacom. Will likely be 'ExpressKey' in most cases.">
+        ExpressKey 4
+      </message>
 
 
       <!-- Compat Mode Resize States-->
@@ -7648,6 +7773,9 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_DOWNLOAD_COMMAND_TEXT_CANCEL" desc="Text of the command to cancel a download.">
         Cancel
       </message>
+      <message name="IDS_ASH_DOWNLOAD_COMMAND_TEXT_COPY_TO_CLIPBOARD" desc="Text of the command to copy the download file to clipboard.">
+        Copy to clipboard
+      </message>
       <message name="IDS_ASH_DOWNLOAD_COMMAND_TEXT_PAUSE" desc="Text of the command to pause a download.">
         Pause
       </message>
@@ -7657,12 +7785,63 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_DOWNLOAD_COMMAND_TEXT_SHOW_IN_FOLDER" desc="Text of the command to show the download file in folder.">
         Show in folder
       </message>
+      <message name="IDS_ASH_DOWNLOAD_COMMAND_TEXT_VIEW_DETAILS_IN_BROWSER" desc="Text of the command to view a download's details in browser.">
+        View details in browser
+      </message>
 
       <!-- Forest -->
       <message name="IDS_ASH_FOREST_WINDOW_OVERFLOW_COUNT" translateable="false" desc="Text summarizing how many windows left to restore. [ICU Syntax]">
         {NUM_OVERFLOW, plural,
          =1 {1 more window}
          other {# more windows}}
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_TITLE" translateable="false" desc="Label of the title for the pine dialog.">
+        Welcome Back
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_DESCRIPTION" translateable="false" desc="Label of the description for the pine dialog. Gives a little more information than the title.">
+        Continue from where you left off?
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_NO_THANKS_BUTTON" translateable="false" desc="Label of the no thanks button for the pine dialog, which users can click if they choose not to restore.">
+        No Thanks
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_RESTORE_BUTTON" translateable="false" desc="Label of the restore button for the pine dialog.">
+        Restore
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_CONTEXT_MENU_TITLE" translateable="false" desc="Title of the pine dialog context menu.">
+        Continue where you left off
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_CONTEXT_MENU_ASK_OPTION" translateable="false" desc="Ask every time option for the pine dialog context menu.">
+        Ask every time
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_CONTEXT_MENU_ALWAYS_OPTION" translateable="false" desc="Always restore option for the pine dialog context menu.">
+        Always restore
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_CONTEXT_MENU_NEVER_OPTION" translateable="false" desc="Do not restore option for the pine dialog context menu.">
+        Off
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_CONTEXT_MENU_EXTRA_INFO" translateable="false" desc="Text in the pine dialog's context menu. Gives users some information about the full restore setting.">
+        Change will be applied next time when you sign in. You can also change settings in Settings > System preferences > On startup.
+      </message>
+      <message name="IDS_ASH_PINE_ONBOARDING_RESTORE_ON_TITLE" translateable="false" desc="Title of the onboarding message if the user had Restore set to Ask every time.">
+        A start page personalized for you
+      </message>
+      <message name="IDS_ASH_PINE_ONBOARDING_RESTORE_ON_DESCRIPTION" translateable="false" desc="Description of the onboarding message if the user had Restore set to Ask every time.">
+        Get started with options to resume your last opened windows and tabs along with personalized suggestions.
+      </message>
+      <message name="IDS_ASH_PINE_ONBOARDING_RESTORE_ON_ACCEPT" translateable="false" desc="Label of the accept button if the user had Restore set to Ask every time.">
+      Continue
+      </message>
+      <message name="IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_TITLE" translateable="false" desc="Title of the onboarding message if the user had Restore off.">
+      Try a new start page personalized for you?
+      </message>
+      <message name="IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_DESCRIPTION" translateable="false" desc="Description of the onboarding message if the user had Restore off.">
+      Set your Restore options to "Ask every time" to see and resume your last opened windows along with personalized suggestions.
+      </message>
+      <message name="IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_ACCEPT" translateable="false" desc="Label of the accept button if the user had Restore off.">
+      Turn on restore
+      </message>
+      <message name="IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_CANCEL" translateable="false" desc="Label of the cancel button if the user had Restore off.">
+      Keep restore off
       </message>
      </messages>
     </release>

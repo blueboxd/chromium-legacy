@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Lance une recherche dans un nouvel onglet Chromium.</translation>
 <translation id="1431818719585918472">Chromium peut verrouiller vos onglets de navigation privée.</translation>
 <translation id="1472013873724362412">Votre compte n'est pas compatible avec Chromium. Veuillez communiquer avec l'administrateur de votre domaine ou utiliser un compte Google ordinaire pour vous connecter.</translation>
+<translation id="1503199973012840174">Votre Chromium est obsolète. Mettez-le à jour pour rester en sécurité.</translation>
 <translation id="1507010443238049608">Nous aider à améliorer les fonctionnalités et les performances de Chromium</translation>
 <translation id="1513122820609681462">Définir Chromium comme navigateur par défaut</translation>
 <translation id="1531155317299575425">Affiche les invites de connexion dans Chromium.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Cette adresse est actuellement enregistrée dans Chromium. Pour l'utiliser dans tous les produits Google, enregistrez-la dans votre compte Google, <ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">Cela signifie que Chromium demandera toujours la version bureau du site.</translation>
 <translation id="2313870531055795960">Il vérifie les URL en fonction d'une liste de sites non sécuritaires stockée dans Chromium. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chromium peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la navigation sécurisée.</translation>
+<translation id="231828342043114302">Pour recevoir du contenu personnalisé en fonction de vos intérêts, connectez-vous à Chromium.</translation>
 <translation id="2374627437126809292">Chromium utilise Google Maps pour vous fournir des itinéraires et des informations locales sur les adresses détectées.</translation>
 <translation id="2386292341327187942">Dans le champ Widgets de recherche, entrez Chromium</translation>
 <translation id="2426113998523353159">Votre organisation vous demande de vous connecter pour utiliser Chromium.</translation>
@@ -78,7 +80,6 @@ Afin d'accéder à plus de paramètres utilisant des données pour améliorer vo
 <translation id="3219277919172823720">Effectuer une recherche vocale dans Chromium</translation>
 <translation id="3228349498066165585">Certaines de vos données Chromium n'ont pas encore été enregistrées dans votre compte Google.
         Essayez d'attendre quelques minutes avant de vous déconnecter. Si vous vous déconnectez maintenant, ces données seront supprimées.</translation>
-<translation id="3256316712990552818">Copiée dans Chromium</translation>
 <translation id="328933489847748230">{count,plural, =1{1 fenêtre de Chromium est maintenant affichée}one{{count} fenêtre de Chromium est maintenant affichée}other{{count} fenêtres de Chromium sont maintenant affichées}}</translation>
 <translation id="3344973607274501920">Chromium n'a pas pu vérifier vos mots de passe. Essayez de vérifier votre connexion Internet.</translation>
 <translation id="3366305173356742781">Données Chromium dans votre compte</translation>
@@ -299,7 +300,7 @@ Pour modifier ce réglage, <ph name="BEGIN_LINK" />effacez les données Chromium
 <translation id="8776843108004031667">Ce compte et toutes les données non enregistrées seront supprimés de Chromium.</translation>
 <translation id="88376265765385899">Ouvre les favoris Chromium.</translation>
 <translation id="8860548555286245440">Ouvrir les URL dans Chromium en Navigation privée</translation>
-<translation id="8866191443434488382">Chromium détectera les numéros de suivi sur les sites que vous visitez et vous montrera les mises à jour des colis sur la page Nouvel onglet. Le numéro de suivi du colis et le nom du site Web seront envoyés à Chromium pour fournir cette fonctionnalité et améliorer les fonctionnalités d'achat pour tous. Vous pouvez mettre à jour cette option à tout moment dans les <ph name="BEGIN_LINK" />paramètres de suivi des colis<ph name="END_LINK" />.</translation>
+<translation id="8866191443434488382">Chromium détectera les numéros de suivi sur les sites que vous visitez et vous montrera les mises à jour des colis sur la page Nouvel onglet. Le numéro de suivi du colis et le nom du site Web seront envoyés à Chromium pour fournir cette fonctionnalité et améliorer les fonctionnalités de magasinage pour tous. Vous pouvez mettre à jour cette option à tout moment dans les <ph name="BEGIN_LINK" />paramètres de suivi des colis<ph name="END_LINK" />.</translation>
 <translation id="8909995017390087892">Chromium pour iOS</translation>
 <translation id="8924617840944134898">Ouvrir un onglet de navigation privée dans Chromium</translation>
 <translation id="894437814105052438">Lorsque vous vous déconnectez, Chromium ne synchronise aucune nouvelle donnée avec votre compte Google. Les données précédemment synchronisées demeurent dans le compte.</translation>
@@ -313,7 +314,6 @@ Vos données ont été chiffrées avec votre phrase de passe le <ph name="TIME" 
 <translation id="9059693977935746710">Vous n'aurez pas à mémoriser ce mot de passe. Il sera enregistré dans le gestionnaire de mots de passe de ce compte : <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">Chromium n'est pas à jour</translation>
 <translation id="9110075932708282655">Utilisez Chromium par défaut</translation>
-<translation id="9137114218472648150">Chromium est obsolète; effectuez la mise à jour vers la version la plus récente pour rester en sécurité.</translation>
 <translation id="921174536258924340">Chromium n'a pas pu vérifier tous les mots de passe. Réessayez demain ou <ph name="BEGIN_LINK" />vérifiez les mots de passe dans votre compte Google<ph name="END_LINK" />.</translation>
 <translation id="971488683725792095">Utilisez automatiquement Chromium lorsque vous touchez sur des liens dans des messages, des documents et d'autres applications.</translation>
 <translation id="981812233959540767">Jouer au jeu du dinosaure de Chromium</translation>

@@ -53,11 +53,6 @@ import java.lang.annotation.RetentionPolicy;
     FeatureConstants.DOWNLOAD_SETTINGS_FEATURE,
     FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOAD_CONTINUING_FEATURE,
     FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE,
-    FeatureConstants.FEATURE_NOTIFICATION_GUIDE_DEFAULT_BROWSER_PROMO_FEATURE,
-    FeatureConstants.FEATURE_NOTIFICATION_GUIDE_INCOGNITO_TAB_HELP_BUBBLE_FEATURE,
-    FeatureConstants.FEATURE_NOTIFICATION_GUIDE_NTP_SUGGESTION_CARD_HELP_BUBBLE_FEATURE,
-    FeatureConstants.FEATURE_NOTIFICATION_GUIDE_SIGN_IN_HELP_BUBBLE_FEATURE,
-    FeatureConstants.FEATURE_NOTIFICATION_GUIDE_VOICE_SEARCH_HELP_BUBBLE_FEATURE,
     FeatureConstants.SHOPPING_LIST_MENU_ITEM_FEATURE,
     FeatureConstants.SHOPPING_LIST_SAVE_FLOW_FEATURE,
     FeatureConstants.TAB_GROUPS_QUICKLY_COMPARE_PAGES_FEATURE,
@@ -78,6 +73,7 @@ import java.lang.annotation.RetentionPolicy;
     FeatureConstants.PAGE_INFO_FEATURE,
     FeatureConstants.PAGE_INFO_STORE_INFO_FEATURE,
     FeatureConstants.PAGE_ZOOM_FEATURE,
+    FeatureConstants.READ_ALOUD_APP_MENU_FEATURE,
     FeatureConstants.READ_LATER_APP_MENU_BOOKMARK_THIS_PAGE_FEATURE,
     FeatureConstants.READ_LATER_APP_MENU_BOOKMARKS_FEATURE,
     FeatureConstants.READ_LATER_BOTTOM_SHEET_FEATURE,
@@ -152,6 +148,7 @@ public @interface FeatureConstants {
     String PAGE_ZOOM_FEATURE = "IPH_PageZoom";
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
     String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
+    String READ_ALOUD_APP_MENU_FEATURE = "IPH_ReadAloudAppMenuFeature";
     String READ_LATER_CONTEXT_MENU_FEATURE = "IPH_ReadLaterContextMenu";
     String READ_LATER_APP_MENU_BOOKMARK_THIS_PAGE_FEATURE = "IPH_ReadLaterAppMenuBookmarkThisPage";
     String READ_LATER_APP_MENU_BOOKMARKS_FEATURE = "IPH_ReadLaterAppMenuBookmarks";
@@ -239,26 +236,6 @@ public @interface FeatureConstants {
      * tutorial player.
      */
     String VIDEO_TUTORIAL_TRY_NOW_FEATURE = "IPH_VideoTutorial_TryNow";
-
-    /** Feature notification guide help UI for default browser promo. */
-    String FEATURE_NOTIFICATION_GUIDE_DEFAULT_BROWSER_PROMO_FEATURE =
-            "IPH_FeatureNotificationGuideDefaultBrowserPromo";
-
-    /** Feature notification guide help UI for sign in promo. */
-    String FEATURE_NOTIFICATION_GUIDE_SIGN_IN_HELP_BUBBLE_FEATURE =
-            "IPH_FeatureNotificationGuideSignInHelpBubble";
-
-    /** Feature notification guide help UI for incognito tab. */
-    String FEATURE_NOTIFICATION_GUIDE_INCOGNITO_TAB_HELP_BUBBLE_FEATURE =
-            "IPH_FeatureNotificationGuideIncognitoTabHelpBubble";
-
-    /** Feature notification guide help UI for NTP suggestion card. */
-    String FEATURE_NOTIFICATION_GUIDE_NTP_SUGGESTION_CARD_HELP_BUBBLE_FEATURE =
-            "IPH_FeatureNotificationGuideNTPSuggestionCardHelpBubble";
-
-    /** Feature notification guide help UI for voice search. */
-    String FEATURE_NOTIFICATION_GUIDE_VOICE_SEARCH_HELP_BUBBLE_FEATURE =
-            "IPH_FeatureNotificationGuideVoiceSearchHelpBubble";
 
     /** An IPH feature to show on a card menu on the FeedNewTabPage. */
     String FEED_CARD_MENU_FEATURE = "IPH_FeedCardMenu";

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_METRICS_STRUCTURED_TEST_TEST_EVENT_STORAGE_H_
 #define COMPONENTS_METRICS_STRUCTURED_TEST_TEST_EVENT_STORAGE_H_
 
-#include "components/metrics/structured/event_storage.h"
+#include "components/metrics/structured/lib/event_storage.h"
 #include "components/metrics/structured/proto/event_storage.pb.h"
 #include "third_party/metrics_proto/structured_data.pb.h"
 
@@ -27,6 +27,7 @@ class TestEventStorage final : public EventStorage<StructuredEventProto> {
   void AddBatchEvents(
       const google::protobuf::RepeatedPtrField<StructuredEventProto>& events)
       override;
+  void CopyEvents(EventsProto* proto) const override;
 
   EventsProto* events() { return &events_; }
   const EventsProto* events() const { return &events_; }

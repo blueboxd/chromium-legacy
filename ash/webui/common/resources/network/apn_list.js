@@ -12,6 +12,7 @@ import './network_shared.css.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/ash/common/network/apn_list_item.js';
 import 'chrome://resources/ash/common/network/apn_detail_dialog.js';
+import 'chrome://resources/ash/common/network/apn_selection_dialog.js';
 import '//resources/ash/common/cr_elements/icons.html.js';
 
 import {assert} from '//resources/ash/common/assert.js';
@@ -88,11 +89,21 @@ export class ApnList extends ApnListBase {
         type: Object,
         value: ApnDetailDialogMode.CREATE,
       },
+
+      /** @private */
+      shouldShowApnSelectionDialog_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
   openApnDetailDialogInCreateMode() {
     this.showApnDetailDialog_(ApnDetailDialogMode.CREATE, /* apn= */ undefined);
+  }
+
+  openApnSelectionDialog() {
+    this.shouldShowApnSelectionDialog_ = true;
   }
 
   /**
@@ -300,11 +311,32 @@ export class ApnList extends ApnListBase {
   }
 
   /**
+   *
+   * @param event {!Event}
+   * @private
+   */
+  onApnSelectionDialogClose_(event) {
+    this.shouldShowApnSelectionDialog_ = false;
+  }
+
+  /**
    * @returns {Array<ApnProperties>}
    * @private
    */
   getCustomApns_() {
     return this.managedCellularProperties.customApnList ?? [];
+  }
+
+  /**
+   * @returns {Array<ApnProperties>}
+   * @private
+   */
+  getDatabaseApns_() {
+    if (!this.managedCellularProperties ||
+        !this.managedCellularProperties.apnList) {
+      return [];
+    }
+    return this.managedCellularProperties.apnList.activeValue;
   }
 }
 

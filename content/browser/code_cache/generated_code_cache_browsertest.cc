@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -115,8 +116,7 @@ class CodeCacheBrowserTest
     // Worker scripts will fetch this once the cacheable resource has been
     // loaded and the test logic (checking histograms) can continue.
     if (absolute_url.path() == "/done.js") {
-      content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
-                                                   std::move(done_callback_));
+      GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(done_callback_));
 
       auto http_response =
           std::make_unique<net::test_server::BasicHttpResponse>();
@@ -534,8 +534,7 @@ class CodeCacheSizeChecker {
 
   void FetchCallback(const base::Time&, mojo_base::BigBuffer data) {
     if (data.size() >= expected_size_) {
-      content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
-                                                   std::move(done_callback_));
+      GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(done_callback_));
     }
   }
 

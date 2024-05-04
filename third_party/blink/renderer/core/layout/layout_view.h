@@ -25,10 +25,7 @@
 #include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
-#include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/hit_test_cache.h"
-#include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_quote.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -36,11 +33,21 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_offset_map.h"
 
 namespace blink {
 
+class HitTestCache;
+class HitTestLocation;
+class HitTestResult;
+class LayoutText;
 class LayoutViewTransitionRoot;
 class LocalFrameView;
+
+struct VariableLengthTransformResult {
+  wtf_size_t original_length;
+  TextOffsetMap offset_map;
+};
 
 // LayoutView is the root of the layout tree and the Document's LayoutObject.
 //
@@ -184,15 +191,6 @@ class CORE_EXPORT LayoutView : public LayoutNGBlockFlow {
                            const PhysicalOffset&) const override;
 
   bool IsFragmentationContextRoot() const override;
-
-  void SetDefaultPageDescription(const WebPrintPageDescription& description) {
-    NOT_DESTROYED();
-    default_page_description_ = description;
-  }
-  const WebPrintPageDescription& DefaultPageDescription() const {
-    NOT_DESTROYED();
-    return default_page_description_;
-  }
 
   void SetInitialContainingBlockSizeForPagination(PhysicalSize size) {
     NOT_DESTROYED();
@@ -343,6 +341,14 @@ class CORE_EXPORT LayoutView : public LayoutNGBlockFlow {
 
   TrackedDescendantsMap& SvgTextDescendantsMap();
 
+  // Manage rare data of LayoutText.
+  void RegisterVariableLengthTransformResult(
+      const LayoutText& text,
+      const VariableLengthTransformResult& result);
+  void UnregisterVariableLengthTransformResult(const LayoutText& text);
+  VariableLengthTransformResult GetVariableLengthTransformResult(
+      const LayoutText& text);
+
   LayoutViewTransitionRoot* GetViewTransitionRoot() const;
 
  private:
@@ -371,9 +377,6 @@ class CORE_EXPORT LayoutView : public LayoutNGBlockFlow {
     return false;
   }
 
-  // Default page description (size and margins):
-  WebPrintPageDescription default_page_description_;
-
   // The page area (content area) size of the first page, when printing.
   PhysicalSize initial_containing_block_size_for_pagination_;
 
@@ -398,6 +401,9 @@ class CORE_EXPORT LayoutView : public LayoutNGBlockFlow {
   // because LayoutSVGText's layout result depends on scaling factors
   // computed with ancestor transforms.
   Member<TrackedDescendantsMap> svg_text_descendants_;
+
+  HeapHashMap<WeakMember<const LayoutText>, VariableLengthTransformResult>
+      text_to_variable_length_transform_result_;
 
   unsigned hit_test_count_;
   unsigned hit_test_cache_hits_;

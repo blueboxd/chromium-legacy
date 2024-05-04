@@ -35,6 +35,7 @@ source_set("manual_fill") {
     "manual_fill_password_mediator.mm",
   ]
   deps = [
+    ":manual_fill_constants",
     ":requesters",
     "//base",
     "//components/autofill/core/browser",
@@ -47,6 +48,7 @@ source_set("manual_fill") {
     "//components/password_manager/core/common:features",
     "//components/password_manager/ios",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/affiliations/model",
     "//ios/chrome/browser/autofill/model",
     "//ios/chrome/browser/autofill/model:model_shared",
     "//ios/chrome/browser/favicon/model",
@@ -89,6 +91,7 @@ source_set("manual_fill_ui") {
     "card_view_controller.mm",
     "chip_button.h",
     "chip_button.mm",
+    "expanded_manual_fill_view_controller+Testing.h",
     "expanded_manual_fill_view_controller.h",
     "expanded_manual_fill_view_controller.mm",
     "fallback_view_controller.h",
@@ -163,6 +166,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chip_button_unittest.mm",
+    "expanded_manual_fill_view_controller_unittest.mm",
     "fallback_view_controller_unittest.mm",
     "form_observer_helper_unittest.mm",
     "full_card_requester_unittest.mm",
@@ -177,10 +181,12 @@ source_set("unit_tests") {
   ]
   deps = [
     ":manual_fill",
+    ":manual_fill_constants",
     ":manual_fill_ui",
     ":requesters",
     "//base",
     "//base/test:test_support",
+    "//components/affiliations/core/browser:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",
@@ -191,6 +197,7 @@ source_set("unit_tests") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:test_support",
     "//components/prefs",
+    "//ios/chrome/browser/affiliations/model",
     "//ios/chrome/browser/favicon/model",
     "//ios/chrome/browser/infobars/model",
     "//ios/chrome/browser/passwords/model:store_factory",
@@ -273,6 +280,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/signin/model:fake_system_identity",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/autofill:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/passwords/bottom_sheet:eg_test_support+eg2",
     "//ios/chrome/browser/ui/settings/google_services:constants",
     "//ios/chrome/browser/ui/settings/password:eg_test_support",
     "//ios/chrome/browser/ui/settings/password:eg_test_support+eg2",

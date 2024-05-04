@@ -74,6 +74,12 @@ CSSAtRuleID CssAtRuleID(StringView name) {
     }
     return CSSAtRuleID::kCSSAtRuleInvalid;
   }
+  if (EqualIgnoringASCIICase(name, "position-try")) {
+    if (RuntimeEnabledFeatures::CSSAnchorPositioningEnabled()) {
+      return CSSAtRuleID::kCSSAtRulePositionTry;
+    }
+    return CSSAtRuleID::kCSSAtRuleInvalid;
+  }
   if (EqualIgnoringASCIICase(name, "property")) {
     return CSSAtRuleID::kCSSAtRuleProperty;
   }
@@ -154,6 +160,9 @@ CSSAtRuleID CssAtRuleID(StringView name) {
   if (EqualIgnoringASCIICase(name, "right-bottom")) {
     return CSSAtRuleID::kCSSAtRuleRightBottom;
   }
+  if (EqualIgnoringASCIICase(name, "function")) {
+    return CSSAtRuleID::kCSSAtRuleFunction;
+  }
 
   return CSSAtRuleID::kCSSAtRuleInvalid;
 }
@@ -182,6 +191,8 @@ StringView CssAtRuleIDToString(CSSAtRuleID id) {
       return "@page";
     case CSSAtRuleID::kCSSAtRulePositionFallback:
       return "@position-fallback";
+    case CSSAtRuleID::kCSSAtRulePositionTry:
+      return "@position-try";
     case CSSAtRuleID::kCSSAtRuleProperty:
       return "@property";
     case CSSAtRuleID::kCSSAtRuleContainer:
@@ -244,6 +255,8 @@ StringView CssAtRuleIDToString(CSSAtRuleID id) {
       return "@right-middle";
     case CSSAtRuleID::kCSSAtRuleRightBottom:
       return "@right-bottom";
+    case CSSAtRuleID::kCSSAtRuleFunction:
+      return "@function";
     case CSSAtRuleID::kCSSAtRuleInvalid:
       NOTREACHED();
       return "";
@@ -319,9 +332,12 @@ std::optional<WebFeature> AtRuleFeature(CSSAtRuleID rule_id) {
       return WebFeature::kCSSAtRuleSupports;
     case CSSAtRuleID::kCSSAtRulePositionFallback:
     case CSSAtRuleID::kCSSAtRuleTry:
+    case CSSAtRuleID::kCSSAtRulePositionTry:
       return WebFeature::kCSSAnchorPositioning;
     case CSSAtRuleID::kCSSAtRuleWebkitKeyframes:
       return WebFeature::kCSSAtRuleWebkitKeyframes;
+    case CSSAtRuleID::kCSSAtRuleFunction:
+      return WebFeature::kCSSFunctions;
     case CSSAtRuleID::kCSSAtRuleInvalid:
       NOTREACHED();
       return std::nullopt;

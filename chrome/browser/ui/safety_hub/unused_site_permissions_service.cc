@@ -157,31 +157,6 @@ UnusedSitePermissionsService::UnusedSitePermissionsResult::
 UnusedSitePermissionsService::UnusedSitePermissionsResult::
     UnusedSitePermissionsResult(const UnusedSitePermissionsResult&) = default;
 
-UnusedSitePermissionsService::UnusedSitePermissionsResult::
-    UnusedSitePermissionsResult(const base::Value::Dict& dict)
-    : SafetyHubService::Result(dict) {
-  content_settings::WebsiteSettingsRegistry* registry =
-      content_settings::WebsiteSettingsRegistry::GetInstance();
-  for (const base::Value& permission :
-       *dict.FindList(kUnusedSitePermissionsResultKey)) {
-    const base::Value::Dict& revoked_permission = permission.GetDict();
-    ContentSettingsPattern origin = ContentSettingsPattern::FromString(
-        *revoked_permission.FindString(kSafetyHubOriginKey));
-    std::set<ContentSettingsType> permission_types;
-    for (const base::Value& cst : *revoked_permission.FindList(
-             kUnusedSitePermissionsResultPermissionTypesKey)) {
-      const content_settings::WebsiteSettingsInfo* info =
-          registry->GetByName(cst.GetString());
-      permission_types.insert(info->type());
-    }
-    base::Time expiration =
-        base::ValueToTime(
-            *revoked_permission.Find(kUnusedSitePermissionsResultExpirationKey))
-            .value();
-    AddRevokedPermission(origin, permission_types, expiration);
-  }
-}
-
 std::unique_ptr<SafetyHubService::Result>
 UnusedSitePermissionsService::UnusedSitePermissionsResult::Clone() const {
   return std::make_unique<UnusedSitePermissionsResult>(*this);
@@ -217,30 +192,11 @@ UnusedSitePermissionsService::UnusedSitePermissionsResult::GetRevokedOrigins()
 base::Value::Dict
 UnusedSitePermissionsService::UnusedSitePermissionsResult::ToDictValue() const {
   base::Value::Dict result = BaseToDictValue();
-  base::Value::List revoked_permissions;
-  content_settings::WebsiteSettingsRegistry* registry =
-      content_settings::WebsiteSettingsRegistry::GetInstance();
+  base::Value::List revoked_origins;
   for (auto permission : revoked_permissions_) {
-    base::Value::Dict permission_dict;
-    permission_dict.Set(kSafetyHubOriginKey, permission.origin.ToString());
-    base::Value::List permission_types;
-    for (ContentSettingsType cst : permission.permission_types) {
-      const content_settings::WebsiteSettingsInfo* website_info =
-          registry->Get(cst);
-      if (website_info) {
-        permission_types.Append(website_info->name());
-      }
-    }
-    if (permission_types.empty()) {
-      continue;
-    }
-    permission_dict.Set(kUnusedSitePermissionsResultPermissionTypesKey,
-                        std::move(permission_types));
-    permission_dict.Set(kUnusedSitePermissionsResultExpirationKey,
-                        base::TimeToValue(permission.expiration));
-    revoked_permissions.Append(std::move(permission_dict));
+    revoked_origins.Append(permission.origin.ToString());
   }
-  result.Set(kUnusedSitePermissionsResultKey, std::move(revoked_permissions));
+  result.Set(kUnusedSitePermissionsResultKey, std::move(revoked_origins));
   return result;
 }
 
@@ -248,24 +204,41 @@ bool UnusedSitePermissionsService::UnusedSitePermissionsResult::
     IsTriggerForMenuNotification() const {
   // A menu notification should be shown when there is at least one permission
   // that was revoked.
-  return revoked_permissions_.size() > 0;
+  return !GetRevokedOrigins().empty();
 }
 
 bool UnusedSitePermissionsService::UnusedSitePermissionsResult::
-    WarrantsNewMenuNotification(const Result& previousResult) const {
-  const auto& previous = static_cast<
-      const UnusedSitePermissionsService::UnusedSitePermissionsResult&>(
-      previousResult);
-  std::set<ContentSettingsPattern> old_origins = previous.GetRevokedOrigins();
-  std::set<ContentSettingsPattern> new_origins = GetRevokedOrigins();
-  for (auto new_origin : new_origins) {
-    // A new notification should be shown whenever there is a new origin for
-    // which permissions were revoked.
-    if (!old_origins.contains(new_origin)) {
-      return true;
+    WarrantsNewMenuNotification(
+        const base::Value::Dict& previous_result_dict) const {
+  std::set<ContentSettingsPattern> old_origins;
+  for (const base::Value& origin_val :
+       *previous_result_dict.FindList(kUnusedSitePermissionsResultKey)) {
+    // Before crrev.com/c/5000387, the revoked permissions were stored in a dict
+    // that looked as follows:
+    // {
+    //    "origin": "site.com",
+    //    "permissionTypes": [...permissions],
+    //    "expiration": TimeValue
+    // }
+    // After this CL, the list was updated to a list of strings representing
+    // the origins. To maintain backwards compatibility, we should support these
+    // old values for now. This check can be deleted in the future.
+    const std::string* origin_str{};
+    if (origin_val.is_dict()) {
+      const base::Value::Dict& revoked_permission = origin_val.GetDict();
+      origin_str = revoked_permission.FindString(kSafetyHubOriginKey);
+    } else if (origin_val.is_string()) {
+      origin_str = &origin_val.GetString();
+    } else {
+      NOTREACHED();
     }
+    ContentSettingsPattern origin =
+        ContentSettingsPattern::FromString(*origin_str);
+    old_origins.insert(origin);
   }
-  return false;
+
+  std::set<ContentSettingsPattern> new_origins = GetRevokedOrigins();
+  return !base::ranges::includes(old_origins, new_origins);
 }
 
 std::u16string UnusedSitePermissionsService::UnusedSitePermissionsResult::
@@ -429,8 +402,7 @@ void UnusedSitePermissionsService::RegrantPermissionsForOrigin(
 void UnusedSitePermissionsService::UndoRegrantPermissionsForOrigin(
     const std::set<ContentSettingsType>& permissions,
     const base::Value::Dict& chooser_permissions_data,
-    const absl::optional<content_settings::ContentSettingConstraints>
-        constraint,
+    const std::optional<content_settings::ContentSettingConstraints> constraint,
     const url::Origin origin) {
   for (const auto& permission : permissions) {
     if (IsContentSetting(permission)) {
@@ -681,7 +653,7 @@ void UnusedSitePermissionsService::RevokeUnusedPermissions() {
     // Store revoked permissions on HCSM.
     if (!revoked_permissions.empty()) {
       StorePermissionInRevokedPermissionSetting(
-          revoked_permissions, chooser_permissions_data, absl::nullopt,
+          revoked_permissions, chooser_permissions_data, std::nullopt,
           primary_pattern, secondary_pattern);
     }
 
@@ -706,8 +678,7 @@ void UnusedSitePermissionsService::RevokeUnusedPermissions() {
 void UnusedSitePermissionsService::StorePermissionInRevokedPermissionSetting(
     const std::set<ContentSettingsType>& permissions,
     const base::Value::Dict& chooser_permissions_data,
-    const absl::optional<content_settings::ContentSettingConstraints>
-        constraint,
+    const std::optional<content_settings::ContentSettingConstraints> constraint,
     const url::Origin origin) {
   // The |secondary_pattern| for
   // |ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS| is always wildcard.
@@ -720,8 +691,7 @@ void UnusedSitePermissionsService::StorePermissionInRevokedPermissionSetting(
 void UnusedSitePermissionsService::StorePermissionInRevokedPermissionSetting(
     const std::set<ContentSettingsType>& permissions,
     const base::Value::Dict& chooser_permissions_data,
-    const absl::optional<content_settings::ContentSettingConstraints>
-        constraint,
+    const std::optional<content_settings::ContentSettingConstraints> constraint,
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern) {
   GURL url = GURL(primary_pattern.ToString());

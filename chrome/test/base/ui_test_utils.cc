@@ -26,6 +26,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -559,6 +560,58 @@ void ToggleFullscreenModeAndWait(Browser* browser) {
                                                  .browser_fullscreen = true});
   chrome::ToggleFullscreenMode(browser);
   waiter.Wait();
+}
+
+BrowserSetLastActiveWaiter::BrowserSetLastActiveWaiter(
+    Browser* browser,
+    bool wait_for_set_last_active_observed)
+    : browser_(browser),
+      wait_for_set_last_active_observed_(wait_for_set_last_active_observed) {
+  BrowserList::AddObserver(this);
+  if (chrome::FindLastActive() == browser_ &&
+      !wait_for_set_last_active_observed_) {
+    satisfied_ = true;
+  }
+}
+
+BrowserSetLastActiveWaiter::~BrowserSetLastActiveWaiter() {
+  BrowserList::RemoveObserver(this);
+}
+
+// Runs a loop until |browser_| becomes the last active browser.
+void BrowserSetLastActiveWaiter::Wait() {
+  if (satisfied_) {
+    return;
+  }
+
+  run_loop_.Run();
+}
+
+// BrowserListObserver:
+void BrowserSetLastActiveWaiter::OnBrowserSetLastActive(Browser* browser) {
+  if (browser == browser_) {
+    satisfied_ = true;
+    if (run_loop_.running()) {
+      run_loop_.Quit();
+    }
+  }
+}
+
+void WaitForBrowserSetLastActive(Browser* browser,
+                                 bool wait_for_set_last_active_observed) {
+  BrowserSetLastActiveWaiter waiter(browser, wait_for_set_last_active_observed);
+  waiter.Wait();
+}
+
+Browser* OpenNewEmptyWindowAndWaitUntilSetAsLastActive(
+    Profile* profile,
+    bool should_trigger_session_restore) {
+  BrowserChangeObserver new_browser_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
+  chrome::NewEmptyWindow(profile, should_trigger_session_restore);
+  Browser* new_browser = new_browser_observer.Wait();
+  WaitForBrowserSetLastActive(new_browser);
+  return new_browser;
 }
 
 void SendToOmniboxAndSubmit(Browser* browser,

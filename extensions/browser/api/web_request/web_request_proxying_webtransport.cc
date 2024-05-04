@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/web_request_proxying_webtransport.h"
 
 #include <optional>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "content/public/browser/render_process_host.h"
@@ -237,6 +238,11 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
   }
 
  private:
+  // WebRequestAPI::Proxy:
+  void OnDNRExtensionUnloaded(const Extension* extension) override {
+    info_.EraseDNRActionsForExtension(extension->id());
+  }
+
   mojo::PendingRemote<WebTransportHandshakeClient> handshake_client_;
   // Weak reference to the ProxySet. This is safe as `proxies_` owns this
   // object.

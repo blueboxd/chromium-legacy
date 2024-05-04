@@ -411,8 +411,8 @@ class WebHidExtensionFeatureDisabledBrowserTest
   }
 };
 
-// TODO(crbug.com/1521554): Re-enable on linux.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1521554): Re-enable on linux and ChromeOS.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_FeatureDisabled DISABLED_FeatureDisabled
 #else
 #define MAYBE_FeatureDisabled FeatureDisabled
@@ -602,8 +602,8 @@ IN_PROC_BROWSER_TEST_F(
   SimulateClickOnSystemTrayIconButton(browser(), extension);
 }
 
-// TODO(crbug.com/1521554): Re-enable on linux.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1521554): Flaky on non-Mac release builds.
+#if !BUILDFLAG(IS_MAC) && defined(NDEBUG)
 #define MAYBE_EventListenerAddedAfterServiceWorkerIsActivated \
   DISABLED_EventListenerAddedAfterServiceWorkerIsActivated
 #else

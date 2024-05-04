@@ -24,8 +24,10 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/bubble/bubble_constants.h"
+#import "ios/chrome/browser/ui/bubble/bubble_dismissal_reason_type.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_action_provider.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_updating.h"
@@ -43,6 +45,7 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* popupMenuBubblePresenter;
 
+// Bubble view controller presenter for the Overflow Menu tips.
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* overflowMenuBubblePresenter;
 
@@ -124,11 +127,23 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
   return nil;
 }
 
-- (void)showHistoryOnOverflowMenuIPHInViewController:(UIViewController*)menu {
+- (void)showIPHAfterOpenOfOverflowMenu:(UIViewController*)menu {
+  if ([self showHistoryOnOverflowMenuIPHInViewController:menu]) {
+    return;
+  }
+  // Only try to show customization IPH if history IPH was not shown.
+  [self showCustomizationIPHInMenu:menu];
+}
+
+#pragma mark - Private
+
+// Shows the History IPH when the overflow menu opens. Returns `YES` if the IPH
+// was successfully shown or `NO` if it was not.
+- (BOOL)showHistoryOnOverflowMenuIPHInViewController:(UIViewController*)menu {
   // Show the IPH in the overflow menu if user is still in a session where they
   // saw the IPH of the three-dot menu item.
   if (!self.inSessionWithHistoryMenuItemIPH) {
-    return;
+    return NO;
   }
 
   CGFloat anchorXInParent =
@@ -155,7 +170,7 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
     self.uiConfiguration.highlightDestination = -1;
     // No effect besides leaving it in a clean state.
     self.uiConfiguration.highlightedDestinationFrame = CGRectZero;
-    return;
+    return NO;
   }
 
   self.inSessionWithHistoryMenuItemIPH = NO;
@@ -163,6 +178,51 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
   [self.overflowMenuBubblePresenter presentInViewController:menu
                                                        view:menu.view
                                                 anchorPoint:anchorPoint];
+  return YES;
+}
+
+// Possibly shows the IPH for the Overflow Menu Customization feature. Returns
+// whether or not the IPH was shown.
+- (BOOL)showCustomizationIPHInMenu:(UIViewController*)menu {
+  if (!IsOverflowMenuCustomizationEnabled()) {
+    return NO;
+  }
+
+  // In global coordinate system
+  CGPoint anchorPointInView = CGPointMake(CGRectGetMaxX(menu.view.frame) / 2,
+                                          CGRectGetMaxY(menu.view.frame) - 20);
+  CGPoint anchorPoint = [menu.view.window convertPoint:anchorPointInView
+                                              fromView:menu.view];
+
+  self.overflowMenuBubblePresenter =
+      [self newOverflowMenuCustomizationBubblePresenter];
+
+  if (![self.overflowMenuBubblePresenter canPresentInView:menu.view
+                                              anchorPoint:anchorPoint]) {
+    return NO;
+  }
+
+  if (![self canShowOverflowMenuCustomizationIPH]) {
+    self.overflowMenuBubblePresenter = nil;
+    return NO;
+  }
+
+  [self.overflowMenuBubblePresenter presentInViewController:menu
+                                                       view:menu.view
+                                                anchorPoint:anchorPoint];
+  [self.overflowMenuBubblePresenter setArrowHidden:YES animated:NO];
+
+  OverflowMenuAction* editActionsAction = [self.actionProvider
+      actionForActionType:overflow_menu::ActionType::EditActions];
+  editActionsAction.highlighted = YES;
+  editActionsAction.displayNewLabelIcon = YES;
+
+  return YES;
+}
+
+- (void)scrollToEditActionsButton {
+  self.uiConfiguration.scrollToAction = [self.actionProvider
+      actionForActionType:overflow_menu::ActionType::EditActions];
 }
 
 #pragma mark - Popup Menu Button Bubble/IPH methods
@@ -204,7 +264,8 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
                                 SnoozeAction:
                                     (feature_engagement::Tracker::SnoozeAction)
                                         snoozeAction {
-  if (IPHDismissalReasonType == IPHDismissalReasonType::kTappedAnchorView) {
+  if (IPHDismissalReasonType == IPHDismissalReasonType::kTappedAnchorView ||
+      IPHDismissalReasonType == IPHDismissalReasonType::kTimedOut) {
     self.inSessionWithHistoryMenuItemIPH = YES;
   }
   [self trackerIPHDidDismissWithSnoozeAction:snoozeAction];
@@ -327,6 +388,49 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
   self.uiConfiguration.highlightDestination = -1;
 }
 
+#pragma mark - Overflow Menu Customization Methods
+
+- (BubbleViewControllerPresenter*)newOverflowMenuCustomizationBubblePresenter {
+  NSString* text = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_CUSTOMIZATION_IPH);
+
+  // Prepare the dismissal callback.
+  __weak __typeof(self) weakSelf = self;
+  CallbackWithIPHDismissalReasonType dismissalCallback = ^(
+      IPHDismissalReasonType IPHDismissalReasonType,
+      feature_engagement::Tracker::SnoozeAction snoozeAction) {
+    if (IPHDismissalReasonType == IPHDismissalReasonType::kTappedIPH) {
+      [self scrollToEditActionsButton];
+    }
+    [weakSelf
+        overflowMenuCustomizationIPHDidDismissWithSnoozeAction:snoozeAction];
+  };
+
+  BubbleAlignment alignment = BubbleAlignmentCenter;
+
+  // Create the BubbleViewControllerPresenter.
+  BubbleArrowDirection arrowDirection = BubbleArrowDirectionDown;
+  BubbleViewControllerPresenter* bubbleViewControllerPresenter =
+      [[BubbleViewControllerPresenter alloc]
+          initDefaultBubbleWithText:text
+                     arrowDirection:arrowDirection
+                          alignment:alignment
+               isLongDurationBubble:YES
+                  dismissalCallback:dismissalCallback];
+
+  return bubbleViewControllerPresenter;
+}
+
+- (void)overflowMenuCustomizationIPHDidDismissWithSnoozeAction:
+    (feature_engagement::Tracker::SnoozeAction)snoozeAction {
+  feature_engagement::Tracker* tracker = self.featureEngagementTracker;
+  if (tracker) {
+    const base::Feature& feature =
+        feature_engagement::kIPHiOSOverflowMenuCustomizationFeature;
+    tracker->Dismissed(feature);
+  }
+  self.overflowMenuBubblePresenter = nil;
+}
+
 #pragma mark - SceneStateObserver
 
 - (void)sceneState:(SceneState*)sceneState
@@ -362,6 +466,16 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
         feature_engagement::kIPHiOSHistoryOnOverflowMenuFeature;
     tracker->DismissedWithSnooze(feature, snoozeAction);
   }
+}
+
+// Queries the feature engagement tracker to see if the Overflow Menu
+// Customization IPH can be displayed. If this returns YES, the IPH MUST be
+// shown and dismissed.
+- (BOOL)canShowOverflowMenuCustomizationIPH {
+  feature_engagement::Tracker* tracker = self.featureEngagementTracker;
+  const base::Feature& feature =
+      feature_engagement::kIPHiOSOverflowMenuCustomizationFeature;
+  return tracker && tracker->ShouldTriggerHelpUI(feature);
 }
 
 @end

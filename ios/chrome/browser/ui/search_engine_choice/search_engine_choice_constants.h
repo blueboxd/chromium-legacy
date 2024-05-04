@@ -7,35 +7,18 @@
 
 #import <UIKit/UIKit.h>
 
-// State of the snippet in SnippetSearchEngineItem/Cell.
-enum class SnippetState {
-  // The chevron is pointing down, the snippet is hidden.
-  kHidden,
-  // The chevron is pointing up, the snippet is shown.
-  kShown,
-};
-
-// Fake omnibox width and height (for the empty and not-empty illustration).
-extern const CGFloat kFakeOmniboxWidth;
-extern const CGFloat kFakeOmniboxHeight;
 // Favicon size and radius.
 extern const CGFloat kFaviconImageViewSize;
 extern const CGFloat kFaviconImageViewRadius;
-// The space before the fake omnibox field.
-extern const CGFloat kFakeOmniboxFieldLeadingInset;
 
 // Accessibility identifier for the choice screen title.
 extern NSString* const kSearchEngineChoiceTitleAccessibilityIdentifier;
-// Accessibility identifier for the fake empty omnibox illustration.
-extern NSString* const kFakeEmptyOmniboxAccessibilityIdentifier;
-// Accessibility identifier for the fake omnibox illustration.
-extern NSString* const kFakeOmniboxAccessibilityIdentifier;
 // Prefix for the SearchEngineCell accessibility identifier.
 extern NSString* const kSnippetSearchEngineIdentifierPrefix;
 // `Set as Default` button accessibility identifier.
 extern NSString* const kSetAsDefaultSearchEngineIdentifier;
-// Search engine table view identifier.
-extern NSString* const kSearchEngineTableViewIdentifier;
+// Search engine choice scroll view identifier.
+extern NSString* const kSearchEngineChoiceScrollViewIdentifier;
 // `More` button accessibility identifier.
 extern NSString* const kSearchEngineMoreButtonIdentifier;
 

@@ -40,6 +40,14 @@ enum Status {
   kHttpError, // Every other HTTP response status code
 };
 
+// Different categories within the emoji picker
+enum Category {
+  kEmojis,
+  kSymbols,
+  kEmoticons,
+  kGifs,
+};
+
 struct TenorGifResponse {
   string next;
   array<GifResponse> results;
@@ -50,11 +58,13 @@ struct GifResponse {
   string content_description;
   GifUrls url;
   gfx.mojom.Size preview_size;
+  gfx.mojom.Size full_size;
 };
 
 struct GifUrls {
   url.mojom.Url full;
   url.mojom.Url preview;
+  url.mojom.Url preview_image;
 };
 
 // Used by the WebUI page to bootstrap bidirectional communication.
@@ -110,4 +120,7 @@ interface PageHandler {
 
   // Send a signal that emoji UI is fully loaded for metrics.
   OnUiFullyLoaded();
+
+  // Find out the initial category to show for the emoji piicker
+  GetInitialCategory() => (Category category);
 };

@@ -113,7 +113,7 @@ webapps::AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
             app_id = installed_app_id;
             run_loop.Quit();
           }),
-      /*use_fallback=*/true);
+      FallbackBehavior::kAllowFallbackDataAlways);
 
   run_loop.Run();
   return app_id;
@@ -159,11 +159,11 @@ webapps::AppId InstallWebAppFromManifest(Browser* browser,
       base::BindLambdaForTesting(
           [&run_loop, &app_id](const webapps::AppId& installed_app_id,
                                webapps::InstallResultCode code) {
-            DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
+            EXPECT_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
             app_id = installed_app_id;
             run_loop.Quit();
           }),
-      /*use_fallback=*/true);
+      FallbackBehavior::kCraftedManifestOnly);
 
   run_loop.Run();
   return app_id;
@@ -219,6 +219,8 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile,
   EXPECT_EQ(app_id, *WebAppTabHelper::GetAppId(web_contents));
 
   Browser* browser = chrome::FindBrowserWithTab(web_contents);
+  ui_test_utils::WaitForBrowserSetLastActive(browser);
+
   EXPECT_EQ(browser, chrome::FindLastActive());
   EXPECT_EQ(web_contents, browser->tab_strip_model()->GetActiveWebContents());
   return browser;

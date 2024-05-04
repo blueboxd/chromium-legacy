@@ -33,14 +33,12 @@ class BrowserAutofillManager;
 class CreditCard;
 enum class CreditCardFetchResult;
 
-// TODO(csharp): A lot of the logic in this class is copied from AutofillAgent.
-// Once Autofill is moved out of WebKit this class should be the only home for
-// this logic. See http://crbug.com/51644
-
 // Delegate for in-browser Autocomplete and Autofill display and selection.
 class AutofillExternalDelegate : public AutofillPopupDelegate,
                                  public PersonalDataManagerObserver {
  public:
+  class ScopedAutofillPopupShortcutForTesting;
+
   // Creates an AutofillExternalDelegate for the specified
   // BrowserAutofillManager and AutofillDriver.
   explicit AutofillExternalDelegate(BrowserAutofillManager* manager);
@@ -55,6 +53,8 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   static bool IsAutofillAndFirstLayerSuggestionId(PopupItemId item_id);
 
   // AutofillPopupDelegate implementation.
+  absl::variant<AutofillDriver*, password_manager::PasswordManagerDriver*>
+  GetDriver() override;
   void OnPopupShown() override;
   void OnPopupHidden() override;
   void DidSelectSuggestion(const Suggestion& suggestion) override;
@@ -69,12 +69,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // `OnSuggestionsReturned`. Returns the filling product of the first
   // suggestion that has a filling product that is not none.
   FillingProduct GetMainFillingProduct() const override;
-
-  // Returns the ax node id associated with the current web contents' element
-  // who has a controller relation to the current autofill popup.
-  int32_t GetWebContentsPopupControllerAxId() const override;
-
-  void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
   // Called when the renderer posts an Autofill query to the browser. |bounds|
   // is window relative. We might not want to display the warning if a website
@@ -124,7 +118,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   void DidEndTextFieldEditing();
 
   // PersonalDataManagerObserver:
-  void OnPersonalDataFinishedProfileTasks() override;
+  void OnPersonalDataChanged() override;
 
   const FormData& query_form() const { return query_form_; }
 
@@ -147,9 +141,8 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   void ShowDeleteAddressProfileDialog(const std::string& guid);
 
   // Triggered when the user closes the address editor dialog.
-  void OnAddressEditorClosed(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision,
-      base::optional_ref<const AutofillProfile> profile);
+  void OnAddressEditorClosed(AutofillClient::AddressPromptUserDecision decision,
+                             base::optional_ref<const AutofillProfile> profile);
 
   // Triggered when the user closes the delete address profile dialog.
   void OnDeleteDialogClosed(const std::string& guid, bool user_accepted_delete);
@@ -248,6 +241,11 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // delete address profile dialog is closed.
   AutofillSuggestionTriggerSource GetReopenTriggerSource() const;
 
+  // If true, OnSuggestionsReturned() passes one of the suggestions directly to
+  // DidAcceptSuggestion(). See ScopedAutofillPopupShortcutForTesting for
+  // details.
+  static int shortcut_test_suggestion_index_;
+
   const raw_ref<BrowserAutofillManager> manager_;
 
   // The current form and field selected by Autofill.
@@ -271,9 +269,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // The current data list values.
   std::vector<SelectOption> datalist_;
 
-  // If not null then it will be called in destructor.
-  base::OnceClosure deletion_callback_;
-
   // Autofill profile update and deletion are async operations. PDM observer is
   // used to detect when these operations finish. These operations can happen at
   // the same time.
@@ -281,6 +276,39 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
       pdm_observation_{this};
 
   base::WeakPtrFactory<AutofillExternalDelegate> weak_ptr_factory_{this};
+};
+
+// When in scope, OnSuggestionsReturned() directly passes one of the Suggestions
+// to DidAcceptSuggestion() rather than displaying the Autofill popup.
+//
+// Specifically, the passed suggestion is the `index`th testing suggestion.
+// Testing suggestions come from PersonalDataManager::test_*().
+//
+// For security reasons, the passed suggestion must correspond to a testing
+// profile from PersonalDataManager. This is asserted by a CHECK(). The CHECK()
+// also fails if no `index`th test suggestion exists.
+//
+// Typical usage is as a member of a test fixture. It can also be used at a
+// narrower scope around, for example, AutofillDriver::AskForValuesToFill(),
+// but beware of potential asynchronicity (e.g., due to asynchronous parsing or
+// asynchronous fetching of suggestions).
+class AutofillExternalDelegate::ScopedAutofillPopupShortcutForTesting {
+ public:
+  explicit ScopedAutofillPopupShortcutForTesting(int index = 0) {
+    DCHECK(index >= 0);
+    DCHECK(shortcut_test_suggestion_index_ < 0);
+    shortcut_test_suggestion_index_ = index;
+  }
+
+  ScopedAutofillPopupShortcutForTesting(
+      const ScopedAutofillPopupShortcutForTesting&) = delete;
+  ScopedAutofillPopupShortcutForTesting& operator=(
+      const ScopedAutofillPopupShortcutForTesting&) = delete;
+
+  ~ScopedAutofillPopupShortcutForTesting() {
+    DCHECK(shortcut_test_suggestion_index_ >= 0);
+    shortcut_test_suggestion_index_ = -1;
+  }
 };
 
 }  // namespace autofill

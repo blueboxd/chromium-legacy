@@ -55,11 +55,6 @@ struct ChromeMLModelData {
   // Called when the model_proto data is no longer needed.
   const ChromeMLDisposeFn* model_proto_dispose;
 
-  // DEPRECATED: Use weights_file instead.
-  void* weights_data;
-  size_t weights_size;
-  const ChromeMLDisposeFn* weights_dispose;
-
   // File holding the weights data. The file will be owned by the inference
   // library and closed once weight loading is complete.
   PlatformFile weights_file;
@@ -95,6 +90,10 @@ struct ChromeMLModelDescriptor {
 
   const uint32_t* adaptation_ranks;
   size_t adaptation_ranks_size;
+
+  bool prefer_texture_weights;
+  bool enable_host_mapped_pointer;
+  bool use_low_power;
 };
 
 // Describes an adaptation for a model.
@@ -194,6 +193,8 @@ struct ChromeMLExecuteOptions {
   const ChromeMLExecutionOutputFn* execution_output_fn;
   // Optional adaptation ID for this request.
   uint32_t* adaptation_id;
+  uint32_t top_k;
+  float temperature;
 };
 
 // Performance data filled out by GetEstimatedPerformance().

@@ -28,6 +28,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/network_service_util.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -426,11 +427,6 @@ class PKIMetadataComponentChromeRootStoreUpdateTest
       std::move(crs_config_closure_).Run();
     }
   }
-
-#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-  base::test::ScopedFeatureList scoped_feature_list_{
-      net::features::kChromeRootStoreUsed};
-#endif
 
   base::OnceClosure crs_config_closure_;
   int64_t last_used_crs_version_ = net::CompiledChromeRootStoreVersion();

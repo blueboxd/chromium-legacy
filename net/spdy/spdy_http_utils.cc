@@ -75,8 +75,9 @@ SpdyHeadersToHttpResponseHeadersUsingRawString(
   // The ":status" header is required.
   spdy::Http2HeaderBlock::const_iterator it =
       headers.find(spdy::kHttp2StatusHeader);
-  if (it == headers.end())
+  if (it == headers.end()) {
     return base::unexpected(ERR_INCOMPLETE_HTTP2_HEADERS);
+  }
 
   const auto status = it->second;
 
@@ -227,10 +228,31 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
     uint8_t urgency = ConvertRequestPriorityToQuicPriority(priority.value());
     bool incremental = info.priority_incremental;
     quic::HttpStreamPriority quic_priority{urgency, incremental};
-    AddUniqueSpdyHeader(kHttp2PriorityHeader,
-                        quic::SerializePriorityFieldValue(quic_priority),
-                        headers);
+    std::string serialized_priority =
+        quic::SerializePriorityFieldValue(quic_priority);
+    if (!serialized_priority.empty()) {
+      AddUniqueSpdyHeader(kHttp2PriorityHeader, serialized_priority, headers);
+    }
   }
+}
+
+void CreateSpdyHeadersFromHttpRequestForExtendedConnect(
+    const HttpRequestInfo& info,
+    std::optional<RequestPriority> priority,
+    const std::string& ext_connect_protocol,
+    const HttpRequestHeaders& request_headers,
+    spdy::Http2HeaderBlock* headers) {
+  CHECK_EQ(info.method, "CONNECT");
+  CreateSpdyHeadersFromHttpRequest(info, priority, request_headers, headers);
+
+  // Extended CONNECT, unlike CONNECT, requires scheme and path, and uses the
+  // default port in the authority header.
+  headers->insert(
+      {spdy::kHttp2AuthorityHeader, GetHostAndOptionalPort(info.url)});
+  headers->insert({spdy::kHttp2SchemeHeader, info.url.scheme()});
+  headers->insert({spdy::kHttp2PathHeader, info.url.PathForRequest()});
+
+  headers->insert({spdy::kHttp2ProtocolHeader, ext_connect_protocol});
 }
 
 void CreateSpdyHeadersFromHttpRequestForWebSocket(

@@ -56,7 +56,8 @@ class DedicatedWorkerHostFactoryClient final
       network::mojom::CredentialsMode credentials_mode,
       const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
       blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>
-          blob_url_token) override;
+          blob_url_token,
+      bool has_storage_access) override;
   scoped_refptr<blink::WebWorkerFetchContext> CloneWorkerFetchContext(
       blink::WebWorkerFetchContext* web_worker_fetch_context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
@@ -90,7 +91,7 @@ class DedicatedWorkerHostFactoryClient final
   void OnScriptLoadStartFailed() override;
 
   // |worker_| owns |this|.
-  raw_ptr<blink::WebDedicatedWorker, ExperimentalRenderer> worker_;
+  raw_ptr<blink::WebDedicatedWorker> worker_;
 
   scoped_refptr<blink::ChildURLLoaderFactoryBundle>
       subresource_loader_factory_bundle_;

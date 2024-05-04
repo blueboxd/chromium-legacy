@@ -77,7 +77,7 @@ class OOPVideoDecoder : public VideoDecoderMixin,
                   bool low_delay,
                   CdmContext* cdm_context,
                   InitCB init_cb,
-                  const OutputCB& output_cb,
+                  const PipelineOutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
@@ -99,7 +99,7 @@ class OOPVideoDecoder : public VideoDecoderMixin,
   // stable::mojom::MediaLog implementation.
   void AddLogRecord(const MediaLogRecord& event) final;
 
-  VideoFrame* UnwrapFrame(const VideoFrame& wrapped_frame);
+  FrameResource* GetOriginalFrame(gfx::GenericSharedMemoryId frame_id);
 
  private:
   OOPVideoDecoder(std::unique_ptr<media::MediaLog> media_log,
@@ -131,7 +131,7 @@ class OOPVideoDecoder : public VideoDecoderMixin,
   void ReleaseVideoFrame(const base::UnguessableToken& release_token);
 
   InitCB init_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
-  OutputCB output_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
+  PipelineOutputCB output_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
   WaitingCB waiting_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
   uint64_t decode_counter_ GUARDED_BY_CONTEXT(sequence_checker_) = 0;
 
@@ -223,9 +223,9 @@ class OOPVideoDecoder : public VideoDecoderMixin,
   // |received_id_to_decoded_frame_map_| and we change the GpuMemoryBufferId of
   // the incoming buffer to guarantee its uniqueness within the GPU process (at
   // least among all clients of media::GetNextGpuMemoryBufferId()).
-  base::flat_map<gfx::GpuMemoryBufferId, scoped_refptr<VideoFrame>>
+  base::flat_map<gfx::GpuMemoryBufferId, scoped_refptr<FrameResource>>
       received_id_to_decoded_frame_map_ GUARDED_BY_CONTEXT(sequence_checker_);
-  base::flat_map<gfx::GpuMemoryBufferId, VideoFrame*>
+  base::flat_map<gfx::GenericSharedMemoryId, FrameResource*>
       generated_id_to_decoded_frame_map_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);

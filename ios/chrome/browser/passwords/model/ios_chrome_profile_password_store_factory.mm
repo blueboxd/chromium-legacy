@@ -10,6 +10,7 @@
 #import "base/command_line.h"
 #import "base/functional/callback_helpers.h"
 #import "base/no_destructor.h"
+#import "components/affiliations/core/browser/affiliation_service.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
 #import "components/password_manager/core/browser/affiliation/affiliations_prefetcher.h"
@@ -21,8 +22,8 @@
 #import "components/sync/base/features.h"
 #import "components/sync/model/wipe_model_upon_sync_disabled_behavior.h"
 #import "components/sync/service/sync_service.h"
+#import "ios/chrome/browser/affiliations/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/model/credentials_cleaner_runner_factory.h"
-#import "ios/chrome/browser/passwords/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_affiliations_prefetcher_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_password_store_utils.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
@@ -31,10 +32,10 @@
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 
-using password_manager::AffiliatedMatchHelper;
-using password_manager::AffiliationService;
-
 namespace {
+
+using affiliations::AffiliationService;
+using password_manager::AffiliatedMatchHelper;
 
 // Kill switch as an extra safeguard, in addition to the guarding behind
 // syncer::kReplaceSyncPromosWithSignInPromos.
@@ -108,7 +109,8 @@ IOSChromeProfilePasswordStoreFactory::BuildServiceInstanceFor(
       base::MakeRefCounted<password_manager::PasswordStore>(
           std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
               std::move(login_db),
-              GetWipeModelUponSyncDisabledBehaviorForProfileStore()));
+              GetWipeModelUponSyncDisabledBehaviorForProfileStore(),
+              ChromeBrowserState::FromBrowserState(context)->GetPrefs()));
 
   AffiliationService* affiliation_service =
       IOSChromeAffiliationServiceFactory::GetForBrowserState(context);

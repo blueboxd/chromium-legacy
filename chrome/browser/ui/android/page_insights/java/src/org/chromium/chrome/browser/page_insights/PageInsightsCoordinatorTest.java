@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.page_insights;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.test.filters.MediumTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.google.protobuf.ByteString;
 
@@ -25,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +48,7 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
@@ -58,6 +63,7 @@ import org.chromium.chrome.browser.page_insights.proto.PageInsights.AutoPeekCond
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.Page;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.PageInsightsMetadata;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -157,7 +163,7 @@ public class PageInsightsCoordinatorTest {
         MockitoAnnotations.initMocks(this);
         jniMocker.mock(OptimizationGuideBridgeJni.TEST_HOOKS, mOptimizationGuideBridgeJniMock);
         doReturn(1L).when(mOptimizationGuideBridgeJniMock).init();
-        Profile.setLastUsedProfileForTesting(mProfile);
+        ProfileManager.setLastUsedProfileForTesting(mProfile);
         TestThreadUtils.runOnUiThreadBlocking(() -> rootView().removeAllViews());
         XSurfaceProcessScopeProvider.setProcessScopeForTesting(mProcessScope);
         doReturn(mSurfaceScope).when(mProcessScope).obtainPageInsightsSurfaceScope(any());
@@ -321,6 +327,7 @@ public class PageInsightsCoordinatorTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/328462350")
     public void testRoundTopCornerAtExpandedStateAfterPeekState() throws Exception {
         createPageInsightsCoordinator();
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
@@ -362,9 +369,11 @@ public class PageInsightsCoordinatorTest {
     public void testBackgroundColorAtExpandedStateAfterPeekState() throws Exception {
         createPageInsightsCoordinator();
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-        setAutoTriggerTimerFinished();
 
+        setAutoTriggerTimerFinished();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         hideTopBar(); // Signal for auto triggering the PIH in Peek state
+
         View view = mBottomSheetContainer.findViewById(R.id.background);
         mBackgroundDrawable = (GradientDrawable) view.getBackground();
         assertEquals(
@@ -392,12 +401,15 @@ public class PageInsightsCoordinatorTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/328462350")
     public void testResizeContent() throws Exception {
         createPageInsightsCoordinator();
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-        setAutoTriggerTimerFinished();
 
+        setAutoTriggerTimerFinished();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         hideTopBar(); // Signal for auto triggering the PIH
+
         int peekHeight = mPageInsightsController.getCurrentOffset();
         verify(mBrowserControlsSizer).setBottomControlsHeight(eq(peekHeight), eq(0));
 
@@ -460,9 +472,11 @@ public class PageInsightsCoordinatorTest {
     @MediumTest
     public void testAutoTrigger() throws Exception {
         createPageInsightsCoordinator();
-        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-        setAutoTriggerTimerFinished();
 
+        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
+
+        setAutoTriggerTimerFinished();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         hideTopBar(); // Signal for auto triggering the PIH
 
         assertEquals(SheetState.PEEK, mPageInsightsController.getSheetState());
@@ -505,6 +519,82 @@ public class PageInsightsCoordinatorTest {
         hideTopBar(); // Signal for auto triggering the PIH
 
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
+    }
+
+    @Test
+    @MediumTest
+    public void testAutoTrigger_scrimNotShown() throws Exception {
+        createPageInsightsCoordinator();
+
+        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
+        assertFalse(mScrimCoordinator.isShowingScrim());
+
+        setAutoTriggerTimerFinished();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        hideTopBar(); // Signal for auto triggering the PIH
+
+        assertEquals(SheetState.PEEK, mPageInsightsController.getSheetState());
+        assertFalse(mScrimCoordinator.isShowingScrim());
+    }
+
+    @Test
+    @MediumTest
+    public void testDismissAfterAutoTrigger_scrimNotShown() throws Exception {
+        createPageInsightsCoordinator();
+        mScrimCoordinator.disableAnimationForTesting(true);
+
+        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
+        assertFalse(mScrimCoordinator.isShowingScrim());
+
+        setAutoTriggerTimerFinished();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        hideTopBar(); // Signal for auto triggering the PIH
+
+        assertEquals(SheetState.PEEK, mPageInsightsController.getSheetState());
+        assertFalse(mScrimCoordinator.isShowingScrim());
+
+        hideSheet();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mScrimCoordinator.setAlpha(0);
+                    mScrimCoordinator.forceAnimationToFinish();
+                });
+        assertFalse(mScrimCoordinator.isShowingScrim());
+    }
+
+    @Test
+    @MediumTest
+    public void testExpandedStateAfterPeekState_scrimShown() throws Exception {
+        createPageInsightsCoordinator();
+        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
+        setAutoTriggerTimerFinished();
+
+        hideTopBar(); // Signal for auto triggering the PIH in Peek state
+        assertFalse(mScrimCoordinator.isShowingScrim());
+
+        expandSheet();
+        assertTrue(mScrimCoordinator.isShowingScrim());
+    }
+
+    @Test
+    @MediumTest
+    @Ignore("TODO: b/325577847 - Animation is not finished when PIH finishes dismiss")
+    @DisabledTest(message = "crbug.com/328462350")
+    public void testDismissAfterExpandedState_scrimNotShown() throws Exception {
+        createAndLaunchPageInsightsCoordinator();
+        mScrimCoordinator.disableAnimationForTesting(true);
+        // expanded state
+        assertTrue(mScrimCoordinator.isShowingScrim());
+
+        hideSheet();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mScrimCoordinator.setAlpha(0);
+                    mScrimCoordinator.forceAnimationToFinish();
+                });
+
+        assertFalse(mScrimCoordinator.isShowingScrim());
     }
 
     private void mockOptimizationGuideResponse(PageInsightsMetadata metadata) {

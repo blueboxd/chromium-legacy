@@ -47,7 +47,9 @@ enum class WebSchedulerTrackedFeature : uint32_t {
 
   kContainsPlugins = 12,
   kDocumentLoaded = 13,
-  kDedicatedWorkerOrWorklet = 14,
+
+  // Removed in https://crbug.com/1146955
+  // kDedicatedWorkerOrWorklet = 14,
 
   // There are some other values defined for specific request context types
   // (e.g., XHR). This value corresponds to a network requests not covered by
@@ -159,11 +161,12 @@ enum class WebSchedulerTrackedFeature : uint32_t {
   // so that the source location can be tracked. See https://crbug.com/1513120
   // for details.
   kUnloadHandler = 67,
+  kParserAborted = 68,
 
   // Please keep in sync with WebSchedulerTrackedFeature in
   // tools/metrics/histograms/enums.xml. These values should not be renumbered.
 
-  kMaxValue = kUnloadHandler,
+  kMaxValue = kParserAborted,
 };
 
 using WebSchedulerTrackedFeatures =

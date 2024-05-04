@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
@@ -55,6 +56,9 @@ class MEDIA_EXPORT AudioRendererMixer
     return output_params_;
   }
 
+  // Return true if this mixer has ever received an error from its sink.
+  bool HasSinkError();
+
  private:
   // AudioRendererSink::RenderCallback implementation.
   int Render(base::TimeDelta delay,
@@ -77,7 +81,8 @@ class MEDIA_EXPORT AudioRendererMixer
   base::Lock lock_;
 
   // List of error callbacks used by this mixer.
-  base::flat_set<AudioRendererMixerInput*> error_callbacks_ GUARDED_BY(lock_);
+  base::flat_set<raw_ptr<AudioRendererMixerInput, CtnExperimental>>
+      error_callbacks_ GUARDED_BY(lock_);
 
   // Maps input sample rate to the dedicated converter.
   using AudioConvertersMap =
@@ -97,6 +102,10 @@ class MEDIA_EXPORT AudioRendererMixer
   base::TimeDelta pause_delay_ GUARDED_BY(lock_);
   base::TimeTicks last_play_time_ GUARDED_BY(lock_);
   bool playing_ GUARDED_BY(lock_);
+
+  // Set if the mixer receives an error from the sink. Indicates that this
+  // mixer and sink should no longer be reused.
+  bool sink_error_ GUARDED_BY(lock_) = false;
 };
 
 }  // namespace media

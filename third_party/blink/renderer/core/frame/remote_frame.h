@@ -139,9 +139,9 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   // Called when the main frame's zoom level is changed and should be propagated
   // to the remote's associated view.
   void ZoomLevelChanged(double zoom_level);
-  // Called when the local root's window segments change.
-  void DidChangeRootWindowSegments(
-      const std::vector<gfx::Rect>& root_widget_window_segments);
+  // Called when the local root's viewport segments change.
+  void DidChangeRootViewportSegments(
+      const std::vector<gfx::Rect>& root_widget_viewport_segments);
   // Called when the local page scale factor changed.
   void PageScaleFactorChanged(float page_scale_factor,
                               bool is_pinch_gesture_active);
@@ -222,6 +222,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       override;
   void CreateRemoteChildren(
       Vector<mojom::blink::CreateRemoteChildParamsPtr> params) override;
+  void ForwardFencedFrameEventToEmbedder(
+      const WTF::String& event_type) override;
 
   // Called only when this frame has a local frame owner.
   gfx::Size GetOutermostMainFrameSize() const override;

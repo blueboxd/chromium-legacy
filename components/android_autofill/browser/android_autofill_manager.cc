@@ -170,13 +170,6 @@ void AndroidAutofillManager::Reset() {
   StartNewLoggingSession();
 }
 
-void AndroidAutofillManager::OnContextMenuShownInField(
-    const FormGlobalId& form_global_id,
-    const FieldGlobalId& field_global_id) {
-  // Not relevant for Android. Only called via context menu in Desktop.
-  NOTREACHED();
-}
-
 void AndroidAutofillManager::OnFieldTypesDetermined(AutofillManager& manager,
                                                     FormGlobalId form,
                                                     FieldTypeSource source) {
@@ -219,8 +212,8 @@ void AndroidAutofillManager::FillOrPreviewForm(
     FieldTypeGroup field_type_group,
     const url::Origin& triggered_origin) {
   DCHECK_EQ(action_persistence, mojom::ActionPersistence::kFill);
-  driver().ApplyFormAction(mojom::ActionType::kFill, action_persistence, form,
-                           triggered_origin, {});
+  driver().ApplyFormAction(mojom::FormActionType::kFill, action_persistence,
+                           form, triggered_origin, {});
   // We do not call OnAutofillProfileOrCreditCardFormFilled() because WebView
   // doesn't have AutofillProfile or CreditCard.
   if (auto* logger = GetEventFormLogger(field_type_group)) {

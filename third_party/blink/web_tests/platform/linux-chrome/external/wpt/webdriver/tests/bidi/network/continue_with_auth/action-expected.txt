@@ -1,3 +1,10 @@
 This is a wdspec test.
-Harness Error. harness_status.status = 2 , harness_status.message = 
+[FAIL] test_cancel
+  asyncio.exceptions.TimeoutError
+[FAIL] test_default
+  asyncio.exceptions.TimeoutError
+[FAIL] test_provideCredentials
+  asyncio.exceptions.TimeoutError
+[FAIL] test_provideCredentials_wrong_credentials
+  asyncio.exceptions.TimeoutError
 Harness: the test ran to completion.

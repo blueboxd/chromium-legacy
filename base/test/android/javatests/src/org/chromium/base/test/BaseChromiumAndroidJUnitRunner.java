@@ -51,6 +51,7 @@ import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.build.BuildConfig;
+import org.chromium.testing.TestListInstrumentationRunListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,12 +66,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A custom AndroidJUnitRunner that supports incremental install and custom test listing. Also
- * customizes various TestRunner and Instrumentation behaviors, like when Activities get finished,
- * and adds a timeout to waitForIdleSync.
  *
- * <p>Please beware that is this not a class runner. It is declared in test apk AndroidManifest.xml
- * <instrumentation>
+ *
+ * <pre>
+ * An Instrumentation subclass that:
+ *    * Supports incremental install.
+ *    * Installs an InMemorySharedPreferences, and a few other try-to-make-things-less-flaky things.
+ * </pre>
  */
 public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     private static final String IS_UNIT_TEST_FLAG =
@@ -220,16 +222,15 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
 
     private void listTests() {
         Bundle results = new Bundle();
-        TestListInstrumentationRunListener listener = new TestListInstrumentationRunListener();
         try {
             TestExecutor.Builder executorBuilder = new TestExecutor.Builder(this);
-            executorBuilder.addRunListener(listener);
+            executorBuilder.addRunListener(new TestListInstrumentationRunListener(true));
 
-            // Do not use Log runner from android test support.
+            // Do not use androidx's AndroidLogOnlyBuilder.
             //
-            // Test logging and execution skipping is handled by BaseJUnit4ClassRunner,
-            // having ARGUMENT_LOG_ONLY in argument bundle here causes AndroidJUnitRunner
-            // to use its own log-only class runner instead of BaseJUnit4ClassRunner.
+            // We require BaseJUnit4ClassRunner to implement our test skipping / restrictions logic,
+            // but ARGUMENT_LOG_ONLY means that our runner will not be used.
+            // Remove the argument, and have BaseJUnit4ClassRunner run in no-op mode.
             Bundle junit4Arguments = new Bundle(InstrumentationRegistry.getArguments());
             junit4Arguments.remove(ARGUMENT_LOG_ONLY);
 
@@ -387,13 +388,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         }
     }
 
-    private static Object getField(Class<?> clazz, Object instance, String name)
-            throws ReflectiveOperationException {
-        Field field = clazz.getDeclaredField(name);
-        field.setAccessible(true);
-        return field.get(instance);
-    }
-
     /**
      * ClassLoader that translates NoClassDefFoundError into ClassNotFoundException.
      *
@@ -451,14 +445,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                                 "Skipping abstract class %s: not a test", loadedClass.getName()));
                 return false;
             }
-            if (junit.framework.Test.class.isAssignableFrom(loadedClass)) {
-                // ensure that if a TestCase, it has at least one test method otherwise
-                // TestSuite will throw error
-                if (junit.framework.TestCase.class.isAssignableFrom(loadedClass)) {
-                    return hasJUnit3TestMethod(loadedClass);
-                }
-                return true;
-            }
             if (loadedClass.isAnnotationPresent(RunWith.class)) {
                 return true;
             }
@@ -479,27 +465,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             Log.w(TAG, String.format("%s in isTestClass for %s", e, loadedClass.getName()));
             return false;
         }
-    }
-
-    private static boolean hasJUnit3TestMethod(Class<?> loadedClass) {
-        for (Method testMethod : loadedClass.getMethods()) {
-            if (isPublicTestMethod(testMethod)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // copied from junit.framework.TestSuite
-    private static boolean isPublicTestMethod(Method m) {
-        return isTestMethod(m) && Modifier.isPublic(m.getModifiers());
-    }
-
-    // copied from junit.framework.TestSuite
-    private static boolean isTestMethod(Method m) {
-        return m.getParameterTypes().length == 0
-                && m.getName().startsWith("test")
-                && m.getReturnType().equals(Void.TYPE);
     }
 
     @Override

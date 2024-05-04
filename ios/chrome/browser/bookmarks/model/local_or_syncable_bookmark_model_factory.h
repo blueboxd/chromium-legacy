@@ -11,26 +11,37 @@
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class ChromeBrowserState;
+class LegacyBookmarkModel;
 
 namespace bookmarks {
 class BookmarkModel;
-}
+}  // namespace bookmarks
 
 namespace ios {
+
 // Owns local/syncable BookmarkModels.
 class LocalOrSyncableBookmarkModelFactory
     : public BrowserStateKeyedServiceFactory {
  public:
-  static bookmarks::BookmarkModel* GetForBrowserState(
+  static LegacyBookmarkModel* GetForBrowserState(
       ChromeBrowserState* browser_state);
-  static bookmarks::BookmarkModel* GetForBrowserStateIfExists(
+  static LegacyBookmarkModel* GetForBrowserStateIfExists(
       ChromeBrowserState* browser_state);
-  static LocalOrSyncableBookmarkModelFactory* GetInstance();
+
+  // Returns a dedicated BookmarkModel instance for `browser_state` that is
+  // guaranteed to not be shared with other factories.
+  // TODO(crbug.com/326185948): Require callers to flag-guard this call with
+  // `syncer::kEnableBookmarkFoldersForAccountStorage` and rename this function
+  // accordingly.
+  static bookmarks::BookmarkModel* GetDedicatedUnderlyingModelForBrowserState(
+      ChromeBrowserState* browser_state);
 
   LocalOrSyncableBookmarkModelFactory(
       const LocalOrSyncableBookmarkModelFactory&) = delete;
   LocalOrSyncableBookmarkModelFactory& operator=(
       const LocalOrSyncableBookmarkModelFactory&) = delete;
+
+  static LocalOrSyncableBookmarkModelFactory* GetInstance();
 
   // Returns the default factory, useful in tests where it's null by default.
   static TestingFactory GetDefaultFactory();

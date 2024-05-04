@@ -46,7 +46,11 @@
 #import "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 using base::apple::CFCast;
-using base::apple::GetValueFromDictionary;
+using base::apple::CFToNSOwnershipCast;
+using base::apple::CFToNSPtrCast;
+using base::apple::NSToCFOwnershipCast;
+using base::apple::NSToCFPtrCast;
+using base::apple::ObjCCast;
 using base::apple::ScopedCFTypeRef;
 
 namespace blink {
@@ -57,6 +61,10 @@ const FourCharCode kWeightTag = 'wght';
 const FourCharCode kWidthTag = 'wdth';
 
 const int kCTNormalTraitsValue = 0;
+
+CTFontSymbolicTraits kImportantTraitsMask =
+    kCTFontTraitItalic | kCTFontTraitBold | kCTFontTraitCondensed |
+    kCTFontTraitExpanded;
 
 const NSFontTraitMask SYNTHESIZED_FONT_TRAITS =
     (NSBoldFontMask | NSItalicFontMask);
@@ -133,7 +141,7 @@ CTFontSymbolicTraits ComputeDesiredTraits(FontSelectionValue desired_weight,
                                           FontSelectionValue desired_slant,
                                           FontSelectionValue desired_width) {
   CTFontSymbolicTraits traits = 0;
-  if (desired_weight > kNormalWeightValue) {
+  if (desired_weight >= kBoldThreshold) {
     traits |= kCTFontTraitBold;
   }
   if (desired_slant != kNormalSlopeValue) {
@@ -148,6 +156,25 @@ CTFontSymbolicTraits ComputeDesiredTraits(FontSelectionValue desired_weight,
   return traits;
 }
 
+NSFontTraitMask ComputeDesiredTraitsNS(FontSelectionValue desired_weight,
+                                       FontSelectionValue desired_slant,
+                                       FontSelectionValue desired_width) {
+  NSFontTraitMask traits = 0;
+  if (desired_weight >= kBoldThreshold) {
+    traits |= NSBoldFontMask;
+  }
+  if (desired_slant != kNormalSlopeValue) {
+    traits |= NSItalicFontMask;
+  }
+  if (desired_width > kNormalWidthValue) {
+    traits |= NSExpandedFontMask;
+  }
+  if (desired_width < kNormalWidthValue) {
+    traits |= NSCondensedFontMask;
+  }
+  return traits;
+}
+
 bool BetterChoiceCT(CTFontSymbolicTraits desired_traits,
                     int desired_weight,
                     CTFontSymbolicTraits chosen_traits,
@@ -157,10 +184,22 @@ bool BetterChoiceCT(CTFontSymbolicTraits desired_traits,
   // A list of the traits we care about.
   // The top item in the list is the worst trait to mismatch; if a font has this
   // and we didn't ask for it, we'd prefer any other font in the family.
-  const CTFontSymbolicTraits kMasks[] = {
-      kCTFontTraitCondensed, kCTFontTraitExpanded, kCTFontTraitItalic};
+  const CTFontSymbolicTraits kMasks[] = {kCTFontTraitCondensed,
+                                         kCTFontTraitExpanded,
+                                         kCTFontTraitItalic, kCTFontTraitBold};
 
   for (CTFontSymbolicTraits mask : kMasks) {
+    // CoreText reports that "HiraginoSans-W5" font with AppKit weight 6 (which
+    // we map to CSS weight 500), has a bold trait. Since we consider bold
+    // threshold to be CSS weight 600, we will not match this font even if
+    // `desired_weight=500` was requested, but instead we will match
+    // "HiraginoSans-W4" with AppKit font weight 5 (CSS font weight 400).
+    // This check ignores the bold trait value if the `candidate_weight` is the
+    // same as requested.
+    if (mask == kCTFontBoldTrait && candidate_weight == desired_weight &&
+        chosen_weight != desired_weight) {
+      return true;
+    }
     bool desired = (desired_traits & mask) != 0;
     bool chosen_has_unwanted_trait = desired != ((chosen_traits & mask) != 0);
     bool candidate_has_unwanted_trait =
@@ -187,28 +226,20 @@ bool BetterChoiceCT(CTFontSymbolicTraits desired_traits,
 }
 
 ScopedCFTypeRef<CTFontRef> BestStyleMatchForFamily(
-    ScopedCFTypeRef<CFStringRef> family_name,
+    CFStringRef family_name,
     CTFontSymbolicTraits desired_traits,
     int desired_weight,
     float size) {
-  ScopedCFTypeRef<CFMutableDictionaryRef> attributes(CFDictionaryCreateMutable(
-      kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks,
-      &kCFTypeDictionaryValueCallBacks));
-  CFDictionarySetValue(attributes.get(), kCTFontFamilyNameAttribute,
-                       family_name.get());
-
-  ScopedCFTypeRef<CTFontDescriptorRef> family_descriptor(
-      CTFontDescriptorCreateWithAttributes(attributes.get()));
-  ScopedCFTypeRef<CFMutableArrayRef> descriptors(
-      CFArrayCreateMutable(kCFAllocatorDefault, 1, &kCFTypeArrayCallBacks));
-  CFArrayAppendValue(descriptors.get(), family_descriptor.get());
-
-  ScopedCFTypeRef<CTFontCollectionRef> collection_from_family(
-      CTFontCollectionCreateWithFontDescriptors(descriptors.get(), nullptr));
+  // We need the order of the fonts in the family be same as in
+  // `availableMembersOfFontFamily` so that the matching results are the same.
+  // That's why we don't pass kCTFontCollectionRemoveDuplicatesOption, it might
+  // change the order and therefore might change the matching result.
+  ScopedCFTypeRef<CTFontCollectionRef> all_system_fonts(
+      CTFontCollectionCreateFromAvailableFonts(nullptr));
 
   ScopedCFTypeRef<CFArrayRef> fonts_in_family(
-      CTFontCollectionCreateMatchingFontDescriptors(
-          collection_from_family.get()));
+      CTFontCollectionCreateMatchingFontDescriptorsForFamily(
+          all_system_fonts.get(), family_name, NULL));
   if (!fonts_in_family) {
     return ScopedCFTypeRef<CTFontRef>(nullptr);
   }
@@ -226,24 +257,21 @@ ScopedCFTypeRef<CTFontRef> BestStyleMatchForFamily(
 
     int candidate_traits = kCTNormalTraitsValue;
     int candidate_weight = kNormalWeightValue;
-    ScopedCFTypeRef<CFDictionaryRef> traits_dict(CFCast<CFDictionaryRef>(
-        CTFontDescriptorCopyAttribute(descriptor, kCTFontTraitsAttribute)));
-    if (traits_dict) {
-      CFNumberRef candidate_symbolic_traits_num =
-          GetValueFromDictionary<CFNumberRef>(traits_dict.get(),
-                                              kCTFontSymbolicTrait);
-      if (candidate_symbolic_traits_num) {
-        CFNumberGetValue(candidate_symbolic_traits_num, kCFNumberIntType,
-                         &candidate_traits);
+    ScopedCFTypeRef<CFTypeRef> traits_ref(
+        CTFontDescriptorCopyAttribute(descriptor, kCTFontTraitsAttribute));
+    NSDictionary* traits =
+        CFToNSPtrCast(CFCast<CFDictionaryRef>(traits_ref.get()));
+    if (traits) {
+      NSNumber* candidate_traits_num =
+          ObjCCast<NSNumber>(traits[CFToNSPtrCast(kCTFontSymbolicTrait)]);
+      if (candidate_traits_num) {
+        candidate_traits = candidate_traits_num.intValue;
       }
 
-      CFNumberRef candidate_weight_num = GetValueFromDictionary<CFNumberRef>(
-          traits_dict.get(), kCTFontWeightTrait);
+      NSNumber* candidate_weight_num =
+          ObjCCast<NSNumber>(traits[CFToNSPtrCast(kCTFontWeightTrait)]);
       if (candidate_weight_num) {
-        float candidate_ct_weight;
-        CFNumberGetValue(candidate_weight_num, kCFNumberFloatType,
-                         &candidate_ct_weight);
-        candidate_weight = ToCSSFontWeight(candidate_ct_weight);
+        candidate_weight = ToCSSFontWeight(candidate_weight_num.floatValue);
       }
     }
 
@@ -254,9 +282,31 @@ ScopedCFTypeRef<CTFontRef> BestStyleMatchForFamily(
           CTFontCreateWithFontDescriptor(descriptor, size, nullptr));
       chosen_traits = candidate_traits;
       chosen_weight = candidate_weight;
+      // If we found a font with the exact weight and traits we asked for, we
+      // can finish the search and return the font, otherwise we will continue
+      // searching among the fonts in family to find the best (not necessarily
+      // exact) match in traits and weight.
+      if (chosen_weight == desired_weight &&
+          (chosen_traits & kImportantTraitsMask) ==
+              (desired_traits & kImportantTraitsMask)) {
+        return matched_font_in_family;
+      }
     }
   }
   return matched_font_in_family;
+}
+
+NSFont* MatchByPostscriptNameNS(const AtomicString& desired_family_string,
+                                float size) {
+  NSString* desired_family = desired_family_string;
+  for (NSString* available_font in NSFontManager.sharedFontManager
+           .availableFonts) {
+    if ([desired_family caseInsensitiveCompare:available_font] ==
+        NSOrderedSame) {
+      return [NSFont fontWithName:available_font size:size];
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -297,44 +347,38 @@ void ClampVariationValuesToFontAcceptableRange(
     ScopedCFTypeRef<CTFontRef> ct_font,
     FontSelectionValue& weight,
     FontSelectionValue& width) {
-  ScopedCFTypeRef<CFArrayRef> all_axes(CTFontCopyVariationAxes(ct_font.get()));
+  NSArray* all_axes =
+      CFToNSOwnershipCast(CTFontCopyVariationAxes(ct_font.get()));
   if (!all_axes) {
     return;
   }
-  for (CFIndex i = 0; i < CFArrayGetCount(all_axes.get()); ++i) {
-    CFDictionaryRef axis =
-        CFCast<CFDictionaryRef>(CFArrayGetValueAtIndex(all_axes.get(), i));
+
+  for (id id_axis in all_axes) {
+    NSDictionary* axis = ObjCCast<NSDictionary>(id_axis);
     if (!axis) {
       continue;
     }
 
-    CFNumberRef axis_id = GetValueFromDictionary<CFNumberRef>(
-        axis, kCTFontVariationAxisIdentifierKey);
+    NSNumber* axis_id = ObjCCast<NSNumber>(
+        axis[CFToNSPtrCast(kCTFontVariationAxisIdentifierKey)]);
     if (!axis_id) {
       continue;
     }
-    int axis_id_value;
-    if (!CFNumberGetValue(axis_id, kCFNumberIntType, &axis_id_value)) {
-      continue;
-    }
+    int axis_id_value = axis_id.intValue;
 
-    CFNumberRef axis_min_number = GetValueFromDictionary<CFNumberRef>(
-        axis, kCTFontVariationAxisMinimumValueKey);
-    double axis_min_value = 0.0;
-    if (!axis_min_number ||
-        !CFNumberGetValue(axis_min_number, kCFNumberDoubleType,
-                          &axis_min_value)) {
+    NSNumber* axis_min_number = ObjCCast<NSNumber>(
+        axis[CFToNSPtrCast(kCTFontVariationAxisMinimumValueKey)]);
+    if (!axis_min_number) {
       continue;
     }
+    double axis_min_value = axis_min_number.doubleValue;
 
-    CFNumberRef axis_max_number = GetValueFromDictionary<CFNumberRef>(
-        axis, kCTFontVariationAxisMaximumValueKey);
-    double axis_max_value = 0.0;
-    if (!axis_max_number ||
-        !CFNumberGetValue(axis_max_number, kCFNumberDoubleType,
-                          &axis_max_value)) {
+    NSNumber* axis_max_number = ObjCCast<NSNumber>(
+        axis[CFToNSPtrCast(kCTFontVariationAxisMaximumValueKey)]);
+    if (!axis_max_number) {
       continue;
     }
+    double axis_max_value = axis_max_number.doubleValue;
 
     FontSelectionRange capabilities_range({FontSelectionValue(axis_min_value),
                                            FontSelectionValue(axis_max_value)});
@@ -380,42 +424,33 @@ ScopedCFTypeRef<CTFontRef> MatchSystemUIFont(FontSelectionValue desired_weight,
   ClampVariationValuesToFontAcceptableRange(ct_font, desired_weight,
                                             desired_width);
 
-  ScopedCFTypeRef<CFMutableDictionaryRef> variations(CFDictionaryCreateMutable(
-      kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks,
-      &kCFTypeDictionaryValueCallBacks));
+  NSMutableDictionary* variations = [NSMutableDictionary dictionary];
+  if (desired_weight != kNormalWeightValue) {
+    variations[@(kWeightTag)] = @(static_cast<float>(desired_weight));
+  }
+  if (desired_width != kNormalWidthValue) {
+    variations[@(kWidthTag)] = @(static_cast<float>(desired_width));
+  }
 
-  auto add_axis_to_variations = [&variations](const FourCharCode tag,
-                                              float desired_value,
-                                              float normal_value) {
-    if (desired_value != normal_value) {
-      ScopedCFTypeRef<CFNumberRef> tag_number(
-          CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &tag));
-      ScopedCFTypeRef<CFNumberRef> value_number(CFNumberCreate(
-          kCFAllocatorDefault, kCFNumberFloatType, &desired_value));
-      CFDictionarySetValue(variations.get(), tag_number.get(),
-                           value_number.get());
-    }
+  NSDictionary* attributes = @{
+    CFToNSPtrCast(kCTFontVariationAttribute) : variations,
   };
-  add_axis_to_variations(kWeightTag, desired_weight, kNormalWeightValue);
-  add_axis_to_variations(kWidthTag, desired_width, kNormalWidthValue);
-
-  ScopedCFTypeRef<CFMutableDictionaryRef> attributes(CFDictionaryCreateMutable(
-      kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks,
-      &kCFTypeDictionaryValueCallBacks));
-  CFDictionarySetValue(attributes.get(), kCTFontVariationAttribute,
-                       variations.get());
 
   ScopedCFTypeRef<CTFontDescriptorRef> var_font_desc(
-      CTFontDescriptorCreateWithAttributes(attributes.get()));
+      CTFontDescriptorCreateWithAttributes(NSToCFPtrCast(attributes)));
 
   return ScopedCFTypeRef<CTFontRef>(CTFontCreateCopyWithAttributes(
       ct_font.get(), size, nullptr, var_font_desc.get()));
 }
 
-// For legacy reasons, we first attempt to find an
-// exact match comparing the `desired_family_string` to the PostScript name of
-// the installed fonts.  If that fails we then do a search based on the family
-// names of the installed fonts.
+// We first attempt to find a match by `desired_family_string` family name. If
+// we failed to do so, we then try to find a match by postscript name. If during
+// postscript matching we found font that has desired traits we will return it,
+// otherwise we will do one more pass of family matching with the found with
+// postscript matching font's family name.
+// We perform matching by PostScript name for legacy and compatibility reasons
+// (Safari also does it), although CSS specs do not require that, see
+// crbug.com/641861.
 ScopedCFTypeRef<CTFontRef> MatchFontFamily(
     const AtomicString& desired_family_string,
     FontSelectionValue desired_weight,
@@ -438,50 +473,58 @@ ScopedCFTypeRef<CTFontRef> MatchFontFamily(
     return ScopedCFTypeRef<CTFontRef>(nullptr);
   }
 
-  ScopedCFTypeRef<CTFontRef> matched_font(
-      CTFontCreateWithName(desired_name.get(), size, nullptr));
-  // CoreText should give us *something* but not always an exactly matched font.
-  DCHECK(matched_font);
-
-  // We perform matching by PostScript name for legacy and compatibility reasons
-  // (Safari also does it), although CSS specs do not require that, see
-  // crbug.com/641861.
-  ScopedCFTypeRef<CFStringRef> matched_postscript_name(
-      CTFontCopyPostScriptName(matched_font.get()));
-  ScopedCFTypeRef<CFStringRef> matched_family_name(
-      CTFontCopyFamilyName(matched_font.get()));
-
-  // If the found font does not match in PostScript name or font family name,
-  // it's not the exact match that is required, so return nullptr.
-  if (matched_postscript_name &&
-      CFStringCompare(matched_postscript_name.get(), desired_name.get(),
-                      kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
-      matched_family_name &&
-      CFStringCompare(matched_family_name.get(), desired_name.get(),
-                      kCFCompareCaseInsensitive) != kCFCompareEqualTo) {
-    return ScopedCFTypeRef<CTFontRef>(nullptr);
-  }
-
   CTFontSymbolicTraits desired_traits =
       ComputeDesiredTraits(desired_weight, desired_slant, desired_width);
 
-  if (matched_postscript_name &&
-      CFStringCompare(matched_postscript_name.get(), desired_name.get(),
-                      kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
-    CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(matched_font.get());
-    // Matched a font by PostScript name that has desired traits, so we
-    // can skip matching by family name.
-    if ((desired_traits & traits) == desired_traits) {
-      return matched_font;
+  ScopedCFTypeRef<CTFontRef> match_in_family = BestStyleMatchForFamily(
+      desired_name.get(), desired_traits, desired_weight, size);
+
+  if (!match_in_family) {
+    // We first try to find font by postscript name. If the found font has
+    // desired traits we will return it otherwise we will try to find the best
+    // match in the found font's family.
+    if (RuntimeEnabledFeatures::
+            FontFamilyPostscriptMatchingCTMigrationEnabled()) {
+      ScopedCFTypeRef<CTFontRef> matched_font(
+          CTFontCreateWithName(desired_name.get(), size, nullptr));
+      ScopedCFTypeRef<CFStringRef> matched_postscript_name(
+          CTFontCopyPostScriptName(matched_font.get()));
+      if (matched_postscript_name &&
+          CFStringCompare(matched_postscript_name.get(), desired_name.get(),
+                          kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
+        CTFontSymbolicTraits traits =
+            CTFontGetSymbolicTraits(matched_font.get());
+        if ((desired_traits & traits) == desired_traits) {
+          return matched_font;
+        }
+
+        ScopedCFTypeRef<CFStringRef> matched_family_name(
+            CTFontCopyFamilyName(matched_font.get()));
+        return BestStyleMatchForFamily(matched_family_name.get(),
+                                       desired_traits, desired_weight, size);
+      }
+    } else {
+      NSFont* postscript_match_font =
+          MatchByPostscriptNameNS(desired_family_string, size);
+      if (postscript_match_font) {
+        NSFontTraitMask desired_traits_ns = ComputeDesiredTraitsNS(
+            desired_weight, desired_slant, desired_width);
+        NSFontManager* font_manager = NSFontManager.sharedFontManager;
+        NSFontTraitMask traits =
+            [font_manager traitsOfFont:postscript_match_font];
+        if ((traits & desired_traits_ns) == desired_traits_ns) {
+          return ScopedCFTypeRef<CTFontRef>(NSToCFOwnershipCast([font_manager
+              convertFont:postscript_match_font
+              toHaveTrait:desired_traits_ns]));
+        }
+
+        return BestStyleMatchForFamily(
+            NSToCFPtrCast(postscript_match_font.familyName), desired_traits,
+            desired_weight, size);
+      }
     }
   }
-
-  if (!matched_family_name) {
-    return ScopedCFTypeRef<CTFontRef>(nullptr);
-  }
-
-  return BestStyleMatchForFamily(matched_family_name, desired_traits,
-                                 desired_weight, size);
+  return match_in_family;
 }
 
 // Family name is somewhat of a misnomer here.  We first attempt to find an
@@ -536,35 +579,29 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
   NSInteger app_kit_font_weight = ToAppKitFontWeight(desired_weight);
   if (!available_family) {
     // Match by PostScript name.
-    NSEnumerator* available_fonts =
-        font_manager.availableFonts.objectEnumerator;
-    NSString* available_font;
-    NSFont* name_matched_font = nil;
+    NSFont* name_matched_font =
+        MatchByPostscriptNameNS(desired_family_string, size);
+    if (!name_matched_font) {
+      return nil;
+    }
+
+    available_family = name_matched_font.familyName;
     NSFontTraitMask desired_traits_for_name_match =
         desired_traits | (app_kit_font_weight >= 7 ? NSBoldFontMask : 0);
-    while ((available_font = [available_fonts nextObject])) {
-      if ([desired_family caseInsensitiveCompare:available_font] ==
-          NSOrderedSame) {
-        name_matched_font = [NSFont fontWithName:available_font size:size];
 
-        // Special case Osaka-Mono.  According to <rdar://problem/3999467>, we
-        // need to treat Osaka-Mono as fixed pitch.
-        if ([desired_family caseInsensitiveCompare:@"Osaka-Mono"] ==
-                NSOrderedSame &&
-            desired_traits_for_name_match == 0) {
-          return name_matched_font;
-        }
+    // Special case Osaka-Mono.  According to <rdar://problem/3999467>, we
+    // need to treat Osaka-Mono as fixed pitch.
+    if ([available_family caseInsensitiveCompare:@"Osaka-Mono"] ==
+            NSOrderedSame &&
+        desired_traits_for_name_match == 0) {
+      return name_matched_font;
+    }
 
-        NSFontTraitMask traits = [font_manager traitsOfFont:name_matched_font];
-        if ((traits & desired_traits_for_name_match) ==
-            desired_traits_for_name_match) {
-          return [font_manager convertFont:name_matched_font
-                               toHaveTrait:desired_traits_for_name_match];
-        }
-
-        available_family = name_matched_font.familyName;
-        break;
-      }
+    NSFontTraitMask traits = [font_manager traitsOfFont:name_matched_font];
+    if ((traits & desired_traits_for_name_match) ==
+        desired_traits_for_name_match) {
+      return [font_manager convertFont:name_matched_font
+                           toHaveTrait:desired_traits_for_name_match];
     }
   }
 

@@ -49,6 +49,7 @@
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/display/types/display_constants.h"
@@ -598,6 +599,10 @@ class WebContents : public PageNavigator,
   // Observers will receive a new accessibility tree.
   virtual void ResetAccessibility() = 0;
 
+  // Returns a pointer to the root node of the live accessibility tree for the
+  // main frame, if accessibility is turned on. Otherwise, returns nullptr.
+  virtual ui::AXNode* GetAccessibilityRootNode() = 0;
+
   virtual std::string DumpAccessibilityTree(
       bool internal,
       std::vector<ui::AXPropertyFilter> property_filters) = 0;
@@ -979,7 +984,7 @@ class WebContents : public PageNavigator,
   // the tab in the screen coordinate system.
   virtual gfx::Rect GetContainerBounds() = 0;
 
-  // Get the bounds of the View, relative to the parent.
+  // Get the bounds of the View in the global screen position.
   virtual gfx::Rect GetViewBounds() = 0;
 
   // Resize a WebContents to |new_bounds|.
@@ -1462,10 +1467,9 @@ class WebContents : public PageNavigator,
       ui::PageTransition page_transition,
       PreloadingHoldbackStatus holdback_status_override,
       PreloadingAttempt* preloading_attempt,
-      std::optional<base::RepeatingCallback<bool(const GURL&)>>
-          url_match_predicate = std::nullopt,
-      std::optional<base::RepeatingCallback<void(NavigationHandle&)>>
-          prerender_navigation_handle_callback = std::nullopt) = 0;
+      base::RepeatingCallback<bool(const GURL&)> url_match_predicate = {},
+      base::RepeatingCallback<void(NavigationHandle&)>
+          prerender_navigation_handle_callback = {}) = 0;
 
   // May be called when the embedder believes that it is likely that the user
   // will perform a back navigation due to the trigger indicated by `predictor`

@@ -8,9 +8,11 @@
 #include <optional>
 #include <string>
 
+#include "android_webview/browser/aw_cookie_access_policy.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/network_delegate.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 
 class GURL;
@@ -21,11 +23,8 @@ namespace android_webview {
 // RestrictedCookieManager, after consulting WebView's cookie settings.
 // We need to do this because Chromium typically configures this per
 // BrowserContext but Android developers can set cookie permissions per WebView.
-// To work around this, we need to intercept cookies while they are being
-// retrieved in the renderer. We have to optimistically retrieve cookies because
-// partitioned cookies should always be allowed regardless of if third party
-// cookies are allowed or not, and there is no way for us to communicate this to
-// the restricted cookie manager when we proxy calls to it.
+// To work around this, we need to feed down to the restricted cookie manager
+// if we wish to disable 3PCs _per_ request.
 class AwProxyingRestrictedCookieManager
     : public network::mojom::RestrictedCookieManager {
  public:
@@ -57,6 +56,7 @@ class AwProxyingRestrictedCookieManager
                     bool has_storage_access,
                     network::mojom::CookieManagerGetOptionsPtr options,
                     bool is_ad_tagged,
+                    bool force_disable_third_party_cookies,
                     GetAllForUrlCallback callback) override;
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           const GURL& url,
@@ -86,6 +86,7 @@ class AwProxyingRestrictedCookieManager
                         bool has_storage_access,
                         bool get_version_shared_memory,
                         bool is_ad_tagged,
+                        bool force_disable_third_party_cookies,
                         GetCookiesStringCallback callback) override;
 
   void CookiesEnabledFor(const GURL& url,
@@ -95,9 +96,10 @@ class AwProxyingRestrictedCookieManager
                          CookiesEnabledForCallback callback) override;
 
   // This one is internal.
-  bool AllowFullCookies(const GURL& url,
-                        const net::SiteForCookies& site_for_cookies,
-                        bool has_storage_access) const;
+  net::NetworkDelegate::PrivacySetting AllowCookies(
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      bool has_storage_access) const;
 
  private:
   AwProxyingRestrictedCookieManager(

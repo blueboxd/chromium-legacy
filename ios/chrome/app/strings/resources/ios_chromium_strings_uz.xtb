@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Yangi Chromium sahifasida qidirish.</translation>
 <translation id="1431818719585918472">Chromium bilan Inkognito varaqlarni himoyalang.</translation>
 <translation id="1472013873724362412">Hisobingiz Chromium tizimida ishlamaydi. Domen administratoriga murojaat qiling yoki tizimga oddiy Google hisobidan kiring.</translation>
+<translation id="1503199973012840174">Chromium eskirgan. Himoya ostida qolish uchun yangilang.</translation>
 <translation id="1507010443238049608">Chromium funksiyalari va unumdorligini yaxshilashga yordam bering</translation>
 <translation id="1513122820609681462">Chromiumni asosiy brauzer etib belgilash</translation>
 <translation id="1531155317299575425">Chromium orqali kirish oynasi chiqadi.</translation>
@@ -49,6 +50,7 @@
 <translation id="22313767259766852">Hozir bu manzil Chromiumga saqlangan. Boshqa Google xizmatlarida ishlatish uchun manzilni Google hisobiga (<ph name="USER_EMAIL" />) saqlang.</translation>
 <translation id="2236584955986023187">Bunda Chromium har safar saytning kompyuter versiyasini talab qiladi.</translation>
 <translation id="2313870531055795960">URL manzillar Chromium bilgan zararli saytlar roʻyxati orqali tekshiriladi. Agar sayt parolingizni oʻgirlashga urinsa yoki zararli fayl yuklab olsangiz, Chromium ham URL manzillar kabi sahifa elementlarini Saytlarni xavfsiz kezish tizimiga yuborishi mumkin.</translation>
+<translation id="231828342043114302">Qiziqishlar asosida moslangan kontent olish uchun Chromium hisobiga kiring.</translation>
 <translation id="2374627437126809292">Manzillar aniqlanganda Chromium marshrut va mahalliy axborotlarni Google Xaritalar orqali ochadi.</translation>
 <translation id="2386292341327187942">Qidiruv vidjetlari maydonida Chromium kiriting</translation>
 <translation id="2426113998523353159">Chromium brauzeridan foydalanishingiz uchun tashkilotingiz hisobingizga kirishni talab qiladi.</translation>
@@ -77,7 +79,6 @@ Chromiumni yaxshilashda ishlatiladigan maʼlumotlar qoʻshimcha sozlamalarini <p
 <translation id="3219277919172823720">Chromiumda ovoz bilan qidirish</translation>
 <translation id="3228349498066165585">Ayrim Chromium maʼlumotlari Google hisobingizga hali saqlanmagan.
         Hisobdan chiqishga shoshilmang. Hozir chiqsangiz, bu maʼlumotlar oʻchib ketadi.</translation>
-<translation id="3256316712990552818">Chromium’ga nusxalandi</translation>
 <translation id="328933489847748230">{count,plural, =1{Hozir 1 ta Chromium oynasi chiqarilgan}other{Hozir {count} ta Chromium oynasi chiqarilgan}}</translation>
 <translation id="3344973607274501920">Chromium parollaringizni tekshira olmadi. Internet aloqasini tekshiring.</translation>
 <translation id="3366305173356742781">Hisobingizdagi Chromium maʼlumotlari</translation>
@@ -312,7 +313,6 @@ Maʼlumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Chr
 <translation id="9059693977935746710">Bu parolni eslab qolishingiz shart emas. U Parollar menejerida <ph name="EMAIL" /> hisobiga saqlanadi.</translation>
 <translation id="9089354809943900324">Chromium versiyasi eskirdi</translation>
 <translation id="9110075932708282655">Chromium birlamchi boʻlsin</translation>
-<translation id="9137114218472648150">Chromium eskirgan. Xavfsiz qolish uchun oxirgi versiyaga yangilang.</translation>
 <translation id="921174536258924340">Chromium barcha parollarni tekshira olmadi. Ertaga qaytadan urining yoki <ph name="BEGIN_LINK" />Google hisobingizdagi parollarni tekshiring.<ph name="END_LINK" /></translation>
 <translation id="971488683725792095">Xabarlar, hujjatlar va boshqa ilovalardagi havola bosilganda Chromium avtomatik ochilsin</translation>
 <translation id="981812233959540767">Chromium Dino oʻyinini ochish</translation>

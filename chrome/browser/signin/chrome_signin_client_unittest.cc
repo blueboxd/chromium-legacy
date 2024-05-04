@@ -46,9 +46,8 @@ class MockChromeSigninClient : public ChromeSigninClient {
   MOCK_METHOD1(ShowUserManager, void(const base::FilePath&));
   MOCK_METHOD1(LockForceSigninProfile, void(const base::FilePath&));
 
-  MOCK_METHOD3(SignOutCallback,
+  MOCK_METHOD2(SignOutCallback,
                void(signin_metrics::ProfileSignout,
-                    signin_metrics::SignoutDelete,
                     SigninClient::SignoutDecision signout_decision));
 
   MOCK_METHOD0(GetAllBookmarksCount, std::optional<size_t>());
@@ -73,13 +72,12 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
     client_ = std::make_unique<MockChromeSigninClient>(profile);
   }
 
-  void PreSignOut(signin_metrics::ProfileSignout source_metric,
-                  signin_metrics::SignoutDelete delete_metric) {
-    client_->PreSignOut(base::BindOnce(&MockChromeSigninClient::SignOutCallback,
-                                       base::Unretained(client_.get()),
-                                       source_metric, delete_metric),
-                        source_metric,
-                        /*has_sync_account=*/false);
+  void PreSignOut(signin_metrics::ProfileSignout source_metric) {
+    client_->PreSignOut(
+        base::BindOnce(&MockChromeSigninClient::SignOutCallback,
+                       base::Unretained(client_.get()), source_metric),
+        source_metric,
+        /*has_sync_account=*/false);
   }
 
   signin_util::ScopedForceSigninSetterForTesting forced_signin_setter_;
@@ -89,18 +87,16 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
 TEST_F(ChromeSigninClientSignoutTest, SignOut) {
   signin_metrics::ProfileSignout source_metric =
       signin_metrics::ProfileSignout::kUserClickedSignoutSettings;
-  signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::kIgnoreMetric;
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(1);
   EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
       .Times(1);
-  EXPECT_CALL(*client_, SignOutCallback(source_metric, delete_metric,
+  EXPECT_CALL(*client_, SignOutCallback(source_metric,
                                         SigninClient::SignoutDecision::ALLOW))
       .Times(1);
 
-  PreSignOut(source_metric, delete_metric);
+  PreSignOut(source_metric);
 }
 
 TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
@@ -109,17 +105,15 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
 
   signin_metrics::ProfileSignout source_metric =
       signin_metrics::ProfileSignout::kUserClickedSignoutSettings;
-  signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::kIgnoreMetric;
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(0);
   EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
       .Times(0);
-  EXPECT_CALL(*client_, SignOutCallback(source_metric, delete_metric,
+  EXPECT_CALL(*client_, SignOutCallback(source_metric,
                                         SigninClient::SignoutDecision::ALLOW))
       .Times(1);
-  PreSignOut(source_metric, delete_metric);
+  PreSignOut(source_metric);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -217,6 +211,8 @@ bool IsAlwaysAllowedSignoutSources(
     case signin_metrics::ProfileSignout::kAbortSignin:
     case signin_metrics::ProfileSignout::
         kCancelSyncConfirmationOnWebOnlySignedIn:
+    case signin_metrics::ProfileSignout::kCancelSyncConfirmationRemoveAccount:
+    case signin_metrics::ProfileSignout::kMovePrimaryAccount:
     // Allow signout for tests that want to force it.
     case signin_metrics::ProfileSignout::kForceSignoutAlwaysAllowedForTest:
     case signin_metrics::ProfileSignout::kUserClickedRevokeSyncConsentSettings:
@@ -242,12 +238,9 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutMainProfile) {
       IsAlwaysAllowedSignoutSources(signout_source)
           ? SigninClient::SignoutDecision::ALLOW
           : SigninClient::SignoutDecision::CLEAR_PRIMARY_ACCOUNT_DISALLOWED;
-  signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::kIgnoreMetric;
-  EXPECT_CALL(*client_,
-              SignOutCallback(signout_source, delete_metric, signout_decision))
+  EXPECT_CALL(*client_, SignOutCallback(signout_source, signout_decision))
       .Times(1);
-  PreSignOut(signout_source, delete_metric);
+  PreSignOut(signout_source);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -264,13 +257,11 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutAllowed) {
   ASSERT_TRUE(client_->IsRevokeSyncConsentAllowed());
 
   // Verify IdentityManager gets callback indicating sign-out is always allowed.
-  signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::kIgnoreMetric;
-  EXPECT_CALL(*client_, SignOutCallback(signout_source, delete_metric,
+  EXPECT_CALL(*client_, SignOutCallback(signout_source,
                                         SigninClient::SignoutDecision::ALLOW))
       .Times(1);
 
-  PreSignOut(signout_source, delete_metric);
+  PreSignOut(signout_source);
 }
 
 // TODO(crbug.com/1369588): Enable |ChromeSigninClientSignoutSourceTest| test
@@ -297,13 +288,10 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutDisallowed) {
       IsAlwaysAllowedSignoutSources(signout_source)
           ? SigninClient::SignoutDecision::ALLOW
           : SigninClient::SignoutDecision::CLEAR_PRIMARY_ACCOUNT_DISALLOWED;
-  signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::kIgnoreMetric;
-  EXPECT_CALL(*client_,
-              SignOutCallback(signout_source, delete_metric, signout_decision))
+  EXPECT_CALL(*client_, SignOutCallback(signout_source, signout_decision))
       .Times(1);
 
-  PreSignOut(signout_source, delete_metric);
+  PreSignOut(signout_source);
 }
 
 TEST_P(ChromeSigninClientSignoutSourceTest, RevokeSyncDisallowed) {
@@ -326,13 +314,10 @@ TEST_P(ChromeSigninClientSignoutSourceTest, RevokeSyncDisallowed) {
       IsAlwaysAllowedSignoutSources(signout_source)
           ? SigninClient::SignoutDecision::ALLOW
           : SigninClient::SignoutDecision::REVOKE_SYNC_DISALLOWED;
-  signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::kIgnoreMetric;
-  EXPECT_CALL(*client_,
-              SignOutCallback(signout_source, delete_metric, signout_decision))
+  EXPECT_CALL(*client_, SignOutCallback(signout_source, signout_decision))
       .Times(1);
 
-  PreSignOut(signout_source, delete_metric);
+  PreSignOut(signout_source);
 }
 #endif
 
@@ -366,6 +351,8 @@ const signin_metrics::ProfileSignout kSignoutSources[] = {
     signin_metrics::ProfileSignout::kRevokeSyncFromSettings,
     signin_metrics::ProfileSignout::kCancelSyncConfirmationOnWebOnlySignedIn,
     signin_metrics::ProfileSignout::kIdleTimeoutPolicyTriggeredSignOut,
+    signin_metrics::ProfileSignout::kCancelSyncConfirmationRemoveAccount,
+    signin_metrics::ProfileSignout::kMovePrimaryAccount,
 };
 // kNumberOfObsoleteSignoutSources should be updated when a ProfileSignout
 // value is deprecated.
@@ -562,10 +549,12 @@ TEST_P(ChromeSigninClientMetricsTest, ExentsionsAndBookmarkCount) {
     previous_state.primary_account = account;
     previous_state.consent_level = signin::ConsentLevel::kSignin;
   }
+  MetricsAccessPointHistogramNamesParam test_params = std::get<1>(GetParam());
   signin::PrimaryAccountChangeEvent event_details{
       previous_state,
-      /*current_state=*/signin::PrimaryAccountChangeEvent::State(
-          account, consent_level)};
+      /*current_state=*/
+      signin::PrimaryAccountChangeEvent::State(account, consent_level),
+      test_params.access_point};
   // Ensure the events types are correct for both consent levels.
   if (consent_level == signin::ConsentLevel::kSync) {
     ASSERT_EQ(event_details.GetEventTypeFor(signin::ConsentLevel::kSignin),
@@ -579,10 +568,8 @@ TEST_P(ChromeSigninClientMetricsTest, ExentsionsAndBookmarkCount) {
               signin::PrimaryAccountChangeEvent::Type::kNone);
   }
 
-  MetricsAccessPointHistogramNamesParam test_params = std::get<1>(GetParam());
   // Simulate primary account changed.
-  client.OnPrimaryAccountChangedWithEventSource(event_details,
-                                                test_params.access_point);
+  client.OnPrimaryAccountChanged(event_details);
 
   // Check for expected histograms values below.
   const size_t signin_expected_bucket_count =
@@ -685,8 +672,10 @@ TEST_F(ChromeSigninClientMetricsTest,
   // It will trigger both events to `kSignin` and `kSync`.
   signin::PrimaryAccountChangeEvent event_details{
       /*previous_state=*/signin::PrimaryAccountChangeEvent::State(),
-      /*current_state=*/signin::PrimaryAccountChangeEvent::State(
-          account, signin::ConsentLevel::kSync)};
+      /*current_state=*/
+      signin::PrimaryAccountChangeEvent::State(account,
+                                               signin::ConsentLevel::kSync),
+      signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN};
   // Both Signin and Sync event are being set.
   ASSERT_EQ(event_details.GetEventTypeFor(signin::ConsentLevel::kSignin),
             signin::PrimaryAccountChangeEvent::Type::kSet);
@@ -694,8 +683,7 @@ TEST_F(ChromeSigninClientMetricsTest,
             signin::PrimaryAccountChangeEvent::Type::kSet);
 
   // Simulate primary account changed.
-  client.OnPrimaryAccountChangedWithEventSource(
-      event_details, signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN);
+  client.OnPrimaryAccountChanged(event_details);
 
   // Check for expected histograms values below.
 
@@ -772,15 +760,15 @@ TEST_F(ChromeSigninClientMetricsTest,
   // Event details to simulate no update. Either empty or same value set.
   signin::PrimaryAccountChangeEvent event_details{
       /*previous_state=*/signin::PrimaryAccountChangeEvent::State(),
-      /*current_state=*/signin::PrimaryAccountChangeEvent::State()};
+      /*current_state=*/signin::PrimaryAccountChangeEvent::State(),
+      signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN};
   ASSERT_EQ(event_details.GetEventTypeFor(signin::ConsentLevel::kSignin),
             signin::PrimaryAccountChangeEvent::Type::kNone);
   ASSERT_EQ(event_details.GetEventTypeFor(signin::ConsentLevel::kSync),
             signin::PrimaryAccountChangeEvent::Type::kNone);
 
   // Simulate primary account changed.
-  client.OnPrimaryAccountChangedWithEventSource(
-      event_details, signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN);
+  client.OnPrimaryAccountChanged(event_details);
 
   // `expected_counts` is empty as we expect no histograms related to
   // `Signin.Bookmarks` or `Signin.Extensions to be recorded.
@@ -809,15 +797,15 @@ TEST_F(ChromeSigninClientMetricsTest,
   signin::PrimaryAccountChangeEvent event_details{
       /*previous_state=*/signin::PrimaryAccountChangeEvent::State(
           account, signin::ConsentLevel::kSignin),
-      /*current_state=*/signin::PrimaryAccountChangeEvent::State()};
+      /*current_state=*/signin::PrimaryAccountChangeEvent::State(),
+      signin_metrics::ProfileSignout::kTest};
   ASSERT_EQ(event_details.GetEventTypeFor(signin::ConsentLevel::kSignin),
             signin::PrimaryAccountChangeEvent::Type::kCleared);
   ASSERT_EQ(event_details.GetEventTypeFor(signin::ConsentLevel::kSync),
             signin::PrimaryAccountChangeEvent::Type::kNone);
 
   // Simulate primary account changed.
-  client.OnPrimaryAccountChangedWithEventSource(
-      event_details, signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN);
+  client.OnPrimaryAccountChanged(event_details);
 
   // `expected_counts` is empty as we expect no histograms related to
   // `Signin.Bookmarks` or `Signin.Extensions to be recorded.
@@ -849,16 +837,17 @@ TEST_F(ChromeSigninClientMetricsTest,
   // Simulating signing in update.
   signin::PrimaryAccountChangeEvent event_details{
       /*previous_state=*/signin::PrimaryAccountChangeEvent::State(),
-      /*current_state=*/signin::PrimaryAccountChangeEvent::State(
-          account, signin::ConsentLevel::kSignin)};
+      /*current_state=*/
+      signin::PrimaryAccountChangeEvent::State(account,
+                                               signin::ConsentLevel::kSignin),
+      signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN};
   ASSERT_EQ(event_details.GetEventTypeFor(signin::ConsentLevel::kSignin),
             signin::PrimaryAccountChangeEvent::Type::kSet);
   ASSERT_EQ(event_details.GetEventTypeFor(signin::ConsentLevel::kSync),
             signin::PrimaryAccountChangeEvent::Type::kNone);
 
   // Simulate primary account changed.
-  client.OnPrimaryAccountChangedWithEventSource(
-      event_details, signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN);
+  client.OnPrimaryAccountChanged(event_details);
 
   // `expected_counts` is empty as we expect no histograms related to
   // `Signin.Bookmarks` or `Signin.Extensions to be recorded.

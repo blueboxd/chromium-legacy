@@ -261,10 +261,11 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
-#include "components/app_launch_prefetch/app_launch_prefetch.h"
+#include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 #include "content/public/common/font_cache_dispatcher_win.h"
 #include "content/public/common/font_cache_win.mojom.h"
+#include "content/public/common/prefetch_type_win.h"
 #include "ui/display/win/dpi.h"
 #endif
 
@@ -1718,9 +1719,12 @@ bool RenderProcessHostImpl::Init() {
     AppendRendererCommandLine(cmd_line.get());
 
 #if BUILDFLAG(IS_WIN)
+    // TODO(https://crbug.com/325992828): Pass IsJitDisabled() instead of
+    // IsPdf() for the last argument. This is a temporary hack to fix the
+    // linked bug in M122.
     std::unique_ptr<SandboxedProcessLauncherDelegate> sandbox_delegate =
         std::make_unique<RendererSandboxedProcessLauncherDelegateWin>(
-            *cmd_line, IsPdf(), IsJitDisabled());
+            *cmd_line, IsPdf(), /*is_jit_disabled=*/IsPdf());
 #else
     std::unique_ptr<SandboxedProcessLauncherDelegate> sandbox_delegate =
         std::make_unique<RendererSandboxedProcessLauncherDelegate>();
@@ -3209,7 +3213,7 @@ void RenderProcessHostImpl::NotifyRendererOfLockedStateUpdate() {
 
   GetRendererInterface()->SetIsCrossOriginIsolated(
       process_lock.GetWebExposedIsolationLevel() >=
-      WebExposedIsolationLevel::kMaybeIsolated);
+      WebExposedIsolationLevel::kIsolated);
 
   GetRendererInterface()->SetIsIsolatedContext(IsIsolatedContext(this));
 
@@ -3286,11 +3290,13 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
 #if BUILDFLAG(IS_WIN)
   if (command_line->HasSwitch(kExtensionProcess)) {
-    command_line->AppendArgNative(app_launch_prefetch::GetPrefetchSwitch(
-        app_launch_prefetch::SubprocessType::kExtension));
+    command_line->AppendArg(
+        internal::ChildProcessLauncherHelper::GetPrefetchSwitch(
+            AppLaunchPrefetchType::kExtension));
   } else {
-    command_line->AppendArgNative(app_launch_prefetch::GetPrefetchSwitch(
-        app_launch_prefetch::SubprocessType::kRenderer));
+    command_line->AppendArg(
+        internal::ChildProcessLauncherHelper::GetPrefetchSwitch(
+            AppLaunchPrefetchType::kRenderer));
   }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -3311,9 +3317,15 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
     command_line->AppendSwitch(switches::kNoZygote);
   }
 
-  if (IsJitDisabled())
-    command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
-                                    "--jitless");
+  if (IsJitDisabled()) {
+    if (IsPdf()) {
+      command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
+                                      "--jitless");
+    } else {
+      command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
+                                      "--no-maglev,--no-turbofan");
+    }
+  }
 
   if (features::IsTouchTextEditingRedesignEnabled()) {
     command_line->AppendSwitchASCII(
@@ -3387,7 +3399,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableGpuMemoryBufferVideoFrames,
     switches::kDisableHistogramCustomizer,
     switches::kDisableLCDText,
-    switches::kDisableLogging,
     switches::kDisableBackgroundMediaSuspend,
     switches::kDisableNotifications,
     switches::kDisableOriginTrialControlledBlinkFeatures,
@@ -3415,7 +3426,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGpuMemoryBufferVideoFrames,
     switches::kEnableGPUServiceLogging,
     switches::kEnableLCDText,
-    switches::kEnableLogging,
     switches::kEnableNetworkInformationDownlinkMax,
     switches::kEnablePluginPlaceholderTesting,
     switches::kEnablePreciseMemoryInfo,
@@ -3439,8 +3449,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kGaiaUrl,
     switches::kIPCConnectionTimeout,
     switches::kLogBestEffortTasks,
-    switches::kLogFile,
-    switches::kLoggingLevel,
     switches::kMaxActiveWebGLContexts,
     switches::kMaxDecodedImageSizeMb,
     switches::kMaxWebMediaPlayerCount,
@@ -3469,10 +3477,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kUseFakeCodecForPeerConnection,
     switches::kUseFakeUIForMediaStream,
     switches::kUseMobileUserAgent,
-    switches::kV,
     switches::kVideoCaptureUseGpuMemoryBuffer,
     switches::kVideoThreads,
-    switches::kVModule,
     switches::kWaitForDebuggerOnNavigation,
     switches::kWebAuthRemoteDesktopSupport,
     switches::kWebViewDrawFunctorUsesVulkan,
@@ -3490,7 +3496,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     blink::switches::kDisableNewBaseUrlInheritanceBehavior,
     blink::switches::kDisablePreferCompositingToLCDText,
     blink::switches::kDisableRGBA4444Textures,
-    blink::switches::kDisableThrottleNonVisibleCrossOriginIframes,
     blink::switches::kEnableLeakDetectionHeapSnapshot,
     blink::switches::kEnableLowResTiling,
     blink::switches::kEnablePreferCompositingToLCDText,
@@ -3529,8 +3534,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if BUILDFLAG(ENABLE_PPAPI)
       switches::kEnablePepperTesting,
 #endif
-      switches::kDisableWebRtcHWDecoding,
-      switches::kDisableWebRtcHWEncoding,
       switches::kEnableWebRtcSrtpEncryptedHeaders,
       switches::kEnforceWebRtcIPPermissionCheck,
       switches::kWebRtcMaxCaptureFramerate,
@@ -5054,7 +5057,7 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
   ChildProcessImportance new_effective_importance =
       ChildProcessImportance::NORMAL;
 #endif
-  for (auto* client : priority_clients_) {
+  for (RenderProcessHostPriorityClient* client : priority_clients_) {
     RenderProcessHostPriorityClient::Priority priority = client->GetPriority();
 
     // Compute the lowest depth of widgets with highest visibility priority.

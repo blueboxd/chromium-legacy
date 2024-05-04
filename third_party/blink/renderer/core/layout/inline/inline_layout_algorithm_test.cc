@@ -853,6 +853,67 @@ TEST_F(InlineLayoutAlgorithmTest, LineBoxWithHangingWidthRTLCenterAligned) {
   EXPECT_EQ(PhysicalRect(35, 0, 30, 10), TextAreaFirstLineRect("f"));
 }
 
+TEST_F(InlineLayoutAlgorithmTest, TextBoxTrimConstraintSpace) {
+  ScopedCSSTextBoxTrimForTest enable_text_box_trim(true);
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div id="parent" style="text-box-trim: both; position: relative">
+      <div id="abs1" style="position: absolute">abs1</div>
+      <div id="float1" style="float: left">float1</div>
+      <div id="empty1"></div>
+      <div id="first">first</div>
+      <div id="middle">middle</div>
+      <div id="last">last</div>
+      <div id="abs2" style="position: absolute">abs1</div>
+      <div id="float2" style="float: left">float1</div>
+    </div>
+  )HTML");
+
+  struct Result {
+    explicit Result(const LayoutBox& layout_object) {
+      const LayoutResult* result = layout_object.GetCachedLayoutResult(nullptr);
+      const ConstraintSpace& space = result->GetConstraintSpaceForCaching();
+      should_trim_start = space.ShouldTextBoxTrimStart();
+      should_trim_end = space.ShouldTextBoxTrimEnd();
+      is_trimmed = result->IsTextBoxTrimApplied();
+    }
+
+    bool should_trim_start = false;
+    bool should_trim_end = false;
+    bool is_trimmed = false;
+  };
+
+  const Result parent{*GetLayoutBlockFlowByElementId("parent")};
+  EXPECT_FALSE(parent.should_trim_start);
+  EXPECT_FALSE(parent.should_trim_end);
+  EXPECT_TRUE(parent.is_trimmed);
+
+  // `ShouldTextBoxTrim*` should be set only to in-flow children.
+  for (const char* id : {"abs1", "abs2", "float1", "float2", "middle"}) {
+    const Result result{*GetLayoutBlockFlowByElementId(id)};
+    EXPECT_FALSE(result.should_trim_start) << id;
+    EXPECT_FALSE(result.should_trim_end) << id;
+    EXPECT_FALSE(result.is_trimmed) << id;
+  }
+
+  const Result empty1{*GetLayoutBlockFlowByElementId("empty1")};
+  EXPECT_TRUE(empty1.should_trim_start);
+  EXPECT_FALSE(empty1.should_trim_end);
+  EXPECT_FALSE(empty1.is_trimmed);
+
+  const Result first{*GetLayoutBlockFlowByElementId("first")};
+  EXPECT_TRUE(first.should_trim_start);
+  EXPECT_FALSE(first.should_trim_end);
+  EXPECT_TRUE(first.is_trimmed);
+
+  const Result last{*GetLayoutBlockFlowByElementId("last")};
+  EXPECT_FALSE(last.should_trim_start);
+  EXPECT_TRUE(last.should_trim_end);
+  EXPECT_TRUE(last.is_trimmed);
+
+  // TODO(crbug.com/40254880): Empty after "last" isn't implemented yet.
+}
+
 #undef MAYBE_VerticalAlignBottomReplaced
 }  // namespace
 }  // namespace blink

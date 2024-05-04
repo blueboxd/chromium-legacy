@@ -21,11 +21,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/types/expected.h"
+#include "base/types/expected_macros.h"
 #include "base/version.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_dev_mode.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_features.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader_factory.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
@@ -68,9 +71,10 @@ std::string GenerateRandomDirName() {
       random_array, base32::Base32EncodePolicy::OMIT_PADDING));
 }
 
-base::expected<base::FilePath, std::string> CopySwbnToIwaDir(
+base::expected<IsolatedWebAppStorageLocation, std::string> CopySwbnToIwaDir(
     const base::FilePath& swbn_path,
-    const base::FilePath& profile_dir) {
+    const base::FilePath& profile_dir,
+    bool dev_mode) {
   const base::FilePath iwa_dir_path = profile_dir.Append(kIwaDirName);
   if (!base::DirectoryExists(iwa_dir_path)) {
     base::File::Error error;
@@ -80,8 +84,9 @@ base::expected<base::FilePath, std::string> CopySwbnToIwaDir(
     }
   }
 
+  std::string dir_name_ascii = GenerateRandomDirName();
   const base::FilePath destination_dir =
-      iwa_dir_path.AppendASCII(GenerateRandomDirName());
+      iwa_dir_path.AppendASCII(dir_name_ascii);
   if (base::DirectoryExists(destination_dir)) {
     base::unexpected("The unique destination directory exists: " +
                      destination_dir.AsUTF8Unsafe());
@@ -103,7 +108,7 @@ base::expected<base::FilePath, std::string> CopySwbnToIwaDir(
         destination_swbn_path.AsUTF8Unsafe() + " IWA directory");
   }
 
-  return destination_swbn_path;
+  return IwaStorageOwnedBundle{dir_name_ascii, dev_mode};
 }
 
 void RemoveParentDirectory(const base::FilePath& path) {
@@ -113,60 +118,38 @@ void RemoveParentDirectory(const base::FilePath& path) {
   }
 }
 
-bool IsSwbnPathOwnedByChrome(const base::FilePath& profile_dir,
-                             const base::FilePath& swbn_path) {
-  const base::FilePath iwa_directory = profile_dir.Append(kIwaDirName);
-  return iwa_directory.IsParent(swbn_path);
-}
-
 bool IsUrlLoadingResultSuccess(WebAppUrlLoader::Result result) {
   return result == WebAppUrlLoader::Result::kUrlLoaded;
-}
-
-base::expected<IsolatedWebAppLocation, std::string>
-CreateUpdatedInstalledBundleLocation(
-    base::expected<base::FilePath, std::string> new_path) {
-  return new_path.transform(
-      [](const base::FilePath& path) -> IsolatedWebAppLocation {
-        return InstalledBundle{.path = path};
-      });
 }
 
 }  // namespace
 
 void CleanupLocationIfOwned(const base::FilePath& profile_dir,
-                            const IsolatedWebAppLocation& location,
+                            const IsolatedWebAppStorageLocation& location,
                             base::OnceClosure closure) {
-  absl::visit(base::Overloaded{
-                  [&](const InstalledBundle& location) {
-                    if (IsSwbnPathOwnedByChrome(profile_dir, location.path)) {
-                      base::ThreadPool::PostTaskAndReply(
-                          FROM_HERE,
-                          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                          base::BindOnce(RemoveParentDirectory, location.path),
-                          std::move(closure));
-                    } else {
-                      std::move(closure).Run();
-                    }
-                  },
-                  [&](const DevModeProxy& location) {
-                    // Nothing to delete for IWA proxy mode.
-                    std::move(closure).Run();
-                  },
-                  [&](const DevModeBundle& location) {
-                    // So far we don't relocate dev mode web bundle to the IWA
-                    // directory. So there is nothing to delete.
-                    std::move(closure).Run();
-                  }},
-              location);
+  absl::visit(
+      base::Overloaded{
+          [&](const IwaStorageOwnedBundle& location) {
+            base::ThreadPool::PostTaskAndReply(
+                FROM_HERE,
+                {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+                 base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                base::BindOnce(RemoveParentDirectory,
+                               location.GetPath(profile_dir)),
+                std::move(closure));
+          },
+          [&](const IwaStorageUnownedBundle& location) {
+            std::move(closure).Run();
+          },
+          [&](const IwaStorageProxy& location) { std::move(closure).Run(); }},
+      location.variant());
 }
 
 void CopyLocationToProfileDirectory(
     const base::FilePath& profile_dir,
     const IsolatedWebAppLocation& location,
-    base::OnceCallback<
-        void(base::expected<IsolatedWebAppLocation, std::string>)> callback) {
+    base::OnceCallback<void(
+        base::expected<IsolatedWebAppStorageLocation, std::string>)> callback) {
   absl::visit(
       base::Overloaded{
           [&](const InstalledBundle& location) {
@@ -174,18 +157,18 @@ void CopyLocationToProfileDirectory(
                 FROM_HERE,
                 {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                base::BindOnce(CopySwbnToIwaDir, location.path, profile_dir),
-                base::BindOnce(&CreateUpdatedInstalledBundleLocation)
-                    .Then(std::move(callback)));
+                base::BindOnce(CopySwbnToIwaDir, location.path, profile_dir,
+                               /*dev_mode=*/false),
+                std::move(callback));
           },
-          [&](const DevModeBundle&) {
+          [&](const DevModeBundle& location) {
             // As soon as uninstallation/update is implemented, here we should
             // copy the .swbn file to the profile dir.
-            std::move(callback).Run(location);
+            std::move(callback).Run(IwaStorageUnownedBundle{location.path});
           },
-          [&](const DevModeProxy&) {
+          [&](const DevModeProxy& location) {
             // Nothing to relocate for IWA proxy mode.
-            std::move(callback).Run(location);
+            std::move(callback).Run(IwaStorageProxy{location.proxy_url});
           }},
       location);
 }
@@ -206,8 +189,8 @@ IsolatedWebAppInstallCommandHelper::CreateIsolatedWebAppWebContents(
 // static
 std::unique_ptr<IsolatedWebAppResponseReaderFactory>
 IsolatedWebAppInstallCommandHelper::CreateDefaultResponseReaderFactory(
-    const PrefService& prefs) {
-  auto trust_checker = std::make_unique<IsolatedWebAppTrustChecker>(prefs);
+    Profile& profile) {
+  auto trust_checker = std::make_unique<IsolatedWebAppTrustChecker>(profile);
   auto validator =
       std::make_unique<IsolatedWebAppValidator>(std::move(trust_checker));
 
@@ -236,7 +219,9 @@ void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignatures(
           [&](const InstalledBundle& location) {
             CHECK_EQ(url_info_.web_bundle_id().type(),
                      web_package::SignedWebBundleId::Type::kEd25519PublicKey);
-            CheckTrustAndSignaturesOfBundle(location.path, std::move(callback));
+            CheckTrustAndSignaturesOfBundle(location.path,
+                                            /*dev_mode=*/false,
+                                            std::move(callback));
           },
           [&](const DevModeBundle& location) {
             CHECK_EQ(url_info_.web_bundle_id().type(),
@@ -246,7 +231,9 @@ void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignatures(
                   base::unexpected(std::string(kIwaDevModeNotEnabledMessage)));
               return;
             }
-            CheckTrustAndSignaturesOfBundle(location.path, std::move(callback));
+            CheckTrustAndSignaturesOfBundle(location.path,
+                                            /*dev_mode=*/true,
+                                            std::move(callback));
           },
           [&](const DevModeProxy& location) {
             CHECK_EQ(url_info_.web_bundle_id().type(),
@@ -265,6 +252,7 @@ void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignatures(
 
 void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignaturesOfBundle(
     const base::FilePath& path,
+    bool dev_mode,
     base::OnceCallback<void(base::expected<void, std::string>)> callback) {
   // To check whether the bundle is valid and trusted, we attempt to create a
   // `IsolatedWebAppResponseReader`. If a response reader is created
@@ -274,11 +262,12 @@ void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignaturesOfBundle(
   // - ...has signatures that were verified successfully (as long as
   //   `skip_signature_verification` below is set to `false`).
   // - ...contains valid metadata / no invalid URLs.
+  IsolatedWebAppResponseReaderFactory::Flags flags;
+  if (dev_mode) {
+    flags.Put(IsolatedWebAppResponseReaderFactory::Flag::kDevModeBundle);
+  }
   response_reader_factory_->CreateResponseReader(
-      path, url_info_.web_bundle_id(),
-      // During install and updates, we always want to verify signatures,
-      // regardless of the OS.
-      /*skip_signature_verification=*/false,
+      path, url_info_.web_bundle_id(), flags,
       base::BindOnce(&IsolatedWebAppInstallCommandHelper::
                          OnTrustAndSignaturesOfBundleChecked,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -324,7 +313,7 @@ void IsolatedWebAppInstallCommandHelper::CreateStoragePartitionIfNotPresent(
 }
 
 void IsolatedWebAppInstallCommandHelper::LoadInstallUrl(
-    const IsolatedWebAppLocation& location,
+    const IsolatedWebAppStorageLocation& location,
     content::WebContents& web_contents,
     WebAppUrlLoader& url_loader,
     base::OnceCallback<void(base::expected<void, std::string>)> callback) {
@@ -333,7 +322,7 @@ void IsolatedWebAppInstallCommandHelper::LoadInstallUrl(
   // process vs application data serving) and source of data (proxy, web
   // bundle, etc...).
   IsolatedWebAppPendingInstallInfo::FromWebContents(web_contents)
-      .set_isolated_web_app_location(location);
+      .set_location(location);
 
   GURL install_page_url =
       url_info_.origin().GetURL().Resolve(kGeneratedInstallPagePath);

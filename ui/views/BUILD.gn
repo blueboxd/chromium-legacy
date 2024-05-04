@@ -78,6 +78,7 @@ component("views") {
 
   public = [
     "accessibility/accessibility_paint_checks.h",
+    "accessibility/atomic_view_ax_tree_manager.h",
     "accessibility/ax_event_manager.h",
     "accessibility/ax_event_observer.h",
     "accessibility/ax_virtual_view.h",
@@ -234,6 +235,7 @@ component("views") {
     "layout/animating_layout_manager.h",
     "layout/box_layout.h",
     "layout/box_layout_view.h",
+    "layout/delegating_layout_manager.h",
     "layout/fill_layout.h",
     "layout/flex_layout.h",
     "layout/flex_layout_types.h",
@@ -320,6 +322,7 @@ component("views") {
 
   sources = [
     "accessibility/accessibility_paint_checks.cc",
+    "accessibility/atomic_view_ax_tree_manager.cc",
     "accessibility/ax_event_manager.cc",
     "accessibility/ax_event_observer.cc",
     "accessibility/ax_virtual_view.cc",
@@ -455,6 +458,7 @@ component("views") {
     "layout/animating_layout_manager.cc",
     "layout/box_layout.cc",
     "layout/box_layout_view.cc",
+    "layout/delegating_layout_manager.cc",
     "layout/fill_layout.cc",
     "layout/flex_layout.cc",
     "layout/flex_layout_types.cc",
@@ -944,8 +948,6 @@ component("views") {
 
   if (has_native_accessibility) {
     sources += [
-      "accessibility/atomic_view_ax_tree_manager.cc",
-      "accessibility/atomic_view_ax_tree_manager.h",
       "accessibility/view_ax_platform_node_delegate.cc",
       "accessibility/view_ax_platform_node_delegate.h",
     ]
@@ -1093,6 +1095,8 @@ source_set("test_support") {
     "test/views_test_helper.h",
     "test/views_test_utils.cc",
     "test/views_test_utils.h",
+    "test/widget_activation_waiter.cc",
+    "test/widget_activation_waiter.h",
     "test/widget_animation_waiter.cc",
     "test/widget_animation_waiter.h",
     "test/widget_test.cc",
@@ -1148,12 +1152,6 @@ source_set("test_support") {
       "win/test_support/fake_ipen_device.h",
       "win/test_support/fake_ipen_device_statics.cc",
       "win/test_support/fake_ipen_device_statics.h",
-      "win/test_support/fake_ipen_pointer_point_statics.cc",
-      "win/test_support/fake_ipen_pointer_point_statics.h",
-      "win/test_support/fake_ipointer_point.cc",
-      "win/test_support/fake_ipointer_point.h",
-      "win/test_support/fake_ipointer_point_properties.cc",
-      "win/test_support/fake_ipointer_point_properties.h",
     ]
   }
   if (is_mac) {
@@ -1529,6 +1527,9 @@ test("views_unittests") {
         sources += [
           "widget/desktop_aura/desktop_window_tree_host_platform_unittest.cc",
         ]
+        if (is_linux || is_chromeos) {
+          deps += [ "//ui/platform_window/stub:stub" ]
+        }
       }
       if (is_linux || is_chromeos) {
         sources += [ "widget/desktop_aura/desktop_window_tree_host_platform_impl_unittest.cc" ]

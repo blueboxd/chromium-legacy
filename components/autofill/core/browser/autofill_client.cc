@@ -25,11 +25,13 @@ AutofillClient::PopupOpenArgs::PopupOpenArgs(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
     std::vector<Suggestion> suggestions,
-    AutofillSuggestionTriggerSource trigger_source)
+    AutofillSuggestionTriggerSource trigger_source,
+    int32_t form_control_ax_id)
     : element_bounds(element_bounds),
       text_direction(text_direction),
       suggestions(std::move(suggestions)),
-      trigger_source(trigger_source) {}
+      trigger_source(trigger_source),
+      form_control_ax_id(form_control_ax_id) {}
 AutofillClient::PopupOpenArgs::PopupOpenArgs(
     const AutofillClient::PopupOpenArgs&) = default;
 AutofillClient::PopupOpenArgs::PopupOpenArgs(AutofillClient::PopupOpenArgs&&) =
@@ -257,18 +259,7 @@ void AutofillClient::OnVirtualCardDataAvailable(
 }
 
 void AutofillClient::ShowAutofillErrorDialog(
-    const AutofillErrorDialogContext& context) {
-}
-
-void AutofillClient::ShowAutofillProgressDialog(
-    AutofillProgressDialogType autofill_progress_dialog_type,
-    base::OnceClosure cancel_callback) {
-}
-
-void AutofillClient::CloseAutofillProgressDialog(
-    bool show_confirmation_before_closing,
-    base::OnceClosure no_interactive_authentication_callback) {
-}
+    AutofillErrorDialogContext context) {}
 
 LogManager* AutofillClient::GetLogManager() const {
   return nullptr;
@@ -282,6 +273,10 @@ const AutofillAblationStudy& AutofillClient::GetAblationStudy() const {
 
 void AutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {
   NOTIMPLEMENTED();
+}
+
+bool AutofillClient::ShouldFormatForLargeKeyboardAccessory() const {
+  return false;
 }
 
 void AutofillClient::TriggerUserPerceptionOfAutofillSurvey(

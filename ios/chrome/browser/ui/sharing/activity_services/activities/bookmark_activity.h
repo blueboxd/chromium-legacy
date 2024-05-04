@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 namespace bookmarks {
-class BookmarkModel;
+class CoreBookmarkModel;
 }
 
 @protocol BookmarksCommands;
@@ -24,9 +24,10 @@ class PrefService;
 // to verify if the user can edit their bookmarks or not.
 - (instancetype)initWithURL:(const GURL&)URL
                       title:(NSString*)title
-              bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+              bookmarkModel:(bookmarks::CoreBookmarkModel*)bookmarkModel
                     handler:(id<BookmarksCommands>)handler
-                prefService:(PrefService*)prefService;
+                prefService:(PrefService*)prefService NS_DESIGNATED_INITIALIZER;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

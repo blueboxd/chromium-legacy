@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("bookmark_model_type") {
+  sources = [ "bookmark_model_type.h" ]
+}
+
 source_set("model") {
   sources = [
     "account_bookmark_model_factory.cc",
@@ -12,8 +16,16 @@ source_set("model") {
     "bookmark_client_impl.h",
     "bookmark_model_bridge_observer.h",
     "bookmark_model_bridge_observer.mm",
+    "bookmark_model_factory.cc",
+    "bookmark_model_factory.h",
     "bookmark_undo_service_factory.cc",
     "bookmark_undo_service_factory.h",
+    "legacy_bookmark_model.cc",
+    "legacy_bookmark_model.h",
+    "legacy_bookmark_model_with_dedicated_underlying_model.cc",
+    "legacy_bookmark_model_with_dedicated_underlying_model.h",
+    "legacy_bookmark_model_with_shared_underlying_model.cc",
+    "legacy_bookmark_model_with_shared_underlying_model.h",
     "local_or_syncable_bookmark_model_factory.cc",
     "local_or_syncable_bookmark_model_factory.h",
     "local_or_syncable_bookmark_sync_service_factory.h",
@@ -22,6 +34,7 @@ source_set("model") {
     "managed_bookmark_service_factory.mm",
   ]
   deps = [
+    ":bookmark_model_type",
     "//base",
     "//components/bookmarks/browser",
     "//components/bookmarks/managed",
@@ -45,8 +58,8 @@ source_set("model") {
   ]
   public_deps = [ ":model_utils" ]
   allow_circular_includes_from = [
-    "//ios/chrome/browser/history/model",
     ":model_utils",
+    "//ios/chrome/browser/history/model",
   ]
 }
 
@@ -64,6 +77,7 @@ source_set("model_utils") {
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
   ]
+  public_deps = [ ":bookmark_model_type" ]
 }
 
 source_set("test_support") {
@@ -71,6 +85,8 @@ source_set("test_support") {
   sources = [
     "bookmark_ios_unit_test_support.h",
     "bookmark_ios_unit_test_support.mm",
+    "legacy_bookmark_model_test_helpers.cc",
+    "legacy_bookmark_model_test_helpers.h",
   ]
   deps = [
     "//base",
@@ -91,16 +107,20 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "bookmark_model_bridge_observer_unittest.mm",
+    "bookmark_model_factory_unittest.cc",
     "bookmark_remover_helper_unittest.cc",
     "bookmarks_utils_unittest.mm",
+    "legacy_bookmark_model_with_shared_underlying_model_unittest.cc",
   ]
   deps = [
     ":model",
+    ":model_utils",
     ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
+    "//components/sync/base:features",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/test:test_support",

@@ -41,6 +41,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/help_commands.h"
@@ -252,13 +253,15 @@ void FlushCookieStoreOnIOThread(
     return;
   }
 
-  // mainBrowserState may be empty in tests e.g.
-  // `AppStateTest.applicationWillEnterForeground`.
-  if (self.mainBrowserState &&
-      base::FeatureList::IsEnabled(enterprise_idle::kIdleTimeout)) {
-    enterprise_idle::IdleServiceFactory::GetForBrowserState(
-        self.mainBrowserState)
-        ->OnApplicationWillEnterBackground();
+  if (base::FeatureList::IsEnabled(enterprise_idle::kIdleTimeout)) {
+    std::vector<ChromeBrowserState*> loadedBrowserStates =
+        GetApplicationContext()
+            ->GetChromeBrowserStateManager()
+            ->GetLoadedBrowserStates();
+    for (ChromeBrowserState* browserState : loadedBrowserStates) {
+      enterprise_idle::IdleServiceFactory::GetForBrowserState(browserState)
+          ->OnApplicationWillEnterBackground();
+    }
   }
 
   [MetricsMediator
@@ -267,6 +270,8 @@ void FlushCookieStoreOnIOThread(
 
   [self.startupInformation expireFirstUserActionRecorder];
 
+  // TODO(crbug.com/325596562): Update this for multiple browser states and for
+  // per-state cookie storage.
   if (self.mainBrowserState && !_savingCookies) {
     // Record that saving the cookies has started to prevent posting multiple
     // tasks if the user quickly background, foreground and background the app
@@ -332,6 +337,9 @@ void FlushCookieStoreOnIOThread(
     return;
 
   _applicationInBackground = NO;
+  // TODO(crbug.com/325596368): Signal this for every browser state, so this
+  // update and the feature_engagement::TrackerFactory() update need to happen
+  // in parallel. Maybe: add per-profile observer methods.
   if (self.mainBrowserState) {
     AuthenticationServiceFactory::GetForBrowserState(self.mainBrowserState)
         ->OnApplicationWillEnterForeground();
@@ -359,6 +367,7 @@ void FlushCookieStoreOnIOThread(
                              connectedScenes:self.connectedScenes];
   [memoryHelper resetForegroundMemoryWarningCount];
 
+  // TODO(crbug.com/325596368): Do this for each browser state.
   if (self.mainBrowserState) {
     // Send the "Chrome Opened" event to the feature_engagement::Tracker on a
     // warm start.
@@ -452,6 +461,7 @@ void FlushCookieStoreOnIOThread(
   [self.startupInformation setIsColdStart:NO];
 
   // Record session metrics (self.mainBrowserState may be null during tests).
+  // TODO(crbug.com/325596568): Update for each browser state,
   if (self.mainBrowserState) {
     SessionMetrics::FromBrowserState(self.mainBrowserState)
         ->RecordAndClearSessionMetrics(

@@ -20,16 +20,13 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "chrome/browser/ash/crosapi/browser_action.h"
+#include "chrome/browser/ash/crosapi/browser_action_queue.h"
 #include "chrome/browser/ash/crosapi/browser_launcher.h"
 #include "chrome/browser/ash/crosapi/browser_manager_observer.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_observer.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/browser_version_service_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
-#include "chrome/browser/ash/crosapi/crosapi_util.h"
-#include "chrome/browser/ash/crosapi/device_ownership_waiter_impl.h"
-#include "chrome/browser/ash/crosapi/primary_profile_creation_waiter.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
@@ -78,9 +75,11 @@ class CloudPolicyCore;
 namespace crosapi {
 
 namespace mojom {
+enum class CreationResult;
 class Crosapi;
 }  // namespace mojom
 
+class BrowserAction;
 class BrowserLoader;
 class DeviceOwnershipWaiter;
 class FilesAppLauncher;
@@ -209,6 +208,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
       crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition,
       NavigateParams::PathBehavior path_behavior = NavigateParams::RESPECT);
 
+  // Opens the captive portal signin window in lacros-chrome.
+  void OpenCaptivePortalSignin(const GURL& url);
+
   // If there's already a tab opening the URL in lacros-chrome, in some window
   // of the primary profile, activate the tab. Otherwise, opens a tab for
   // the given URL. `path_behavior` will be assigned to the variable of the same
@@ -327,11 +329,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void set_device_ownership_waiter_for_testing(
       std::unique_ptr<DeviceOwnershipWaiter> device_ownership_waiter);
 
-  // Skips device ownership fetch. Use set_device_ownership_waiter_for_testing()
-  // above if possible. Use this method only if your test must set up the
-  // behavior before BrowserManager is initialized.
-  static void SkipDeviceOwnershipWaitForTesting(bool skip);
-
   void set_relaunch_requested_for_testing(bool relaunch_requested);
 
   // Disable most of BrowserManager's functionality such that it never tries to
@@ -400,10 +397,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // Params for lacros-chrome are parepared on a background thread.
     PREPARING_FOR_LAUNCH,
 
-    // Lacros-chrome is waiting for device owner to be fetched after receiving
-    // params. For prelaunching, it also waits for profile to be added.
-    WAITING_OWNER_FETCH,
-
     // Lacros-chrome has been pre-launched at login screen, and it's waiting to
     // be unblocked post-login.
     PRE_LAUNCHED,
@@ -415,8 +408,36 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // the running state.
     RUNNING,
 
-    // Lacros-chrome is being terminated soon.
-    TERMINATING,
+    // Following two states represent the Lacros-chrome termination related
+    // state. There are two types of Lacros-chrome termination. It proceeds in
+    // the following ways from Ash perspective.
+    //
+    // Ash initiated termination:
+    // 1. Ash requests Lacros to terminate.
+    // 2. Wait for mojo disconnection. (NOTE: If Ash is shutdown, we skip this
+    // step since the main message loop may be stopped before receiving mojo
+    // disconnection.)
+    // 3. Wait for the process to be terminated.
+    // The state should be set to WAITING_FOR_MOJO_DISCONNECTED on 1, set to
+    // WAITING_FOR_PROCESS_TERMINATED on 2 completed and then move forward to
+    // the next task scheduled after the termination on 3 completed.
+    // If Ash is shutdown, we skip the step 2, so we immediately enter
+    // WAITING_FOR_PROCESS_TERMINATED state on 1.
+    //
+    // Lacros initiated termination:
+    // 1. Ash receives mojo disconnection.
+    // 2. Wait for the process to be terminated
+    //
+    // Lacros-chrome is requested to terminate from Ash.
+    WAITING_FOR_MOJO_DISCONNECTED,
+
+    // Mojo connection is disconnected and Lacros-chrome is being terminated
+    // soon.
+    // Waiting for the process to be terminated. This is usually set after
+    // WAITING_FOR_MOJO_DISCONNECTED on mojo disconnected except for the
+    // scenario when Ash is shutdown, in other word, when Ash skips
+    // WAITING_FOR_MOJO_DISCONNECTED phase.
+    WAITING_FOR_PROCESS_TERMINATED,
   };
   // Changes |state| value and potentially notify observers of the change.
   void SetState(State state);
@@ -433,6 +454,14 @@ class BrowserManager : public session_manager::SessionManagerObserver,
                                  uint32_t browser_service_version) override;
   void OnBrowserServiceDisconnected(CrosapiId id,
                                     mojo::RemoteSetElementId mojo_id) override;
+
+  // Called when the Mojo connection to lacros-chrome is disconnected. It may be
+  // "just a Mojo error" or "lacros-chrome crash". This method posts a
+  // shutdown-blocking async task that waits lacros-chrome to exit, giving it a
+  // chance to gracefully exit. The task will send a terminate signal to
+  // lacros-chrome if the process has not terminated within the graceful
+  // shutdown window.
+  void OnMojoDisconnected();
 
   // Called when lacros-chrome is terminated and successfully wait(2)ed.
   void OnLacrosChromeTerminated();
@@ -559,10 +588,38 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   void StartIfNeeded(bool launching_at_login_screen = false);
 
-  // Starts the lacros-chrome process and redirects stdout/err to file pointed
-  // by |params.logfd|.
-  void StartWithLogFile(bool launching_at_login_screen,
-                        BrowserLauncher::LaunchParamsFromBackground params);
+  // This may be called synchronously by the BrowserManager following a
+  // Terminate() signal during shutdown, or following a call to
+  // OnMojoDisconnected(). This posts a shutdown blocking task that waits for
+  // lacros-chrome to cleanly exit for `timeout` duration before forcefully
+  // killing the process.
+  void EnsureLacrosChromeTermination(base::TimeDelta timeout);
+
+  // Reload and possibly relaunch Lacros.
+  void HandleReload();
+
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override;
+
+  // Pre-launch Lacros at login screen. (Can be overridden by tests).
+  virtual void PrelaunchAtLoginScreen();
+
+  // Called on launch process completed.
+  void OnLaunchComplete(
+      bool lauching_at_login_screen,
+      base::expected<BrowserLauncher::LaunchResults,
+                     BrowserLauncher::LaunchFailureReason> launch_results);
+
+  // Resume Lacros startup process after login.
+  void ResumeLaunch();
+
+  // Called on ResumeLaunch completed.
+  void OnResumeLaunchComplete(
+      base::expected<base::TimeTicks, BrowserLauncher::LaunchFailureReason>
+          resume_time);
+
+  // Launch "Go to files" if the migration error page was clicked.
+  void HandleGoToFiles();
 
   // ash::SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;
@@ -575,60 +632,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void OnRefreshSchedulerStarted(policy::CloudPolicyCore* core) override;
   void OnCoreDisconnecting(policy::CloudPolicyCore* core) override;
   void OnCoreDestruction(policy::CloudPolicyCore* core) override;
-
-  // Called when the Mojo connection to lacros-chrome is disconnected. It may be
-  // "just a Mojo error" or "lacros-chrome crash". This method posts a
-  // shutdown-blocking async task that waits lacros-chrome to exit, giving it a
-  // chance to gracefully exit. The task will send a terminate signal to
-  // lacros-chrome if the process has not terminated within the graceful
-  // shutdown window.
-  void OnMojoDisconnected();
-
-  // This may be called synchronously by the BrowserManager following a
-  // Terminate() signal during shutdown, or following a call to
-  // OnMojoDisconnected(). This posts a shutdown blocking task that waits for
-  // lacros-chrome to cleanly exit for `timeout` duration before forcefully
-  // killing the process.
-  void HandleLacrosChromeTermination(base::TimeDelta timeout);
-
-  // Reload and possibly relaunch Lacros.
-  void HandleReload();
-
-  // session_manager::SessionManagerObserver:
-  void OnSessionStateChanged() override;
-
-  // Pre-launch Lacros at login screen. (Can be overridden by tests).
-  virtual void PrelaunchAtLoginScreen();
-
-  // Resume Lacros startup process after login.
-  void ResumeLaunch();
-
-  // Executes actions needed to resume Lacros's launch post-login,
-  // and writes post login data to the Lacros process.
-  // This method is guaranteed to run after the profile has been added.
-  void ResumeLaunchAfterProfileAdded();
-
-  // Wait for the primary user profile to be fully created and then
-  // executes a callback.
-  void WaitForProfileAddedAndThen(base::OnceClosure cb);
-
-  // Waits for the device owner being fetched from `UserManager` and then
-  // executes a callback. Should NOT be called if Lacros is launched at the
-  // login screen since device owner is not available until login.
-  void WaitForDeviceOwnerFetchedAndThen(base::OnceClosure cb);
-
-  // Called as soon as `LaunchParamsFromBackground` are fetched.
-  void OnLaunchParamsFetched(
-      bool launching_at_login_screens,
-      BrowserLauncher::LaunchParamsFromBackground params);
-
-  // Launch "Go to files" if the migration error page was clicked.
-  void HandleGoToFiles();
-
-  // Sets user policy to be propagated to Lacros and subscribes to the user
-  // policy updates in Ash.
-  void PrepareLacrosPolicies();
-  policy::CloudPolicyCore* GetDeviceAccountPolicyCore();
 
   // policy::CloudPolicyStore::Observer:
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
@@ -703,9 +706,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Path to the lacros-chrome disk image directory.
   base::FilePath lacros_path_;
 
-  // Pipe FDs through which Ash and Lacros exchange post-login parameters.
-  base::ScopedFD postlogin_pipe_fd_;
-
   // Whether we are starting "rootfs" or "stateful" lacros.
   std::optional<LacrosSelection> lacros_selection_;
 
@@ -749,11 +749,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Tracks whether lacros-chrome is terminated.
   bool is_terminated_ = false;
 
-  // True if Lacros has not yet launched after the latest ash reboot.
-  // This value is used for resource sharing feature where ash deletes cached
-  // shared resource file after ash is rebooted.
-  bool is_initial_lacros_launch_after_reboot_ = true;
-
   // Whether a shutdown request was received while Lacros was in prelaunched
   // state.
   bool shutdown_requested_while_prelaunched_ = false;
@@ -763,10 +758,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // '--lacros-mojo-socket-for-testing' is present in the command line.
   std::unique_ptr<TestMojoConnectionManager> test_mojo_connection_manager_;
 
-  // Used to wait for the primary user profile to be fully created.
-  std::unique_ptr<PrimaryProfileCreationWaiter>
-      primary_profile_creation_waiter_;
-
   // The features that are currently registered to keep Lacros alive.
   std::set<Feature> keep_alive_features_;
 
@@ -775,9 +766,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   const bool launch_at_login_screen_;
 
   const bool disabled_for_testing_;
-
-  // Indicates whether the delegate has been used.
-  bool device_ownership_waiter_called_{false};
 
   // Used to launch files.app when user clicked "Go to files" on the migration
   // error screen.
@@ -798,9 +786,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   base::ScopedObservation<user_manager::UserManager,
                           user_manager::UserManager::Observer>
       user_manager_observation_{this};
-
-  // Used to delay an action until the definitive device owner is fetched.
-  std::unique_ptr<DeviceOwnershipWaiter> device_ownership_waiter_;
 
   base::WeakPtrFactory<BrowserManager> weak_factory_{this};
 };

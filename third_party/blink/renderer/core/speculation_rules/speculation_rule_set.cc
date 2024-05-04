@@ -395,6 +395,8 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
       DCHECK_NE(referrer_policy_out, network::mojom::ReferrerPolicy::kDefault);
       // Set referrerPolicy to input["referrer_policy"].
       referrer_policy = referrer_policy_out;
+      UseCounter::Count(context,
+                        WebFeature::kSpeculationRulesExplicitReferrerPolicy);
     }
   }
 
@@ -458,7 +460,7 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
   if (is_browser_injected) {
     injection_type =
         mojom::blink::SpeculationInjectionType::kAutoSpeculationRules;
-  } else if (auto world = context->GetCurrentWorld()) {
+  } else if (auto* world = context->GetCurrentWorld()) {
     if (world->IsMainWorld()) {
       injection_type = mojom::blink::SpeculationInjectionType::kMainWorldScript;
     } else {

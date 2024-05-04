@@ -75,11 +75,12 @@ TEST_F(ScriptPromiseResolverTest, construct) {
 }
 
 TEST_F(ScriptPromiseResolverTest, resolve) {
-  ScriptPromiseResolver* resolver = nullptr;
-  ScriptPromise promise;
+  ScriptPromiseResolverTyped<IDLString>* resolver = nullptr;
+  ScriptPromiseTyped<IDLString> promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLString>>(
+        GetScriptState());
     promise = resolver->Promise();
   }
 
@@ -127,11 +128,12 @@ TEST_F(ScriptPromiseResolverTest, resolve) {
 }
 
 TEST_F(ScriptPromiseResolverTest, reject) {
-  ScriptPromiseResolver* resolver = nullptr;
-  ScriptPromise promise;
+  ScriptPromiseResolverTyped<IDLString>* resolver = nullptr;
+  ScriptPromiseTyped<IDLString> promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLString>>(
+        GetScriptState());
     promise = resolver->Promise();
   }
 
@@ -179,11 +181,12 @@ TEST_F(ScriptPromiseResolverTest, reject) {
 }
 
 TEST_F(ScriptPromiseResolverTest, stop) {
-  ScriptPromiseResolver* resolver = nullptr;
-  ScriptPromise promise;
+  ScriptPromiseResolverTyped<IDLString>* resolver = nullptr;
+  ScriptPromiseTyped<IDLString> promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLString>>(
+        GetScriptState());
     promise = resolver->Promise();
   }
 
@@ -210,127 +213,6 @@ TEST_F(ScriptPromiseResolverTest, stop) {
 
   EXPECT_EQ(String(), on_fulfilled);
   EXPECT_EQ(String(), on_rejected);
-}
-
-class ScriptPromiseResolverKeepAlive : public ScriptPromiseResolver {
- public:
-  explicit ScriptPromiseResolverKeepAlive(ScriptState* script_state)
-      : ScriptPromiseResolver(script_state) {}
-  ~ScriptPromiseResolverKeepAlive() override { destructor_calls_++; }
-
-  static void Reset() { destructor_calls_ = 0; }
-  static bool IsAlive() { return !destructor_calls_; }
-
-  static int destructor_calls_;
-};
-
-int ScriptPromiseResolverKeepAlive::destructor_calls_ = 0;
-
-TEST_F(ScriptPromiseResolverTest, keepAliveUntilResolved) {
-  ScriptPromiseResolverKeepAlive::Reset();
-  ScriptPromiseResolver* resolver = nullptr;
-  {
-    ScriptState::Scope scope(GetScriptState());
-    resolver =
-        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
-  }
-  resolver->KeepAliveWhilePending();
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
-
-  resolver->Resolve("hello");
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
-}
-
-TEST_F(ScriptPromiseResolverTest, keepAliveUntilRejected) {
-  ScriptPromiseResolverKeepAlive::Reset();
-  ScriptPromiseResolver* resolver = nullptr;
-  {
-    ScriptState::Scope scope(GetScriptState());
-    resolver =
-        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
-  }
-  resolver->KeepAliveWhilePending();
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
-
-  resolver->Reject("hello");
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
-}
-
-TEST_F(ScriptPromiseResolverTest, keepAliveWhileScriptForbidden) {
-  ScriptPromiseResolverKeepAlive::Reset();
-  ScriptPromiseResolver* resolver = nullptr;
-  {
-    ScriptState::Scope scope(GetScriptState());
-    resolver =
-        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
-  }
-
-  {
-    ScriptForbiddenScope forbidden;
-    resolver->Resolve("hello");
-
-    ThreadState::Current()->CollectAllGarbageForTesting(
-        ThreadState::StackState::kNoHeapPointers);
-    EXPECT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
-  }
-
-  base::RunLoop().RunUntilIdle();
-
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
-}
-
-TEST_F(ScriptPromiseResolverTest, keepAliveUntilStopped) {
-  ScriptPromiseResolverKeepAlive::Reset();
-  ScriptPromiseResolver* resolver = nullptr;
-  {
-    ScriptState::Scope scope(GetScriptState());
-    resolver =
-        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
-  }
-  resolver->KeepAliveWhilePending();
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  EXPECT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
-
-  GetExecutionContext()->NotifyContextDestroyed();
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
-}
-
-TEST_F(ScriptPromiseResolverTest, suspend) {
-  ScriptPromiseResolverKeepAlive::Reset();
-  ScriptPromiseResolver* resolver = nullptr;
-  {
-    ScriptState::Scope scope(GetScriptState());
-    resolver =
-        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
-  }
-  resolver->KeepAliveWhilePending();
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
-
-  page_holder_->GetPage().SetPaused(true);
-  resolver->Resolve("hello");
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  EXPECT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
-
-  GetExecutionContext()->NotifyContextDestroyed();
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      ThreadState::StackState::kNoHeapPointers);
-  EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
 }
 
 TEST_F(ScriptPromiseResolverTest, resolveVoid) {

@@ -40,11 +40,13 @@ BASE_FEATURE(kShareInWebContextMenuIOS,
              "ShareInWebContextMenuIOS",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// TODO(crbug.com/1128242): Remove this flag after the refactoring work is
-// finished.
 BASE_FEATURE(kModernTabStrip,
              "ModernTabStrip",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kModernTabStripParameterName[] = "modern-tab-strip-new-tab-button";
+const char kModernTabStripNTBDynamicParam[] = "dynamic";
+const char kModernTabStripNTBStaticParam[] = "static";
 
 BASE_FEATURE(kIncognitoNtpRevamp,
              "IncognitoNtpRevamp",
@@ -59,6 +61,10 @@ BASE_FEATURE(kIOSBrowserEditMenuMetrics,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 const char kIOSDockingPromoExperimentType[] = "IOSDockingPromoExperimentType";
+const char kIOSDockingPromoNewUserInactiveThresholdHours[] =
+    "IOSDockingPromoNewUserInactiveThresholdHours";
+const char kIOSDockingPromoOldUserInactiveThresholdHours[] =
+    "IOSDockingPromoOldUserInactiveThresholdHours";
 
 BASE_FEATURE(kIOSDockingPromo,
              "IOSDockingPromo",
@@ -273,22 +279,9 @@ BASE_FEATURE(kOnlyAccessClipboardAsync,
 BASE_FEATURE(kDefaultBrowserVideoInSettings,
              "DefaultBrowserVideoInSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment,
-             "DefaultBrowserTriggerCriteriaExperiment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste,
-             "FullScreenPromoOnOmniboxCopyPaste",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThemeColorInTopToolbar,
              "ThemeColorInTopToolbar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kDynamicThemeColor,
-             "DynamicThemeColor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kDynamicBackgroundColor,
-             "DynamicBackgroundColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGridAlwaysBounce,
@@ -297,7 +290,7 @@ BASE_FEATURE(kTabGridAlwaysBounce,
 
 BASE_FEATURE(kTabGridCompositionalLayout,
              "TabGridCompositionalLayout",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsTabGridCompositionalLayoutEnabled() {
   return base::FeatureList::IsEnabled(kTabGridCompositionalLayout);
@@ -376,7 +369,7 @@ BASE_FEATURE(kIOSLargeFakebox,
 
 BASE_FEATURE(kIOSHideFeedWithSearchChoice,
              "IOSHideFeedWithSearchChoice",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFullscreenImprovement,
              "FullscreenImprovement",
@@ -388,10 +381,14 @@ BASE_FEATURE(kTabGroupsInGrid,
 
 BASE_FEATURE(kIOSExternalActionURLs,
              "IOSExternalActionURLs",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDisableLensCamera,
              "DisableLensCamera",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kOmniboxColorIcons,
+             "OmniboxColorIcons",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
@@ -427,6 +424,18 @@ DockingPromoDisplayTriggerArm DockingPromoExperimentTypeEnabled() {
       base::GetFieldTrialParamByFeatureAsInt(
           kIOSDockingPromo, kIOSDockingPromoExperimentType,
           /*default_value=*/(int)DockingPromoDisplayTriggerArm::kAfterFRE));
+}
+
+int HoursInactiveForNewUsersUntilShowingDockingPromo() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kIOSDockingPromo, kIOSDockingPromoNewUserInactiveThresholdHours,
+      /*default_value=*/24);
+}
+
+int HoursInactiveForOldUsersUntilShowingDockingPromo() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kIOSDockingPromo, kIOSDockingPromoOldUserInactiveThresholdHours,
+      /*default_value=*/72);
 }
 
 bool IsWebChannelsEnabled() {
@@ -551,7 +560,7 @@ double GetBackgroundRefreshMaxAgeInSeconds() {
 bool IsIOSHideFeedWithSearchChoiceTargeted() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kIOSHideFeedWithSearchChoice, kIOSHideFeedWithSearchChoiceTargeted,
-      /*default=*/false);
+      /*default=*/true);
 }
 
 bool IsFeedAblationEnabled() {
@@ -733,3 +742,7 @@ BASE_FEATURE(kIOSMagicStackCollectionView,
 bool IsIOSMagicStackCollectionViewEnabled() {
   return base::FeatureList::IsEnabled(kIOSMagicStackCollectionView);
 }
+
+BASE_FEATURE(kDisableFullscreenScrolling,
+             "DisableFullscreenScrolling",
+             base::FEATURE_DISABLED_BY_DEFAULT);

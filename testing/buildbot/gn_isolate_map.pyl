@@ -195,10 +195,6 @@
     "label": "//third_party/blink/renderer/controller:blink_unittests",
     "type": "console_test_launcher",
   },
-  "blink_unittests_v2": {
-    "label": "//third_party/blink/renderer/controller:blink_unittests_v2",
-    "type": "console_test_launcher",
-  },
   "blink_web_tests": {
     "label": "//:blink_web_tests",
     "type": "generated_script",
@@ -663,6 +659,10 @@
   },
   "cronet_package": {
     "label": "//components/cronet:cronet_package",
+    "type": "additional_compile_target",
+  },
+  "cronet_package_ci": {
+    "label": "//components/cronet:cronet_package_ci",
     "type": "additional_compile_target",
   },
   "cronet_perf_test_apk": {
@@ -1654,6 +1654,10 @@
     "label": "//testing:test_env_py_unittests",
     "type": "generated_script",
   },
+  "test_sample_jni_apk": {
+    "label": "//third_party/jni_zero/sample:test_sample_jni_apk",
+    "type": "console_test_launcher",
+  },
   "test_serde_json_lenient": {
     "label": "//build/rust/tests/test_serde_json_lenient:test_serde_json_lenient",
     "type": "console_test_launcher",
@@ -1948,10 +1952,13 @@
     "args": [
       "--cts-gcs-path",
       "../../android_webview/tools/cts_config/webview_cts_hostside_gcs_path.json",
+      "--skip-expected-failures",
       "--additional-apk",
       "apks/TrichromeLibrary64.apk",
       "--use-webview-provider",
       "apks/TrichromeWebView64.apk",
+      "--module-apk",
+      "CtsHostsideWebViewTests.apk",
     ],
   },
   "webview_trichrome_64_cts_tests": {

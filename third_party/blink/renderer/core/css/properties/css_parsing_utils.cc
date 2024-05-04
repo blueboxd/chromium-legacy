@@ -1273,7 +1273,7 @@ CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange& range,
 bool CanConsumeCalcValue(CalculationResultCategory category,
                          CSSParserMode css_parser_mode) {
   return category == kCalcLength || category == kCalcPercent ||
-         category == kCalcPercentLength ||
+         category == kCalcLengthFunction ||
          (css_parser_mode == kSVGAttributeMode && category == kCalcNumber);
 }
 
@@ -1824,7 +1824,7 @@ namespace {
 // TODO(crbug.com/1111385): Remove this when we move color-contrast()
 // representation to ComputedStyle. This method does not handle currentColor
 // correctly.
-Color ResolveColor(CSSValue* value) {
+Color ResolveColor(CSSValue* value, const ui::ColorProvider* color_provider) {
   if (auto* color = DynamicTo<cssvalue::CSSColor>(value)) {
     return color->Value();
   }
@@ -1832,8 +1832,8 @@ Color ResolveColor(CSSValue* value) {
   if (auto* color = DynamicTo<CSSIdentifierValue>(value)) {
     CSSValueID color_id = color->GetValueID();
     DCHECK(StyleColor::IsColorKeyword(color_id));
-    return StyleColor::ColorFromKeyword(color_id,
-                                        mojom::blink::ColorScheme::kLight);
+    return StyleColor::ColorFromKeyword(
+        color_id, mojom::blink::ColorScheme::kLight, color_provider);
   }
 
   NOTREACHED();
@@ -1894,19 +1894,23 @@ CSSValue* ConsumeColorContrast(CSSParserTokenRange& range,
     return nullptr;
   }
 
+  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
+  const ui::ColorProvider* color_provider =
+      context.GetDocument()->GetColorProviderForPainting(
+          mojom::blink::ColorScheme::kLight);
   // TODO(crbug.com/1111385): Represent |background_color| and
   // |colors_to_compare_against| in ComputedStyle and evaluate with currentColor
   // and other variables at used-value time instead of doing it at parse time
   // below.
-
   SkColor4f resolved_background_color =
-      ResolveColor(background_color).toSkColor4f();
+      ResolveColor(background_color, color_provider).toSkColor4f();
   int highest_contrast_index = -1;
   float highest_contrast_ratio = 0;
   for (unsigned i = 0; i < colors_to_compare_against.size(); i++) {
     float contrast_ratio = color_utils::GetContrastRatio(
         resolved_background_color,
-        ResolveColor(colors_to_compare_against[i]).toSkColor4f());
+        ResolveColor(colors_to_compare_against[i], color_provider)
+            .toSkColor4f());
     if (target_contrast.has_value()) {
       if (contrast_ratio >= target_contrast.value()) {
         highest_contrast_ratio = contrast_ratio;
@@ -1933,8 +1937,8 @@ CSSValue* ConsumeColorContrast(CSSParserTokenRange& range,
                : MakeGarbageCollected<cssvalue::CSSColor>(Color::kBlack);
   }
 
-  return MakeGarbageCollected<cssvalue::CSSColor>(
-      ResolveColor(colors_to_compare_against[highest_contrast_index]));
+  return MakeGarbageCollected<cssvalue::CSSColor>(ResolveColor(
+      colors_to_compare_against[highest_contrast_index], color_provider));
 }
 
 namespace {
@@ -6446,9 +6450,7 @@ CSSValue* ConsumeOffsetPath(CSSParserTokenRange& range,
     offset_path = ConsumeRay(range, context);
   }
   if (!offset_path && IsBasicShapeSupportedByOffsetPath(function_id)) {
-    offset_path = ConsumeBasicShape(range, context, AllowPathValue::kAllow,
-                                    AllowBasicShapeRectValue::kAllow,
-                                    AllowBasicShapeXYWHValue::kAllow);
+    offset_path = ConsumeBasicShape(range, context);
   }
   if (!offset_path && RuntimeEnabledFeatures::CSSOffsetPathUrlEnabled()) {
     offset_path = ConsumeUrl(range, context);
@@ -6659,8 +6661,7 @@ CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
     return ConsumeIdent(range);
   }
 
-  if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled() &&
-      (id == CSSValueID::kSpellingError || id == CSSValueID::kGrammarError)) {
+  if (id == CSSValueID::kSpellingError || id == CSSValueID::kGrammarError) {
     // Note that StyleBuilderConverter::ConvertFlags() requires that values
     // other than 'none' appear in a CSSValueList.
     CSSValueList* list = CSSValueList::CreateSpaceSeparated();
@@ -6706,6 +6707,48 @@ CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
     return nullptr;
   }
   return list;
+}
+
+// Consume the `text-box-edge` production.
+CSSValue* ConsumeTextBoxEdge(CSSParserTokenRange& range) {
+  if (CSSIdentifierValue* leading = ConsumeIdent<CSSValueID::kLeading>(range)) {
+    return range.AtEnd() ? leading : nullptr;
+  }
+  CSSIdentifierValue* over_type =
+      ConsumeIdent<CSSValueID::kText, CSSValueID::kCap, CSSValueID::kEx>(range);
+  if (!over_type) {
+    return nullptr;
+  }
+  // The second parameter is optional, the first parameter will be used for
+  // both if the second parameter is not provided.
+  if (range.AtEnd()) {
+    return over_type;
+  }
+  if (CSSIdentifierValue* under_type =
+          ConsumeIdent<CSSValueID::kText, CSSValueID::kAlphabetic>(range);
+      under_type && range.AtEnd()) {
+    // Align with the CSS specification: "If only one value is specified,
+    // both edges are assigned that same keyword if possible; else 'text' is
+    // assumed as the missing value.".
+    // If the `over_type` is 'cap' or 'ex', since it does not have a
+    // corresponding line-under baseline, `text` will be used to fill the
+    // missing value. If the `over_type` is `text`, the default `under_type` is
+    // `text` to prioritize the same keyword.
+    // In all cases above, the `under_type` of `text` can be omitted for
+    // serialization.
+    if (under_type->GetValueID() == CSSValueID::kText) {
+      if (over_type->GetValueID() == CSSValueID::kText ||
+          over_type->GetValueID() == CSSValueID::kCap ||
+          over_type->GetValueID() == CSSValueID::kEx) {
+        return over_type;
+      }
+    }
+    CSSValueList* const list = CSSValueList::CreateSpaceSeparated();
+    list->Append(*over_type);
+    list->Append(*under_type);
+    return list;
+  }
+  return nullptr;
 }
 
 // Consume the `autospace` production.
@@ -7026,8 +7069,13 @@ CSSValue* ConsumeContainerType(CSSParserTokenRange& range) {
 
 CSSValue* ConsumeSVGPaint(CSSParserTokenRange& range,
                           const CSSParserContext& context) {
-  if (range.Peek().Id() == CSSValueID::kNone) {
-    return ConsumeIdent(range);
+  switch (range.Peek().Id()) {
+    case CSSValueID::kNone:
+    case CSSValueID::kContextFill:
+    case CSSValueID::kContextStroke:
+      return ConsumeIdent(range);
+    default:
+      break;
   }
   cssvalue::CSSURIValue* url = ConsumeUrl(range, context);
   if (url) {
@@ -7143,46 +7191,89 @@ CSSValue* ConsumeFontSizeAdjust(CSSParserTokenRange& range,
 
 CSSValue* ConsumeSinglePositionTryOption(CSSParserTokenRange& range,
                                          const CSSParserContext& context) {
-  if (CSSValue* dashed_ident = ConsumeDashedIdent(range, context)) {
-    return dashed_ident;
-  }
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  bool flip_block = false;
-  bool flip_inline = false;
-  bool flip_start = false;
+  CSSValue* dashed_ident = nullptr;
+  CSSValue* flip_block = nullptr;
+  CSSValue* flip_inline = nullptr;
+  CSSValue* flip_start = nullptr;
+  bool has_tactic = false;
   while (!range.AtEnd()) {
-    CSSIdentifierValue* tactic =
-        ConsumeIdent<CSSValueID::kFlipBlock, CSSValueID::kFlipInline,
-                     CSSValueID::kFlipStart>(range);
-    if (!tactic) {
+    if (!dashed_ident && (dashed_ident = ConsumeDashedIdent(range, context))) {
+      continue;
+    }
+    if (context.Mode() == kUASheetMode && !dashed_ident) {
+      CSSCustomIdentValue* value = ConsumeCustomIdent(range, context);
+      if (value && value->Value().StartsWith("-internal-")) {
+        dashed_ident = value;
+        continue;
+      }
+    }
+    if (has_tactic) {
       break;
     }
-    switch (tactic->GetValueID()) {
-      case CSSValueID::kFlipBlock:
-        if (flip_block) {
-          return nullptr;
-        }
-        flip_block = true;
+    while (!range.AtEnd()) {
+      CSSIdentifierValue* tactic =
+          ConsumeIdent<CSSValueID::kFlipBlock, CSSValueID::kFlipInline,
+                       CSSValueID::kFlipStart>(range);
+      if (!tactic) {
         break;
-      case CSSValueID::kFlipInline:
-        if (flip_inline) {
+      }
+      has_tactic = true;
+      switch (tactic->GetValueID()) {
+        case CSSValueID::kFlipBlock:
+          if (flip_block) {
+            return nullptr;
+          }
+          flip_block = tactic;
+          break;
+        case CSSValueID::kFlipInline:
+          if (flip_inline) {
+            return nullptr;
+          }
+          flip_inline = tactic;
+          break;
+        case CSSValueID::kFlipStart:
+          if (flip_start) {
+            return nullptr;
+          }
+          flip_start = tactic;
+          break;
+        default:
+          NOTREACHED();
           return nullptr;
-        }
-        flip_inline = true;
-        break;
-      case CSSValueID::kFlipStart:
-        if (flip_start) {
-          return nullptr;
-        }
-        flip_start = true;
-        break;
-      default:
-        NOTREACHED();
-        return nullptr;
+      }
     }
-    list->Append(*tactic);
+    if (!has_tactic) {
+      break;
+    }
   }
-  return list->length() ? list : nullptr;
+  if (!has_tactic && !dashed_ident) {
+    return nullptr;
+  }
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (dashed_ident) {
+    list->Append(*dashed_ident);
+  }
+  if (flip_block) {
+    list->Append(*flip_block);
+  }
+  if (flip_inline) {
+    list->Append(*flip_inline);
+  }
+  if (flip_start) {
+    list->Append(*flip_start);
+  }
+  return list;
+}
+
+CSSValue* ConsumePositionTryOptions(CSSParserTokenRange& range,
+                                    const CSSParserContext& context) {
+  // position-try-options: none | [ <dashed-ident> || <try-tactic> ]#
+  // <try-tactic> = flip-block || flip-inline || flip-start
+  if (range.Peek().Id() == CSSValueID::kNone) {
+    return ConsumeIdent(range);
+  }
+  return ConsumeCommaSeparatedList(ConsumeSinglePositionTryOption, range,
+                                   context);
 }
 
 }  // namespace css_parsing_utils

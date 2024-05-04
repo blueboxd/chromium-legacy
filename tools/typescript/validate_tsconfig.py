@@ -11,6 +11,7 @@
 # configurations proliferating in the codebase.
 
 import os
+import pathlib
 
 _CWD = os.getcwd().replace('\\', '/')
 _HERE_DIR = os.path.dirname(__file__)
@@ -264,7 +265,7 @@ def validateRootDir(root_dir, gen_dir, root_gen_dir, is_ios):
   # unsupported behavior of setting the root_dir to src/.
   # TODO (https://www.crbug.com/1412158): Make iOS TypeScript build tools use
   # ts_library in a supported way, or change them to not rely on ts_library.
-  if (is_ios and (target_path.startswith('ios') or '/ios/' in target_path)):
+  if (is_ios and 'ios' in pathlib.Path(target_path).parts):
     return True, None
 
   # Legacy cases supported for backward-compatibility. Do not add new targets
@@ -272,14 +273,6 @@ def validateRootDir(root_dir, gen_dir, root_gen_dir, is_ios):
   exceptions = [
       # ChromeOS cases
       'ash/webui/color_internals/mojom',
-      # TODO(b/315150183): Migrate A11y code to use path mappings.
-      'chrome/browser/resources/chromeos/accessibility/accessibility_common',
-      'chrome/browser/resources/chromeos/accessibility/braille_ime',
-      'chrome/browser/resources/chromeos/accessibility/chromevox',
-      'chrome/browser/resources/chromeos/accessibility/common',
-      'chrome/browser/resources/chromeos/accessibility/enhanced_network_tts',
-      'chrome/browser/resources/chromeos/accessibility/select_to_speak',
-      'chrome/browser/resources/chromeos/accessibility/switch_access',
   ]
 
   if target_path in exceptions:
@@ -299,3 +292,48 @@ def validateRootDir(root_dir, gen_dir, root_gen_dir, is_ios):
 
   return False, f'Error: root_dir ({root_dir}) should be within {gen_dir} ' + \
       f'or {target_path_src}.'
+
+
+def validateDefinitionDeps(definitions_files, target_path, gen_dir,
+                           root_gen_dir, definitions):
+  # Root gen dir relative to the current working directory (essentially 'gen')
+  gen_dir_from_build = os.path.normpath(os.path.join(gen_dir,
+                                                     root_gen_dir)).replace(
+                                                         '\\', '/')
+
+  def getPathFromCwd(exception):
+    return os.path.relpath(os.path.join(_SRC_DIR, exception),
+                           _CWD).replace('\\', '/')
+
+  # TODO(https://crbug.com/326005022): Determine if the following are actually
+  # safe for computation of gn input values.
+  exceptions_list = [
+      'third_party/material_web_components/',
+      'third_party/node/node_modules/',
+      'third_party/polymer/v3_0/',
+      'tools/typescript/tests/',
+  ]
+  exceptions = [getPathFromCwd(e) for e in exceptions_list]
+  definitions_normalized = [d.replace('\\', '/') for d in definitions]
+
+  missing_inputs = []
+  for f in definitions_files:
+    # File path relative to the current working directory.
+    f_from_cwd = os.path.relpath(f, _CWD).replace('\\', '/')
+    is_gen_file = f_from_cwd.startswith(gen_dir_from_build)
+    f_from_gen = os.path.relpath(f, gen_dir).replace('\\', '/')
+    if not is_gen_file and f_from_gen not in definitions_normalized and \
+        not any(f_from_cwd.startswith(exception) for exception in exceptions):
+      missing_inputs.append(
+          os.path.relpath(f_from_cwd, _SRC_DIR).replace('\\', '/'))
+
+  if not missing_inputs:
+    return True, None
+
+  errorMessage = 'Undeclared dependencies to definition files encountered ' + \
+                 f'while building {target_path}. Please list the following ' + \
+                 'file(s) in |definitions|:\n'
+  for missing_input in missing_inputs:
+    errorMessage += f'//{missing_input}\n'
+
+  return False, errorMessage

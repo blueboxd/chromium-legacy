@@ -10,6 +10,7 @@
 #include "ash/api/tasks/tasks_client.h"
 #include "ash/api/tasks/tasks_types.h"
 #include "ash/ash_export.h"
+#include "ash/glanceables/common/glanceables_tasks_error_type.h"
 #include "ash/glanceables/glanceables_metrics.h"
 #include "ash/system/unified/glanceable_tray_child_bubble.h"
 #include "base/memory/raw_ptr.h"
@@ -69,7 +70,23 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceablesTasksViewBase,
   // views::ViewObserver:
   void OnViewFocused(views::View* view) override;
 
+  // Updates the cached task lists to `task_lists` and the tasks that are
+  // supposed to show.
+  void UpdateTaskLists(const ui::ListModel<api::TaskList>* task_lists);
+
  private:
+  // The context of why the current task list is shown.
+  enum class ListShownContext {
+    // The list is a cached one that will be updated later after the lists data
+    // are fetched.
+    kCachedList,
+    // The list that is loaded by default when users open glanceables.
+    kInitialList,
+    // The list is manually selected by the users through
+    // `task_list_combo_box_view_`.
+    kUserSelectedList
+  };
+
   // Handles press behavior for `add_new_task_button_`.
   void AddNewTaskButtonPressed();
 
@@ -80,12 +97,12 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceablesTasksViewBase,
 
   // Handles switching between tasks lists.
   void SelectedTasksListChanged();
-  void ScheduleUpdateTasksList(bool initial_update);
-  void UpdateTasksList(const std::string& task_list_id,
-                       const std::string& task_list_title,
-                       bool initial_update,
-                       bool fetch_success,
-                       const ui::ListModel<api::Task>* tasks);
+  void ScheduleUpdateTasks(ListShownContext context);
+  void UpdateTasksInTaskList(const std::string& task_list_id,
+                             const std::string& task_list_title,
+                             ListShownContext context,
+                             bool fetch_success,
+                             const ui::ListModel<api::Task>* tasks);
 
   // Announces text describing the task list state through a screen
   // reader, using `task_list_combo_box_view_` view accessibility helper.
@@ -118,6 +135,27 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceablesTasksViewBase,
                    const std::string& task_id,
                    api::TasksClient::OnTaskSavedCallback callback,
                    const api::Task* task);
+
+  // Returns the current showing task list.
+  const api::TaskList* GetActiveTaskList() const;
+
+  // Creates and shows `error_message_` that depends on the `error_type`.
+  void ShowErrorMessageWithType(GlanceablesTasksErrorType error_type);
+
+  // Returns the string to show on `error_message_` according to the
+  // `error_type`.
+  std::u16string GetErrorString(GlanceablesTasksErrorType error_type) const;
+
+  // Removes `task_view` from the tasks container.
+  void RemoveTaskView(base::WeakPtr<GlanceablesTaskViewV2> task_view);
+
+  // Creates and initializes `task_list_combo_box_view_`.
+  void CreateComboBoxView();
+
+  // This function should be called with `is_loading` = true if `this` is
+  // waiting for fetched data to be returned. After the data arrives, resets the
+  // states by calling with `is_loading` = false.
+  void SetIsLoading(bool is_loading);
 
   // Model for the combobox used to change the active task list.
   std::unique_ptr<TasksComboboxModel> tasks_combobox_model_;
@@ -154,6 +192,9 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceablesTasksViewBase,
   // Whether the user had a single task list with no tasks when the current task
   // list was selected.
   bool user_with_no_tasks_ = false;
+
+  // Callback that recreates `task_list_combo_box_view_`.
+  base::OnceClosure recreate_combobox_callback_;
 
   base::ScopedObservation<views::View, views::ViewObserver>
       combobox_view_observation_{this};

@@ -7,9 +7,11 @@
 #include "base/types/pass_key.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mapper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observer_complete_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_predicate.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_subscribe_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_subscribe_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_observer_observercallback.h"
@@ -185,7 +187,7 @@ class OperatorForEachInternalObserver final
     abort_algorithm_handle_.Clear();
 
     // "Resolve p with undefined."
-    resolver_->Resolve(ScriptValue());
+    resolver_->Resolve();
   }
 
   void Trace(Visitor* visitor) const override {
@@ -205,6 +207,318 @@ class OperatorForEachInternalObserver final
   Member<AbortSignal::AlgorithmHandle> abort_algorithm_handle_;
 };
 
+class OperatorDropSubscribeDelegate final
+    : public Observable::SubscribeDelegate {
+ public:
+  OperatorDropSubscribeDelegate(Observable* source_observable,
+                                uint64_t number_to_drop)
+      : source_observable_(source_observable),
+        number_to_drop_(number_to_drop) {}
+  void OnSubscribe(Subscriber* subscriber, ScriptState* script_state) override {
+    SubscribeOptions* options = MakeGarbageCollected<SubscribeOptions>();
+    options->setSignal(subscriber->signal());
+
+    source_observable_->SubscribeWithNativeObserver(
+        script_state,
+        MakeGarbageCollected<SourceInternalObserver>(subscriber, script_state,
+                                                     number_to_drop_),
+        options);
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(source_observable_);
+
+    Observable::SubscribeDelegate::Trace(visitor);
+  }
+
+ private:
+  class SourceInternalObserver final : public ObservableInternalObserver {
+   public:
+    SourceInternalObserver(Subscriber* subscriber,
+                           ScriptState* script_state,
+                           uint64_t number_to_drop)
+        : subscriber_(subscriber),
+          script_state_(script_state),
+          number_to_drop_(number_to_drop) {
+      CHECK(subscriber_);
+      CHECK(script_state_);
+    }
+
+    void Next(ScriptValue value) override {
+      if (number_to_drop_ > 0) {
+        --number_to_drop_;
+        return;
+      }
+
+      CHECK_EQ(number_to_drop_, 0ull);
+      subscriber_->next(value);
+    }
+    void Error(ScriptState*, ScriptValue error) override {
+      subscriber_->error(script_state_, error);
+    }
+    void Complete() override { subscriber_->complete(script_state_); }
+
+    void Trace(Visitor* visitor) const override {
+      visitor->Trace(subscriber_);
+      visitor->Trace(script_state_);
+
+      ObservableInternalObserver::Trace(visitor);
+    }
+
+   private:
+    Member<Subscriber> subscriber_;
+    Member<ScriptState> script_state_;
+    uint64_t number_to_drop_;
+  };
+  // The `Observable` which `this` will mirror, when `this` is subscribed to.
+  Member<Observable> source_observable_;
+  const uint64_t number_to_drop_;
+};
+
+class OperatorTakeSubscribeDelegate final
+    : public Observable::SubscribeDelegate {
+ public:
+  OperatorTakeSubscribeDelegate(Observable* source_observable,
+                                uint64_t number_to_take)
+      : source_observable_(source_observable),
+        number_to_take_(number_to_take) {}
+  void OnSubscribe(Subscriber* subscriber, ScriptState* script_state) override {
+    if (number_to_take_ == 0) {
+      subscriber->complete(script_state);
+      return;
+    }
+
+    SubscribeOptions* options = MakeGarbageCollected<SubscribeOptions>();
+    options->setSignal(subscriber->signal());
+
+    source_observable_->SubscribeWithNativeObserver(
+        script_state,
+        MakeGarbageCollected<SourceInternalObserver>(subscriber, script_state,
+                                                     number_to_take_),
+        options);
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(source_observable_);
+
+    Observable::SubscribeDelegate::Trace(visitor);
+  }
+
+ private:
+  class SourceInternalObserver final : public ObservableInternalObserver {
+   public:
+    SourceInternalObserver(Subscriber* subscriber,
+                           ScriptState* script_state,
+                           uint64_t number_to_take)
+        : subscriber_(subscriber),
+          script_state_(script_state),
+          number_to_take_(number_to_take) {
+      CHECK(subscriber_);
+      CHECK(script_state_);
+      CHECK_GT(number_to_take_, 0ull);
+    }
+
+    void Next(ScriptValue value) override {
+      CHECK_GT(number_to_take_, 0ull);
+      // This can run script, which may detach the context, but that's OK
+      // because nothing below this invocation relies on an attached/valid
+      // context.
+      subscriber_->next(value);
+      --number_to_take_;
+
+      if (!number_to_take_) {
+        subscriber_->complete(script_state_);
+      }
+    }
+    void Error(ScriptState*, ScriptValue error) override {
+      subscriber_->error(script_state_, error);
+    }
+    void Complete() override { subscriber_->complete(script_state_); }
+
+    void Trace(Visitor* visitor) const override {
+      visitor->Trace(subscriber_);
+      visitor->Trace(script_state_);
+
+      ObservableInternalObserver::Trace(visitor);
+    }
+
+   private:
+    Member<Subscriber> subscriber_;
+    Member<ScriptState> script_state_;
+    uint64_t number_to_take_;
+  };
+  // The `Observable` which `this` will mirror, when `this` is subscribed to.
+  Member<Observable> source_observable_;
+  uint64_t number_to_take_;
+};
+
+class OperatorFilterSubscribeDelegate final
+    : public Observable::SubscribeDelegate {
+ public:
+  OperatorFilterSubscribeDelegate(Observable* source_observable,
+                                  V8Predicate* predicate)
+      : source_observable_(source_observable), predicate_(predicate) {}
+  void OnSubscribe(Subscriber* subscriber, ScriptState* script_state) override {
+    SubscribeOptions* options = MakeGarbageCollected<SubscribeOptions>();
+    options->setSignal(subscriber->signal());
+
+    source_observable_->SubscribeWithNativeObserver(
+        script_state,
+        MakeGarbageCollected<SourceInternalObserver>(subscriber, script_state,
+                                                     predicate_),
+        options);
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(source_observable_);
+    visitor->Trace(predicate_);
+
+    Observable::SubscribeDelegate::Trace(visitor);
+  }
+
+ private:
+  class SourceInternalObserver final : public ObservableInternalObserver {
+   public:
+    SourceInternalObserver(Subscriber* subscriber,
+                           ScriptState* script_state,
+                           V8Predicate* predicate)
+        : subscriber_(subscriber),
+          script_state_(script_state),
+          predicate_(predicate) {
+      CHECK(subscriber_);
+      CHECK(script_state_);
+      CHECK(predicate_);
+    }
+
+    void Next(ScriptValue value) override {
+      // `ScriptState::Scope` can only be created in a valid context, so
+      // early-return if we're in a detached one.
+      if (!script_state_->ContextIsValid()) {
+        return;
+      }
+
+      ScriptState::Scope scope(script_state_);
+      v8::TryCatch try_catch(script_state_->GetIsolate());
+      v8::Maybe<bool> matches = predicate_->Invoke(nullptr, value);
+      if (try_catch.HasCaught()) {
+        subscriber_->error(
+            script_state_,
+            ScriptValue(script_state_->GetIsolate(), try_catch.Exception()));
+        return;
+      }
+
+      // Since we handled the exception case above, `matches` must not be
+      // `v8::Nothing`.
+      if (matches.ToChecked()) {
+        subscriber_->next(value);
+      }
+    }
+    void Error(ScriptState*, ScriptValue error) override {
+      subscriber_->error(script_state_, error);
+    }
+    void Complete() override { subscriber_->complete(script_state_); }
+
+    void Trace(Visitor* visitor) const override {
+      visitor->Trace(subscriber_);
+      visitor->Trace(script_state_);
+      visitor->Trace(predicate_);
+
+      ObservableInternalObserver::Trace(visitor);
+    }
+
+   private:
+    Member<Subscriber> subscriber_;
+    Member<ScriptState> script_state_;
+    Member<V8Predicate> predicate_;
+  };
+  // The `Observable` which `this` will mirror, when `this` is subscribed to.
+  Member<Observable> source_observable_;
+  Member<V8Predicate> predicate_;
+};
+
+class OperatorMapSubscribeDelegate final
+    : public Observable::SubscribeDelegate {
+ public:
+  OperatorMapSubscribeDelegate(Observable* source_observable, V8Mapper* mapper)
+      : source_observable_(source_observable), mapper_(mapper) {}
+  void OnSubscribe(Subscriber* subscriber, ScriptState* script_state) override {
+    SubscribeOptions* options = MakeGarbageCollected<SubscribeOptions>();
+    options->setSignal(subscriber->signal());
+
+    source_observable_->SubscribeWithNativeObserver(
+        script_state,
+        MakeGarbageCollected<SourceInternalObserver>(subscriber, script_state,
+                                                     mapper_),
+        options);
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(source_observable_);
+    visitor->Trace(mapper_);
+
+    Observable::SubscribeDelegate::Trace(visitor);
+  }
+
+ private:
+  class SourceInternalObserver final : public ObservableInternalObserver {
+   public:
+    SourceInternalObserver(Subscriber* subscriber,
+                           ScriptState* script_state,
+                           V8Mapper* mapper)
+        : subscriber_(subscriber),
+          script_state_(script_state),
+          mapper_(mapper) {
+      CHECK(subscriber_);
+      CHECK(script_state_);
+      CHECK(mapper_);
+    }
+
+    void Next(ScriptValue value) override {
+      // `ScriptState::Scope` can only be created in a valid context, so
+      // early-return if we're in a detached one.
+      if (!script_state_->ContextIsValid()) {
+        return;
+      }
+
+      ScriptState::Scope scope(script_state_);
+      v8::TryCatch try_catch(script_state_->GetIsolate());
+      v8::Maybe<ScriptValue> mapped_value =
+          mapper_->Invoke(nullptr, value, idx_++);
+      if (try_catch.HasCaught()) {
+        subscriber_->error(
+            script_state_,
+            ScriptValue(script_state_->GetIsolate(), try_catch.Exception()));
+        return;
+      }
+
+      // Since we handled the exception case above, `mapped_value` must not be
+      // `v8::Nothing`.
+      subscriber_->next(mapped_value.ToChecked());
+    }
+    void Error(ScriptState*, ScriptValue error) override {
+      subscriber_->error(script_state_, error);
+    }
+    void Complete() override { subscriber_->complete(script_state_); }
+
+    void Trace(Visitor* visitor) const override {
+      visitor->Trace(subscriber_);
+      visitor->Trace(script_state_);
+      visitor->Trace(mapper_);
+
+      ObservableInternalObserver::Trace(visitor);
+    }
+
+   private:
+    uint64_t idx_ = 0;
+    Member<Subscriber> subscriber_;
+    Member<ScriptState> script_state_;
+    Member<V8Mapper> mapper_;
+  };
+  // The `Observable` which `this` will mirror, when `this` is subscribed to.
+  Member<Observable> source_observable_;
+  Member<V8Mapper> mapper_;
+};
+
 class OperatorTakeUntilSubscribeDelegate final
     : public Observable::SubscribeDelegate {
  public:
@@ -212,19 +526,12 @@ class OperatorTakeUntilSubscribeDelegate final
                                      Observable* notifier)
       : source_observable_(source_observable), notifier_(notifier) {}
   void OnSubscribe(Subscriber* subscriber, ScriptState* script_state) override {
-    AbortController* controller = AbortController::Create(script_state);
-
-    HeapVector<Member<AbortSignal>> signals{controller->signal(),
-                                            subscriber->signal()};
-    AbortSignal* signal =
-        MakeGarbageCollected<AbortSignal>(script_state, signals);
-
     SubscribeOptions* options = MakeGarbageCollected<SubscribeOptions>();
-    options->setSignal(signal);
+    options->setSignal(subscriber->signal());
 
     notifier_->SubscribeWithNativeObserver(
         script_state,
-        MakeGarbageCollected<NotifierInternalObserver>(subscriber, controller,
+        MakeGarbageCollected<NotifierInternalObserver>(subscriber,
                                                        script_state),
         options);
 
@@ -237,8 +544,7 @@ class OperatorTakeUntilSubscribeDelegate final
 
     source_observable_->SubscribeWithNativeObserver(
         script_state,
-        MakeGarbageCollected<SourceInternalObserver>(subscriber, controller,
-                                                     script_state),
+        MakeGarbageCollected<SourceInternalObserver>(subscriber, script_state),
         options);
   }
 
@@ -253,38 +559,34 @@ class OperatorTakeUntilSubscribeDelegate final
   // This is the "internal observer" that we use to subscribe to
   // `source_observable_`. It is a simple pass-through, which forwards all of
   // the `source_observable_` values to `outer_subscriber_`, which is the
-  // `Subscriber` associated with the subscription to `this`. In addition to
-  // being a simple pass-through, it also appropriately unsubscribes from
-  // `notifier_`, once the `source_observable_` subscription ends.
+  // `Subscriber` associated with the subscription to `this`.
+  //
+  // In addition to being a simple pass-through, it also appropriately
+  // unsubscribes from `notifier_`, once the `source_observable_` subscription
+  // ends. This is accomplished by simply calling
+  // `outer_subscriber_->complete()` which will abort the outer subscriber's
+  // signal, triggering the dependent signals to be aborted as well, including
+  // the signal associated with the notifier's Observable's subscription.
   class SourceInternalObserver final : public ObservableInternalObserver {
    public:
     SourceInternalObserver(Subscriber* outer_subscriber,
-                           AbortController* controller,
                            ScriptState* script_state)
         : outer_subscriber_(outer_subscriber),
-          controller_(controller),
           script_state_(script_state) {
       CHECK(outer_subscriber_);
-      CHECK(controller_);
       CHECK(script_state_);
     }
 
     void Next(ScriptValue value) override { outer_subscriber_->next(value); }
     void Error(ScriptState* script_state, ScriptValue error) override {
-      // When a notifier Observable emits an "error" value, we "complete"
-      // `outer_subscriber_` and abort `controller_`, which requires a valid
-      // execution context.
       outer_subscriber_->error(script_state_, error);
-      controller_->abort(script_state_);
     }
     void Complete() override {
       outer_subscriber_->complete(script_state_);
-      controller_->abort(script_state_);
     }
 
     void Trace(Visitor* visitor) const override {
       visitor->Trace(outer_subscriber_);
-      visitor->Trace(controller_);
       visitor->Trace(script_state_);
 
       ObservableInternalObserver::Trace(visitor);
@@ -292,7 +594,6 @@ class OperatorTakeUntilSubscribeDelegate final
 
    private:
     Member<Subscriber> outer_subscriber_;
-    Member<AbortController> controller_;
     Member<ScriptState> script_state_;
   };
   // The `Observable` which `this` will mirror, when `this` is subscribed to.
@@ -304,28 +605,26 @@ class OperatorTakeUntilSubscribeDelegate final
   class NotifierInternalObserver final : public ObservableInternalObserver {
    public:
     NotifierInternalObserver(Subscriber* outer_subscriber,
-                             AbortController* controller,
                              ScriptState* script_state)
         : outer_subscriber_(outer_subscriber),
-          controller_(controller),
           script_state_(script_state) {
       CHECK(outer_subscriber_);
-      CHECK(controller_);
       CHECK(script_state_);
     }
     void Next(ScriptValue) override {
+      // When a notifier Observable emits a "next" or "error" value, we
+      // "complete" `outer_subscriber_`, since the outer/source Observables
+      // don't care about anything the notifier produces; only its completion is
+      // interesting.
       outer_subscriber_->complete(script_state_);
-      controller_->abort(script_state_);
     }
     void Error(ScriptState* script_state, ScriptValue) override {
       outer_subscriber_->complete(script_state_);
-      controller_->abort(script_state_);
     }
     void Complete() override {}
 
     void Trace(Visitor* visitor) const override {
       visitor->Trace(outer_subscriber_);
-      visitor->Trace(controller_);
       visitor->Trace(script_state_);
 
       ObservableInternalObserver::Trace(visitor);
@@ -333,7 +632,6 @@ class OperatorTakeUntilSubscribeDelegate final
 
    private:
     Member<Subscriber> outer_subscriber_;
-    Member<AbortController> controller_;
     Member<ScriptState> script_state_;
   };
   // The `Observable` that, once a `next` or `error` value is emitted`, will
@@ -488,6 +786,36 @@ Observable* Observable::takeUntil(ScriptState*, Observable* notifier) {
   Observable* return_observable = MakeGarbageCollected<Observable>(
       GetExecutionContext(),
       MakeGarbageCollected<OperatorTakeUntilSubscribeDelegate>(this, notifier));
+  return return_observable;
+}
+
+Observable* Observable::map(ScriptState*, V8Mapper* mapper) {
+  Observable* return_observable = MakeGarbageCollected<Observable>(
+      GetExecutionContext(),
+      MakeGarbageCollected<OperatorMapSubscribeDelegate>(this, mapper));
+  return return_observable;
+}
+
+Observable* Observable::filter(ScriptState*, V8Predicate* predicate) {
+  Observable* return_observable = MakeGarbageCollected<Observable>(
+      GetExecutionContext(),
+      MakeGarbageCollected<OperatorFilterSubscribeDelegate>(this, predicate));
+  return return_observable;
+}
+
+Observable* Observable::take(ScriptState*, uint64_t number_to_take) {
+  Observable* return_observable = MakeGarbageCollected<Observable>(
+      GetExecutionContext(),
+      MakeGarbageCollected<OperatorTakeSubscribeDelegate>(this,
+                                                          number_to_take));
+  return return_observable;
+}
+
+Observable* Observable::drop(ScriptState*, uint64_t number_to_drop) {
+  Observable* return_observable = MakeGarbageCollected<Observable>(
+      GetExecutionContext(),
+      MakeGarbageCollected<OperatorDropSubscribeDelegate>(this,
+                                                          number_to_drop));
   return return_observable;
 }
 

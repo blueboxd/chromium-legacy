@@ -8,8 +8,11 @@
 #include <string>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/picker/picker_category.h"
+#include "base/files/file_path.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -44,10 +47,42 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     bool operator==(const EmoticonData&) const;
   };
 
+  struct PngData {
+    std::vector<uint8_t> png;
+
+    PngData(const std::vector<uint8_t>& png);
+    PngData(const PngData&);
+    PngData& operator=(const PngData&);
+    ~PngData();
+
+    bool operator==(const PngData&) const;
+  };
+
   struct GifData {
-    GURL url;
-    // Width and height of the GIF at `url`.
-    gfx::Size dimensions;
+    GifData(const GURL& preview_url,
+            const GURL& preview_image_url,
+            const gfx::Size& preview_dimensions,
+            const GURL& full_url,
+            const gfx::Size& full_dimensions,
+            std::u16string content_description);
+    GifData(const GifData&);
+    GifData& operator=(const GifData&);
+    ~GifData();
+
+    // A url to an animated preview gif media source.
+    GURL preview_url;
+
+    // A url to an unanimated preview image of the gif media source.
+    GURL preview_image_url;
+
+    // Width and height of the GIF at `preview_url`.
+    gfx::Size preview_dimensions;
+
+    // A url to a full-sized gif media source.
+    GURL full_url;
+
+    // Width and height of the GIF at `full_url`.
+    gfx::Size full_dimensions;
 
     // A textual description of the content, primarily used for accessibility
     // features.
@@ -64,15 +99,33 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     bool operator==(const BrowsingHistoryData&) const;
   };
 
+  struct FileData {
+    base::FilePath file_path;
+    std::u16string title;
+
+    bool operator==(const FileData&) const;
+  };
+
+  struct CategoryData {
+    PickerCategory category;
+
+    bool operator==(const CategoryData&) const;
+  };
+
   using Data = std::variant<TextData,
                             EmojiData,
                             SymbolData,
                             EmoticonData,
+                            PngData,
                             GifData,
-                            BrowsingHistoryData>;
+                            BrowsingHistoryData,
+                            FileData,
+                            CategoryData>;
 
   PickerSearchResult(const PickerSearchResult&);
   PickerSearchResult& operator=(const PickerSearchResult&);
+  PickerSearchResult(PickerSearchResult&&);
+  PickerSearchResult& operator=(PickerSearchResult&&);
   ~PickerSearchResult();
 
   static PickerSearchResult BrowsingHistory(const GURL& url,
@@ -82,9 +135,16 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
   static PickerSearchResult Emoji(std::u16string_view emoji);
   static PickerSearchResult Symbol(std::u16string_view symbol);
   static PickerSearchResult Emoticon(std::u16string_view emoticon);
-  static PickerSearchResult Gif(const GURL& url,
-                                const gfx::Size& dimensions,
+  static PickerSearchResult Png(const std::vector<uint8_t>& png);
+  static PickerSearchResult Gif(const GURL& preview_url,
+                                const GURL& preview_image_url,
+                                const gfx::Size& preview_dimensions,
+                                const GURL& full_url,
+                                const gfx::Size& full_dimensions,
                                 std::u16string content_description);
+  static PickerSearchResult File(std::u16string title,
+                                 base::FilePath file_path);
+  static PickerSearchResult Category(PickerCategory category);
 
   const Data& data() const;
 

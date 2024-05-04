@@ -278,7 +278,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
-  void OnContentSizeChanged(Surface*) override {}
   void OnFrameLockingChanged(Surface*, bool) override {}
   void OnDeskChanged(Surface*, int) override {}
   void OnTooltipShown(Surface* surface,
@@ -377,6 +376,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
     return window_corners_radii_dp_;
   }
 
+  // Returns true if the shell surface has completed its initial configure
+  // and commit sequence (i.e. is ready and initialized).
+  bool IsReady() const;
+
  protected:
   bool has_frame_colors() const { return has_frame_colors_; }
 
@@ -451,6 +454,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
       views::Widget* widget);
 
   virtual void OnPostWidgetCommit();
+  virtual void ShowWidget(bool active);
 
   void SetParentInternal(aura::Window* window);
   void SetContainerInternal(int container);

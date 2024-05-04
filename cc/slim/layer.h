@@ -5,9 +5,9 @@
 #ifndef CC_SLIM_LAYER_H_
 #define CC_SLIM_LAYER_H_
 
+#include <optional>
 #include <vector>
 
-#include <optional>
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -18,7 +18,6 @@
 #include "cc/slim/frame_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/linear_gradient.h"
-#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
@@ -129,8 +128,8 @@ class COMPONENT_EXPORT(CC_SLIM) Layer : public base::RefCounted<Layer> {
   // center of the layer, leaving it occupying the same space. Whereas set to
   // the top left of the layer, the rotation wouldoccur around the top of the
   // layer, moving it vertically while flipping it.
-  void SetTransformOrigin(const gfx::Point3F& origin);
-  const gfx::Point3F& transform_origin() const { return transform_origin_; }
+  void SetTransformOrigin(const gfx::PointF& origin);
+  const gfx::PointF& transform_origin() const { return transform_origin_; }
 
   // When true the layer may contribute to the compositor's output. When false,
   // it does not. This property does not apply to children of the layer, they
@@ -279,14 +278,14 @@ class COMPONENT_EXPORT(CC_SLIM) Layer : public base::RefCounted<Layer> {
   raw_ptr<Layer> parent_ = nullptr;
   std::vector<scoped_refptr<Layer>> children_;
 
-  raw_ptr<LayerTree, DanglingUntriaged> layer_tree_ = nullptr;
+  raw_ptr<LayerTree> layer_tree_ = nullptr;
 
   int num_descendants_that_draw_content_ = 0;
 
   gfx::PointF position_;
   gfx::Size bounds_;
   gfx::Transform transform_;
-  gfx::Point3F transform_origin_;
+  gfx::PointF transform_origin_;
 
   std::vector<Filter> filters_;
   gfx::RoundedCornersF rounded_corners_;

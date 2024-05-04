@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertExists} from './assert.js';
+import {assert, assertExists} from './assert.js';
 import {Intent} from './intent.js';
 import * as Comlink from './lib/comlink.js';
 import * as loadTimeData from './models/load_time_data.js';
 import * as localStorage from './models/local_storage.js';
 import {ChromeHelper} from './mojo/chrome_helper.js';
+import * as mojoType from './mojo/type.js';
+import * as mojoTypeUtils from './mojo/type_utils.js';
 import * as state from './state.js';
 import {State} from './state.js';
 import {
@@ -43,6 +45,9 @@ const GA4_API_SECRET =
     PRODUCTION ? '0Ir88y9HQtiwnchvaIzZ3Q' : 'WE_zBPUQTGefdXpHl25-ig';
 
 const ready = new WaitableEvent();
+
+// This is used to send events via CrOS Events.
+let eventsSender: mojoType.EventsSenderRemote|null = null;
 
 /**
  * Sends the event to GA backend.
@@ -234,6 +239,18 @@ export function sendLaunchEvent({launchType}: LaunchEventParam): void {
       new Map([
         [GaMetricDimension.LAUNCH_TYPE, launchType],
       ]));
+  void (async () => {
+    (await getEventsSender()).sendStartSessionEvent({
+      launchType: mojoTypeUtils.convertLaunchTypeToMojo(launchType),
+    });
+  })();
+}
+
+async function getEventsSender(): Promise<mojoType.EventsSenderRemote> {
+  if (eventsSender === null) {
+    eventsSender = await ChromeHelper.getInstance().getEventsSender();
+  }
+  return eventsSender;
 }
 
 /**
@@ -349,36 +366,33 @@ export function sendCaptureEvent({
     return states.find((s) => state.get(s)) ?? 'n/a';
   }
 
+  const mode = condState(Object.values(Mode));
+  const mirrorState = condState([State.MIRROR]);
+  const gridType = condState(
+      [State.GRID_3x3, State.GRID_4x4, State.GRID_GOLDEN], State.GRID);
+  const timerType =
+      condState([State.TIMER_3SEC, State.TIMER_10SEC], State.TIMER);
+  const windowMaximizedState = condState([State.MAX_WND]);
+  const windowPortraitState = condState([State.TALL]);
+  const micMutedState = condState([State.MIC], Mode.VIDEO, true);
+  const fpsType = condState([State.FPS_30, State.FPS_60], Mode.VIDEO, true);
   sendEvent(
       {
         eventCategory: 'capture',
-        eventAction: condState(Object.values(Mode)),
+        eventAction: mode,
         eventLabel: facing,
         eventValue: duration,
       },
       new Map([
         // Skips 3rd dimension for obsolete 'sound' state.
-        [GaMetricDimension.MIRROR, condState([State.MIRROR])],
-        [
-          GaMetricDimension.GRID,
-          condState(
-              [State.GRID_3x3, State.GRID_4x4, State.GRID_GOLDEN], State.GRID),
-        ],
-        [
-          GaMetricDimension.TIMER,
-          condState([State.TIMER_3SEC, State.TIMER_10SEC], State.TIMER),
-        ],
-        [
-          GaMetricDimension.MICROPHONE,
-          condState([State.MIC], Mode.VIDEO, true),
-        ],
-        [GaMetricDimension.MAXIMIZED, condState([State.MAX_WND])],
-        [GaMetricDimension.TALL_ORIENTATION, condState([State.TALL])],
+        [GaMetricDimension.MIRROR, mirrorState],
+        [GaMetricDimension.GRID, gridType],
+        [GaMetricDimension.TIMER, timerType],
+        [GaMetricDimension.MICROPHONE, micMutedState],
+        [GaMetricDimension.MAXIMIZED, windowMaximizedState],
+        [GaMetricDimension.TALL_ORIENTATION, windowPortraitState],
         [GaMetricDimension.RESOLUTION, resolution.toString()],
-        [
-          GaMetricDimension.FPS,
-          condState([State.FPS_30, State.FPS_60], Mode.VIDEO, true),
-        ],
+        [GaMetricDimension.FPS, fpsType],
         [GaMetricDimension.INTENT_RESULT, intentResult],
         [GaMetricDimension.SHUTTER_TYPE, shutterType],
         [GaMetricDimension.IS_VIDEO_SNAPSHOT, boolToIntString(isVideoSnapshot)],
@@ -390,6 +404,65 @@ export function sendCaptureEvent({
         [GaMetricDimension.ASPECT_RATIO_SET, String(aspectRatioSet)],
         [GaMetricDimension.TIME_LAPSE_SPEED, String(timeLapseSpeed)],
       ]));
+
+  void (async () => {
+    const captureEvent: mojoType.CaptureEventParams = {
+      mode: mojoTypeUtils.convertModeToMojo(mode),
+      facing: mojoTypeUtils.convertFacingToMojo(facing),
+      isMirrored: mirrorState === State.MIRROR,
+      gridType: mojoTypeUtils.convertGridTypeToMojo(gridType),
+      timerType: mojoTypeUtils.convertTimerTypeToMojo(timerType),
+      shutterType: mojoTypeUtils.convertShutterTypeToMojo(shutterType),
+      androidIntentResultType:
+          mojoTypeUtils.convertIntentResultToMojo(intentResult),
+      isWindowMaximized: windowMaximizedState === State.MAX_WND,
+      isWindowPortrait: windowPortraitState === State.TALL,
+      resolutionWidth: resolution.width,
+      resolutionHeight: resolution.height,
+      resolutionLevel:
+          mojoTypeUtils.convertResolutionLevelToMojo(resolutionLevel),
+      aspectRatioSet: mojoTypeUtils.convertAspectRatioSetToMojo(aspectRatioSet),
+      captureDetails: {},
+    };
+    if (mode === Mode.PHOTO || isVideoSnapshot) {
+      captureEvent.captureDetails = {
+        photoDetails: {
+          isVideoSnapshot,
+        },
+      };
+    } else if (mode === Mode.VIDEO) {
+      const captureDetails = {
+        videoDetails: {
+          isMuted: micMutedState === State.MIC,
+          fps: mojoTypeUtils.convertFpsTypeToMojo(fpsType),
+          everPaused,
+          duration,
+          recordTypeDetails: {},
+        },
+      };
+
+      let recordTypeDetails = null;
+      if (recordType === RecordType.NORMAL_VIDEO) {
+        recordTypeDetails = {normalVideoDetails: {}};
+      } else if (recordType === RecordType.GIF) {
+        recordTypeDetails = {
+          gifVideoDetails: {
+            gifResultType: mojoTypeUtils.convertGifResultTypeToMojo(gifResult),
+          },
+        };
+      } else if (recordType === RecordType.TIME_LAPSE) {
+        recordTypeDetails = {
+          timelapseVideoDetails: {
+            timelapseSpeed: Math.trunc(timeLapseSpeed),
+          },
+        };
+      }
+      assert(recordTypeDetails !== null);
+      captureDetails.videoDetails.recordTypeDetails = recordTypeDetails;
+      captureEvent.captureDetails = captureDetails;
+    }
+    (await getEventsSender()).sendCaptureEvent(captureEvent);
+  })();
 }
 
 
@@ -460,6 +533,14 @@ export function sendIntentEvent({intent, result}: IntentEventParam): void {
         [GaMetricDimension.SHOULD_DOWN_SCALE, boolToIntString(shouldDownScale)],
         [GaMetricDimension.IS_SECURE, boolToIntString(isSecure)],
       ]));
+  void (async () => {
+    (await getEventsSender()).sendAndroidIntentEvent({
+      mode: mojoTypeUtils.convertModeToMojo(mode),
+      shouldHandleResult,
+      shouldDownscale: shouldDownScale,
+      isSecure,
+    });
+  })();
 }
 
 export interface ErrorEventParam {
@@ -548,6 +629,13 @@ export function sendOpenPTZPanelEvent(
         [GaMetricDimension.SUPPORT_TILT, boolToIntString(capabilities.tilt)],
         [GaMetricDimension.SUPPORT_ZOOM, boolToIntString(capabilities.zoom)],
       ]));
+  void (async () => {
+    (await getEventsSender()).sendOpenPTZPanelEvent({
+      supportPan: capabilities.pan,
+      supportTilt: capabilities.tilt,
+      supportZoom: capabilities.zoom,
+    });
+  })();
 }
 
 export enum DocScanFixType {
@@ -583,6 +671,14 @@ export function sendDocScanResultEvent(
         [GaMetricDimension.DOC_FIX_TYPE, String(fixType)],
         [GaMetricDimension.DOC_PAGE_COUNT, String(pageCount)],
       ]));
+  void (async () => {
+    (await getEventsSender()).sendDocScanResultEvent({
+      resultType: mojoTypeUtils.convertDocScanResultTypeToMojo(action),
+      fixTypesMask: mojoTypeUtils.convertDocScanFixTypeToMojo(fixType),
+      fixCount,
+      pageCount,
+    });
+  })();
 }
 
 export enum DocScanActionType {
@@ -599,6 +695,11 @@ export function sendDocScanEvent(action: DocScanActionType): void {
     eventCategory: 'doc-scan',
     eventAction: action,
   });
+  void (async () => {
+    (await getEventsSender()).sendDocScanActionEvent({
+      actionType: mojoTypeUtils.convertDocScanActionTypeToMojo(action),
+    });
+  })();
 }
 
 export enum LowStorageActionType {

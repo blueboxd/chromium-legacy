@@ -17,7 +17,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/root_window_controller.h"
-#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -35,12 +34,14 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_constants.h"
 #include "ash/wm/wm_event.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
@@ -68,6 +69,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/core/scoped_animation_disabler.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -168,6 +170,12 @@ aura::Window* FindTopMostChild(aura::Window* parent,
 }
 
 }  // namespace
+
+int GetMiniWindowRoundedCornerRadius() {
+  return chromeos::features::IsRoundedWindowsEnabled()
+             ? chromeos::features::RoundedWindowsRadius()
+             : kWindowMiniViewCornerRadius;
+}
 
 aura::Window* GetActiveWindow() {
   if (auto* activation_client =
@@ -423,7 +431,7 @@ void EnsureTransientRoots(
 void MinimizeAndHideWithoutAnimation(
     const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
   for (aura::Window* window : windows) {
-    ScopedAnimationDisabler disable(window);
+    wm::ScopedAnimationDisabler disable(window);
 
     // ARC windows are minimized asynchronously, so we hide them after
     // minimization. We minimize ARC windows first so they receive occlusion

@@ -2193,6 +2193,8 @@ message ExtensionPolicy {
 // Cloud policy last fetch time.
 message PolicyFetchTimestamp {
   // The type of cloud policy.
+  // TODO(b/327655459): This field is deprecated, delete once server
+  // side references are all removed.
   optional string type = 1;
   // The last time the policies where fetched for the policy type.
   // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
@@ -2707,6 +2709,11 @@ message DeviceAutoEnrollmentResponse {
 // and secondary state enrollment. In this case, this request can also be sent
 // by brand new devices and the server would not know their serial number and
 // brand code, hence the values are supplied as part of the request.
+//
+// Another device state retrieval scenario is Flex Auto Enrollment initial
+// state determination, in which case the Flex enrollment token is included
+// (along with brand code and serial number) to retrieve token-keyed state
+// from the server.
 message DeviceStateRetrievalRequest {
   // Opaque, client-determined, unpredictable, stable and unique device
   // identifier to retrieve state for. This field contains 32 bytes of data that
@@ -2720,6 +2727,9 @@ message DeviceStateRetrievalRequest {
 
   // The 4-character brand code of the device.
   optional string brand_code = 3;
+
+  // The enrollment token for Flex Auto Enrollment.
+  optional string enrollment_token = 4;
 }
 
 // Sent by the client to the server when in registered state to update the
@@ -2782,6 +2792,9 @@ message DeviceInitialEnrollmentStateRequest {
 
   // The 4-character brand code of the device.
   optional string brand_code = 2;
+
+  // The enrollment token for Flex Auto Enrollment.
+  optional string enrollment_token = 3;
 }
 
 // Response from server DeviceInitialEnrollmentStateRequest.
@@ -2798,6 +2811,8 @@ message DeviceInitialEnrollmentStateResponse {
     // The device has been disabled by its owner. The device will show a warning
     // screen and prevent the user from proceeding further.
     INITIAL_ENROLLMENT_MODE_DISABLED = 3;
+    // Token-based enrollment is enforced and cannot be skipped.
+    INITIAL_ENROLLMENT_MODE_TOKEN_ENROLLMENT_ENFORCED = 4;
   }
 
   // The server-indicated initial enrollment mode.
@@ -4383,6 +4398,9 @@ message CertProvBackendError {
     // The Adapter uploaded a certificate that cannot be parsed or was issued
     // for a wrong public key.
     BAD_ADAPTER_CERTIFICATE_RECEIVED = 14;
+    // The requested certificate provisioning process cannot be found on
+    // Spanner.
+    CERTIFICATE_PROVISIONING_PROCESS_NOT_FOUND = 15;
   }
 
   // The specific error type.

@@ -633,6 +633,10 @@ inline constexpr char kAccessibilitySelectToSpeakVoiceSwitching[] =
 inline constexpr char kAccessibilitySelectToSpeakWordHighlight[] =
     "settings.a11y.select_to_speak_word_highlight";
 
+// A boolean pref which determines whether ReducedAnimations is enabled.
+inline constexpr char kAccessibilityReducedAnimationsEnabled[] =
+    "settings.a11y.reduced_animations.enabled";
+
 // A boolean pref which determines whether FaceGaze is enabled.
 inline constexpr char kAccessibilityFaceGazeEnabled[] =
     "settings.a11y.face_gaze.enabled";
@@ -657,6 +661,12 @@ inline constexpr char kAccessibilityFaceGazeCursorSmoothing[] =
 // quickly.
 inline constexpr char kAccessibilityFaceGazeCursorUseAcceleration[] =
     "settings.a11y.face_gaze.cursor_use_acceleration";
+
+// A dictionary pref which maps facial gestures to action macros. Facial
+// gestures are strings like 'browDownLeft', and actions are enums from
+// macro_names.
+inline constexpr char kAccessibilityFaceGazeGesturesToMacros[] =
+    "settings.a11y.face_gaze.gestures_to_macros";
 
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
@@ -836,6 +846,10 @@ inline constexpr char kPineScreenshotTakenDuration[] =
 // pine screenshot to the disk.
 inline constexpr char kPineScreenshotEncodeAndSaveDuration[] =
     "ash.pine.sreenshot_encode_and_save_duration";
+
+// A boolean pref indicating whether the Pine onboarding dialog should be shown.
+inline constexpr char kShouldShowPineOnboarding[] =
+    "ash.pine.should_show_pine_onboarding";
 
 // A boolean pref that specifies if the cellular setup notification can be
 // shown or not. This notification should be shown post-OOBE if the user has a
@@ -1222,6 +1236,16 @@ inline constexpr char kUserGeolocationAccessLevel[] =
 // session. Values are from `ash::GeolocationAccessLevel`.
 inline constexpr char kDeviceGeolocationAllowed[] =
     "ash.device.geolocation_allowed";
+// A pref that saves the previous geolocation access level.
+// It has to be different value than the current level saved in
+// `kUserGeolocationAccessLevel`.
+inline constexpr char kUserPreviousGeolocationAccessLevel[] =
+    "ash.user.previous_geolocation_access_level";
+
+// An boolean pref indicating whether a user has enabled the improve location
+// toggle.
+inline constexpr char kUserGeolocationAccuracyEnabled[] =
+    "ash.user.geolocation_accuracy_enabled";
 
 // Double prefs storing the most recent valid geoposition, which is only used
 // when the device lacks connectivity and we're unable to retrieve a valid
@@ -1562,10 +1586,6 @@ inline constexpr char kFilesAppTrashEnabled[] = "ash.filesapp.trash_enabled";
 // Boolean value for the DeviceLoginScreenWebUILazyLoading device policy.
 inline constexpr char kLoginScreenWebUILazyLoading[] =
     "ash.login.LoginScreenWebUILazyLoading";
-
-// Boolean value for the FloatingWorkspaceEnabled policy
-inline constexpr char kFloatingWorkspaceEnabled[] =
-    "ash.floating_workspace_enabled";
 
 // Boolean value for the FloatingWorkspaceV2Enabled policy
 inline constexpr char kFloatingWorkspaceV2Enabled[] =
@@ -2012,6 +2032,11 @@ inline constexpr char kRestoreAppsAndPagesPrefName[] =
 // on app startup.
 inline constexpr char kGameDashboardShowWelcomeDialog[] =
     "ash.game_dashboard.show_welcome_dialog";
+
+// An integer pref indicating the system's software scanning mode. Options:
+// (0) Never, (1) Always, (2) Only when charging.
+static constexpr char kSoftwareScanningEnabled[] =
+    "ash.nearby.software_scanning_enabled";
 
 //-----------------------------------------------------------------------------
 // Language related Prefs

@@ -251,7 +251,7 @@ class Combobox::ComboboxMenuView : public views::View {
   raw_ptr<views::ScrollView> scroll_view_;
 };
 
-BEGIN_METADATA(Combobox, ComboboxMenuView, views::View)
+BEGIN_METADATA(Combobox, ComboboxMenuView)
 END_METADATA
 
 //------------------------------------------------------------------------------
@@ -645,11 +645,13 @@ void Combobox::OnPerformAction() {
   }
 
   if (selected_index_) {
-    GetViewAccessibility().OverridePosInSet(
-        base::checked_cast<int>(selected_index_.value()),
+    GetViewAccessibility().SetPosInSet(
+        base::checked_cast<int>(selected_index_.value()));
+    GetViewAccessibility().SetSetSize(
         base::checked_cast<int>(model_->GetItemCount()));
   } else {
-    GetViewAccessibility().ClearPosInSetOverride();
+    GetViewAccessibility().ClearPosInSet();
+    GetViewAccessibility().ClearSetSize();
   }
 
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);

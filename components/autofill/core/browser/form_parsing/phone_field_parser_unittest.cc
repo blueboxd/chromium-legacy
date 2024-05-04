@@ -242,17 +242,6 @@ TEST_P(PhoneFieldParserTest, ThreePartPhoneNumberPrefixSuffix) {
   }
 }
 
-TEST_P(PhoneFieldParserTest, ThreePartPhoneNumberPrefixSuffix2) {
-  for (FormControlType field_type : kFieldTypes) {
-    RunParsingTest(
-        {{field_type, u"(", u"phone1", PHONE_HOME_CITY_CODE, /*max_length=*/3},
-         {field_type, u")", u"phone2", PHONE_HOME_NUMBER_PREFIX,
-          /*max_length=*/3},
-         {field_type, u"", u"phone3", PHONE_HOME_NUMBER_SUFFIX,
-          /*max_length=*/4}});
-  }
-}
-
 // Phone in format <country code> - <city and number>
 TEST_P(PhoneFieldParserTest, CountryAndCityAndPhoneNumber) {
   for (FormControlType field_type : kFieldTypes) {
@@ -263,28 +252,12 @@ TEST_P(PhoneFieldParserTest, CountryAndCityAndPhoneNumber) {
   }
 }
 
-TEST_P(PhoneFieldParserTest, EmptyLabels) {
-  base::test::ScopedFeatureList enabled_features;
-  enabled_features.InitAndEnableFeature(
-      features::kAutofillEnableParsingEmptyPhoneNumberLabels);
-
-  // Phone: <input><input>
-  RunParsingTest(
-      {{FormControlType::kInputText, u"Phone", u"", PHONE_HOME_COUNTRY_CODE},
-       {FormControlType::kInputText, u"", u"", PHONE_HOME_CITY_AND_NUMBER}});
-
-  // Phone: <input><input><input>
-  RunParsingTest(
-      {{FormControlType::kInputText, u"Phone", u"", PHONE_HOME_COUNTRY_CODE},
-       {FormControlType::kInputText, u"", u"", PHONE_HOME_CITY_CODE},
-       {FormControlType::kInputText, u"", u"", PHONE_HOME_NUMBER}});
-}
-
 // Tests that when a phone field is parsed, a metric indicating the used grammar
 // is emitted.
 TEST_P(PhoneFieldParserTest, GrammarMetrics) {
-  // PHONE_HOME_WHOLE_NUMBER corresponds to the last grammar. We thus expect
-  // that 2*16 + 1 = 33 is logged.
+  // PHONE_HOME_WHOLE_NUMBER corresponds to the last grammar, which is at index
+  // 14 of the grammars array in PhoneFieldParser::GetPhoneGrammars. We thus
+  // expect that 14 is logged.
   base::HistogramTester histogram_tester;
   bool default_to_city_and_number =
       base::FeatureList::IsEnabled(features::kAutofillDefaultToCityAndNumber);
@@ -292,8 +265,8 @@ TEST_P(PhoneFieldParserTest, GrammarMetrics) {
                    default_to_city_and_number ? PHONE_HOME_CITY_AND_NUMBER
                                               : PHONE_HOME_WHOLE_NUMBER}});
   EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Autofill.FieldPrediction.PhoneNumberGrammarUsage"),
-              BucketsAre(base::Bucket(33, 1)));
+                  "Autofill.FieldPrediction.PhoneNumberGrammarUsage2"),
+              BucketsAre(base::Bucket(14, 1)));
 }
 
 // Tests if the country code, city code and phone number fields are correctly

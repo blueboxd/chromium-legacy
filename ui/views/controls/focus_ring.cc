@@ -309,12 +309,16 @@ void FocusRing::OnViewBlurred(View* view) {
   RefreshLayer();
 }
 
+void FocusRing::OnViewLayoutInvalidated(View* view) {
+  InvalidateLayout();
+}
+
 FocusRing::FocusRing() {
   // Don't allow the view to process events.
   SetCanProcessEventsWithinSubtree(false);
 
   // This should never be included in the accessibility tree.
-  GetViewAccessibility().OverrideIsIgnored(true);
+  GetViewAccessibility().SetIsIgnored(true);
 }
 
 void FocusRing::AdjustBounds(SkRect& rect) const {

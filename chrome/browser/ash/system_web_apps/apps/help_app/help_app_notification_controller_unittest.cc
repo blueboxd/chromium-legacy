@@ -11,7 +11,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/version.h"
-#include "chrome/browser/ash/system_web_apps/apps/help_app/help_app_discover_tab_notification.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -72,8 +71,7 @@ class HelpAppNotificationControllerTest : public BrowserWithTestWindowTest {
         base::Unretained(this)));
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/
-        {features::kHelpAppDiscoverTabNotificationAllChannels,
-         features::kReleaseNotesNotificationAllChannels},
+        {features::kReleaseNotesNotificationAllChannels},
         /*disabled_features=*/{});
   }
 
@@ -86,22 +84,10 @@ class HelpAppNotificationControllerTest : public BrowserWithTestWindowTest {
   void OnNotificationAdded() { notification_count_++; }
 
  protected:
-  bool HasDiscoverTabNotification() {
-    return notification_tester_
-        ->GetNotification(kShowHelpAppDiscoverTabNotificationId)
-        .has_value();
-  }
-
   bool HasReleaseNotesNotification() {
     return notification_tester_
         ->GetNotification("show_release_notes_notification")
         .has_value();
-  }
-
-  message_center::Notification GetDiscoverTabNotification() {
-    return notification_tester_
-        ->GetNotification(kShowHelpAppDiscoverTabNotificationId)
-        .value();
   }
 
   message_center::Notification GetReleaseNotesNotification() {
@@ -117,6 +103,29 @@ class HelpAppNotificationControllerTest : public BrowserWithTestWindowTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+class HelpAppNotificationControllerTestWithHelpAppOpensInsteadEnabled
+    : public HelpAppNotificationControllerTest {
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/
+        {
+            features::kReleaseNotesNotificationAllChannels,
+            features::kHelpAppOpensInsteadOfReleaseNotesNotification,
+        },
+        /*disabled_features=*/{});
+    BrowserWithTestWindowTest::SetUp();
+    help_app_notification_controller_ =
+        std::make_unique<HelpAppNotificationController>(profile());
+    TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
+        std::make_unique<SystemNotificationHelper>());
+    notification_tester_ =
+        std::make_unique<NotificationDisplayServiceTester>(nullptr);
+    notification_tester_->SetNotificationAddedClosure(base::BindRepeating(
+        &HelpAppNotificationControllerTest::OnNotificationAdded,
+        base::Unretained(this)));
+  }
+};
+
 // Tests for regular profiles.
 TEST_F(HelpAppNotificationControllerTest,
        DoesNotShowAnyNotificationIfNewRegularProfile) {
@@ -128,11 +137,6 @@ TEST_F(HelpAppNotificationControllerTest,
 
   EXPECT_EQ(0, notification_count_);
   EXPECT_EQ(false, HasReleaseNotesNotification());
-
-  controller->MaybeShowDiscoverNotification();
-
-  EXPECT_EQ(0, notification_count_);
-  EXPECT_EQ(false, HasDiscoverTabNotification());
 }
 
 TEST_F(HelpAppNotificationControllerTest,
@@ -163,21 +167,7 @@ TEST_F(HelpAppNotificationControllerTest,
   controller->MaybeShowReleaseNotesNotification();
 
   EXPECT_EQ(0, notification_count_);
-  EXPECT_EQ(false, HasDiscoverTabNotification());
-}
-
-TEST_F(HelpAppNotificationControllerTest,
-       DoesNotShowDiscoverNotificationIfNotChildProfile) {
-  Profile* profile = CreateRegularProfile();
-  std::unique_ptr<HelpAppNotificationController> controller =
-      std::make_unique<HelpAppNotificationController>(profile);
-  profile->GetPrefs()->SetInteger(prefs::kHelpAppNotificationLastShownMilestone,
-                                  20);
-
-  controller->MaybeShowDiscoverNotification();
-
-  EXPECT_EQ(0, notification_count_);
-  EXPECT_EQ(false, HasDiscoverTabNotification());
+  EXPECT_EQ(false, HasReleaseNotesNotification());
 }
 
 // Tests for Child profile.
@@ -191,44 +181,6 @@ TEST_F(HelpAppNotificationControllerTest,
 
   EXPECT_EQ(0, notification_count_);
   EXPECT_EQ(false, HasReleaseNotesNotification());
-
-  controller->MaybeShowDiscoverNotification();
-
-  EXPECT_EQ(0, notification_count_);
-  EXPECT_EQ(false, HasDiscoverTabNotification());
-}
-
-// TODO(b/187774783): Remove this when discover tab is supported in all locales.
-TEST_F(HelpAppNotificationControllerTest,
-       DoesNotShowDiscoverNotificationIfSystemLanguageNotEnglish) {
-  Profile* profile = CreateChildProfile();
-  g_browser_process->SetApplicationLocale("fr");
-  profile->GetPrefs()->SetInteger(prefs::kHelpAppNotificationLastShownMilestone,
-                                  20);
-  std::unique_ptr<HelpAppNotificationController> controller =
-      std::make_unique<HelpAppNotificationController>(profile);
-
-  controller->MaybeShowDiscoverNotification();
-
-  EXPECT_EQ(0, notification_count_);
-  EXPECT_EQ(false, HasDiscoverTabNotification());
-}
-
-TEST_F(HelpAppNotificationControllerTest,
-       ShowsDiscoverNotificationIfShownInPreviousMilestone) {
-  Profile* profile = CreateChildProfile();
-  profile->GetPrefs()->SetInteger(prefs::kHelpAppNotificationLastShownMilestone,
-                                  91);
-  std::unique_ptr<HelpAppNotificationController> controller =
-      std::make_unique<HelpAppNotificationController>(profile);
-
-  controller->MaybeShowDiscoverNotification();
-
-  EXPECT_EQ(1, notification_count_);
-  EXPECT_EQ(true, HasDiscoverTabNotification());
-  EXPECT_EQ(CurrentMilestone(),
-            profile->GetPrefs()->GetInteger(
-                prefs::kHelpAppNotificationLastShownMilestone));
 }
 
 TEST_F(HelpAppNotificationControllerTest,
@@ -239,15 +191,15 @@ TEST_F(HelpAppNotificationControllerTest,
   std::unique_ptr<HelpAppNotificationController> controller =
       std::make_unique<HelpAppNotificationController>(profile);
 
-  controller->MaybeShowDiscoverNotification();
+  controller->MaybeShowReleaseNotesNotification();
 
   EXPECT_EQ(1, notification_count_);
-  EXPECT_EQ(true, HasDiscoverTabNotification());
+  EXPECT_EQ(true, HasReleaseNotesNotification());
 
   controller->MaybeShowReleaseNotesNotification();
 
   EXPECT_EQ(1, notification_count_);
-  EXPECT_EQ(false, HasReleaseNotesNotification());
+  EXPECT_EQ(true, HasReleaseNotesNotification());
 }
 
 // Tests for suggestion chips.
@@ -268,21 +220,22 @@ TEST_F(HelpAppNotificationControllerTest,
                    prefs::kReleaseNotesSuggestionChipTimesLeftToShow));
 }
 
-TEST_F(HelpAppNotificationControllerTest,
-       UpdatesDiscoverTabChipPrefWhenDiscoverTabNotificationShown) {
-  Profile* profile = CreateChildProfile();
+// Tests for help app opens instead of release notes notification.
+TEST_F(HelpAppNotificationControllerTestWithHelpAppOpensInsteadEnabled,
+       DoesNotShowNotification) {
+  Profile* profile = CreateRegularProfile();
   profile->GetPrefs()->SetInteger(prefs::kHelpAppNotificationLastShownMilestone,
-                                  20);
+                                  91);
   std::unique_ptr<HelpAppNotificationController> controller =
       std::make_unique<HelpAppNotificationController>(profile);
 
-  EXPECT_EQ(0, profile->GetPrefs()->GetInteger(
-                   prefs::kReleaseNotesSuggestionChipTimesLeftToShow));
+  controller->MaybeShowReleaseNotesNotification();
 
-  controller->MaybeShowDiscoverNotification();
-
-  EXPECT_EQ(3, profile->GetPrefs()->GetInteger(
-                   prefs::kDiscoverTabSuggestionChipTimesLeftToShow));
+  EXPECT_EQ(0, notification_count_);
+  EXPECT_EQ(false, HasReleaseNotesNotification());
+  EXPECT_EQ(CurrentMilestone(),
+            profile->GetPrefs()->GetInteger(
+                prefs::kHelpAppNotificationLastShownMilestone));
 }
 
 }  // namespace ash

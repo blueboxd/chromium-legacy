@@ -11,7 +11,6 @@
 #include "base/scoped_observation.h"
 #include "components/content_settings/browser/ui/cookie_controls_controller.h"
 #include "components/content_settings/browser/ui/cookie_controls_view.h"
-#include "components/content_settings/core/common/cookie_controls_status.h"
 
 namespace content_settings {
 
@@ -49,31 +48,26 @@ class CookieControlsBridge : public CookieControlsObserver {
 
   void OnEntryPointAnimated(JNIEnv* env);
 
-  int GetCookieControlsStatus(JNIEnv* env);
-
-  int GetBreakageConfidenceLevel(JNIEnv* env);
-
   // CookieControlsObserver:
-  // TODO(b/317975095): Remove `status` in favor of `control_visible` and
-  // `protections_on`.
-  void OnStatusChanged(CookieControlsStatus status,
-                       bool controls_visible,
+  void OnStatusChanged(bool controls_visible,
                        bool protections_on,
                        CookieControlsEnforcement enforcement,
                        CookieBlocking3pcdStatus blocking_status,
                        base::Time expiration) override;
   void OnSitesCountChanged(int allowed_third_party_sites_count,
                            int blocked_third_party_sites_count) override;
-  void OnBreakageConfidenceLevelChanged(
-      CookieControlsBreakageConfidenceLevel level) override;
+  void OnCookieControlsIconStatusChanged(
+      bool icon_visible,
+      bool protections_on,
+      CookieBlocking3pcdStatus blocking_status,
+      bool should_highlight) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> jobject_;
-  CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
+  bool controls_visible_ = false;
+  bool protections_on_ = false;
   CookieControlsEnforcement enforcement_ =
       CookieControlsEnforcement::kNoEnforcement;
-  CookieControlsBreakageConfidenceLevel level_ =
-      CookieControlsBreakageConfidenceLevel::kUninitialized;
   std::optional<base::Time> expiration_;
   std::optional<int> blocked_cookies_;
   std::optional<int> allowed_cookies_;

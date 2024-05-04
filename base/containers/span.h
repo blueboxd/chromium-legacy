@@ -20,13 +20,10 @@
 
 #include "base/check.h"
 #include "base/compiler_specific.h"
-// TODO(crbug.com/40284755): checked_iterators should use UNSAFE_BUFFERS()
-// internally.
-UNSAFE_BUFFERS_INCLUDE_BEGIN
 #include "base/containers/checked_iterators.h"
-UNSAFE_BUFFERS_INCLUDE_END
 #include "base/numerics/safe_conversions.h"
 #include "base/template_util.h"
+#include "base/types/to_address.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
 
 namespace base {
@@ -211,6 +208,7 @@ constexpr size_t must_not_be_dynamic_extent() {
 // Differences from [span.deduct]:
 // - The deduction guides from a contiguous range are folded into a single one,
 //   and treat borrowed ranges correctly.
+// - Add deduction guide from rvalue array.
 //
 // Other differences:
 // - Using StrictNumeric<size_t> instead of size_t where possible.
@@ -223,6 +221,8 @@ constexpr size_t must_not_be_dynamic_extent() {
 // - copy_from() method.
 // - span_from_ref() function.
 // - byte_span_from_ref() function.
+// - span_from_cstring() function.
+// - byte_span_from_cstring() function.
 // - split_at() method.
 //
 // Furthermore, all constructors and methods are marked noexcept due to the lack
@@ -287,7 +287,7 @@ class GSL_POINTER span {
          // We can not protect here generally against an invalid iterator/count
          // being passed in, since we have no context to determine if the
          // iterator or count are valid.
-        data_(std::to_address(first)) {
+        data_(base::to_address(first)) {
     // Guarantees that the N in the type signature is correct.
     CHECK(N == count);
   }
@@ -653,7 +653,7 @@ class GSL_POINTER span<T, dynamic_extent, InternalPtrType> {
       // We can not protect here generally against an invalid iterator/count
       // being passed in, since we have no context to determine if the
       // iterator or count are valid.
-      : data_(std::to_address(first)), size_(count) {}
+      : data_(base::to_address(first)), size_(count) {}
 
   // Constructs a span from a contiguous iterator and a size.
   //
@@ -969,6 +969,9 @@ span(R&&)
     -> span<std::conditional_t<std::ranges::borrowed_range<R>, T, const T>,
             internal::ExtentV<R>>;
 
+template <typename T, size_t N>
+span(const T (&)[N]) -> span<const T, N>;
+
 // [span.objectrep], views of object representation
 template <typename T, size_t X>
 auto as_bytes(span<T, X> s) noexcept {
@@ -1182,6 +1185,42 @@ constexpr span<uint8_t, sizeof(T)> byte_span_from_ref(
   return as_writable_bytes(span_from_ref(single_object));
 }
 
+// Converts a string literal (such as `"hello"`) to a span of `char` while
+// omitting the terminating NUL character. These two are equivalent:
+// ```
+// base::span<char, 5u> s1 = base::span_from_cstring("hello");
+// base::span<char, 5u> s2 = base::span(std::string_view("hello"));
+// ```
+//
+// If you want to include the NUL terminator, then use the span constructor
+// directly, such as:
+// ```
+// base::span<char, 6u> s = base::span("hello");
+// ```
+template <size_t N>
+constexpr span<const char, N - 1> span_from_cstring(
+    const char (&lit ABSL_ATTRIBUTE_LIFETIME_BOUND)[N]) {
+  return span(lit).template first<N - 1>();
+}
+
+// Converts a string literal (such as `"hello"`) to a span of `uint8_t` while
+// omitting the terminating NUL character. These two are equivalent:
+// ```
+// base::span<uint8_t, 5u> s1 = base::byte_span_from_cstring("hello");
+// base::span<uint8_t, 5u> s2 = base::as_byte_span(std::string_view("hello"));
+// ```
+//
+// If you want to include the NUL terminator, then use the span constructor
+// directly, such as:
+// ```
+// base::span<uint8_t, 6u> s = base::as_bytes(base::span("hello"));
+// ```
+template <size_t N>
+constexpr span<const uint8_t, N - 1> byte_span_from_cstring(
+    const char (&lit ABSL_ATTRIBUTE_LIFETIME_BOUND)[N]) {
+  return as_bytes(span(lit).template first<N - 1>());
+}
+
 // Convenience function for converting an object which is itself convertible
 // to span into a span of bytes (i.e. span of const uint8_t). Typically used
 // to convert std::string or string-objects holding chars, or std::vector
@@ -1199,7 +1238,8 @@ constexpr span<const uint8_t> as_byte_span(const T& arg) {
 // This overload for arrays preserves the compile-time size N of the array in
 // the span type signature span<uint8_t, N>.
 template <typename T, size_t N>
-constexpr span<const uint8_t, N * sizeof(T)> as_byte_span(T (&arr)[N]) {
+constexpr span<const uint8_t, N * sizeof(T)> as_byte_span(
+    const T (&arr ABSL_ATTRIBUTE_LIFETIME_BOUND)[N]) {
   return as_bytes(make_span<N>(arr));
 }
 
@@ -1222,7 +1262,14 @@ constexpr span<uint8_t> as_writable_byte_span(T&& arg) {
 // the span type signature span<uint8_t, N>.
 template <typename T, size_t N>
   requires(!std::is_const_v<T>)
-constexpr span<uint8_t, N * sizeof(T)> as_writable_byte_span(T (&arr)[N]) {
+constexpr span<uint8_t, N * sizeof(T)> as_writable_byte_span(
+    T (&arr ABSL_ATTRIBUTE_LIFETIME_BOUND)[N]) {
+  return as_writable_bytes(make_span<N>(arr));
+}
+template <typename T, size_t N>
+  requires(!std::is_const_v<T>)
+constexpr span<uint8_t, N * sizeof(T)> as_writable_byte_span(
+    T (&&arr ABSL_ATTRIBUTE_LIFETIME_BOUND)[N]) {
   return as_writable_bytes(make_span<N>(arr));
 }
 

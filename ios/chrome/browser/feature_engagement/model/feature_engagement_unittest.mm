@@ -169,6 +169,22 @@ class FeatureEngagementTest : public PlatformTest {
     return params;
   }
 
+  std::map<std::string, std::string>
+  IPHiOSSwipeToolbarToChangeTabFeatureParams() {
+    std::map<std::string, std::string> params;
+    params["availability"] = "any";
+    params["session_rate"] = "==0";
+    params["event_used"] =
+        "name:swipe_toolbar_to_change_tab_used;comparator:==0;"
+        "window:61;storage:61";
+    params["event_trigger"] =
+        "name:swipe_toolbar_to_change_tab_trigger;comparator:==0;"
+        "window:61;storage:61";
+    params["event_1"] =
+        "name:tab_grid_adjacent_tab_tapped;comparator:>=2;window:60;storage:61";
+    return params;
+  }
+
   std::map<std::string, std::string> BottomToolbarTipParams() {
     std::map<std::string, std::string> params;
     params["availability"] = "any";
@@ -681,6 +697,33 @@ TEST_F(FeatureEngagementTest,
       feature_engagement::kIPHiOSSwipeBackForwardFeature));
 }
 
+// Verifies that the swipe on toolbar IPH is not triggered after the user has
+// swiped on the toolbar to switch tab.
+TEST_F(FeatureEngagementTest,
+       TestSwipeToolbarToChangeTabIPHShouldNotShowAfterUsed) {
+  feature_engagement::test::ScopedIphFeatureList list;
+  list.InitAndEnableFeaturesWithParameters(
+      {{feature_engagement::kIPHiOSSwipeToolbarToChangeTabFeature,
+        IPHiOSSwipeToolbarToChangeTabFeatureParams()}});
+
+  std::unique_ptr<feature_engagement::Tracker> tracker =
+      feature_engagement::CreateTestTracker();
+  // Make sure tracker is initialized.
+  tracker->AddOnInitializedCallback(BoolArgumentQuitClosure());
+  run_loop_.Run();
+  // Ensure that the swipe back/forward gesture has been used to prevent
+  // triggering.
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSSwipeToolbarToChangeTabUsed);
+  // Make sure other prerequisites are met.
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSTabGridAdjacentTabTapped);
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSTabGridAdjacentTabTapped);
+  EXPECT_FALSE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSSwipeToolbarToChangeTabFeature));
+}
+
 // Verifies that the History IPH is triggered after the proper conditions
 // are met.
 TEST_F(FeatureEngagementTest, TestHistoryOnOverflowMenuIPHShouldShow) {
@@ -979,4 +1022,65 @@ TEST_F(FeatureEngagementTest, TestPasswordManagerPromoIPHWasClosed) {
 
   EXPECT_FALSE(tracker->ShouldTriggerHelpUI(
       feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature));
+}
+
+// Verifies that the Overflow Menu Customization promo IPH is only triggered
+// after the user has chosen items that are offscreen by default at least twice.
+TEST_F(FeatureEngagementTest, TestOverflowMenuCustomizationPromoShows) {
+  feature_engagement::test::ScopedIphFeatureList list;
+  list.InitWithExistingFeatures(
+      {feature_engagement::kIPHiOSOverflowMenuCustomizationFeature});
+
+  std::unique_ptr<feature_engagement::Tracker> tracker =
+      feature_engagement::CreateTestTracker();
+  // Make sure tracker is initialized.
+  tracker->AddOnInitializedCallback(BoolArgumentQuitClosure());
+  run_loop_.Run();
+
+  EXPECT_FALSE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSOverflowMenuCustomizationFeature));
+
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSOverflowMenuOffscreenItemUsed);
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSOverflowMenuOffscreenItemUsed);
+
+  EXPECT_TRUE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSOverflowMenuCustomizationFeature));
+  tracker->Dismissed(
+      feature_engagement::kIPHiOSOverflowMenuCustomizationFeature);
+}
+
+// Verifies that the Overflow Menu Customization promo IPH is not triggered
+// after the user has used the customization screen.
+TEST_F(FeatureEngagementTest,
+       TestOverflowMenuCustomizationPromoDoesntShowIfCustomizationUsed) {
+  feature_engagement::test::ScopedIphFeatureList list;
+  list.InitWithExistingFeatures(
+      {feature_engagement::kIPHiOSOverflowMenuCustomizationFeature});
+
+  std::unique_ptr<feature_engagement::Tracker> tracker =
+      feature_engagement::CreateTestTracker();
+  // Make sure tracker is initialized.
+  tracker->AddOnInitializedCallback(BoolArgumentQuitClosure());
+  run_loop_.Run();
+
+  EXPECT_FALSE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSOverflowMenuCustomizationFeature));
+
+  // Using offscreen items twice should trigger the promo...
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSOverflowMenuOffscreenItemUsed);
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSOverflowMenuOffscreenItemUsed);
+
+  EXPECT_TRUE(tracker->WouldTriggerHelpUI(
+      feature_engagement::kIPHiOSOverflowMenuCustomizationFeature));
+
+  // Unless the user has also used customization already.
+  tracker->NotifyEvent(
+      feature_engagement::events::kIOSOverflowMenuCustomizationUsed);
+
+  EXPECT_FALSE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSOverflowMenuCustomizationFeature));
 }

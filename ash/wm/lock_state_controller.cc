@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/cancel_mode.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
@@ -19,9 +20,12 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/utility/occlusion_tracker_pauser.h"
+#include "ash/wallpaper/views/wallpaper_view.h"
 #include "ash/wallpaper/views/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/session_state_animator_impl.h"
 #include "ash/wm/window_restore/window_restore_util.h"
 #include "base/command_line.h"
@@ -45,7 +49,9 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_util.h"
 #include "ui/snapshot/snapshot.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -89,6 +95,14 @@ constexpr base::TimeDelta kPostLockFailTimeout =
 // before actually requesting shutdown, to give the animation time to finish.
 constexpr base::TimeDelta kShutdownRequestDelay = base::Milliseconds(50);
 
+// The resized width of the pine image in landscape or portrait orientation. The
+// width will be fixed and then the height of the resized image will be
+// calculated based on the aspect ratio of the original pine image. The resized
+// pine image will be saved to disk, decoded and shown with this size directly
+// inside the pine dialog later as well.
+constexpr int kResizedPineImageWidthInLandscape = 344;
+constexpr int kResizedPineImageWidthInPortrait = 384;
+
 // Records the given `duration` to the given `pref_name` so it can be recorded
 // as an UMA metric on the next startup.
 void SavePineScreenshotDuration(PrefService* local_state,
@@ -108,7 +122,17 @@ void EncodeAndSavePineImage(const base::FilePath& file_path, gfx::Image image) {
     base::DeleteFile(file_path);
     return;
   }
-  auto png_bytes = image.As1xPNGBytes();
+
+  const int image_width = image.Width();
+  const int image_height = image.Height();
+  const float aspect_ratio = static_cast<float>(image_height) / image_width;
+  const int resized_image_width = image_width > image_height
+                                      ? kResizedPineImageWidthInLandscape
+                                      : kResizedPineImageWidthInPortrait;
+  const int resized_image_height = aspect_ratio * resized_image_width;
+  const auto resized_image = gfx::ResizedImage(
+      image, gfx::Size(resized_image_width, resized_image_height));
+  auto png_bytes = resized_image.As1xPNGBytes();
   auto raw_data = base::make_span(png_bytes->data(), png_bytes->size());
   if (!base::WriteFile(file_path, raw_data)) {
     LOG(ERROR) << "Failed to write pine image to " << file_path.MaybeAsASCII();
@@ -130,6 +154,32 @@ void MaybeAppendTestCallback(Callback& callback,
         base::BindPostTask(base::SingleThreadTaskRunner::GetCurrentDefault(),
                            std::move(for_test_callback)));
   }
+}
+
+// TODO(minch): Check whether the screenshot should be taken in kiosk mode or
+// locked mode.
+// Returns true if the pine screenshot should be taken on shutdown.
+bool ShouldTakePineScreeshot(aura::Window* active_desk) {
+  auto* shell = Shell::Get();
+  // Do not take the pine screenshot if it is in overview mode, lock screen,
+  // home launcher or there is no windows inside the active desk.
+  if (shell->overview_controller()->InOverviewSession() ||
+      shell->session_controller()->IsScreenLocked() ||
+      shell->app_list_controller()->IsHomeScreenVisible() ||
+      active_desk->children().empty()) {
+    return false;
+  }
+
+  for (aura::Window* window :
+       shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
+    if (!WindowState::Get(window)->IsMinimized()) {
+      return true;
+    }
+  }
+
+  // Do not take the pine screenshot if all the windows inside the active desk
+  // are minimized.
+  return false;
 }
 
 }  // namespace
@@ -701,10 +751,9 @@ void LockStateController::TakePineImageAndShutdown(bool with_pre_animation) {
   CHECK(active_desk);
   const base::FilePath file_path = GetShutdownPineImagePath();
 
-  if (active_desk->children().empty()) {
-    // If there are no windows in the desk container, taking the pine image will
-    // fail. Delete any existing pine image so on next startup no pine image
-    // preview will be shown.
+  if (!ShouldTakePineScreeshot(active_desk)) {
+    // Delete any existing pine image if we should not take the screenshot on
+    // this shutdown, then no stale screenshot will be shown on next startup.
     auto delete_image_cb =
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path);
     MaybeAppendTestCallback(delete_image_cb, pine_image_callback_for_test_);
@@ -716,9 +765,28 @@ void LockStateController::TakePineImageAndShutdown(bool with_pre_animation) {
     StartShutdownProcess(with_pre_animation);
     return;
   }
+
+  // Create a new layer that mirrors the painted wallpaper view layer. Adds it
+  // to be the bottom-most child of the active desk container layer, which is
+  // the container we are going to take the pine screenshot. With this,
+  // 1) wallpaper will be included in the screenshot besides the content of the
+  //    active desk.
+  // 2) screenshot will be taken on the whole desktop instead of the specific
+  //    area with windows. This guarantees the windows' relative position inside
+  //    the desktop.
+  auto* wallpaper_layer = RootWindowController::ForWindow(root)
+                              ->wallpaper_widget_controller()
+                              ->wallpaper_view()
+                              ->layer();
+  CHECK(wallpaper_layer && wallpaper_layer->children().empty());
+  mirror_wallpaper_layer_ = wallpaper_layer->Mirror();
+  auto* active_desk_layer = active_desk->layer();
+  active_desk_layer->Add(mirror_wallpaper_layer_.get());
+  active_desk_layer->StackAtBottom(mirror_wallpaper_layer_.get());
+
   // TODO(b/321117233): Cancel the operation to take the screenshot and proceed
   // with the shutdown immediately if it takes too long.
-  ui::GrabWindowSnapshotAsync(
+  ui::GrabWindowSnapshot(
       active_desk, /*source_rect=*/gfx::Rect(active_desk->bounds().size()),
       base::BindOnce(&LockStateController::OnPineImageTaken,
                      weak_ptr_factory_.GetWeakPtr(), with_pre_animation,
@@ -744,6 +812,8 @@ void LockStateController::OnPineImageTaken(bool with_pre_animation,
                                            gfx::Image pine_image) {
   SavePineScreenshotDuration(local_state_, prefs::kPineScreenshotTakenDuration,
                              base::TimeTicks::Now() - start_time);
+
+  mirror_wallpaper_layer_.reset();
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,

@@ -14,6 +14,7 @@
 #include "ash/glanceables/glanceables_controller.h"
 #include "ash/glanceables/tasks/glanceables_tasks_view.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/time/calendar_view.h"
@@ -64,8 +65,9 @@ class TimeManagementContainer : public views::FlexLayoutView {
   TimeManagementContainer() {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
     SetOrientation(views::LayoutOrientation::kVertical);
-    SetInteriorMargin(gfx::Insets(12));
+    SetInteriorMargin(gfx::Insets(8));
     SetBackground(views::CreateThemedRoundedRectBackground(
         cros_tokens::kCrosSysSystemBaseElevated,
         kGlanceablesContainerCornerRadius));
@@ -294,10 +296,19 @@ void GlanceableTrayBubbleView::InitializeContents() {
       Shell::Get()->glanceables_controller()->GetTasksClient();
   if (should_show_non_calendar_glanceables && tasks_client) {
     CHECK(!tasks_bubble_view_);
-    tasks_client->GetTaskLists(
-        /*force_fetch=*/false,
-        base::BindOnce(&GlanceableTrayBubbleView::AddTaskBubbleViewIfNeeded,
-                       weak_ptr_factory_.GetWeakPtr()));
+    auto* cached_list = tasks_client->GetCachedTaskLists();
+    if (!cached_list) {
+      tasks_client->GetTaskLists(
+          /*force_fetch=*/true,
+          base::BindOnce(&GlanceableTrayBubbleView::AddTaskBubbleViewIfNeeded,
+                         weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      AddTaskBubbleViewIfNeeded(/*fetch_success=*/true, cached_list);
+      tasks_client->GetTaskLists(
+          /*force_fetch=*/true,
+          base::BindOnce(&GlanceableTrayBubbleView::UpdateTaskLists,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
   }
 
   const int max_height = CalculateMaxTrayBubbleHeight(shelf_->GetWindow());
@@ -400,6 +411,16 @@ void GlanceableTrayBubbleView::AddTaskBubbleViewIfNeeded(
   }
 
   AdjustChildrenFocusOrder();
+}
+
+void GlanceableTrayBubbleView::UpdateTaskLists(
+    bool fetch_success,
+    const ui::ListModel<api::TaskList>* task_lists) {
+  if (fetch_success &&
+      features::IsGlanceablesTimeManagementTasksViewEnabled()) {
+    views::AsViewClass<GlanceablesTasksView>(tasks_bubble_view_)
+        ->UpdateTaskLists(task_lists);
+  }
 }
 
 void GlanceableTrayBubbleView::OnGlanceablesContainerPreferredSizeChanged() {

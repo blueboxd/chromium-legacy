@@ -77,7 +77,6 @@
 #include "components/sync/service/sync_user_settings.h"
 #include "components/sync/test/fake_server_network_resources.h"
 #include "components/user_education/common/feature_promo_controller.h"
-#include "components/user_education/test/feature_promo_test_util.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -89,9 +88,12 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/test/widget_activation_waiter.h"
 #include "ui/views/test/widget_test.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -188,7 +190,7 @@ class ProfileMenuViewTestBase {
     views::Widget* menu_widget = profile_menu_view()->GetWidget();
     ASSERT_TRUE(menu_widget);
     if (menu_widget->CanActivate()) {
-      views::test::WidgetActivationWaiter(menu_widget, /*active=*/true).Wait();
+      views::test::WaitForWidgetActive(menu_widget, /*active=*/true);
     } else {
       LOG(ERROR) << "menu_widget can not be activated";
     }
@@ -332,20 +334,16 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
 // Regression test for https://crbug.com/1205901
 IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, CloseIPH) {
   // Display the IPH.
-  BrowserView* const browser_view =
-      BrowserView::GetBrowserViewForBrowser(browser());
-  ASSERT_TRUE(user_education::test::WaitForFeatureEngagementReady(
-      browser_view->GetFeaturePromoController()));
-  EXPECT_TRUE(browser_view->MaybeShowFeaturePromo(
+  EXPECT_TRUE(browser()->window()->MaybeShowFeaturePromo(
       feature_engagement::kIPHProfileSwitchFeature));
-  EXPECT_TRUE(browser_view->IsFeaturePromoActive(
+  EXPECT_TRUE(browser()->window()->IsFeaturePromoActive(
       feature_engagement::kIPHProfileSwitchFeature));
 
   // Open the menu.
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenu());
 
   // Check the IPH is no longer showing.
-  EXPECT_FALSE(browser_view->IsFeaturePromoActive(
+  EXPECT_FALSE(browser()->window()->IsFeaturePromoActive(
       feature_engagement::kIPHProfileSwitchFeature));
 }
 
@@ -433,9 +431,13 @@ class ProfileMenuViewSignoutTestWithExplicitBrowserSigninFeature
  public:
   ProfileMenuViewSignoutTestWithExplicitBrowserSigninFeature() {
     if (uno_enabled()) {
-      feature_list_.InitAndEnableFeature(switches::kUnoDesktop);
+      feature_list_.InitWithFeatures(
+          {switches::kUnoDesktop, switches::kExplicitBrowserSigninUIOnDesktop},
+          {});
     } else {
-      feature_list_.InitAndDisableFeature(switches::kUnoDesktop);
+      feature_list_.InitWithFeatures(
+          {},
+          {switches::kUnoDesktop, switches::kExplicitBrowserSigninUIOnDesktop});
     }
   }
 
@@ -466,6 +468,10 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(1, tab_strip->active_index());
   content::WebContents* logout_page = tab_strip->GetActiveWebContents();
   EXPECT_EQ(logout_page->GetURL(), GetExpectedLogoutURL(uno_enabled()));
+  if (uno_enabled()) {
+    EXPECT_FALSE(IdentityManagerFactory::GetForProfile(browser()->profile())
+                     ->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+  }
 }
 
 // Checks that the NTP is navigated to the logout URL, instead of creating
@@ -487,6 +493,10 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(1, tab_strip->count());
   content::WebContents* logout_page = tab_strip->GetActiveWebContents();
   EXPECT_EQ(logout_page->GetURL(), GetExpectedLogoutURL(uno_enabled()));
+  if (uno_enabled()) {
+    EXPECT_FALSE(IdentityManagerFactory::GetForProfile(browser()->profile())
+                     ->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -513,9 +523,13 @@ class ProfileMenuViewSignoutTestWithNetwork
         has_network_error()));
 
     if (uno_enabled()) {
-      feature_list_.InitAndEnableFeature(switches::kUnoDesktop);
+      feature_list_.InitWithFeatures(
+          {switches::kUnoDesktop, switches::kExplicitBrowserSigninUIOnDesktop},
+          {});
     } else {
-      feature_list_.InitAndDisableFeature(switches::kUnoDesktop);
+      feature_list_.InitWithFeatures(
+          {},
+          {switches::kUnoDesktop, switches::kExplicitBrowserSigninUIOnDesktop});
     }
   }
 
@@ -600,6 +614,10 @@ IN_PROC_BROWSER_TEST_P(ProfileMenuViewSignoutTestWithNetwork, Signout) {
       IdentityManagerFactory::GetForProfile(browser()->profile());
   EXPECT_EQ(identity_manager->HasAccountWithRefreshToken(account_id()),
             !has_network_error());
+  if (uno_enabled()) {
+    EXPECT_FALSE(
+        identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -686,10 +704,9 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewSyncErrorButtonTest, OpenReauthTab) {
   EXPECT_EQ(2, tab_strip->count());
   EXPECT_EQ(1, tab_strip->active_index());
   content::WebContents* reauth_page = tab_strip->GetActiveWebContents();
-  EXPECT_TRUE(
-      base::StartsWith(reauth_page->GetURL().spec(),
-                       GaiaUrls::GetInstance()->add_account_url().spec(),
-                       base::CompareCase::INSENSITIVE_ASCII));
+  EXPECT_THAT(
+      reauth_page->GetURL().spec(),
+      testing::StartsWith(GaiaUrls::GetInstance()->add_account_url().spec()));
 }
 #endif
 

@@ -21,6 +21,7 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/typography.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_action_button.h"
 #include "ash/wm/desks/desk_action_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/desk_name_view.h"
@@ -174,16 +175,16 @@ class DeskBarScrollViewLayout : public views::LayoutManager {
 
     const ShelfAlignment shelf_alignment =
         Shelf::ForWindow(bar_view_->root_)->alignment();
-    const gfx::Rect perferred_bounds =
+    const gfx::Rect preferred_bounds =
         gfx::Rect(bar_view_->CalculatePreferredSize());
     const gfx::Rect current_bounds = gfx::Rect(bar_view_->size());
-    gfx::Rect new_bounds = perferred_bounds;
+    gfx::Rect new_bounds = preferred_bounds;
     if (shelf_alignment == ShelfAlignment::kBottom) {
       new_bounds = current_bounds;
-      new_bounds.ClampToCenteredSize(perferred_bounds.size());
+      new_bounds.ClampToCenteredSize(preferred_bounds.size());
     } else if ((shelf_alignment == ShelfAlignment::kLeft) ==
                base::i18n::IsRTL()) {
-      new_bounds.Offset(current_bounds.width() - perferred_bounds.width(), 0);
+      new_bounds.Offset(current_bounds.width() - preferred_bounds.width(), 0);
     }
     bar_view_->background_view_->SetBoundsRect(new_bounds);
   }
@@ -299,7 +300,7 @@ class DeskBarScrollViewLayout : public views::LayoutManager {
     // Update the size of the `host`, which is `scroll_view_contents_` here.
     // This is done to make sure its size can be updated on mini views' adding
     // or removing, then `scroll_view_` will know whether the contents need to
-    // be scolled or not.
+    // be scrolled or not.
     host->SetSize(gfx::Size(width_, contents_size.height()));
 
     const int increment = is_rtl ? -1 : 1;
@@ -474,7 +475,7 @@ class DeskBarHoverObserver : public ui::EventObserver {
 };
 
 DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
-    : type_(type), state_(GetPerferredState(type)), root_(root) {
+    : type_(type), state_(GetPreferredState(type)), root_(root) {
   CHECK(root && root->IsRootWindow());
 
   // Background layer is needed for desk bar animation.
@@ -611,11 +612,11 @@ int DeskBarViewBase::GetPreferredBarHeight(aura::Window* root,
 }
 
 // static
-DeskBarViewBase::State DeskBarViewBase::GetPerferredState(Type type) {
+DeskBarViewBase::State DeskBarViewBase::GetPreferredState(Type type) {
   State state = State::kZero;
   switch (type) {
     case Type::kDeskButton:
-      // Desk button desk bar is always expaneded.
+      // Desk button desk bar is always expanded.
       state = State::kExpanded;
       break;
     case Type::kOverview: {
@@ -1286,6 +1287,10 @@ void DeskBarViewBase::OnDeskRemoved(const Desk* desk) {
       // comes later in the focus order (See documentation of
       // `OnViewDestroyingOrDisabling()`).
       focus_cycler->OnViewDestroyingOrDisabling((*iter)->desk_name_view());
+      focus_cycler->OnViewDestroyingOrDisabling(
+          (*iter)->desk_action_view()->close_all_button());
+      focus_cycler->OnViewDestroyingOrDisabling(
+          (*iter)->desk_action_view()->combine_desks_button());
       if (auto* desk_profiles_button = (*iter)->desk_profiles_button()) {
         focus_cycler->OnViewDestroyingOrDisabling(desk_profiles_button);
       }
@@ -1667,7 +1672,7 @@ void DeskBarViewBase::MaybeUpdateCombineDesksTooltips() {
     if (mini_view->desk()->is_desk_being_removed()) {
       continue;
     }
-    mini_view->desk_action_view()->UpdateCombineDesksTooltip(
+    mini_view->desk_action_view()->combine_desks_button()->UpdateTooltip(
         DesksController::Get()->GetCombineDesksTargetName(mini_view->desk()));
   }
 }

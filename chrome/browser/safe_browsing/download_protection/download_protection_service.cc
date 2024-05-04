@@ -132,6 +132,7 @@ bool IsDownloadSecuritySensitive(safe_browsing::DownloadCheckResult result) {
     case Result::PROMPT_FOR_SCANNING:
     case Result::PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
     case Result::BLOCKED_UNSUPPORTED_FILE_TYPE:
+    case Result::BLOCKED_SCAN_FAILED:
       return false;
   }
   NOTREACHED();
@@ -330,12 +331,7 @@ void DownloadProtectionService::CheckDownloadUrl(
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
       item, this, std::move(callback), ui_manager_, database_manager_));
   // The client will release itself once it is done.
-  if (base::FeatureList::IsEnabled(kSafeBrowsingOnUIThread)) {
-    client->StartCheck();
-  } else {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
-  }
+  client->StartCheck();
 }
 
 bool DownloadProtectionService::IsSupportedDownload(
@@ -803,6 +799,15 @@ void DownloadProtectionService::UploadForDeepScanning(
       std::make_pair(request_raw, std::move(request)));
   DCHECK(insertion_result.second);
   insertion_result.first->second->Start();
+  SafeBrowsingMetricsCollector* metrics_collector =
+      SafeBrowsingMetricsCollectorFactory::GetForProfile(
+          Profile::FromBrowserContext(
+              content::DownloadItemUtils::GetBrowserContext(item)));
+  if (metrics_collector) {
+    metrics_collector->AddSafeBrowsingEventToPref(
+        safe_browsing::SafeBrowsingMetricsCollector::EventType::
+            DOWNLOAD_DEEP_SCAN);
+  }
 }
 
 // static

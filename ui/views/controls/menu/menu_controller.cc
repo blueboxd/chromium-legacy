@@ -559,6 +559,18 @@ MenuController* MenuController::GetActiveInstance() {
   return active_instance_;
 }
 
+void MenuController::OnWidgetShowStateChanged(Widget* widget) {
+  CHECK_EQ(owner_, widget);
+
+  // See crbug.com/40914555. Whenever browser widget has show state change close
+  // all the open menus, unless the widget is not visible, which can happen in
+  // menu creation tests, which in turn results in menu gets canceled
+  // immediately.
+  if (widget->IsVisible()) {
+    Cancel(ExitType::kAll);
+  }
+}
+
 void MenuController::Run(Widget* parent,
                          MenuButtonController* button_controller,
                          MenuItemView* root,
@@ -1791,7 +1803,7 @@ MenuController::MenuController(bool for_drop,
       active_mouse_view_tracker_(std::make_unique<ViewTracker>()),
       delegate_(delegate),
       alert_animation_(this) {
-  delegate_stack_.push_back(delegate_);
+  delegate_stack_.push_back(delegate_.get());
   active_instance_ = this;
 }
 
@@ -2834,8 +2846,10 @@ void MenuController::SetSelectionIndices(MenuItemView* parent) {
   if (parent->GetProperty(kOrderedMenuChildren)) {
     // Clear any old AX index assignments.
     for (ViewTracker& item : *(parent->GetProperty(kOrderedMenuChildren))) {
-      if (item.view())
-        item.view()->GetViewAccessibility().ClearPosInSetOverride();
+      if (item.view()) {
+        item.view()->GetViewAccessibility().ClearPosInSet();
+        item.view()->GetViewAccessibility().ClearSetSize();
+      }
     }
   }
 
@@ -2867,8 +2881,8 @@ void MenuController::SetSelectionIndices(MenuItemView* parent) {
 
   const size_t set_size = ordering.size();
   for (size_t i = 0; i < set_size; ++i) {
-    ordering[i]->GetViewAccessibility().OverridePosInSet(
-        static_cast<int>(i + 1), static_cast<int>(set_size));
+    ordering[i]->GetViewAccessibility().SetPosInSet(static_cast<int>(i + 1));
+    ordering[i]->GetViewAccessibility().SetSetSize(static_cast<int>(set_size));
   }
 }
 
@@ -3266,7 +3280,7 @@ MenuItemView* MenuController::ExitTopMostMenu() {
     // Even though the menus are nested, there may not be nested delegates.
     if (delegate_stack_.size() > 1) {
       delegate_stack_.pop_back();
-      delegate_ = delegate_stack_.back();
+      delegate_ = delegate_stack_.back().get();
     }
   } else {
 #if defined(USE_AURA)

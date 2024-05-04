@@ -136,8 +136,7 @@ class NET_EXPORT NetworkDelegate {
   static void ExcludeAllCookiesExceptPartitioned(
       net::CookieInclusionStatus::ExclusionReason reason,
       net::CookieAccessResultList& maybe_included_cookies,
-      net::CookieAccessResultList& excluded_cookies,
-      bool are_cookies_disabled);
+      net::CookieAccessResultList& excluded_cookies);
 
   // Moves any cookie in `maybe_included_cookies` that has an ExclusionReason
   // into `excluded_cookies`.

@@ -25,7 +25,6 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
@@ -62,24 +61,17 @@ constexpr uint8_t kEd25519Signature[64] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 0, 0};
 
-// This class needs to be a IsolatedWebAppVaidator, but also must provide
-// a TestingPrefServiceSimple that outlives it. So rather than making
-// TestingPrefServiceSimple a member, make it the leftmost base class.
-class FakeIsolatedWebAppValidator : public TestingPrefServiceSimple,
-                                    public IsolatedWebAppValidator {
+class FakeIsolatedWebAppValidator : public IsolatedWebAppValidator {
  public:
   explicit FakeIsolatedWebAppValidator(
       std::optional<std::string> integrity_block_error)
-      : IsolatedWebAppValidator(std::make_unique<IsolatedWebAppTrustChecker>(
-            // Disambiguate the constructor using the form that takes the
-            // already-initialized leftmost base class, rather than the copy
-            // constructor for the uninitialized rightmost base class.
-            *static_cast<TestingPrefServiceSimple*>(this))),
+      : IsolatedWebAppValidator(/*isolated_web_app_trust_checker=*/nullptr),
         integrity_block_error_(integrity_block_error) {}
 
   void ValidateIntegrityBlock(
       const web_package::SignedWebBundleId& web_bundle_id,
       const web_package::SignedWebBundleIntegrityBlock& integrity_block,
+      bool dev_mode,
       base::OnceCallback<void(std::optional<std::string>)> callback) override {
     std::move(callback).Run(integrity_block_error_);
   }
@@ -224,8 +216,7 @@ TEST_P(IsolatedWebAppResponseReaderFactoryIntegrityBlockParserErrorTest,
 
   base::test::TestFuture<ReaderResult> reader_future;
   factory_->CreateResponseReader(web_bundle_path_, kWebBundleId,
-                                 /*skip_signature_verification=*/false,
-                                 reader_future.GetCallback());
+                                 /*flags=*/{}, reader_future.GetCallback());
 
   auto error = web_package::mojom::BundleIntegrityBlockParseError::New();
   error->type = GetParam().first;
@@ -267,8 +258,7 @@ TEST_F(IsolatedWebAppResponseReaderFactoryTest,
 
   base::test::TestFuture<ReaderResult> reader_future;
   factory_->CreateResponseReader(web_bundle_path_, kWebBundleId,
-                                 /*skip_signature_verification=*/false,
-                                 reader_future.GetCallback());
+                                 /*flags=*/{}, reader_future.GetCallback());
 
   FulfillIntegrityBlock();
 
@@ -309,9 +299,13 @@ TEST_P(IsolatedWebAppResponseReaderFactorySignatureVerificationErrorTest,
           },
           error_));
 
+  IsolatedWebAppResponseReaderFactory::Flags flags;
+  if (skip_signature_verification_) {
+    flags.Put(
+        IsolatedWebAppResponseReaderFactory::Flag::kSkipSignatureVerification);
+  }
   base::test::TestFuture<ReaderResult> reader_future;
-  factory_->CreateResponseReader(web_bundle_path_, kWebBundleId,
-                                 skip_signature_verification_,
+  factory_->CreateResponseReader(web_bundle_path_, kWebBundleId, flags,
                                  reader_future.GetCallback());
 
   FulfillIntegrityBlock();
@@ -359,8 +353,7 @@ TEST_P(IsolatedWebAppResponseReaderFactoryMetadataParserErrorTest,
 
   base::test::TestFuture<ReaderResult> reader_future;
   factory_->CreateResponseReader(web_bundle_path_, kWebBundleId,
-                                 /*skip_signature_verification=*/false,
-                                 reader_future.GetCallback());
+                                 /*flags=*/{}, reader_future.GetCallback());
 
   FulfillIntegrityBlock();
   auto error = web_package::mojom::BundleMetadataParseError::New();
@@ -395,8 +388,7 @@ TEST_F(IsolatedWebAppResponseReaderFactoryTest, TestInvalidMetadataPrimaryUrl) {
 
   base::test::TestFuture<ReaderResult> reader_future;
   factory_->CreateResponseReader(web_bundle_path_, kWebBundleId,
-                                 /*skip_signature_verification=*/false,
-                                 reader_future.GetCallback());
+                                 /*flags=*/{}, reader_future.GetCallback());
 
   FulfillIntegrityBlock();
   auto metadata = metadata_->Clone();
@@ -417,8 +409,7 @@ TEST_F(IsolatedWebAppResponseReaderFactoryTest,
        TestInvalidMetadataInvalidExchange) {
   base::test::TestFuture<ReaderResult> reader_future;
   factory_->CreateResponseReader(web_bundle_path_, kWebBundleId,
-                                 /*skip_signature_verification=*/false,
-                                 reader_future.GetCallback());
+                                 /*flags=*/{}, reader_future.GetCallback());
 
   FulfillIntegrityBlock();
   auto metadata = metadata_->Clone();

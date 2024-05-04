@@ -46,7 +46,7 @@ class ContentPasswordManagerDriver final
 
   ~ContentPasswordManagerDriver() override;
 
-  // Gets the driver for |render_frame_host|.
+  // Gets the driver for `render_frame_host`.
   static ContentPasswordManagerDriver* GetForRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
 
@@ -69,6 +69,8 @@ class ContentPasswordManagerDriver final
       autofill::FieldRendererId generation_element_id,
       const std::u16string& password) override;
   void FocusNextFieldAfterPasswords() override;
+  void FillField(autofill::FieldRendererId field_id,
+                 const std::u16string& value) override;
   void FillSuggestion(const std::u16string& username,
                       const std::u16string& password) override;
   void FillIntoFocusedField(bool is_password,
@@ -78,6 +80,8 @@ class ContentPasswordManagerDriver final
       ToShowVirtualKeyboard show_virtual_keyboard) override;
   void TriggerFormSubmission() override;
 #endif
+  void PreviewField(autofill::FieldRendererId field_id,
+                    const std::u16string& value) override;
   void PreviewSuggestion(const std::u16string& username,
                          const std::u16string& password) override;
   void PreviewGenerationSuggestion(const std::u16string& password) override;

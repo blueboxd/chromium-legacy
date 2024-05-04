@@ -91,9 +91,7 @@ void HistogramProxyUsed(const ProxyInfo& proxy_info, bool success) {
     }
     proxy_scheme = proxy_info.proxy_chain().is_direct()
                        ? static_cast<ProxyServer::Scheme>(1)
-                       : proxy_info.proxy_chain()
-                             .GetProxyServer(/*chain_index=*/0)
-                             .scheme();
+                       : proxy_info.proxy_chain().First().scheme();
   }
   if (success) {
     UMA_HISTOGRAM_ENUMERATION("Net.HttpJob.ProxyTypeSuccess", proxy_scheme,
@@ -1406,13 +1404,15 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
     return error;
   }
 
-  if (proxy_info_.is_secure_http_like()) {
-    // TODO(https://crbug.com/1491092): Should do this for every proxy in the
-    // chain as part of adding support for client certificates.
-    session_->ssl_client_context()->ClearClientCertificate(
-        proxy_info_.proxy_chain()
-            .GetProxyServer(/*chain_index=*/0)
-            .host_port_pair());
+  // Clear client certificates for all proxies in the chain.
+  // TODO(https://crbug.com/1491092): client certificates for multi-proxy
+  // chains are not yet supported, and this is only tested with single-proxy
+  // chains.
+  for (auto& proxy_server : proxy_info_.proxy_chain().proxy_servers()) {
+    if (proxy_server.is_secure_http_like()) {
+      session_->ssl_client_context()->ClearClientCertificate(
+          proxy_server.host_port_pair());
+    }
   }
 
   if (!proxy_info_.Fallback(error, net_log_)) {

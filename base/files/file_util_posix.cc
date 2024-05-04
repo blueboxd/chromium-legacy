@@ -333,6 +333,44 @@ std::string AppendModeCharacter(StringPiece mode, char mode_char) {
 }
 #endif
 
+#if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_APPLE) && \
+    !(BUILDFLAG(IS_ANDROID) && __ANDROID_API__ >= 21)
+bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes) {
+  DCHECK_GE(max_bytes, 0);
+
+  File file(file_path, File::FLAG_OPEN | File::FLAG_READ);
+  if (!file.IsValid()) {
+    return false;
+  }
+
+  constexpr int kBufferSize = 1024 * 1024;
+  // Ensures the buffer is deallocated at function exit.
+  std::unique_ptr<char[]> buffer_deleter(new char[kBufferSize]);
+  char* const buffer = buffer_deleter.get();
+
+  while (max_bytes > 0) {
+    // The static_cast<int> is safe because kBufferSize is int, and both values
+    // are non-negative. So, the minimum is guaranteed to fit in int.
+    const int read_size =
+        static_cast<int>(std::min<int64_t>(max_bytes, kBufferSize));
+    DCHECK_GE(read_size, 0);
+    DCHECK_LE(read_size, kBufferSize);
+
+    const int read_bytes = file.ReadAtCurrentPos(buffer, read_size);
+    if (read_bytes < 0) {
+      return false;
+    }
+    if (read_bytes == 0) {
+      break;
+    }
+
+    max_bytes -= read_bytes;
+  }
+
+  return true;
+}
+#endif
+
 }  // namespace
 
 FilePath MakeAbsoluteFilePath(const FilePath& input) {
@@ -343,10 +381,10 @@ FilePath MakeAbsoluteFilePath(const FilePath& input) {
   return FilePath(full_path);
 }
 
-absl::optional<FilePath> MakeAbsoluteFilePathNoResolveSymbolicLinks(
+std::optional<FilePath> MakeAbsoluteFilePathNoResolveSymbolicLinks(
     const FilePath& input) {
   if (input.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   FilePath collapsed_path;
@@ -359,7 +397,7 @@ absl::optional<FilePath> MakeAbsoluteFilePathNoResolveSymbolicLinks(
     components_span = components_span.subspan(1);
   } else {
     if (!GetCurrentDirectory(&collapsed_path)) {
-      return absl::nullopt;
+      return std::nullopt;
     }
   }
 
@@ -577,11 +615,10 @@ bool ReadSymbolicLink(const FilePath& symlink_path, FilePath* target_path) {
   return true;
 }
 
-absl::optional<FilePath> ReadSymbolicLinkAbsolute(
-    const FilePath& symlink_path) {
+std::optional<FilePath> ReadSymbolicLinkAbsolute(const FilePath& symlink_path) {
   FilePath target_path;
   if (!ReadSymbolicLink(symlink_path, &target_path)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Relative symbolic links are relative to the symlink's directory.
@@ -1139,7 +1176,7 @@ bool VerifyPathControlledByUser(const FilePath& base,
     // |base| must be a subpath of |path|, so all components should match.
     // If these CHECKs fail, look at the test that base is a parent of
     // path at the top of this function.
-    DCHECK(ip != path_components.end());
+    CHECK(ip != path_components.end(), base::NotFatalUntil::M125);
     DCHECK(*ip == *ib);
   }
 
@@ -1248,6 +1285,7 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
 
 bool PreReadFile(const FilePath& file_path,
                  bool is_executable,
+                 bool sequential,
                  int64_t max_bytes) {
   DCHECK_GE(max_bytes, 0);
 
@@ -1267,7 +1305,8 @@ bool PreReadFile(const FilePath& file_path,
 
   const PlatformFile fd = file.GetPlatformFile();
   const ::off_t len = base::saturated_cast<::off_t>(max_bytes);
-  return posix_fadvise(fd, /*offset=*/0, len, POSIX_FADV_WILLNEED) == 0;
+  const int advice = sequential ? POSIX_FADV_SEQUENTIAL : POSIX_FADV_WILLNEED;
+  return posix_fadvise(fd, /*offset=*/0, len, advice) == 0;
 #elif BUILDFLAG(IS_APPLE)
   File file(file_path, File::FLAG_OPEN | File::FLAG_READ);
   if (!file.IsValid())
@@ -1283,7 +1322,7 @@ bool PreReadFile(const FilePath& file_path,
       .ra_offset = 0, .ra_count = base::saturated_cast<int>(max_bytes)};
   return fcntl(fd, F_RDADVISE, &read_advise_data) != -1;
 #else
-  return internal::PreReadFileSlow(file_path, max_bytes);
+  return PreReadFileSlow(file_path, max_bytes);
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
         // (BUILDFLAG(IS_ANDROID) &&
         // __ANDROID_API__ >= 21)

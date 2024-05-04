@@ -2364,7 +2364,7 @@ std::vector<ClusterVisit> HistoryBackend::ToClusterVisits(
 
   if (include_duplicates && !seen_duplicate_ids.empty()) {
     // Prune out top-level visits that are duplicates elsewhere.
-    base::EraseIf(cluster_visits, [&](const auto& cluster_visit) {
+    std::erase_if(cluster_visits, [&](const auto& cluster_visit) {
       return seen_duplicate_ids.contains(
           cluster_visit.annotated_visit.visit_row.visit_id);
     });
@@ -3376,7 +3376,7 @@ void HistoryBackend::DeleteURLsUntil(
 
 void HistoryBackend::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
-    absl::optional<std::string> restrict_app_id,
+    std::optional<std::string> restrict_app_id,
     Time begin_time,
     Time end_time,
     bool user_initiated) {

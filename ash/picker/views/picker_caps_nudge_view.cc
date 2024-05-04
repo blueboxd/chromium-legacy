@@ -32,15 +32,17 @@ namespace {
 
 constexpr ui::ColorId kBackgroundColor = cros_tokens::kCrosSysSystemOnBase;
 constexpr int kBorderRadius = 16;
-constexpr int kPadding = 16;
+constexpr int kPadding = 8;
 constexpr int kLeftIconSize = 48;
+constexpr int kRightPadding = 16;
 constexpr int kKeyIconSize = 14;
 constexpr int kPadingAroundSmallIcon = 4;
 constexpr int kPaddingBetweenItems = 8;
 
 }  // namespace
 
-PickerCapsNudgeView::PickerCapsNudgeView() {
+PickerCapsNudgeView::PickerCapsNudgeView(
+    views::Button::PressedCallback hide_callback) {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
@@ -61,6 +63,7 @@ PickerCapsNudgeView::PickerCapsNudgeView() {
       AddChildView(views::Builder<views::FlexLayoutView>()
                        .SetOrientation(views::LayoutOrientation::kVertical)
                        .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+                       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
                        .Build());
 
   // Allow the nudge text to grow to ensure good padding between text and the
@@ -88,7 +91,7 @@ PickerCapsNudgeView::PickerCapsNudgeView() {
       cros_tokens::kCrosSysSecondary));
 
   const ui::ImageModel key_icon = ui::ImageModel::FromVectorIcon(
-      vector_icons::kForwardArrowIcon, cros_tokens::kCrosSysSystemOnBase,
+      vector_icons::kForwardArrowIcon, cros_tokens::kCrosSysSecondary,
       kKeyIconSize);
   secondary_text->AddChildView(
       views::Builder<views::ImageView>().SetImage(key_icon).Build());
@@ -97,15 +100,17 @@ PickerCapsNudgeView::PickerCapsNudgeView() {
                                      cros_tokens::kCrosSysSecondary));
 
   // RHS - OK pill button.
-  AddChildView(
+  ok_button_ = AddChildView(
       views::Builder<ash::PillButton>()
           .SetText(u"OK")
           .SetBorder(views::CreateEmptyBorder(
               gfx::Insets::TLBR(0, kPaddingBetweenItems, 0, 0)))
           .SetPillButtonType(ash::PillButton::Type::kDefaultElevatedWithoutIcon)
+          .SetCallback(std::move(hide_callback))
           .Build());
 
-  SetBorder(views::CreateEmptyBorder(kPadding));
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(kPadding, kPadding, kPadding, kRightPadding)));
   SetBackground(views::CreateThemedRoundedRectBackground(kBackgroundColor,
                                                          kBorderRadius));
   SetProperty(views::kMarginsKey,

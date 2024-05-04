@@ -27,12 +27,18 @@
 #include "net/dns/dns_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/util.h"
+#include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/ssl_test_util.h"
 #include "net/test/test_doh_server.h"
 #include "third_party/boringssl/src/include/openssl/nid.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/net/secure_dns_manager.h"
+#endif
 
 namespace policy {
 
@@ -201,6 +207,14 @@ class ECHPolicyTest : public SSLPolicyTest {
     SetPolicy(&policies, key::kDnsOverHttpsMode, base::Value("secure"));
     SetPolicy(&policies, key::kDnsOverHttpsTemplates,
               base::Value(doh_server_.GetTemplate()));
+
+// On Lacros, the DnsOverHttpsTemplates policy gets mapped to the
+// kDnsOverHttpsEffectiveTemplatesChromeOS pref which is set in Ash.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    g_browser_process->local_state()->SetString(
+        prefs::kDnsOverHttpsEffectiveTemplatesChromeOS,
+        doh_server_.GetTemplate());
+#endif
     return policies;
   }
 
@@ -229,6 +243,13 @@ class ECHPolicyTest : public SSLPolicyTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ECHPolicyTest, ECHEnabledPolicy) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // SecureDnsManager does the identifier placeholder replacement for the
+  // template URI and maps the final value to the
+  // prefs::kDnsOverHttpsEffectiveTemplatesChromeOS local state pref.
+  std::unique_ptr<ash::SecureDnsManager> secure_dns_manager =
+      std::make_unique<ash::SecureDnsManager>(g_browser_process->local_state());
+#endif
   // By default, the policy does not inhibit ECH.
   EXPECT_TRUE(GetBooleanPref(prefs::kEncryptedClientHelloEnabled));
   LoadResult result = LoadPage(GetURL("/a"));
@@ -246,146 +267,6 @@ IN_PROC_BROWSER_TEST_F(ECHPolicyTest, ECHEnabledPolicy) {
   result = LoadPage(GetURL("/b"));
   EXPECT_TRUE(result.success);
   EXPECT_EQ(base::ASCIIToUTF16(kECHFailureTitle), result.title);
-}
-
-IN_PROC_BROWSER_TEST_F(SSLPolicyTest, InsecureHashPolicy) {
-  net::SSLServerConfig ssl_config;
-  // Apply 0x303 to force TLS 1.2 and make the server limited to sha1.
-  ssl_config.version_min = 0x0303;
-  ssl_config.version_max = 0x0303;
-  ssl_config.signature_algorithm_for_testing = 0x0201;
-  ASSERT_TRUE(StartTestServer(ssl_config));
-
-  // Should be unable to load a page from the test server because the
-  // policy is unset, and SHA1 is disabled.
-  EXPECT_FALSE(GetBooleanPref(prefs::kInsecureHashesInTLSHandshakesEnabled));
-  LoadResult result = LoadPage("/title2.html");
-  EXPECT_FALSE(result.success);
-
-  PolicyMap policies;
-  // Enable Insecure Handshake Hashes.
-  SetPolicy(&policies, key::kInsecureHashesInTLSHandshakesEnabled,
-            base::Value(true));
-  UpdateProviderPolicy(policies);
-  content::FlushNetworkServiceInstanceForTesting();
-
-  // Should be able to load a page from the test server because policy has
-  // overridden the disabled feature flag.
-  EXPECT_TRUE(GetBooleanPref(prefs::kInsecureHashesInTLSHandshakesEnabled));
-  result = LoadPage("/title2.html");
-  EXPECT_TRUE(result.success);
-  EXPECT_EQ(u"Title Of Awesomeness", result.title);
-
-  // Disable the policy.
-  SetPolicy(&policies, key::kInsecureHashesInTLSHandshakesEnabled,
-            base::Value(false));
-  UpdateProviderPolicy(policies);
-  content::FlushNetworkServiceInstanceForTesting();
-
-  // Page loads should now fail as the policy has disabled SHA1.
-  EXPECT_FALSE(GetBooleanPref(prefs::kInsecureHashesInTLSHandshakesEnabled));
-  result = LoadPage("/title3.html");
-  EXPECT_FALSE(result.success);
-}
-
-class RSAKeyUsageDisabledPolicyTest : public SSLPolicyTest {
- public:
-  RSAKeyUsageDisabledPolicyTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        net::features::kRSAKeyUsageForLocalAnchors);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(RSAKeyUsageDisabledPolicyTest, RSAKeyUsagePolicy) {
-  net::EmbeddedTestServer::ServerCertificateConfig cert_config;
-  cert_config.key_usages = {bssl::KEY_USAGE_BIT_KEY_ENCIPHERMENT};
-  net::SSLServerConfig ssl_config;
-  ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
-  // 0xc02f is TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, which expects the
-  // digitalSignature key usage bit.
-  ssl_config.cipher_suite_for_testing = 0xc02f;
-  ASSERT_TRUE(StartTestServer(cert_config, ssl_config));
-
-  // By default, key usage is not checked by feature flag.
-  LoadResult result = LoadPage("/title2.html?1");
-  EXPECT_TRUE(result.success);
-  EXPECT_EQ(u"Title Of Awesomeness", result.title);
-
-  // Enable the check by policy.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kRSAKeyUsageForLocalAnchorsEnabled,
-            base::Value(true));
-  UpdateProviderPolicy(policies);
-  content::FlushNetworkServiceInstanceForTesting();
-
-  // The page load should now fail.
-  EXPECT_TRUE(GetBooleanPref(prefs::kRSAKeyUsageForLocalAnchorsEnabled));
-  result = LoadPage("/title2.html?2");
-  EXPECT_FALSE(result.success);
-
-  // Disable the check by policy.
-  SetPolicy(&policies, key::kRSAKeyUsageForLocalAnchorsEnabled,
-            base::Value(false));
-  UpdateProviderPolicy(policies);
-  content::FlushNetworkServiceInstanceForTesting();
-
-  // The page load should succeed again.
-  result = LoadPage("/title2.html?3");
-  EXPECT_TRUE(result.success);
-  EXPECT_EQ(u"Title Of Awesomeness", result.title);
-}
-
-class RSAKeyUsageEnabledPolicyTest : public SSLPolicyTest {
- public:
-  RSAKeyUsageEnabledPolicyTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        net::features::kRSAKeyUsageForLocalAnchors);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(RSAKeyUsageEnabledPolicyTest, RSAKeyUsagePolicy) {
-  net::EmbeddedTestServer::ServerCertificateConfig cert_config;
-  cert_config.key_usages = {bssl::KEY_USAGE_BIT_KEY_ENCIPHERMENT};
-  net::SSLServerConfig ssl_config;
-  ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
-  // 0xc02f is TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, which expects the
-  // digitalSignature key usage bit.
-  ssl_config.cipher_suite_for_testing = 0xc02f;
-  ASSERT_TRUE(StartTestServer(cert_config, ssl_config));
-
-  // By default, key usage is checked by feature flag.
-  LoadResult result = LoadPage("/title2.html?1");
-  EXPECT_FALSE(result.success);
-
-  // Disable the check by policy.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kRSAKeyUsageForLocalAnchorsEnabled,
-            base::Value(false));
-  UpdateProviderPolicy(policies);
-  content::FlushNetworkServiceInstanceForTesting();
-
-  // The page load should now succeed.
-  EXPECT_FALSE(GetBooleanPref(prefs::kRSAKeyUsageForLocalAnchorsEnabled));
-  result = LoadPage("/title2.html?2");
-  EXPECT_TRUE(result.success);
-  EXPECT_EQ(u"Title Of Awesomeness", result.title);
-
-  // Enable the check by policy.
-  SetPolicy(&policies, key::kRSAKeyUsageForLocalAnchorsEnabled,
-            base::Value(true));
-  UpdateProviderPolicy(policies);
-  content::FlushNetworkServiceInstanceForTesting();
-
-  // The page load should fail again.
-  EXPECT_TRUE(GetBooleanPref(prefs::kRSAKeyUsageForLocalAnchorsEnabled));
-  result = LoadPage("/title2.html?3");
-  EXPECT_FALSE(result.success);
 }
 
 }  // namespace policy

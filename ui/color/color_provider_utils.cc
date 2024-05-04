@@ -205,7 +205,7 @@ base::StringPiece SystemThemeName(ui::SystemTheme system_theme) {
 std::string ColorIdName(ColorId color_id) {
   static constexpr const auto color_id_map =
       base::MakeFixedFlatMap<ColorId, const char*>({COLOR_IDS});
-  auto* i = color_id_map.find(color_id);
+  auto i = color_id_map.find(color_id);
   if (i != color_id_map.cend())
     return {i->second};
   base::StringPiece color_name;
@@ -328,7 +328,7 @@ std::string SkColorName(SkColor color) {
   auto color_with_alpha = color;
   SkAlpha color_alpha = SkColorGetA(color_with_alpha);
   color = SkColorSetA(color, color_alpha != 0 ? SK_AlphaOPAQUE : color_alpha);
-  auto* i = color_name_map.find(color);
+  auto i = color_name_map.find(color);
   if (i != color_name_map.cend()) {
     if (SkColorGetA(color_with_alpha) == SkColorGetA(color))
       return i->second;
@@ -375,36 +375,61 @@ ColorProvider CreateColorProviderFromRendererColorMap(
   return color_provider;
 }
 
+void AddEmulatedForcedColorsToMixer(ColorMixer& mixer, bool dark_mode) {
+  // Colors were chosen based on Windows 10 default light and dark high contrast
+  // themes.
+  mixer[kColorCssSystemBtnFace] = {dark_mode ? SK_ColorBLACK : SK_ColorWHITE};
+  mixer[kColorCssSystemBtnText] = {dark_mode ? SK_ColorWHITE : SK_ColorBLACK};
+  mixer[kColorCssSystemGrayText] = {dark_mode
+                                        ? SkColorSetRGB(0x3F, 0xF2, 0x3F)
+                                        : SkColorSetRGB(0x60, 0x00, 0x00)};
+  mixer[kColorCssSystemHighlight] = {dark_mode
+                                         ? SkColorSetRGB(0x1A, 0xEB, 0xFF)
+                                         : SkColorSetRGB(0x37, 0x00, 0x6E)};
+  mixer[kColorCssSystemHighlightText] = {dark_mode ? SK_ColorBLACK
+                                                   : SK_ColorWHITE};
+  mixer[kColorCssSystemHotlight] = {dark_mode
+                                        ? SkColorSetRGB(0xFF, 0xFF, 0x00)
+                                        : SkColorSetRGB(0x00, 0x00, 0x9F)};
+  mixer[kColorCssSystemMenuHilight] = {
+      dark_mode ? SkColorSetRGB(0x80, 0x00, 0x80) : SK_ColorBLACK};
+  mixer[kColorCssSystemScrollbar] = {dark_mode ? SK_ColorBLACK : SK_ColorWHITE};
+  mixer[kColorCssSystemWindowText] = {dark_mode ? SK_ColorBLACK
+                                                : SK_ColorWHITE};
+  mixer[kColorCssSystemWindowText] = {dark_mode ? SK_ColorWHITE
+                                                : SK_ColorBLACK};
+}
+
 ColorProvider CreateEmulatedForcedColorsColorProvider(bool dark_mode) {
   ColorProvider color_provider;
   ui::ColorMixer& mixer = color_provider.AddMixer();
-  // Colors were chosen based on Windows 10 default light and dark high contrast
-  // themes.
-  mixer[kColorForcedBtnFace] = {dark_mode ? SK_ColorBLACK : SK_ColorWHITE};
-  mixer[kColorForcedBtnText] = {dark_mode ? SK_ColorWHITE : SK_ColorBLACK};
-  mixer[kColorForcedGrayText] = {dark_mode ? SkColorSetRGB(0x3F, 0xF2, 0x3F)
-                                           : SkColorSetRGB(0x60, 0x00, 0x00)};
-  mixer[kColorForcedHighlight] = {dark_mode ? SkColorSetRGB(0x1A, 0xEB, 0xFF)
-                                            : SkColorSetRGB(0x37, 0x00, 0x6E)};
-  mixer[kColorForcedHighlightText] = {dark_mode ? SK_ColorBLACK
-                                                : SK_ColorWHITE};
-  mixer[kColorForcedHotlight] = {dark_mode ? SkColorSetRGB(0xFF, 0xFF, 0x00)
-                                           : SkColorSetRGB(0x00, 0x00, 0x9F)};
-  mixer[kColorForcedMenuHilight] = {dark_mode ? SkColorSetRGB(0x80, 0x00, 0x80)
-                                              : SK_ColorBLACK};
-  mixer[kColorForcedScrollbar] = {dark_mode ? SK_ColorBLACK : SK_ColorWHITE};
-  mixer[kColorForcedWindow] = {dark_mode ? SK_ColorBLACK : SK_ColorWHITE};
-  mixer[kColorForcedWindowText] = {dark_mode ? SK_ColorWHITE : SK_ColorBLACK};
+  AddEmulatedForcedColorsToMixer(mixer, dark_mode);
 
   // Set the colors for the scrollbar parts based on the emulated definitions
   // above.
-  mixer[kColorWebNativeControlScrollbarArrowForeground] = {kColorForcedBtnText};
+  mixer[kColorWebNativeControlScrollbarArrowForeground] = {
+      kColorCssSystemBtnText};
   mixer[kColorWebNativeControlScrollbarThumbOverlayMinimalMode] = {
       kColorWebNativeControlScrollbarArrowForeground};
   mixer[kColorWebNativeControlScrollbarArrowForegroundPressed] = {
-      kColorForcedHighlight};
-  mixer[kColorWebNativeControlScrollbarCorner] = {kColorForcedBtnFace};
+      kColorCssSystemHighlight};
+  mixer[kColorWebNativeControlScrollbarCorner] = {kColorCssSystemBtnFace};
   CompleteControlsForcedColorsDefinition(mixer);
+
+  // Set these color ids as some non web native RendererColorIds depend on their
+  // values.
+  mixer[kColorPrimaryBackground] = {kColorCssSystemWindowText};
+  mixer[kColorEndpointForeground] =
+      GetColorWithMaxContrast(kColorPrimaryBackground);
+  mixer[kColorEndpointBackground] =
+      GetColorWithMaxContrast(kColorEndpointForeground);
+  mixer[kColorMenuSelectionBackground] =
+      AlphaBlend(kColorEndpointForeground, kColorPrimaryBackground,
+                 gfx::kGoogleGreyAlpha200);
+  mixer[kColorMidground] = {kColorCssSystemWindowText};
+  mixer[kColorSeparator] = {kColorMidground};
+  CompleteDefaultNonWebNativeRendererColorIdsDefinition(mixer);
+
   color_provider.GenerateColorMap();
   return color_provider;
 }
@@ -465,9 +490,23 @@ ColorProvider CreateEmulatedForcedColorsColorProviderForTest() {
 }
 
 ColorProvider COMPONENT_EXPORT(COLOR)
-    CreateColorProviderForBlinkTests(bool dark_mode) {
+    CreateDefaultColorProviderForBlink(bool dark_mode) {
   ColorProvider color_provider;
   ui::ColorMixer& mixer = color_provider.AddMixer();
+
+  mixer[kColorPrimaryBackground] = {dark_mode ? SkColorSetRGB(0x29, 0x2A, 0x2D)
+                                              : SK_ColorWHITE};
+  mixer[kColorEndpointForeground] =
+      GetColorWithMaxContrast(kColorPrimaryBackground);
+  mixer[kColorEndpointBackground] =
+      GetColorWithMaxContrast(kColorEndpointForeground);
+  mixer[kColorMenuSelectionBackground] =
+      AlphaBlend(kColorEndpointForeground, kColorPrimaryBackground,
+                 gfx::kGoogleGreyAlpha200);
+  mixer[kColorMidground] = {dark_mode ? gfx::kGoogleGrey800
+                                      : gfx::kGoogleGrey300};
+  mixer[kColorSeparator] = {kColorMidground};
+  CompleteDefaultNonWebNativeRendererColorIdsDefinition(mixer);
 
   if (dark_mode) {
     mixer[kColorWebNativeControlAccent] = {SkColorSetRGB(0x99, 0xC8, 0xFF)};
@@ -641,51 +680,102 @@ void CompleteScrollbarColorsDefinition(ui::ColorMixer& mixer) {
 }
 
 void CompleteControlsForcedColorsDefinition(ui::ColorMixer& mixer) {
-  mixer[kColorWebNativeControlAccent] = {kColorForcedHighlight};
-  mixer[kColorWebNativeControlAccentDisabled] = {kColorForcedGrayText};
-  mixer[kColorWebNativeControlAccentHovered] = {kColorForcedHighlight};
-  mixer[kColorWebNativeControlAccentPressed] = {kColorForcedHighlight};
-  mixer[kColorWebNativeControlAutoCompleteBackground] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlBackground] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlBackgroundDisabled] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlBorder] = {kColorForcedBtnText};
-  mixer[kColorWebNativeControlBorderDisabled] = {kColorForcedGrayText};
-  mixer[kColorWebNativeControlBorderHovered] = {kColorForcedBtnText};
-  mixer[kColorWebNativeControlBorderPressed] = {kColorForcedBtnText};
-  mixer[kColorWebNativeControlButtonBorder] = {kColorForcedBtnText};
-  mixer[kColorWebNativeControlButtonBorderDisabled] = {kColorForcedGrayText};
-  mixer[kColorWebNativeControlButtonBorderHovered] = {kColorForcedBtnText};
-  mixer[kColorWebNativeControlButtonBorderPressed] = {kColorForcedBtnText};
-  mixer[kColorWebNativeControlButtonFill] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlButtonFillDisabled] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlButtonFillHovered] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlButtonFillPressed] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlFill] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlFillDisabled] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlFillHovered] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlFillPressed] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlLightenLayer] = {kColorForcedWindow};
-  mixer[kColorWebNativeControlProgressValue] = {kColorForcedHighlight};
-  mixer[kColorWebNativeControlScrollbarArrowForeground] = {kColorForcedBtnText};
+  mixer[kColorWebNativeControlAccent] = {kColorCssSystemHighlight};
+  mixer[kColorWebNativeControlAccentDisabled] = {kColorCssSystemGrayText};
+  mixer[kColorWebNativeControlAccentHovered] = {kColorCssSystemHighlight};
+  mixer[kColorWebNativeControlAccentPressed] = {kColorCssSystemHighlight};
+  mixer[kColorWebNativeControlAutoCompleteBackground] = {
+      kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlBackground] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlBackgroundDisabled] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlBorder] = {kColorCssSystemBtnText};
+  mixer[kColorWebNativeControlBorderDisabled] = {kColorCssSystemGrayText};
+  mixer[kColorWebNativeControlBorderHovered] = {kColorCssSystemBtnText};
+  mixer[kColorWebNativeControlBorderPressed] = {kColorCssSystemBtnText};
+  mixer[kColorWebNativeControlButtonBorder] = {kColorCssSystemBtnText};
+  mixer[kColorWebNativeControlButtonBorderDisabled] = {kColorCssSystemGrayText};
+  mixer[kColorWebNativeControlButtonBorderHovered] = {kColorCssSystemBtnText};
+  mixer[kColorWebNativeControlButtonBorderPressed] = {kColorCssSystemBtnText};
+  mixer[kColorWebNativeControlButtonFill] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlButtonFillDisabled] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlButtonFillHovered] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlButtonFillPressed] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlFill] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlFillDisabled] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlFillHovered] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlFillPressed] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlLightenLayer] = {kColorCssSystemWindowText};
+  mixer[kColorWebNativeControlProgressValue] = {kColorCssSystemHighlight};
+  mixer[kColorWebNativeControlScrollbarArrowForeground] = {
+      kColorCssSystemBtnText};
   mixer[kColorWebNativeControlScrollbarArrowForegroundPressed] = {
-      kColorForcedHighlight};
+      kColorCssSystemHighlight};
   mixer[kColorWebNativeControlScrollbarThumbOverlayMinimalMode] = {
-      kColorForcedBtnText};
-  mixer[kColorWebNativeControlScrollbarCorner] = {kColorForcedBtnFace};
-  mixer[kColorWebNativeControlSlider] = {kColorForcedHighlight};
-  mixer[kColorWebNativeControlSliderDisabled] = {kColorForcedGrayText};
-  mixer[kColorWebNativeControlSliderHovered] = {kColorForcedHighlight};
-  mixer[kColorWebNativeControlSliderPressed] = {kColorForcedHighlight};
+      kColorCssSystemBtnText};
+  mixer[kColorWebNativeControlScrollbarCorner] = {kColorCssSystemBtnFace};
+  mixer[kColorWebNativeControlSlider] = {kColorCssSystemHighlight};
+  mixer[kColorWebNativeControlSliderDisabled] = {kColorCssSystemGrayText};
+  mixer[kColorWebNativeControlSliderHovered] = {kColorCssSystemHighlight};
+  mixer[kColorWebNativeControlSliderPressed] = {kColorCssSystemHighlight};
   CompleteScrollbarColorsDefinition(mixer);
 }
 
+void COMPONENT_EXPORT(COLOR)
+    CompleteDefaultNonWebNativeRendererColorIdsDefinition(
+        ui::ColorMixer& mixer) {
+  mixer[kColorMenuBackground] = {kColorPrimaryBackground};
+  mixer[kColorMenuItemBackgroundSelected] = {kColorMenuSelectionBackground};
+  mixer[kColorMenuSeparator] = {kColorSeparator};
+  mixer[kColorOverlayScrollbarFill] =
+      SetAlpha(kColorEndpointForeground, gfx::kGoogleGreyAlpha700);
+  mixer[kColorOverlayScrollbarFillDark] = SetAlpha(
+      GetColorWithMaxContrast(SK_ColorWHITE), gfx::kGoogleGreyAlpha700);
+  mixer[kColorOverlayScrollbarFillLight] = SetAlpha(
+      GetColorWithMaxContrast(SK_ColorBLACK), gfx::kGoogleGreyAlpha700);
+  mixer[kColorOverlayScrollbarFillHovered] =
+      SetAlpha(kColorEndpointForeground, gfx::kGoogleGreyAlpha800);
+  mixer[kColorOverlayScrollbarFillHoveredDark] = SetAlpha(
+      GetColorWithMaxContrast(SK_ColorWHITE), gfx::kGoogleGreyAlpha800);
+  mixer[kColorOverlayScrollbarFillHoveredLight] = SetAlpha(
+      GetColorWithMaxContrast(SK_ColorBLACK), gfx::kGoogleGreyAlpha800);
+  mixer[kColorOverlayScrollbarStroke] =
+      SetAlpha(kColorEndpointBackground, gfx::kGoogleGreyAlpha400);
+  mixer[kColorOverlayScrollbarStrokeDark] =
+      SetAlpha(GetColorWithMaxContrast(kColorOverlayScrollbarFillDark),
+               gfx::kGoogleGreyAlpha400);
+  mixer[kColorOverlayScrollbarStrokeLight] =
+      SetAlpha(GetColorWithMaxContrast(kColorOverlayScrollbarFillLight),
+               gfx::kGoogleGreyAlpha400);
+  mixer[kColorOverlayScrollbarStrokeHovered] =
+      SetAlpha(kColorEndpointBackground, gfx::kGoogleGreyAlpha500);
+  mixer[kColorOverlayScrollbarStrokeHoveredDark] =
+      SetAlpha(GetColorWithMaxContrast(kColorOverlayScrollbarFillHoveredDark),
+               gfx::kGoogleGreyAlpha500);
+  mixer[kColorOverlayScrollbarStrokeHoveredLight] =
+      SetAlpha(GetColorWithMaxContrast(kColorOverlayScrollbarFillHoveredLight),
+               gfx::kGoogleGreyAlpha500);
+}
+
+RendererColorMap COMPONENT_EXPORT(COLOR)
+    GetDefaultBlinkColorProviderColorMaps(bool dark_mode,
+                                          bool is_forced_colors) {
+  return CreateRendererColorMap(
+      is_forced_colors ? CreateEmulatedForcedColorsColorProvider(dark_mode)
+                       : CreateDefaultColorProviderForBlink(dark_mode));
+}
+
 bool IsRendererColorMappingEquivalent(
-    const ColorProvider& color_provider,
+    const ColorProvider* color_provider,
     const RendererColorMap& renderer_color_map) {
+  if (!color_provider) {
+    return false;
+  }
+  CHECK(!renderer_color_map.empty());
+
   for (const auto& table : kRendererColorIdMap) {
     // The `renderer_color_map_` should map the full set of renderer color ids.
     DCHECK(base::Contains(renderer_color_map, table.renderer_color_id));
-    if (color_provider.GetColor(table.color_id) !=
+    if (color_provider->GetColor(table.color_id) !=
         renderer_color_map.at(table.renderer_color_id)) {
       return false;
     }

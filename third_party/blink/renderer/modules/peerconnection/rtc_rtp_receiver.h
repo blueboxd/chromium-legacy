@@ -37,6 +37,7 @@ class RTCInsertableStreams;
 class RTCPeerConnection;
 class RTCRtpCapabilities;
 class RTCRtpTransceiver;
+class RTCStatsReport;
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpreceiver-interface
 class RTCRtpReceiver final : public ScriptWrappable,
@@ -70,6 +71,8 @@ class RTCRtpReceiver final : public ScriptWrappable,
   RTCDtlsTransport* rtcpTransport();
   std::optional<double> playoutDelayHint() const;
   void setPlayoutDelayHint(std::optional<double>, ExceptionState&);
+  std::optional<double> jitterBufferTarget() const;
+  void setJitterBufferTarget(std::optional<double>, ExceptionState&);
   RTCRtpReceiveParameters* getParameters();
   HeapVector<Member<RTCRtpSynchronizationSource>> getSynchronizationSources(
       ScriptState*,
@@ -77,7 +80,7 @@ class RTCRtpReceiver final : public ScriptWrappable,
   HeapVector<Member<RTCRtpContributingSource>> getContributingSources(
       ScriptState*,
       ExceptionState&);
-  ScriptPromise getStats(ScriptState*);
+  ScriptPromiseTyped<RTCStatsReport> getStats(ScriptState*);
   RTCInsertableStreams* createEncodedStreams(ScriptState*, ExceptionState&);
   // TODO(crbug.com/1069295): Make these methods private.
   RTCInsertableStreams* createEncodedAudioStreams(ScriptState*,
@@ -141,6 +144,7 @@ class RTCRtpReceiver final : public ScriptWrappable,
   // observed delay may differ depending on the congestion control. |nullopt|
   // means default value must be used.
   std::optional<double> playout_delay_hint_;
+  std::optional<double> jitter_buffer_target_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -812,6 +812,24 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="kFailedOnEnqueueingEvent"/>
 </enum>
 
+<enum name="EnterpriseKeySignatureVerification">
+  <summary>
+    Defined as MetricKeySignatureVerification in
+    components/policy/core/common/cloud/cloud_policy_validator.cc.
+  </summary>
+  <int value="0" label="Key signature validation succeeded with new data">
+    The new_public_key_verification_data field worked.
+  </int>
+  <int value="1"
+      label="Key signature validation succeeded with deprecated data">
+    The new_public_key_verification_data field failed but the backup in
+    new_public_key_verification_signature_deprecated worked.
+  </int>
+  <int value="2" label="Key signature validation failed">
+    Both signatures for the key failed to validate.
+  </int>
+</enum>
+
 <enum name="EnterpriseMacMDMStatusNew">
   <summary>
     The Mac MDM enrollment status (new API). See
@@ -2025,17 +2043,30 @@ chromium-metrics-reviews@google.com.
   <int value="1209" label="DeviceWeeklyScheduledSuspend"/>
   <int value="1210" label="RemoteAccessHostAllowUrlForwarding"/>
   <int value="1211" label="ScreenCaptureLocation"/>
-  <int value="1212" label="AllowDomainsForAppsList"/>
+  <int value="1212" label="AllowedDomainsForAppsList"/>
   <int value="1213" label="ChromeForTestingAllowed"/>
   <int value="1214" label="GoogleLocationServicesEnabled"/>
   <int value="1215" label="ProvisionManagedClientCertificateForUser"/>
   <int value="1216" label="LocalUserFilesAllowed"/>
-  <int value="1217" label="DevToolsGenAiSettings"/>
   <int value="1218"
       label="SubAppsAPIsAllowedWithoutGestureAndAuthorizationForOrigins"/>
   <int value="1219" label="DefaultWebPrintingSetting"/>
   <int value="1220" label="WebPrintingAllowedForUrls"/>
   <int value="1221" label="WebPrintingBlockedForUrls"/>
+  <int value="1222" label="DocumentScanAPITrustedExtensions"/>
+  <int value="1223" label="RemoteAccessHostAllowPinAuthentication"/>
+  <int value="1224" label="DownloadManagerSaveToDriveSettings"/>
+  <int value="1225" label="AutomaticFullscreenAllowedForUrls"/>
+  <int value="1226" label="AutomaticFullscreenBlockedForUrls"/>
+  <int value="1227" label="MutationEventsEnabled"/>
+  <int value="1228" label="DevToolsGenAiSettings"/>
+  <int value="1229" label="CACertificatesWithConstraints"/>
+  <int value="1230" label="DefaultDirectSocketsSetting"/>
+  <int value="1231" label="DirectSocketsAllowedForUrls"/>
+  <int value="1232" label="DirectSocketsBlockedForUrls"/>
+  <int value="1233" label="ProductSpecificationsEnabled"/>
+  <int value="1234" label="PrefixedVideoFullscreenApiAvailability"/>
+  <int value="1235" label="PrivacySandboxIpProtectionEnabled"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">

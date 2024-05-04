@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/exo/protected_native_pixmap_query_delegate.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "media/media_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,13 +40,32 @@ class Buffer {
          bool use_zero_copy,
          bool is_overlay_candidate,
          bool y_invert);
+
   Buffer(const Buffer&) = delete;
   Buffer& operator=(const Buffer&) = delete;
   virtual ~Buffer();
 
-  const gfx::GpuMemoryBuffer* gfx_buffer() const {
-    return gpu_memory_buffer_.get();
-  }
+  // Clients can use this method to create Buffer using GMBHandles. This is
+  // required to move away clients from using GMB directly as a part of
+  // MappableSI work.
+  static std::unique_ptr<Buffer> CreateBufferFromGMBHandle(
+      gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle,
+      const gfx::Size& buffer_size,
+      gfx::BufferFormat buffer_format,
+      gfx::BufferUsage buffer_usage,
+      unsigned texture_target,
+      unsigned query_type,
+      bool use_zero_copy,
+      bool is_overlay_candidate,
+      bool y_invert);
+
+  static std::unique_ptr<Buffer> CreateBuffer(
+      gfx::Size buffer_size,
+      gfx::BufferFormat buffer_format,
+      gfx::BufferUsage buffer_usage,
+      base::StringPiece debug_label,
+      gpu::SurfaceHandle surface_handle,
+      base::WaitableEvent* shutdown_event);
 
   // Set the callback to run when the buffer is no longer used by the
   // compositor. The client is free to re-use or destroy this buffer and
@@ -85,6 +105,10 @@ class Buffer {
 
   // Returns the format of the buffer.
   gfx::BufferFormat GetFormat() const;
+
+  // Returns the |gpu_memory_buffer_| pointer to be used as id. It can also be
+  // used as a bool to identify if |gpu_memory_buffer_| is null or not.
+  const void* GetBufferId() const;
 
   // The default color to be used should transferable resource production fail.
   virtual SkColor4f GetColor() const;

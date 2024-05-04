@@ -40,6 +40,7 @@
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
@@ -523,11 +524,6 @@ StoreSourceResult AttributionStorageSql::StoreSource(
 
   const base::Time source_time = base::Time::Now();
 
-  if (StoreSourceResult result = CheckDestinationRateLimit(source, source_time);
-      !absl::holds_alternative<StoreSourceResult::Success>(result.result())) {
-    return result;
-  }
-
   // Only delete expired impressions periodically to avoid excessive DB
   // operations.
   const base::TimeDelta delete_frequency =
@@ -572,6 +568,11 @@ StoreSourceResult AttributionStorageSql::StoreSource(
           delegate_->GetMaxDestinationsPerSourceSiteReportingSite());
     case RateLimitResult::kError:
       return StoreSourceResult::InternalError();
+  }
+
+  if (StoreSourceResult result = CheckDestinationRateLimit(source, source_time);
+      !absl::holds_alternative<StoreSourceResult::Success>(result.result())) {
+    return result;
   }
 
   switch (rate_limit_table_.SourceAllowedForReportingOriginLimit(&db_, source,
@@ -896,7 +897,7 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
   }
 
   std::optional<AttributionReport> replaced =
-      GetReport(*conversion_id_with_min_priority);
+      GetReportInternal(*conversion_id_with_min_priority);
   if (!replaced.has_value()) {
     return MaybeReplaceLowerPriorityEventLevelReportResult::kError;
   }
@@ -924,7 +925,11 @@ bool IsSuccessResult(std::optional<AggregatableResult> result) {
 bool HasAggregatableData(
     const attribution_reporting::TriggerRegistration& trigger_registration) {
   return !trigger_registration.aggregatable_trigger_data.empty() ||
-         !trigger_registration.aggregatable_values.values().empty();
+         base::ranges::any_of(
+             trigger_registration.aggregatable_values,
+             [](const attribution_reporting::AggregatableValues& values) {
+               return !values.values().empty();
+             });
 }
 
 }  // namespace
@@ -1697,24 +1702,16 @@ std::optional<base::Time> AttributionStorageSql::GetNextReportTime(
   return std::nullopt;
 }
 
-std::vector<AttributionReport> AttributionStorageSql::GetReports(
-    const std::vector<AttributionReport::Id>& ids) {
+std::optional<AttributionReport> AttributionStorageSql::GetReport(
+    AttributionReport::Id id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent)) {
-    return {};
+    return std::nullopt;
   }
-
-  std::vector<AttributionReport> reports;
-  for (AttributionReport::Id id : ids) {
-    std::optional<AttributionReport> report = GetReport(id);
-    if (report.has_value()) {
-      reports.push_back(std::move(*report));
-    }
-  }
-  return reports;
+  return GetReportInternal(id);
 }
 
-std::optional<AttributionReport> AttributionStorageSql::GetReport(
+std::optional<AttributionReport> AttributionStorageSql::GetReportInternal(
     AttributionReport::Id id) {
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE, attribution_queries::kGetReportSql));
@@ -2644,8 +2641,7 @@ void AttributionStorageSql::DatabaseErrorCallback(int extended_error,
   // Attempt to recover a corrupt database, if it is eligible to be recovered.
   if (sql::BuiltInRecovery::RecoverIfPossible(
           &db_, extended_error,
-          sql::BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze,
-          &kAttributionStorageUseBuiltInRecoveryIfSupported)) {
+          sql::BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze)) {
     // Recovery was attempted. The database handle has been poisoned and the
     // error callback has been reset.
 

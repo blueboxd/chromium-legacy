@@ -56,6 +56,8 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/v8_canvas_style.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/platform/bindings/string_resource.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
@@ -71,6 +73,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkPathBuilder.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -378,13 +381,13 @@ void BaseRenderingContext2D::endLayer(ExceptionState& exception_state) {
 }
 
 void BaseRenderingContext2D::PopAndRestore(cc::PaintCanvas& canvas) {
+  if (IsTransformInvertible()) {
+    GetModifiablePath().Transform(GetState().GetTransform());
+  }
+
   if (state_stack_.back()->GetSaveType() ==
       CanvasRenderingContext2DState::SaveType::kBeginEndLayerTwoSaves) {
     canvas.restore();
-  }
-
-  if (IsTransformInvertible()) {
-    GetModifiablePath().Transform(GetState().GetTransform());
   }
 
   canvas.restore();
@@ -649,8 +652,8 @@ ColorParseResult BaseRenderingContext2D::ParseColorOrCurrentColor(
     const TextLinkColors& text_link_colors =
         window ? window->document()->GetTextLinkColors()
                : kDefaultTextLinkColors;
-    const StyleColor style_color =
-        ResolveColorValue(*color_mix_value, text_link_colors, color_scheme_);
+    const StyleColor style_color = ResolveColorValue(
+        *color_mix_value, text_link_colors, color_scheme_, GetColorProvider());
     color = style_color.Resolve(GetCurrentColor(), color_scheme_);
     return ColorParseResult::kColor;
   }
@@ -3160,11 +3163,6 @@ TextMetrics* BaseRenderingContext2D::measureText(const String& text) {
 
   const Font& font = AccessFont(canvas);
 
-  if (HostAsOffscreenCanvas() && font.GetFontSelector() &&
-      !font.GetFontSelector()->GetExecutionContext()) {
-    return MakeGarbageCollected<TextMetrics>();
-  }
-
   const CanvasRenderingContext2DState& state = GetState();
   TextDirection direction = ToTextDirection(state.GetDirection(), canvas);
 
@@ -3332,8 +3330,26 @@ bool BaseRenderingContext2D::IsAccelerated() const {
 }
 
 V8GPUTextureFormat BaseRenderingContext2D::getTextureFormat() const {
-  // TODO(crbug.com/1517367): implement (this is a placeholder)
-  return V8GPUTextureFormat(V8GPUTextureFormat::Enum::kRgba8Unorm);
+  // Query the canvas and return its actual texture format.
+  std::optional<V8GPUTextureFormat> format;
+  if (const CanvasRenderingContextHost* host =
+          GetCanvasRenderingContextHost()) {
+    format = V8GPUTextureFormat::Create(FromDawnEnum(
+        AsDawnType(host->GetRenderingContextSkColorInfo().colorType())));
+  }
+
+  // If that did not work (e.g., the canvas host does not yet exist), we can
+  // return the preferred canvas format.
+  if (!format.has_value()) {
+    format = V8GPUTextureFormat::Create(
+        FromDawnEnum(GPU::preferred_canvas_format()));
+  }
+
+  // If the preferred canvas format cannot be represented as a GPUTextureFormat,
+  // something is wrong; we need to investigate.
+  CHECK(format.has_value()) << "GPU::preferred_canvas_format() returned an "
+                               "unrecognized texture format";
+  return *format;
 }
 
 GPUTexture* BaseRenderingContext2D::beginWebGPUAccess(

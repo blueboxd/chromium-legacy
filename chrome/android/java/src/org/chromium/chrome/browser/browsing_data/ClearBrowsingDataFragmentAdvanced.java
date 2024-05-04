@@ -10,6 +10,7 @@ import androidx.preference.Preference;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,9 +35,6 @@ public class ClearBrowsingDataFragmentAdvanced extends ClearBrowsingDataFragment
         if (nonGoogleSearchHistoryTextPref != null) {
             getPreferenceScreen().removePreference(nonGoogleSearchHistoryTextPref);
         }
-        // TODO(https://crbug.com/1334920): Change after follow up discussion with privacy team.
-        Preference signOutOfChromeTextPref =
-                findPreference(ClearBrowsingDataFragment.PREF_SIGN_OUT_OF_CHROME_TEXT);
     }
 
     @Override
@@ -46,6 +44,16 @@ public class ClearBrowsingDataFragmentAdvanced extends ClearBrowsingDataFragment
 
     @Override
     protected List<Integer> getDialogOptions() {
+        if (QuickDeleteController.isQuickDeleteFollowupEnabled()) {
+            return Arrays.asList(
+                    DialogOption.CLEAR_HISTORY,
+                    DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
+                    DialogOption.CLEAR_CACHE,
+                    DialogOption.CLEAR_TABS,
+                    DialogOption.CLEAR_PASSWORDS,
+                    DialogOption.CLEAR_FORM_DATA,
+                    DialogOption.CLEAR_SITE_SETTINGS);
+        }
         return Arrays.asList(
                 DialogOption.CLEAR_HISTORY,
                 DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
@@ -61,7 +69,7 @@ public class ClearBrowsingDataFragmentAdvanced extends ClearBrowsingDataFragment
         RecordHistogram.recordEnumeratedHistogram(
                 "History.ClearBrowsingData.UserDeletedFromTab",
                 ClearBrowsingDataTab.ADVANCED,
-                ClearBrowsingDataTab.NUM_TYPES);
+                ClearBrowsingDataTab.MAX_VALUE + 1);
         RecordUserAction.record("ClearBrowsingData_AdvancedTab");
     }
 }

@@ -38,7 +38,6 @@
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/ppapi_utils.h"
-#include "chrome/common/privacy_budget/privacy_budget_settings_provider.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/unwind_util.h"
 #include "chrome/common/secure_origin_allowlist.h"
@@ -62,7 +61,6 @@
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/plugins/non_loadable_plugin_placeholder.h"
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
-#include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/trusted_vault_encryption_keys_extension.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/v8_unwinder.h"
@@ -139,7 +137,6 @@
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -203,6 +200,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/controlled_frame/controlled_frame.h"
 #include "chrome/common/initialize_extensions_client.h"
+#include "chrome/renderer/extensions/api/chrome_extensions_renderer_api_provider.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/context_data.h"
@@ -295,6 +293,8 @@ using SecureContextRequired = autofill::AutofillAgent::SecureContextRequired;
 using UserGestureRequired = autofill::AutofillAgent::UserGestureRequired;
 using UsesKeyboardAccessoryForSuggestions =
     autofill::AutofillAgent::UsesKeyboardAccessoryForSuggestions;
+using EnableHeavyFormDataScraping =
+    autofill::PasswordAutofillAgent::EnableHeavyFormDataScraping;
 
 namespace {
 
@@ -445,6 +445,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   chrome_extensions_renderer_client->AddAPIProvider(
       std::make_unique<
           controlled_frame::ControlledFrameExtensionsRendererAPIProvider>());
+  chrome_extensions_renderer_client->AddAPIProvider(
+      std::make_unique<extensions::ChromeExtensionsRendererAPIProvider>());
   chrome_extensions_renderer_client->RenderThreadStarted();
   WebSecurityPolicy::RegisterURLSchemeAsExtension(
       WebString::FromASCII(extensions::kExtensionScheme));
@@ -570,10 +572,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       metrics::CallStackProfileBuilder::
           SetParentProfileCollectorForChildProcess(std::move(collector));
     }
-
-    // This is superfluous in single-process mode and triggers a DCHECK
-    blink::IdentifiabilityStudySettings::SetGlobalProvider(
-        std::make_unique<PrivacyBudgetSettingsProvider>());
   }
 }
 
@@ -693,7 +691,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   if (!render_frame->IsInFencedFrameTree() ||
       base::FeatureList::IsEnabled(blink::features::kFencedFramesAPIChanges)) {
     auto password_autofill_agent = std::make_unique<PasswordAutofillAgent>(
-        render_frame, associated_interfaces);
+        render_frame, associated_interfaces,
+        EnableHeavyFormDataScraping(
+            chrome::GetChannel() == version_info::Channel::CANARY ||
+            chrome::GetChannel() == version_info::Channel::DEV));
     auto password_generation_agent = std::make_unique<PasswordGenerationAgent>(
         render_frame, password_autofill_agent.get(), associated_interfaces);
     new AutofillAgent(
@@ -910,7 +911,6 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
       orig_mime_type, &plugin_info);
   *plugin = CreatePlugin(render_frame, params, *plugin_info);
 #else  // !BUILDFLAG(ENABLE_PLUGINS)
-  PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
   if (orig_mime_type == pdf::kPDFMimeType) {
     ReportPDFLoadStatus(
         PDFLoadStatus::kShowedDisabledPluginPlaceholderForEmbeddedPdf);
@@ -976,8 +976,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                  render_frame, original_params)
           ->plugin();
     } else {
-      PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type,
-                                                            url);
       placeholder = ChromePluginPlaceholder::CreateLoadableMissingPlugin(
           render_frame, original_params);
     }
@@ -1145,8 +1143,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         return render_frame->CreatePlugin(info, params);
       }
       case chrome::mojom::PluginStatus::kDisabled: {
-        PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
-                                                               url);
         if (info.path.value() == ChromeContentClient::kPDFExtensionPluginPath) {
           ReportPDFLoadStatus(
               PDFLoadStatus::kShowedDisabledPluginPlaceholderForEmbeddedPdf);
@@ -1411,7 +1407,9 @@ void ChromeContentRendererClient::PostCompositorThreadCreated(
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
-  return !IsStandaloneContentExtensionProcess();
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kInitIsolateAsForeground) ||
+         !IsStandaloneContentExtensionProcess();
 }
 
 bool ChromeContentRendererClient::AllowPopup() {

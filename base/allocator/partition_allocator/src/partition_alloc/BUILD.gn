@@ -82,7 +82,7 @@ _add_configs = []
 if (!is_debug || partition_alloc_optimized_debug) {
   _remove_configs += [ "//build/config/compiler:default_optimization" ]
 
-  # Partition alloc is relatively hot (>1% of cycles for users of CrOS).
+  # PartitionAlloc is relatively hot (>1% of cycles for users of CrOS).
   # Use speed-focused optimizations for it.
   _add_configs += [ "//build/config/compiler:optimize_speed" ]
 } else {
@@ -170,15 +170,16 @@ buildflag_header("partition_alloc_buildflags") {
 
   # TODO(crbug.com/1151236): Need to refactor the following buildflags.
   # The buildflags (except RECORD_ALLOC_INFO) are used by both chrome and
-  # partition alloc. For partition alloc,
+  # PartitionAlloc. For PartitionAlloc,
   # gen/base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h
-  # defines and partition alloc includes the header file. For chrome,
+  # defines and PartitionAlloc includes the header file. For chrome,
   # gen/base/allocator/buildflags.h defines and chrome includes.
   flags = [
     "HAS_64_BIT_POINTERS=$has_64_bit_pointers",
     "HAS_MEMORY_TAGGING=$has_memory_tagging",
 
     "USE_ALLOCATOR_SHIM=$use_allocator_shim",
+    "USE_LARGE_EMPTY_SLOT_SPAN_RING=$use_large_empty_slot_span_ring",
     "USE_PARTITION_ALLOC=$use_partition_alloc",
     "USE_PARTITION_ALLOC_AS_MALLOC=$use_partition_alloc_as_malloc",
 
@@ -191,6 +192,7 @@ buildflag_header("partition_alloc_buildflags") {
     "ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT=$enable_dangling_raw_ptr_perf_experiment",
     "ENABLE_POINTER_SUBTRACTION_CHECK=$enable_pointer_subtraction_check",
     "ENABLE_POINTER_ARITHMETIC_TRAIT_CHECK=$enable_pointer_arithmetic_trait_check",
+    "BACKUP_REF_PTR_EXTRA_OOB_CHECKS=$backup_ref_ptr_extra_oob_checks",
     "BACKUP_REF_PTR_POISON_OOB_PTR=$backup_ref_ptr_poison_oob_ptr",
     "USE_ASAN_BACKUP_REF_PTR=$use_asan_backup_ref_ptr",
     "USE_ASAN_UNOWNED_PTR=$use_asan_unowned_ptr",
@@ -199,6 +201,8 @@ buildflag_header("partition_alloc_buildflags") {
     "FORCIBLY_ENABLE_BACKUP_REF_PTR_IN_ALL_PROCESSES=$_force_all_process_brp",
 
     "FORCE_ENABLE_RAW_PTR_EXCLUSION=$force_enable_raw_ptr_exclusion",
+
+    "USE_FULL_MTE=$use_full_mte",
 
     "RECORD_ALLOC_INFO=$_record_alloc_info",
     "USE_FREESLOT_BITMAP=$use_freeslot_bitmap",
@@ -214,6 +218,7 @@ buildflag_header("partition_alloc_buildflags") {
     "ENABLE_THREAD_ISOLATION=$enable_pkeys",
 
     "FORWARD_THROUGH_MALLOC=$forward_through_malloc",
+    "ASSERT_CPP_20=$assert_cpp20",
   ]
 }
 
@@ -337,7 +342,7 @@ if (is_clang_or_gcc) {
       # This is already set when we compile libc++, see
       # buildtools/third_party/libc++/BUILD.gn. But it needs to be set here as
       # well, since the shim defines the symbols, to prevent them being exported.
-      cflags = [ "-fvisibility-global-new-delete-hidden" ]
+      cflags = [ "-fvisibility-global-new-delete=force-hidden" ]
     }
   }
 
@@ -386,6 +391,7 @@ if (is_clang_or_gcc) {
       "freeslot_bitmap_constants.h",
       "gwp_asan_support.cc",
       "gwp_asan_support.h",
+      "in_slot_metadata.h",
       "internal_allocator.cc",
       "internal_allocator.h",
       "internal_allocator_forward.h",
@@ -428,7 +434,6 @@ if (is_clang_or_gcc) {
       "partition_page.cc",
       "partition_page.h",
       "partition_page_constants.h",
-      "partition_ref_count.h",
       "partition_root.cc",
       "partition_root.h",
       "partition_stats.cc",

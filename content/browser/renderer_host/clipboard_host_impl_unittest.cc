@@ -190,45 +190,51 @@ TEST_F(ClipboardHostImplTest, IsPasteAllowedRequest_AddCallback) {
 
 TEST_F(ClipboardHostImplTest, IsPasteAllowedRequest_Complete) {
   ClipboardHostImpl::IsPasteAllowedRequest request;
-  ClipboardHostImpl::ClipboardPasteData final_clipboard_paste_data =
-      ClipboardHostImpl::ClipboardPasteData("text", "image", {});
+  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data_1;
+  clipboard_paste_data_1.text = u"text";
+  clipboard_paste_data_1.png = {1, 2, 3, 4, 5};
+  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data_2;
+  clipboard_paste_data_2.text = u"other text";
+  clipboard_paste_data_2.png = {6, 7, 8, 9, 10};
 
   int count = 0;
 
   // Add a callback.  It should not fire right away.
   request.AddCallback(base::BindLambdaForTesting(
-      [&count, final_clipboard_paste_data](
+      [&count, clipboard_paste_data_1](
           std::optional<ClipboardHostImpl::ClipboardPasteData>
               clipboard_paste_data) {
         ++count;
-        ASSERT_EQ(clipboard_paste_data->text, final_clipboard_paste_data.text);
-        ASSERT_EQ(clipboard_paste_data->image,
-                  final_clipboard_paste_data.image);
+        ASSERT_EQ(clipboard_paste_data->text, clipboard_paste_data_1.text);
+        ASSERT_EQ(clipboard_paste_data->png, clipboard_paste_data_1.png);
       }));
   EXPECT_EQ(0, count);
 
   // Complete the request.  Callback should fire.  Whether paste is allowed
   // or not is not important.
-  request.Complete(final_clipboard_paste_data);
+  request.Complete(clipboard_paste_data_1);
   EXPECT_EQ(1, count);
 
-  // Adding a new callback after completion invokes it immediately.
+  // Add a second callback.  It should not fire right away.
   request.AddCallback(base::BindLambdaForTesting(
-      [&count, final_clipboard_paste_data](
+      [&count, clipboard_paste_data_2](
           std::optional<ClipboardHostImpl::ClipboardPasteData>
               clipboard_paste_data) {
         ++count;
-        ASSERT_EQ(clipboard_paste_data->text, final_clipboard_paste_data.text);
-        ASSERT_EQ(clipboard_paste_data->image,
-                  final_clipboard_paste_data.image);
+        ASSERT_EQ(clipboard_paste_data->text, clipboard_paste_data_2.text);
+        ASSERT_EQ(clipboard_paste_data->png, clipboard_paste_data_2.png);
       }));
+  EXPECT_EQ(1, count);
+
+  // Calling `Complete()` again will call the second callback.
+  request.Complete(clipboard_paste_data_2);
   EXPECT_EQ(2, count);
 }
 
 TEST_F(ClipboardHostImplTest, IsPasteAllowedRequest_IsObsolete) {
   ClipboardHostImpl::IsPasteAllowedRequest request;
-  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data =
-      ClipboardHostImpl::ClipboardPasteData("data", std::string(), {});
+  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.text = u"data";
 
   // A request is obsolete once it is too old and completed.
   // Whether paste is allowed or not is not important.
@@ -349,9 +355,9 @@ TEST_F(ClipboardHostImplScanTest, PerformPasteIfAllowed_External_Started) {
 
   // Completing the request invokes the callback.  The request will
   // remain pending until it is cleaned up.
-  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data =
-      ClipboardHostImpl::ClipboardPasteData(base::UTF16ToUTF8(kText),
-                                            std::string(), {});
+  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.text = kText;
+
   clipboard_host_impl()->CompleteRequest(
       ui::Clipboard::GetForCurrentThread()->GetSequenceNumber(
           ui::ClipboardBuffer::kCopyPaste),
@@ -368,8 +374,7 @@ TEST_F(ClipboardHostImplScanTest, PerformPasteIfAllowed_External_Started) {
 
 TEST_F(ClipboardHostImplScanTest, PasteIfPolicyAllowed_EmptyData) {
   int count = 0;
-  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data =
-      ClipboardHostImpl::ClipboardPasteData(std::string(), std::string(), {});
+  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data;
 
   // When data is empty, the callback is invoked right away.
   clipboard_host_impl()->PasteIfPolicyAllowed(
@@ -387,8 +392,8 @@ TEST_F(ClipboardHostImplScanTest, PasteIfPolicyAllowed_EmptyData) {
 
 TEST_F(ClipboardHostImplScanTest, PasteIfPolicyAllowed) {
   int count = 0;
-  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data =
-      ClipboardHostImpl::ClipboardPasteData("data", std::string(), {});
+  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.text = u"data";
 
   clipboard_host_impl()->PasteIfPolicyAllowed(
       ui::ClipboardBuffer::kCopyPaste, ui::ClipboardFormatType::PlainTextType(),
@@ -398,7 +403,7 @@ TEST_F(ClipboardHostImplScanTest, PasteIfPolicyAllowed) {
                        clipboard_paste_data) {
             ++count;
             ASSERT_TRUE(clipboard_paste_data);
-            ASSERT_EQ(clipboard_paste_data->text, "data");
+            ASSERT_EQ(clipboard_paste_data->text, u"data");
           }));
 
   EXPECT_EQ(
@@ -420,8 +425,8 @@ TEST_F(ClipboardHostImplScanTest, PasteIfPolicyAllowed) {
 
 TEST_F(ClipboardHostImplScanTest, CleanupObsoleteScanRequests) {
   ui::ClipboardSequenceNumberToken sequence_number;
-  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data =
-      ClipboardHostImpl::ClipboardPasteData("data", std::string(), {});
+  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.text = u"data";
 
   // Perform a request and complete it.
   clipboard_host_impl()->PasteIfPolicyAllowed(
@@ -466,8 +471,8 @@ TEST_F(ClipboardHostImplScanTest, MainFrameURL) {
                                 remote_grandchild.BindNewPipeAndPassReceiver());
 
   bool is_policy_callback_called = false;
-  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data =
-      ClipboardHostImpl::ClipboardPasteData("data", std::string(), {});
+  ClipboardHostImpl::ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.text = u"data";
   fake_clipboard_host_impl_grandchild->PasteIfPolicyAllowed(
       ui::ClipboardBuffer::kCopyPaste, ui::ClipboardFormatType::PlainTextType(),
       clipboard_paste_data,
@@ -477,7 +482,7 @@ TEST_F(ClipboardHostImplScanTest, MainFrameURL) {
                   clipboard_paste_data) {
             is_policy_callback_called = true;
             ASSERT_TRUE(clipboard_paste_data);
-            ASSERT_EQ(clipboard_paste_data->text, "data");
+            ASSERT_EQ(clipboard_paste_data->text, u"data");
           }));
   base::RunLoop().RunUntilIdle();
 

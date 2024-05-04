@@ -12,13 +12,17 @@
 #include "ash/picker/metrics/picker_feature_usage_metrics.h"
 #include "ash/picker/views/picker_view_delegate.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget_observer.h"
 
-class GURL;
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace ash {
 
@@ -41,6 +45,9 @@ class ASH_EXPORT PickerController
 
   // Whether the provided feature key for Picker can enable the feature.
   static bool IsFeatureKeyMatched();
+
+  // Time from when the insert is issued and when we give up inserting.
+  static constexpr base::TimeDelta kInsertMediaTimeout = base::Seconds(2);
 
   // Sets the `client` used by this class and the widget to communicate with the
   // browser. `client` may be set to null, which will close the Widget if it's
@@ -82,11 +89,8 @@ class ASH_EXPORT PickerController
   static void DisableFeatureKeyCheckForTesting();
 
  private:
-  // Downloads a gif from `url`. If the download is successful, encoded gif data
-  // is passed to `callback`. Otherwise, `callback` is run with an empty string.
-  void DownloadGifToString(
-      const GURL& url,
-      base::OnceCallback<void(const std::string&)> callback);
+  // Gets the SharedURLLoaderFactory to use for network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
 
   raw_ptr<PickerClient> client_ = nullptr;
   views::UniqueWidgetPtr widget_;

@@ -50,6 +50,8 @@ source_set("permissions") {
     "contexts/payment_handler_permission_context.h",
     "contexts/sensor_permission_context.cc",
     "contexts/sensor_permission_context.h",
+    "contexts/speaker_selection_permission_context.cc",
+    "contexts/speaker_selection_permission_context.h",
     "contexts/wake_lock_permission_context.cc",
     "contexts/wake_lock_permission_context.h",
     "contexts/webxr_permission_context.cc",
@@ -132,7 +134,6 @@ source_set("permissions") {
     "//services/metrics/public/cpp:ukm_builders",
     "//sql",
     "//third_party/blink/public/common",
-    "//third_party/sqlite",
     "//ui/base",
     "//ui/strings:ui_strings_grit",
     "//url",
@@ -319,7 +320,6 @@ source_set("unit_tests") {
     "//sql",
     "//sql:test_support",
     "//testing/gtest",
-    "//third_party/sqlite",
     "//url",
   ]
   if (is_android) {

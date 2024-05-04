@@ -55,6 +55,17 @@
         "is_try_builder": true,
         "is_cq_builder": true
     },
+    "linux-wpt-chromium-rel": {
+        "main": "tryserver.blink",
+        "port_name": "chrome",
+        "specifiers": ["Chrome", "Release"],
+        "is_try_builder": true,
+        "steps": {
+            "chrome_wpt_tests (with patch)": {
+                "product": "chrome"
+            }
+        }
+    },
     "linux-blink-rel": {
         "main": "tryserver.blink",
         "port_name": "linux",
@@ -167,6 +178,26 @@
         },
         "is_try_builder": true
     },
+    "mac14-blink-rel": {
+        "main": "tryserver.blink",
+        "port_name": "mac-mac14",
+        "specifiers": ["Mac14", "Release"],
+        "steps": {
+            "blink_web_tests (with patch)": {},
+            "blink_wpt_tests (with patch)": {}
+        },
+        "is_try_builder": true
+    },
+    "mac14.arm64-blink-rel": {
+        "main": "tryserver.blink",
+        "port_name": "mac-mac14-arm64",
+        "specifiers": ["Mac14-arm64", "Release"],
+        "steps": {
+            "blink_web_tests (with patch)": {},
+            "blink_wpt_tests (with patch)": {}
+        },
+        "is_try_builder": true
+    },
     "win10.20h2-blink-rel": {
         "main": "tryserver.blink",
         "port_name": "win-win10.20h2",
@@ -207,6 +238,9 @@
         "steps": {
             "blink_web_tests (with patch)": {},
             "blink_wpt_tests (with patch)": {},
+            "chrome_wpt_tests (with patch)": {
+                "product": "chrome"
+            },
             "high_dpi_blink_web_tests (with patch)": {
                 "flag_specific": "highdpi"
             },
@@ -247,14 +281,5 @@
         },
         "is_try_builder": true,
         "is_cq_builder":true
-    },
-    "android-chrome-pie-x86-wpt-android-specific": {
-        "main": "tryserver.blink",
-        "port_name": "webview",
-        "specifiers": ["Webview", "Release"],
-        "steps": {
-            "system_webview_wpt": {}
-        },
-        "is_try_builder": true
     }
 }

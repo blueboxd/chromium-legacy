@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Mulai penelusuran di tab Chromium baru.</translation>
 <translation id="1431818719585918472">Izinkan Chromium mengunci tab Samaran Anda.</translation>
 <translation id="1472013873724362412">Akun Anda tidak berfungsi di Chromium. Harap hubungi administrator domain atau gunakan Akun Google biasa untuk masuk.</translation>
+<translation id="1503199973012840174">Chromium Anda belum diupdate. Update agar tetap aman.</translation>
 <translation id="1507010443238049608">Bantu Sempurnakan Fitur dan Performa Chromium</translation>
 <translation id="1513122820609681462">Setel Chromium Sebagai Browser Default</translation>
 <translation id="1531155317299575425">Menampilkan perintah untuk login ke Chromium.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Alamat ini disimpan ke Chromium untuk saat ini. Untuk menggunakannya di berbagai produk Google, simpan di Akun Google Anda, <ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">Artinya, Chromium akan selalu meminta situs desktop.</translation>
 <translation id="2313870531055795960">Memeriksa kesesuaian URL dengan daftar situs tidak aman yang disimpan di Chromium. Jika situs berusaha mencuri sandi Anda, atau jika Anda mendownload file berbahaya, Chromium mungkin juga mengirim URL, termasuk bit konten halaman, ke Safe Browsing.</translation>
+<translation id="231828342043114302">Untuk menerima konten yang dipersonalisasi berdasarkan minat Anda, login ke Chromium.</translation>
 <translation id="2374627437126809292">Chromium menggunakan Google Maps untuk memberikan rute dan info lokal di alamat yang terdeteksi.</translation>
 <translation id="2386292341327187942">Di kotak Widget Penelusuran, masukkan Chromium</translation>
 <translation id="2426113998523353159">Organisasi mengharuskan Anda login untuk menggunakan Chromium.</translation>
@@ -78,7 +80,6 @@ Untuk setelan lainnya yang menggunakan data guna meningkatkan pengalaman Chromiu
 <translation id="3219277919172823720">Telusuri dengan Suara di Chromium</translation>
 <translation id="3228349498066165585">Beberapa data Chromium Anda belum disimpan di Akun Google Anda.
         Coba tunggu beberapa menit sebelum logout. Jika Anda logout sekarang, data ini akan dihapus.</translation>
-<translation id="3256316712990552818">Disalin ke Chromium</translation>
 <translation id="328933489847748230">{count,plural, =1{Saat ini menampilkan 1 jendela Chromium}other{Saat ini menampilkan {count} jendela Chromium}}</translation>
 <translation id="3344973607274501920">Chromium tidak dapat memeriksa sandi Anda. Coba periksa koneksi internet Anda.</translation>
 <translation id="3366305173356742781">Data Chromium di akun Anda</translation>
@@ -313,7 +314,6 @@ Data Anda dienkripsi dengan frasa sandi pada <ph name="TIME" />. Masukkan frasa 
 <translation id="9059693977935746710">Anda tidak perlu mengingat sandi ini. Sandi akan disimpan ke Pengelola Sandi untuk <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">Chromium terlalu lawas</translation>
 <translation id="9110075932708282655">Gunakan Chromium secara Default</translation>
-<translation id="9137114218472648150">Chromium belum diupdate, update ke versi terbaru agar tetap aman.</translation>
 <translation id="921174536258924340">Chromium tidak dapat memeriksa semua sandi. Coba lagi besok atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="971488683725792095">Otomatis gunakan Chromium saat Anda mengetuk link di pesan, dokumen, dan aplikasi lainnya.</translation>
 <translation id="981812233959540767">Mainkan Game Dino Chromium</translation>

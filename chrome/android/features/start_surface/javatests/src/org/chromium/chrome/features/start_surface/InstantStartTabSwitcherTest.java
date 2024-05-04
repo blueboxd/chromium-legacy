@@ -52,6 +52,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
@@ -192,7 +193,7 @@ public class InstantStartTabSwitcherTest {
     })
     // TODO(https://crbug.com/1500080): Fix this test with "start surface refactor" enabled. Hub
     // is disabled because it requires "start surface refactor" to be enabled.
-    @DisableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR, ChromeFeatureList.ANDROID_HUB})
+    @DisabledTest(message = "crbug.com/1500080")
     public void testScrollToSelectedTab() throws Exception {
         StartSurfaceTestUtils.createTabStatesAndMetadataFile(
                 new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, null, 5);
@@ -280,18 +281,6 @@ public class InstantStartTabSwitcherTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
-        // After the Start surface refactoring is enabled, the StartSurfaceState.SHOWN_TABSWITCHER
-        // will go away.
-        if (!TabUiTestHelper.getIsStartSurfaceRefactorEnabledFromUIThread(cta)) {
-            StartSurfaceCoordinator startSurfaceCoordinator =
-                    StartSurfaceTestUtils.getStartSurfaceFromUIThread(cta);
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> {
-                        Assert.assertEquals(
-                                startSurfaceCoordinator.getStartSurfaceState(),
-                                StartSurfaceState.SHOWN_TABSWITCHER);
-                    });
-        }
     }
 
     @Test

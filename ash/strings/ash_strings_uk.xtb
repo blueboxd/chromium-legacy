@@ -18,6 +18,7 @@
 <translation id="1056775291175587022">Немає мереж</translation>
 <translation id="1056898198331236512">Застереження</translation>
 <translation id="1058009965971887428">Надіслати відгук</translation>
+<translation id="1059120031266247284">Поділилися з вами</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1062407476771304334">Замінити</translation>
 <translation id="1073899992769346247">Замініть або зарядіть акумулятор</translation>
@@ -100,6 +101,7 @@
 <translation id="1312604459020188865">Рівень сигналу – <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Завжди показувати полицю</translation>
 <translation id="132346741904777634">Зображення з камери закріплено у верхньому лівому куті, що конфліктує із системною платформою.</translation>
+<translation id="132415371743256095">Закрити робочий стіл "<ph name="DESK_NAME" />" і всі його вікна</translation>
 <translation id="1333308631814936910">Дисплей "<ph name="DISPLAY_NAME" />" підключено</translation>
 <translation id="1340378040547539434">Віддалити контент на сторінці</translation>
 <translation id="1341651618736211726">Додаткове меню</translation>
@@ -171,7 +173,6 @@
 <translation id="1647986356840967552">Попередня сторінка</translation>
 <translation id="1651914502370159744">Відкрити сторінку "Історія"</translation>
 <translation id="1654477262762802994">Ввести голосовий запит</translation>
-<translation id="1662667383227796099">На Панелі запуску можна шукати файли, додатки тощо, а також отримати відповіді на запитання про Chromebook.</translation>
 <translation id="1668469839109562275">Вбудована мережа VPN</translation>
 <translation id="1675844249244994876">Оновити вікно праворуч</translation>
 <translation id="1677472565718498478">Залишилося <ph name="TIME" /></translation>
@@ -328,9 +329,11 @@
 <translation id="2369165858548251131">Як сказати "привіт" китайською</translation>
 <translation id="2382875860893882175">Трансляцію зараз призупинено. Ви можете будь-коли продовжити або припинити її.</translation>
 <translation id="2386292613071805067">Вибрати все на сторінці</translation>
+<translation id="2392659840443812875">Немає точок доступу. Переконайтеся, що ваш пристрій поблизу, а Bluetooth увімкнено.</translation>
 <translation id="2397416548179033562">Показати меню Chrome</translation>
 <translation id="240006516586367791">Елементи керування медіа</translation>
 <translation id="2402411679569069051">Щоб розблокувати Chromebook, скористайтеся відбитком пальця або розблокуйте телефон</translation>
+<translation id="240545663114741956">Щоб вийти з облікового запису, двічі натисніть комбінацію клавіш <ph name="ACCELERATOR" />.</translation>
 <translation id="2405664212338326887">Не підключено</translation>
 <translation id="2408955596600435184">Введіть PIN-код</translation>
 <translation id="2412593942846481727">Доступне оновлення</translation>
@@ -352,7 +355,9 @@
 <translation id="2478076885740497414">Установити додаток</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
 <translation id="2484513351006226581">Натисніть комбінацію клавіш <ph name="KEYBOARD_SHORTCUT" />, щоб змінити розкладку клавіатури.</translation>
+<translation id="2486214324139475545">Попередній огляд робочого столу "<ph name="DESK_NAME" />". Він активний.</translation>
 <translation id="2487915095798731898">Приєднатися</translation>
+<translation id="2499445554382787206">Меню профілю робочого столу (<ph name="DESK_NAME" />).</translation>
 <translation id="2501920221385095727">Залипання клавіш</translation>
 <translation id="2504454902900101003">Відхилити налаштування перегляду нещодавніх фотографій, медіафайлів і сповіщень на телефоні</translation>
 <translation id="2509468283778169019">Режим CAPS LOCK увімкнено</translation>
@@ -407,7 +412,7 @@
 <translation id="2726420622004325180">Щоб увімкнути функцію "Точка доступу", на телефоні має бути мобільний Інтернет</translation>
 <translation id="2727175239389218057">Відповісти</translation>
 <translation id="2727977024730340865">Підключено до зарядного пристрою низької потужності. Акумулятор може заряджатися неналежним чином.</translation>
-<translation id="2744221223678373668">Спільні</translation>
+<translation id="2743387203779672305">Копіювати в буфер</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2750932254614666392">"Видалити"</translation>
 <translation id="2750941250130734256">Активне вікно відкріплено.</translation>
@@ -461,7 +466,6 @@
 <translation id="2965227184985674128">Надати доступ до мікрофона?</translation>
 <translation id="296762781903199866">Не вдалося завантажити файли живих субтитрів для такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">установлювати додатки, розширення й теми</translation>
-<translation id="2977098646659697261">Закріплені й відкриті додатки відображаються на панелі запуску. Щоб закріпити додаток на цій панелі, натисніть його правою кнопкою миші або торкніться сенсорної панелі двома пальцями.</translation>
 <translation id="2977598380246111477">Наступна цифра</translation>
 <translation id="2985148236010982088">Показати всі додатки</translation>
 <translation id="2992327365391326550">Кнопку мікрофона пристрою вимкнено.</translation>
@@ -600,6 +604,7 @@
 <translation id="3509391053705095206">Не вдається знайти телефон. Переконайтеся, що на ньому ввімкнено Bluetooth.</translation>
 <translation id="3510164367642747937">Підсвічувати курсор миші</translation>
 <translation id="3513798432020909783">Обліковим записом керує <ph name="MANAGER_EMAIL" /></translation>
+<translation id="3517037892157925473">Завдання востаннє оновлено <ph name="DATE" /> о <ph name="TIME" />.</translation>
 <translation id="352245152354538528">{0,plural, =1{Оновіть пристрій протягом 1 хвилини}one{Оновіть пристрій протягом # хвилини}few{Оновіть пристрій протягом # хвилин}many{Оновіть пристрій протягом # хвилин}other{Оновіть пристрій протягом # хвилини}}</translation>
 <translation id="3522979239100719575">Пошук доступних профілів. Це може зайняти кілька хвилин.</translation>
 <translation id="3526440770046466733">Відкрити посилання на новій вкладці й залишитися на поточній вкладці</translation>
@@ -623,6 +628,7 @@
 <translation id="3577473026931028326">Сталася помилка. Повторіть спробу.</translation>
 <translation id="3580650856351781466">Завантаження файлів живих субтитрів</translation>
 <translation id="3585296979871889131">Переглядайте нещодавні фотографії, медіафайли, сповіщення й додатки на телефоні</translation>
+<translation id="358832729276157756">Клавіша ExpressKey 1</translation>
 <translation id="3590441166907930941">Бічна кнопка</translation>
 <translation id="3593039967545720377">Щоб переглянути історію буфера обміну, натисніть клавіші <ph name="SHORTCUT_KEY_NAME" /> + V. Щоб почати, скопіюйте елемент.</translation>
 <translation id="3593646411856133110">Щоб переглянути відкриті додатки, проведіть пальцем угору й утримуйте</translation>
@@ -639,6 +645,7 @@
 <translation id="3621202678540785336">Вхід</translation>
 <translation id="3621712662352432595">Налаштування звуку</translation>
 <translation id="3626281679859535460">Яскравість</translation>
+<translation id="3628323833346754646">Передня кнопка</translation>
 <translation id="3630697955794050612">вимкнено</translation>
 <translation id="3631369015426612114">Дозволити сповіщення з перелічених нижче джерел</translation>
 <translation id="3633097874324966332">Відкрийте налаштування Bluetooth, щоб створити пару з пристроєм</translation>
@@ -767,7 +774,6 @@
 <translation id="4123259114412175274">Щоб розблокувати Chromebook, переконайтеся, що на телефоні ввімкнено Bluetooth</translation>
 <translation id="4125970834901680537">Не можна транслювати додатки в режимі планшета. Повторіть спробу в режимі ноутбука.</translation>
 <translation id="4131973331381812765">Температура: <ph name="TEMPERATURE" /> °C – поточна швидкість: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> ГГц</translation>
-<translation id="4132502210362661715">Chromebook має вбудовані додатки, які дають змогу виконувати різноманітні завдання. Їх можна знайти на Панелі запуску.</translation>
 <translation id="4136724716305260864">Увімкнено до сходу сонця</translation>
 <translation id="4141710407113804517"><ph name="LAUNCHER_KEY_NAME" /> + стрілка вправо</translation>
 <translation id="4146671046252289537">Переміститися в кінець наступного слова</translation>
@@ -799,7 +805,6 @@
 <translation id="4221957499226645091"><ph name="APP_NAME" />, установлений додаток, призупинено</translation>
 <translation id="4228078597006700451">Елементи керування не налаштовано</translation>
 <translation id="4231053948789591973">Трансляцію зараз призупинено. Ви можете будь-коли відновити або припинити її.</translation>
-<translation id="423685346499232137">Наразі не вдається скопіювати або вставити контент</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4240486403425279990">Режим огляду</translation>
 <translation id="4242533952199664413">Відкрити налаштування</translation>
@@ -811,7 +816,6 @@
 <translation id="4269883910223712419">Адміністратор цього пристрою може:</translation>
 <translation id="4274537685965975248">Комбінацію клавіш Ctrl + Alt + стрілка вниз змінено. Щоб скористатися клавішею End, натисніть клавішу <ph name="LAUNCHER_KEY_NAME" /> + стрілку вправо.</translation>
 <translation id="4275283744500212192">Відкрити варіанти макета вікна</translation>
-<translation id="4278138729651139331">Chromebook можна персоналізувати в налаштуваннях, наприклад змінити фоновий малюнок або встановити заставку.</translation>
 <translation id="4279490309300973883">Дзеркальне відображення</translation>
 <translation id="4280601795273309128">Система безпеки більше не оновлюватиметься. Використовуйте новіший пристрій.</translation>
 <translation id="4283888303416325161">Для додаткового захисту введіть пароль</translation>
@@ -906,6 +910,7 @@
 <translation id="4642092649622328492">Зробити частковий знімок екрана</translation>
 <translation id="4644727592819780893">Область замала для попереднього перегляду зображення з камери</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, рекомендований додаток</translation>
+<translation id="4654916960643280876"><ph name="PROFILE_NAME" /> <ph name="EMAIL" />, прапорець поставлено.</translation>
 <translation id="4657775630156561295">Наведену нижче підказку буде назавжди вилучено з історії у вашому обліковому записі:
 
 <ph name="QUERY" /></translation>
@@ -1032,6 +1037,7 @@
 <translation id="5111930673176965299">Розмиття фону</translation>
 <translation id="5117590920725113268">Показати наступний місяць</translation>
 <translation id="5121628974188116412">Перейти вниз сторінки</translation>
+<translation id="5122517996953421795">Попередній огляд робочого столу "<ph name="DESK_NAME" />". Він неактивний.</translation>
 <translation id="5136175204352732067">Під’єднано іншу клавіатуру</translation>
 <translation id="5147567197700016471">Розблоковано</translation>
 <translation id="5150070631291639005">Налаштування конфіденційності</translation>
@@ -1054,6 +1060,7 @@
 <translation id="5218064144558110424">Позначити як невиконане</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5229343007215035173">Увімкнути або вимкнути екран конфіденційності</translation>
+<translation id="5230516054153933099">Вікно</translation>
 <translation id="5234764350956374838">Закрити</translation>
 <translation id="523505283826916779">Налаштування доступності</translation>
 <translation id="5238719049014159442">Відкрити або закрити панель запуску</translation>
@@ -1079,6 +1086,7 @@
 <translation id="5313326810920013265">Налаштування Bluetooth</translation>
 <translation id="5314219114274263156">Запис екрана зроблено</translation>
 <translation id="5314489738835854379">Переходити назад між вікнами</translation>
+<translation id="5315931444962548795">Увімкніть Bluetooth, щоб знайти точки доступу поблизу</translation>
 <translation id="5316716239522500219">Дбулювати зображення на моніторах</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5319712128756744240">Підключити новий пристрій</translation>
@@ -1123,7 +1131,6 @@
 <translation id="550391772491508736">Відновити трансляцію</translation>
 <translation id="5506975627792768506">Увімкнути або вимкнути лупу</translation>
 <translation id="5512042095225963688">Видалити попереднє слово</translation>
-<translation id="5518068085000130971">Ви ознайомилися з основною інформацією. У вбудованому додатку Можливості можна знайти поради щодо початку роботи, рекомендовані додатки, спеціальні пропозиції, а також дізнатися більше про найновіші функції Chromebook.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">Ваш адміністратор вилучив усі профілі eSIM. Щоб дізнатися більше, зверніться до нього.</translation>
 <translation id="5520909879404821039">Як сказати привіт французькою</translation>
@@ -1133,6 +1140,7 @@
 <translation id="5536723544185013515">Нещодавні додатки: щоб перейти до нещодавніх додатків, використовуйте клавіші зі стрілками вліво або вправо</translation>
 <translation id="553675580533261935">Завершення сеансу</translation>
 <translation id="5537725057119320332">Трансляція</translation>
+<translation id="554017492391497564">Не вдалося позначити як виконане.</translation>
 <translation id="5546397813406633847">Відновити пароль</translation>
 <translation id="554893713779400387">Перемкнути диктування</translation>
 <translation id="5550417424894892620">Перетягніть файли на робочий стіл, щоб додати їх у сервіс <ph name="HOLDING_SPACE_TITLE" />. Ви не можете додавати файли на робочий стіл.</translation>
@@ -1277,6 +1285,7 @@
 <translation id="6052614013050385269">Відкрити контекстне меню посилання</translation>
 <translation id="6054305421211936131">Увійти за допомогою розумної картки</translation>
 <translation id="6059276912018042191">Останні вкладки Chrome</translation>
+<translation id="606147842285839995">Клавіша ExpressKey 3</translation>
 <translation id="6062360702481658777">Ви автоматично вийдете за <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064463340679478396">Більше не використовувати цей файл</translation>
 <translation id="6068258534237496331">Елементи керування відеодзвінками</translation>
@@ -1326,6 +1335,7 @@
 <translation id="6237231532760393653">1X</translation>
 <translation id="62380141479352646">Низький заряд акумулятора. Режим енергозбереження ввімкнено.</translation>
 <translation id="6247728804802644171">Відкрити сповіщення</translation>
+<translation id="6249795363855770621">Не вдалося позначити як виконане. Повторіть спробу, коли інтернет-з’єднання відновиться.</translation>
 <translation id="6254629735336163724">Заблоковано в горизонтальному положенні</translation>
 <translation id="6259254695169772643">Вибирайте елементи за допомогою стилуса</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: активація…</translation>
@@ -1338,6 +1348,7 @@
 <translation id="6309219492973062892">Натиснути значки 1–8 на панелі запуску</translation>
 <translation id="6315170314923504164">Голос</translation>
 <translation id="6319058840130157106">Перейти назад між нижнім правим кутом, панеллю запуску, адресним рядком, панеллю закладок, відкритим веб-сайтом і завантаженнями</translation>
+<translation id="6319503618073410818">Переглянути деталі у вебпереглядачі</translation>
 <translation id="6324916366299863871">Змінити ярлик</translation>
 <translation id="6330012934079202188">Показано вікна всіх робочих столів. Щоб показати вікна поточного робочого столу, натисніть клавішу зі стрілкою вгору.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> – сеанс, яким керує <ph name="MANAGER" /></translation>
@@ -1432,6 +1443,7 @@
 <translation id="6683022854667115063">Навушники</translation>
 <translation id="6686023075541098243">Налаштувати перегляд сповіщень на телефоні</translation>
 <translation id="6696025732084565524">Змінну клавіатуру потрібно оновити</translation>
+<translation id="6697913454192220372">Додати новий робочий стіл</translation>
 <translation id="6700713906295497288">Кнопка меню IME</translation>
 <translation id="6707693040195709527">Кінцевий термін переходу пристрою до попередньої версії минув</translation>
 <translation id="6710213216561001401">Назад</translation>
@@ -1484,6 +1496,7 @@
 <translation id="6896758677409633944">Копіювати</translation>
 <translation id="6912841030378044227">Виділити адресний рядок</translation>
 <translation id="6912901278692845878">Короткий огляд</translation>
+<translation id="6917259695595127329">Завдання востаннє оновлено о <ph name="TIME" />.</translation>
 <translation id="6919251195245069855">Не вдається розпізнати розумну картку. Повторіть спробу.</translation>
 <translation id="692135145298539227">видалити</translation>
 <translation id="6929081673585394903">Показати елементи керування</translation>
@@ -1503,7 +1516,6 @@
 <translation id="6981982820502123353">Доступність</translation>
 <translation id="698231206551913481">Якщо видалити цього користувача, усі файли та локальні дані, зв’язані з ним, буде видалено назавжди.</translation>
 <translation id="6984028004251196682">Дисплей "<ph name="DISPLAY_NAME" />" не підтримує роздільну здатність <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Гц), тому вибрано <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" /> Гц). Щоб зберегти зміни, натисніть "Підтвердити". Попередні налаштування відновляться через <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="6989752354829085073">Ознайомтеся з коротким оглядом Chromebook. Щоб почати роботу, виконайте 6 кроків.</translation>
 <translation id="7000027735917578303">Налаштування Windows і робочих столів</translation>
 <translation id="7004910047186208204">Підключіться до мобільного Інтернету</translation>
 <translation id="7005239792648594238">Щоб почати, відкрийте додаток</translation>
@@ -1557,18 +1569,19 @@
 <translation id="7229029500464092426">Обсяг використаної пам’яті: <ph name="AVAILABLE_MEMORY" /> | Усього: <ph name="TOTAL_MEMORY" /></translation>
 <translation id="7244725679040769470">Залишилось <ph name="PERCENTAGE" />% заряду акумулятора. Підключіть пристрій до джерела живлення.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Щоб оновлення почали діяти, Chromebook потрібно перезапустити. Це може зайняти до 1 хвилини.</translation>
+<translation id="7256057185598509352">Клавіша ExpressKey 2</translation>
 <translation id="7256634071279256947">Мікрофон на задній панелі</translation>
 <translation id="7258828758145722155">Змінено вчора</translation>
 <translation id="726276584504105859">Перетягніть сюди, щоб розділити екран</translation>
 <translation id="7262906531272962081">Створити нагадування</translation>
 <translation id="7278787617901301220"><ph name="LAUNCHER_KEY_NAME" /> + backspace</translation>
 <translation id="7285232777292757180">Робіть знімки екрана за допомогою спеціального інструмента у швидких налаштуваннях</translation>
+<translation id="7301826272005790482">Закрити пропозиції вікон</translation>
 <translation id="7302889331339392448">Живі субтитри вимкнено.</translation>
 <translation id="7303365578352795231">Відповідь на іншому пристрої.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7312210124139670355">Адміністратор скидає вашу eSIM-карту. Це може зайняти кілька хвилин.</translation>
 <translation id="7313193732017069507">Розгорнути вікно камери</translation>
-<translation id="7316261577130609484">Додати нове завдання</translation>
 <translation id="7330397557116570022">Щоб використати функцію "Диктування", перейдіть у текстове поле</translation>
 <translation id="7331646370422660166">alt + стрілка вниз</translation>
 <translation id="7340731148882810149">Меню автоматичних кліків</translation>
@@ -1633,7 +1646,6 @@
 <translation id="7557816257942363084">Додаток <ph name="APP_NAME" /> використовує ваш мікрофон</translation>
 <translation id="7561982940498449837">Закрити меню</translation>
 <translation id="7564874036684306347">Переміщення вікон на інший робочий стіл може спричинити неочікувану поведінку. Нові сповіщення та вікна можуть розділятися між робочими столами.</translation>
-<translation id="7567950130372125778">Вітаємо! Chromebook трохи відрізняється.</translation>
 <translation id="7569509451529460200">Шрифт Брайля та ChromeVox увімкнено</translation>
 <translation id="7569886975397378678">Відхилити налаштування перегляду сповіщень і додатків на телефоні</translation>
 <translation id="7571361473021531288">Рівень заряду акумулятора: <ph name="BATTERY_PERCENTAGE" />% | До розрядження залишилося <ph name="TIME" /></translation>
@@ -1683,6 +1695,7 @@
 <translation id="7742327441377685481">Немає сповіщень</translation>
 <translation id="7748275671948949022">Виділити кнопку запуску на панелі</translation>
 <translation id="7749443890790263709">Ви додали максимальну кількість робочих столів.</translation>
+<translation id="7749958366403230681">Клавіша ExpressKey 4</translation>
 <translation id="776344839111254542">Натисніть, щоб переглянути деталі оновлення</translation>
 <translation id="7768784765476638775">Читання з екрана</translation>
 <translation id="7769299611924763557">Зображення GIF буде готове незабаром</translation>
@@ -1772,6 +1785,7 @@
 <translation id="8054466585765276473">Обчислення часу роботи акумулятора.</translation>
 <translation id="8079538659226626406">Показ екрана</translation>
 <translation id="8083540854303889870">Збережено на потім</translation>
+<translation id="8088141034189573826">Натисніть клавішу Tab, щоб переглянути інші опції. Щоб переглянути всі робочі столи, використовуйте стрілки вліво й управо.</translation>
 <translation id="8091153018031979607">Початок о <ph name="START_TIME" /> <ph name="DAYS_ELAPSED" /></translation>
 <translation id="8091387634532529612">Автоматичні оновлення</translation>
 <translation id="8092380135549145188">Елементи керування прокручуванням</translation>
@@ -1879,7 +1893,6 @@
 <translation id="8553395910833293175">Уже призначено для всіх робочих столів.</translation>
 <translation id="8555757996376137129">Видалити поточний робочий стіл</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> радить оновити пристрій <ph name="DEVICE_TYPE" /></translation>
-<translation id="8563862697512465947">Налаштування сповіщення</translation>
 <translation id="8569751806372591456">Спробуйте ввести наведені нижче запити</translation>
 <translation id="857201607579416096">Меню переміщено в нижній правий кут екрана.</translation>
 <translation id="8581946341807941670">Натисніть <ph name="MODIFIER_1" /><ph name="MODIFIER_2" />, а потім – посилання</translation>
@@ -1969,6 +1982,7 @@
 <translation id="8936501819958976551">деактивовано</translation>
 <translation id="8938800817013097409">Пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
 <translation id="8940956008527784070">Низький заряд акумулятора (<ph name="PERCENTAGE" />%)</translation>
+<translation id="894774083269346314"><ph name="PROFILE_NAME" /> (<ph name="EMAIL" />), прапорець не поставлено.</translation>
 <translation id="8949925099261528566">Підключено, але немає доступу до Інтернету</translation>
 <translation id="8951539504029375108">З вашим Chromebook сумісні лише схвалені пристрої Thunderbolt</translation>
 <translation id="8964525410783593407">1 година</translation>
@@ -2008,6 +2022,7 @@
 <translation id="9098969848082897657">Вимкнути звук на телефоні</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> або <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9126339866969410112">Відмінити останню дію</translation>
+<translation id="9129245940793250979">Задня кнопка</translation>
 <translation id="9133335900048457298">Не вдається записати захищений контент</translation>
 <translation id="9139720510312328767">Видалити наступну літеру</translation>
 <translation id="9151906066336345901">end</translation>

@@ -403,7 +403,8 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
             change.cookie, url_, site_for_cookies_, top_frame_origin_,
             restricted_cookie_manager_->first_party_set_metadata_,
             restricted_cookie_manager_->GetCookieSettingOverrides(
-                has_storage_access_, /*is_ad_tagged=*/false),
+                has_storage_access_, /*is_ad_tagged=*/false,
+                /*force_disable_third_party_cookies=*/false),
             /*cookie_inclusion_status=*/nullptr)) {
       return;
     }
@@ -487,19 +488,6 @@ RestrictedCookieManager::RestrictedCookieManager(
   if (role == mojom::RestrictedCookieManagerRole::SCRIPT) {
       CHECK(origin_.IsSameOriginWith(isolation_info_.frame_origin().value()));
   }
-
-  // Create a shared memory region and immediately populate it.
-  mapped_region_ =
-      base::ReadOnlySharedMemoryRegion::Create(sizeof(SharedVersionType));
-  CHECK(mapped_region_.IsValid());
-  new (mapped_region_.mapping.memory()) SharedVersionType;
-
-  // Clients will use 0 as special value to indicate the version in the absence
-  // of shared memory communication. Make sure the version starts at 1 to avoid
-  // any confusion. Relaxed memory ordering because this is the only memory
-  // shared.
-  mapped_region_.mapping.GetMemoryAs<SharedVersionType>()->store(
-      mojom::kInitialCookieVersion, std::memory_order_relaxed);
 }
 
 RestrictedCookieManager::~RestrictedCookieManager() {
@@ -514,29 +502,15 @@ RestrictedCookieManager::~RestrictedCookieManager() {
   }
 }
 
-void RestrictedCookieManager::IncrementSharedVersion() {
-  CHECK(mapped_region_.IsValid());
-  // Relaxed memory order since only the version is stored within the region
-  // and as such is the only data shared between processes. There is no
-  // re-ordering to worry about.
-  mapped_region_.mapping.GetMemoryAs<SharedVersionType>()->fetch_add(
-      1, std::memory_order_relaxed);
-}
-
-uint64_t RestrictedCookieManager::GetSharedVersion() {
-  CHECK(mapped_region_.IsValid());
-  // Relaxed memory order since only the version is stored within the region
-  // and as such is the only data shared between processes. There is no
-  // re-ordering to worry about.
-  return mapped_region_.mapping.GetMemoryAs<SharedVersionType>()->load(
-      std::memory_order_relaxed);
-}
-
 void RestrictedCookieManager::OnCookieSettingsChanged() {
   // Cookie settings changes can change cookie values as seen by content.
   // Increment the shared version to make sure it issues a full cookie string
   // request next time around.
   IncrementSharedVersion();
+}
+
+void RestrictedCookieManager::IncrementSharedVersion() {
+  shared_memory_version_controller_.Increment();
 }
 
 void RestrictedCookieManager::SetShouldDeDupCookieAccessDetailsForTesting(
@@ -583,6 +557,7 @@ void RestrictedCookieManager::GetAllForUrl(
     bool has_storage_access,
     mojom::CookieManagerGetOptionsPtr options,
     bool is_ad_tagged,
+    bool force_disable_third_party_cookies,
     GetAllForUrlCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -607,7 +582,8 @@ void RestrictedCookieManager::GetAllForUrl(
           top_frame_origin,
           isolation_info_.top_frame_origin().value_or(url::Origin()),
           is_ad_tagged,
-          GetCookieSettingOverrides(has_storage_access, is_ad_tagged),
+          GetCookieSettingOverrides(has_storage_access, is_ad_tagged,
+                                    force_disable_third_party_cookies),
           net_options, std::move(options), std::move(callback)));
 }
 
@@ -750,7 +726,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
   bool blocked = !cookie_settings_->IsCookieAccessible(
       cookie, url, site_for_cookies, top_frame_origin,
       first_party_set_metadata_,
-      GetCookieSettingOverrides(has_storage_access, /*is_ad_tagged=*/false),
+      GetCookieSettingOverrides(has_storage_access, /*is_ad_tagged=*/false,
+                                /*force_disable_third_party_cookies=*/false),
       &status);
 
   if (blocked) {
@@ -775,7 +752,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
   url::Origin isolated_top_frame_origin =
       isolation_info_.top_frame_origin().value_or(url::Origin());
   net::CookieSettingOverrides cookie_setting_overrides =
-      GetCookieSettingOverrides(has_storage_access, /*is_ad_tagged=*/false);
+      GetCookieSettingOverrides(has_storage_access, /*is_ad_tagged=*/false,
+                                /*force_disable_third_party_cookies=*/false);
   if (!status.IsInclude()) {
     if (cookie_observer_) {
       std::vector<network::mojom::CookieOrLineWithAccessResultPtr>
@@ -981,8 +959,10 @@ void RestrictedCookieManager::SetCookieFromString(
           site_for_cookies, std::move(result_with_access_result), std::nullopt,
           /*count=*/1,
           /*is_ad_tagged=*/false,
-          GetCookieSettingOverrides(has_storage_access,
-                                    /*is_ad_tagged=*/false)));
+          GetCookieSettingOverrides(
+              has_storage_access,
+              /*is_ad_tagged=*/false,
+              /*force_disable_third_party_cookies=*/false)));
     }
     return;
   }
@@ -1001,6 +981,7 @@ void RestrictedCookieManager::GetCookiesString(
     bool has_storage_access,
     bool get_version_shared_memory,
     bool is_ad_tagged,
+    bool force_disable_third_party_cookies,
     GetCookiesStringCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Checks done by GetAllForUrl
@@ -1011,7 +992,8 @@ void RestrictedCookieManager::GetCookiesString(
 
   base::ReadOnlySharedMemoryRegion shared_memory_region;
   if (get_version_shared_memory) {
-    shared_memory_region = mapped_region_.region.Duplicate();
+    shared_memory_region =
+        shared_memory_version_controller_.GetSharedMemoryRegion();
 
     // Clients can change their URL. If that happens the subscription needs to
     // mirror that to get the correct updates.
@@ -1036,8 +1018,9 @@ void RestrictedCookieManager::GetCookiesString(
   // mechanism to avoid unnecessary IPCs. When the version is stale an
   // additional IPC will take place which is the way it would always be if there
   // was not shared memory versioning.
-  auto bound_callback = base::BindOnce(std::move(callback), GetSharedVersion(),
-                                       std::move(shared_memory_region));
+  auto bound_callback = base::BindOnce(
+      std::move(callback), shared_memory_version_controller_.GetSharedVersion(),
+      std::move(shared_memory_region));
 
   // Match everything.
   auto match_options = mojom::CookieManagerGetOptions::New();
@@ -1045,6 +1028,7 @@ void RestrictedCookieManager::GetCookiesString(
   match_options->match_type = mojom::CookieMatchType::STARTS_WITH;
   GetAllForUrl(url, site_for_cookies, top_frame_origin, has_storage_access,
                std::move(match_options), is_ad_tagged,
+               force_disable_third_party_cookies,
                base::BindOnce([](const std::vector<net::CookieWithAccessResult>&
                                      cookies) {
                  return net::CanonicalCookie::BuildCookieLine(cookies);
@@ -1064,7 +1048,8 @@ void RestrictedCookieManager::CookiesEnabledFor(
 
   std::move(callback).Run(cookie_settings_->IsFullCookieAccessAllowed(
       url, site_for_cookies, top_frame_origin,
-      GetCookieSettingOverrides(has_storage_access, /*is_ad_tagged=*/false)));
+      GetCookieSettingOverrides(has_storage_access, /*is_ad_tagged=*/false,
+                                /*force_disable_third_party_cookies=*/false)));
 }
 
 void RestrictedCookieManager::InstallReceiver(
@@ -1123,10 +1108,14 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
 
 net::CookieSettingOverrides RestrictedCookieManager::GetCookieSettingOverrides(
     bool has_storage_access,
-    bool is_ad_tagged) const {
+    bool is_ad_tagged,
+    bool force_disable_third_party_cookies) const {
   net::CookieSettingOverrides overrides = cookie_setting_overrides_;
   if (has_storage_access) {
     overrides.Put(net::CookieSettingOverride::kStorageAccessGrantEligible);
+  }
+  if (force_disable_third_party_cookies) {
+    overrides.Put(net::CookieSettingOverride::kForceDisableThirdPartyCookies);
   }
   AddAdsHeuristicCookieSettingOverrides(is_ad_tagged, overrides);
   return overrides;

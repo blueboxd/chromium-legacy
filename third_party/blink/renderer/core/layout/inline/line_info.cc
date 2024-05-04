@@ -12,6 +12,15 @@
 
 namespace blink {
 
+void LineInfo::Trace(Visitor* visitor) const {
+  visitor->Trace(results_);
+  visitor->Trace(items_data_);
+  visitor->Trace(line_style_);
+  visitor->Trace(break_token_);
+  visitor->Trace(parallel_flow_break_tokens_);
+  visitor->Trace(block_in_inline_layout_result_);
+}
+
 void LineInfo::Reset() {
   items_data_ = nullptr;
   line_style_ = nullptr;
@@ -482,8 +491,9 @@ std::ostream& operator<<(std::ostream& ostream, const LineInfo& line_info) {
   // Feel free to add more LineInfo members.
   ostream << "LineInfo available_width_=" << line_info.AvailableWidth()
           << " width_=" << line_info.Width() << " Results=[\n";
+  const String& text_content = line_info.ItemsData().text_content;
   for (const auto& result : line_info.Results()) {
-    ostream << "\t" << result.item->ToString() << "\n";
+    ostream << "\t" << result.ToString(text_content).Utf8().c_str() << "\n";
   }
   return ostream << "]";
 }

@@ -74,6 +74,7 @@ using testing::_;
 using testing::Invoke;
 using testing::NiceMock;
 using testing::Ref;
+using testing::Return;
 using testing::SaveArg;
 using testing::WithArg;
 
@@ -936,6 +937,8 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceCandidate) {
 
 TEST_F(RTCPeerConnectionHandlerTest, OnRenegotiationNeeded) {
   testing::InSequence sequence;
+  EXPECT_CALL(*mock_peer_connection_, ShouldFireNegotiationNeededEvent)
+      .WillOnce(Return(true));
   EXPECT_CALL(*mock_tracker_.Get(),
               TrackOnRenegotiationNeeded(pc_handler_.get()));
   EXPECT_CALL(*mock_client_.Get(), NegotiationNeeded());

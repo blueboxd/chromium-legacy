@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/tabs/model/features.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/pinned_tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
@@ -64,7 +64,7 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
 // The browser state from the browser.
 @property(nonatomic, readonly) ChromeBrowserState* browserState;
 // The UI consumer to which updates are made.
-@property(nonatomic, weak) id<TabCollectionConsumer> consumer;
+@property(nonatomic, weak) id<PinnedTabCollectionConsumer> consumer;
 
 @end
 
@@ -85,7 +85,7 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
   web::WebStateID _dragItemID;
 }
 
-- (instancetype)initWithConsumer:(id<TabCollectionConsumer>)consumer {
+- (instancetype)initWithConsumer:(id<PinnedTabCollectionConsumer>)consumer {
   if (self = [super init]) {
     DCHECK(IsPinnedTabsEnabled());
     _consumer = consumer;
@@ -137,7 +137,7 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
     return;
   }
 
-  if (!webStateList->IsWebStatePinnedAt(status.index)) {
+  if (!webStateList->IsWebStatePinnedAt(detachChange.detached_from_index())) {
     [self.consumer selectItemWithID:GetActivePinnedTabID(webStateList)];
     return;
   }
@@ -161,9 +161,9 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
     case WebStateListChange::Type::kStatusOnly: {
       const WebStateListChangeStatusOnly& selectionOnlyChange =
           change.As<WebStateListChangeStatusOnly>();
-      if (status.pinned_state_change) {
+      if (selectionOnlyChange.pinned_state_changed()) {
         [self changePinnedStateForWebState:selectionOnlyChange.web_state()
-                                   atIndex:status.index];
+                                   atIndex:selectionOnlyChange.index()];
         break;
       }
       // The activation is handled after this switch statement.
@@ -175,28 +175,27 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
     case WebStateListChange::Type::kMove: {
       const WebStateListChangeMove& moveChange =
           change.As<WebStateListChangeMove>();
-      if (webStateList->IsWebStatePinnedAt(status.index)) {
+      if (webStateList->IsWebStatePinnedAt(moveChange.moved_to_index())) {
         // PinnedTabsMediator handles only pinned tabs because non pinned tabs
         // are handled in BaseGridMediator.
         [self.consumer
             moveItemWithID:moveChange.moved_web_state()->GetUniqueIdentifier()
-                   toIndex:status.index];
+                   toIndex:moveChange.moved_to_index()];
       }
 
       // The pinned state can be updated when a tab is moved.
-      if (status.pinned_state_change) {
+      if (moveChange.pinned_state_changed()) {
         [self changePinnedStateForWebState:moveChange.moved_web_state()
-                                   atIndex:status.index];
+                                   atIndex:moveChange.moved_to_index()];
       }
       break;
     }
     case WebStateListChange::Type::kReplace: {
-      if (!webStateList->IsWebStatePinnedAt(status.index)) {
-        break;
-      }
-
       const WebStateListChangeReplace& replaceChange =
           change.As<WebStateListChangeReplace>();
+      if (!webStateList->IsWebStatePinnedAt(replaceChange.index())) {
+        break;
+      }
       web::WebState* replacedWebState = replaceChange.replaced_web_state();
       web::WebState* insertedWebState = replaceChange.inserted_web_state();
       TabSwitcherItem* newItem =
@@ -209,18 +208,17 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
       break;
     }
     case WebStateListChange::Type::kInsert: {
-      if (!webStateList->IsWebStatePinnedAt(status.index)) {
+      const WebStateListChangeInsert& insertChange =
+          change.As<WebStateListChangeInsert>();
+      if (!webStateList->IsWebStatePinnedAt(insertChange.index())) {
         [self.consumer selectItemWithID:GetActivePinnedTabID(webStateList)];
         break;
       }
-
-      const WebStateListChangeInsert& insertChange =
-          change.As<WebStateListChangeInsert>();
       web::WebState* insertedWebState = insertChange.inserted_web_state();
       TabSwitcherItem* item =
           [[PinnedItem alloc] initWithWebState:insertedWebState];
       [self.consumer insertItem:item
-                        atIndex:status.index
+                        atIndex:insertChange.index()
                  selectedItemID:GetActivePinnedTabID(webStateList)];
 
       _scopedWebStateObservation->AddObservation(insertedWebState);

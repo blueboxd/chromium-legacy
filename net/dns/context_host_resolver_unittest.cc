@@ -104,8 +104,8 @@ class ContextHostResolverTest : public ::testing::Test,
         HostResolverSystemTask::Params(proc, 1u));
   }
 
-  raw_ptr<MockDnsClient, DanglingUntriaged> dns_client_;
   std::unique_ptr<HostResolverManager> manager_;
+  raw_ptr<MockDnsClient> dns_client_;
 };
 
 TEST_F(ContextHostResolverTest, Resolve) {
@@ -809,7 +809,7 @@ class NetworkAwareHostResolverProc : public HostResolverProc {
               handles::NetworkHandle network) override {
     // Presume failure
     *os_error = 1;
-    const auto* iter = kResults.find(network);
+    const auto iter = kResults.find(network);
     if (iter == kResults.end())
       return ERR_NETWORK_CHANGED;
 

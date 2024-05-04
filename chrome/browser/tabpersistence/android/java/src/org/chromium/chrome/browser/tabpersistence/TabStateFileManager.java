@@ -109,6 +109,27 @@ public class TabStateFileManager {
         int NUM_ENTRIES = 3;
     }
 
+    @IntDef({
+        TabStateRestoreMethod.FLATBUFFER,
+        TabStateRestoreMethod.LEGACY_HAND_WRITTEN,
+        TabStateRestoreMethod.FAILED,
+        TabStateRestoreMethod.NUM_ENTRIES,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public @interface TabStateRestoreMethod {
+        /** TabState restored using FlatBuffer schema */
+        int FLATBUFFER = 0;
+
+        /** TabState restored using Legacy Handwritten schema */
+        int LEGACY_HAND_WRITTEN = 1;
+
+        /** TabState failed to be restored. */
+        int FAILED = 2;
+
+        int NUM_ENTRIES = 3;
+    }
+
     /**
      * @param stateFolder folder {@link TabState} files are stored in
      * @param id {@link Tab} identifier
@@ -122,12 +143,28 @@ public class TabStateFileManager {
         if (isFlatBufferSchemaEnabled()) {
             TabState tabState = restoreTabState(stateFolder, id, true);
             if (tabState != null) {
+                RecordHistogram.recordEnumeratedHistogram(
+                        "Tabs.TabState.RestoreMethod",
+                        TabStateRestoreMethod.FLATBUFFER,
+                        TabStateRestoreMethod.NUM_ENTRIES);
                 return tabState;
             }
         }
         // Flatbuffer flag is off or we couldn't restore the TabState using a FlatBuffer based
         // file e.g. file doesn't exist for the Tab or is corrupt.
-        return restoreTabState(stateFolder, id, false);
+        TabState tabState = restoreTabState(stateFolder, id, false);
+        if (tabState == null) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Tabs.TabState.RestoreMethod",
+                    TabStateRestoreMethod.FAILED,
+                    TabStateRestoreMethod.NUM_ENTRIES);
+        } else {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Tabs.TabState.RestoreMethod",
+                    TabStateRestoreMethod.LEGACY_HAND_WRITTEN,
+                    TabStateRestoreMethod.NUM_ENTRIES);
+        }
+        return tabState;
     }
 
     /**
@@ -393,15 +430,11 @@ public class TabStateFileManager {
                         TaskTraits.UI_BEST_EFFORT,
                         () -> {
                             ThreadUtils.assertOnUiThread();
-                            sPendingFlatBufferMigrations.add(
-                                    new FlatBufferMigrationTask(
-                                            /* tabId= */ params.first,
-                                            /* isEncrypted= */ params.second,
-                                            tabState,
-                                            file.getParentFile()));
-                            if (sDeferredStartupComplete) {
-                                processNextFlatBufferMigration();
-                            }
+                            migrateTabToFlatBuffer(
+                                    /* tabId= */ params.first,
+                                    /* isEncrypted= */ params.second,
+                                    tabState,
+                                    file.getParentFile());
                         });
             }
             return tabState;
@@ -433,8 +466,34 @@ public class TabStateFileManager {
         saveStateInternal(
                 getTabStateFile(directory, tabId, isEncrypted, false), tabState, isEncrypted);
         if (isFlatBufferSchemaEnabled()) {
-            saveStateInternal(
-                    getTabStateFile(directory, tabId, isEncrypted, true), tabState, isEncrypted);
+            if (sDeferredStartupComplete && isFinishedFlatBufferMigration()) {
+                // If deferred startup is complete and all existing or pending FlatBuffer migrations
+                // are complete simply save the FlatBuffer file. If we save the FlatBuffer file
+                // before deferred startup, there is risk the additional save may cause Jank.
+                // If we initiate another save while migrations are in progress, there is the
+                // risk that a pending FlatBuffer migration may finish after this save, making
+                // this save ineffectual.
+                saveStateInternal(
+                        getTabStateFile(directory, tabId, isEncrypted, true),
+                        tabState,
+                        isEncrypted);
+            } else {
+                // Otherwise, the save should follow the migration path (save in accordance
+                // with the migration queue which is flushed after deferred startup is complete.
+                migrateTabToFlatBuffer(tabId, isEncrypted, tabState, directory);
+            }
+        }
+    }
+
+    private static void migrateTabToFlatBuffer(
+            int tabId, boolean isEncrypted, TabState tabState, File directory) {
+        // Cancel any existing save for this Tab. It will be overwritten anyway.
+        cancelMigrationIfExists(tabId, isEncrypted);
+        sPendingFlatBufferMigrations.add(
+                new FlatBufferMigrationTask(
+                        /* tabId= */ tabId, /* isEncrypted= */ isEncrypted, tabState, directory));
+        if (sDeferredStartupComplete) {
+            processNextFlatBufferMigration();
         }
     }
 
@@ -692,7 +751,7 @@ public class TabStateFileManager {
      * @param tabId identifier for a {@link Tab}
      * @param isEncrypted if a {@link Tab} is incognito or not.
      */
-    public static void cancelMigration(int tabId, boolean isEncrypted) {
+    public static void cancelMigrationIfExists(int tabId, boolean isEncrypted) {
         if (!isFlatBufferSchemaEnabled()) {
             return;
         }

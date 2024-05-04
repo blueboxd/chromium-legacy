@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ash/file_suggest/file_suggest_util.h"
 
+#include "ash/constants/ash_features.h"
+#include "base/time/time.h"
+
 namespace ash {
 namespace {
 
@@ -12,6 +15,10 @@ constexpr char kDriveFileSuggestionPrefix[] = "zero_state_drive://";
 
 // The prefix of a local file suggestion id.
 constexpr char kLocalFileSuggestionPrefix[] = "zero_state_file://";
+
+// The number of days within which a file must be modified, or viewed to be
+// considered as a file suggestion.
+constexpr int kDefaultMaxRecencyInDays = 8;
 
 // Returns the prefix that matches `type`.
 std::string GetPrefixFromSuggestionType(FileSuggestionType type) {
@@ -24,6 +31,36 @@ std::string GetPrefixFromSuggestionType(FileSuggestionType type) {
 }
 
 }  // namespace
+
+base::TimeDelta GetMaxFileSuggestionRecency() {
+  return base::Days(base::GetFieldTrialParamByFeatureAsInt(
+      ash::features::kLauncherContinueSectionWithRecents, "max_recency_in_days",
+      kDefaultMaxRecencyInDays));
+}
+
+double ToTimestampBasedScore(const FileSuggestData& data,
+                             base::TimeDelta max_recency) {
+  auto score_timestamp = [&](const base::Time& timestamp, double interval_max,
+                             double interval_size) {
+    return interval_max -
+           interval_size *
+               std::min(
+                   1.0,
+                   (base::Time::Now() - timestamp).magnitude().InSeconds() /
+                       static_cast<double>(max_recency.InSeconds()));
+  };
+
+  if (data.timestamp) {
+    return score_timestamp(*data.timestamp,
+                           /*interval_max=*/1.0, /*interval_size=*/0.5);
+  }
+
+  if (data.secondary_timestamp) {
+    return score_timestamp(*data.secondary_timestamp,
+                           /*interval_max=*/0.5, /*interval_size=*/0.5);
+  }
+  return 0.0;
+}
 
 // FileSuggestData -------------------------------------------------------------
 

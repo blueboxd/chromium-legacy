@@ -200,6 +200,9 @@ AppShimController::AppShimController(const Params& params)
     notification_service_ =
         std::make_unique<mac_notifications::MacNotificationServiceUN>(
             std::move(notification_action_handler_remote_),
+            base::BindRepeating(
+                &AppShimController::NotificationPermissionStatusChanged,
+                base::Unretained(this)),
             UNUserNotificationCenter.currentNotificationCenter);
   }
 }
@@ -277,7 +280,8 @@ void AppShimController::PreInitFeatureState(
        "DcheckIsFatal", "MojoBindingsInlineSLS", "MojoInlineMessagePayloads",
        "MojoIpcz", "MojoTaskPerMessage", "StandardCompliantHostCharacters",
        "StandardCompliantNonSpecialSchemeURLParsing",
-       "UseAdHocSigningForWebAppShims", "UseIDNA2008NonTransitional"});
+       "UseAdHocSigningForWebAppShims", "UseIDNA2008NonTransitional",
+       "SonomaAccessibilityActivationRefinements"});
 }
 
 // static
@@ -800,6 +804,9 @@ void AppShimController::BindNotificationService(
       notification_service_ =
           std::make_unique<mac_notifications::MacNotificationServiceUN>(
               std::move(notification_action_handler_remote_),
+              base::BindRepeating(
+                  &AppShimController::NotificationPermissionStatusChanged,
+                  base::Unretained(this)),
               UNUserNotificationCenter.currentNotificationCenter);
     }
     // Note that `handler` as passed in to this method is ignored. Notification
@@ -825,6 +832,11 @@ AppShimController::notification_service_un() {
   }
   return static_cast<mac_notifications::MacNotificationServiceUN*>(
       notification_service_.get());
+}
+
+void AppShimController::NotificationPermissionStatusChanged(
+    mac_notifications::mojom::PermissionStatus status) {
+  host_->NotificationPermissionStatusChanged(status);
 }
 
 void AppShimController::SetUserAttention(

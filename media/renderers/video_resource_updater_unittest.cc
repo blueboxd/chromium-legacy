@@ -20,6 +20,7 @@
 #include "components/viz/test/test_gles2_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/ipc/client/client_shared_image_interface.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "skia/ext/skcolorspace_primaries.h"
@@ -28,10 +29,13 @@
 namespace media {
 namespace {
 
-// Returns if kRasterInterfaceInVideoResourceUpdater is enabled
 bool CanUseRasterInterface() {
+#if BUILDFLAG(IS_ANDROID)
   return base::FeatureList::IsEnabled(
       media::kRasterInterfaceInVideoResourceUpdater);
+#else
+  return true;
+#endif
 }
 
 bool UseMultiplanarSoftwarePixelUpload() {
@@ -172,14 +176,16 @@ class VideoResourceUpdaterTest : public testing::Test {
       bool use_stream_video_draw_quad = false) {
     return std::make_unique<VideoResourceUpdater>(
         context_provider_.get(), nullptr, resource_provider_.get(),
-        use_stream_video_draw_quad, /*use_gpu_memory_buffer_resources=*/false,
+        /*shared_image_interface=*/nullptr, use_stream_video_draw_quad,
+        /*use_gpu_memory_buffer_resources=*/false,
         /*max_resource_size=*/10000);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForSoftware() {
     return std::make_unique<VideoResourceUpdater>(
         /*context_provider=*/nullptr, &shared_bitmap_reporter_,
-        resource_provider_.get(), /*use_stream_video_draw_quad=*/false,
+        resource_provider_.get(), /*shared_image_interface=*/nullptr,
+        /*use_stream_video_draw_quad=*/false,
         /*use_gpu_memory_buffer_resources=*/false, /*max_resource_size=*/10000);
   }
 
@@ -495,6 +501,27 @@ TEST_F(VideoResourceUpdaterTest, SoftwareFrameRGB) {
     }
 #endif
   }
+}
+
+TEST_F(VideoResourceUpdaterTest, SoftwareFrameYCOCG) {
+  std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
+  scoped_refptr<VideoFrame> video_frame = CreateTestYUVVideoFrame();
+  video_frame->set_color_space(gfx::ColorSpace(
+      gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::TransferID::BT709,
+      gfx::ColorSpace::MatrixID::YCOCG, gfx::ColorSpace::RangeID::FULL));
+
+  // We should always get `VideoFrameResourceType::YUV` since Skia doesn't
+  // support YCoCg color spaces.
+
+  VideoFrameExternalResources resources =
+      updater->CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameResourceType::YUV, resources.type);
+
+  // Setting to kSharedImageFormat, resources type should not change.
+  video_frame->set_shared_image_format_type(
+      SharedImageFormatType::kSharedImageFormat);
+  resources = updater->CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameResourceType::YUV, resources.type);
 }
 
 // Ensure the visible data is where it's supposed to be.

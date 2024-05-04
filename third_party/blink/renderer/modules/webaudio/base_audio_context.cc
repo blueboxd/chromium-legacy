@@ -104,7 +104,7 @@ BaseAudioContext::~BaseAudioContext() {
   {
     // We may need to destroy summing junctions, which must happen while this
     // object is still valid and with the graph lock held.
-    GraphAutoLocker locker(this);
+    DeferredTaskHandler::GraphAutoLocker locker(this);
     destination_handler_ = nullptr;
   }
 
@@ -292,7 +292,7 @@ AudioBuffer* BaseAudioContext::createBuffer(uint32_t number_of_channels,
   return buffer;
 }
 
-ScriptPromise BaseAudioContext::decodeAudioData(
+ScriptPromiseTyped<AudioBuffer> BaseAudioContext::decodeAudioData(
     ScriptState* script_state,
     DOMArrayBuffer* audio_data,
     ExceptionState& exception_state) {
@@ -300,7 +300,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
                          exception_state);
 }
 
-ScriptPromise BaseAudioContext::decodeAudioData(
+ScriptPromiseTyped<AudioBuffer> BaseAudioContext::decodeAudioData(
     ScriptState* script_state,
     DOMArrayBuffer* audio_data,
     V8DecodeSuccessCallback* success_callback,
@@ -309,7 +309,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
                          exception_state);
 }
 
-ScriptPromise BaseAudioContext::decodeAudioData(
+ScriptPromiseTyped<AudioBuffer> BaseAudioContext::decodeAudioData(
     ScriptState* script_state,
     DOMArrayBuffer* audio_data,
     V8DecodeSuccessCallback* success_callback,
@@ -322,7 +322,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot decode audio data: The document is no longer active.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<AudioBuffer>();
   }
 
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -347,9 +347,10 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   } else {  // audio_data->Transfer succeeded.
     DOMArrayBuffer* audio = DOMArrayBuffer::Create(buffer_contents);
 
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-        script_state, exception_state.GetContext());
-    ScriptPromise promise = resolver->Promise();
+    auto* resolver =
+        MakeGarbageCollected<ScriptPromiseResolverTyped<AudioBuffer>>(
+            script_state, exception_state.GetContext());
+    auto promise = resolver->Promise();
     decode_audio_resolvers_.insert(resolver);
 
     audio_decoder_.DecodeAsync(audio, sampleRate(), success_callback,
@@ -371,12 +372,12 @@ ScriptPromise BaseAudioContext::decodeAudioData(
     error_callback->InvokeAndReportException(this, dom_exception);
   }
 
-  return ScriptPromise();
+  return ScriptPromiseTyped<AudioBuffer>();
 }
 
 void BaseAudioContext::HandleDecodeAudioData(
     AudioBuffer* audio_buffer,
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<AudioBuffer>* resolver,
     V8DecodeSuccessCallback* success_callback,
     V8DecodeErrorCallback* error_callback,
     ExceptionContext exception_context) {
@@ -723,7 +724,7 @@ LocalDOMWindow* BaseAudioContext::GetWindow() const {
 
 void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
   DCHECK(IsMainThread());
-  GraphAutoLocker locker(this);
+  DeferredTaskHandler::GraphAutoLocker locker(this);
 
   GetDeferredTaskHandler().GetActiveSourceHandlers()->insert(&node->Handler());
   node->Handler().MakeConnection();
@@ -732,7 +733,7 @@ void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
 void BaseAudioContext::ReleaseActiveSourceNodes() {
   DCHECK(IsMainThread());
 
-  GraphAutoLocker locker(this);
+  DeferredTaskHandler::GraphAutoLocker locker(this);
 
   for (auto source_handler :
        *GetDeferredTaskHandler().GetActiveSourceHandlers()) {
@@ -777,7 +778,7 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
     return;
   }
 
-  GraphAutoLocker locker(this);
+  DeferredTaskHandler::GraphAutoLocker locker(this);
 
   if (is_resolving_resume_promises_) {
     for (auto& resolver : resume_resolvers_) {
@@ -890,7 +891,7 @@ void BaseAudioContext::NotifyWorkletIsReady() {
   {
     // `audio_worklet_thread_` is constantly peeked by the rendering thread,
     // So we protect it with the graph lock.
-    GraphAutoLocker locker(this);
+    DeferredTaskHandler::GraphAutoLocker locker(this);
 
     // At this point, the WorkletGlobalScope must be ready so it is safe to keep
     // the reference to the AudioWorkletThread for the future worklet operation.

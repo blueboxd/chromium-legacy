@@ -10,6 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -27,11 +28,17 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/page_image_service/image_service.h"
+#include "components/reading_list/core/dual_reading_list_model.h"
 #include "components/reading_list/core/fake_reading_list_model_storage.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/storage_type.h"
 #include "components/sync/base/user_selectable_type.h"
+#include "components/sync/engine/data_type_activation_response.h"
+#include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/data_type_activation_request.h"
+#include "components/sync/test/mock_commit_queue.h"
 #include "components/sync/test/test_sync_user_settings.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +52,8 @@ using bookmarks::BookmarkNode;
 using bookmarks::ManagedBookmarkService;
 using bookmarks::android::JavaBookmarkIdGetId;
 using page_image_service::ImageService;
+using testing::IsNull;
+using testing::NotNull;
 
 // Unit tests for `BookmarkBridge`.
 class BookmarkBridgeTest : public testing::Test {
@@ -57,11 +66,12 @@ class BookmarkBridgeTest : public testing::Test {
   BookmarkBridge* bookmark_bridge() { return bookmark_bridge_.get(); }
 
   ReadingListManager* local_or_syncable_reading_list_manager() {
-    return local_or_syncable_reading_list_manager_.get();
+    return bookmark_bridge_->GetLocalOrSyncableReadingListManagerForTesting();
   }
 
   ReadingListManager* account_reading_list_manager() {
-    return account_reading_list_manager_.get();
+    return bookmark_bridge_
+        ->GetAccountReadingListManagerIfAvailableForTesting();
   }
 
   const BookmarkNode* AddURL(const BookmarkNode* parent,
@@ -72,22 +82,58 @@ class BookmarkBridgeTest : public testing::Test {
                                     /*meta_info=*/nullptr, clock_.Now());
   }
 
-  void CreateBookmarkBridge(bool enable_account_bookmarks) {
+  void StartSyncing() {
+    std::unique_ptr<syncer::DataTypeActivationResponse> activation_response;
+    base::RunLoop loop;
+    syncer::DataTypeActivationRequest request;
+    request.error_handler = base::DoNothing();
+    dual_reading_list_model_->GetSyncControllerDelegateForTransportMode()
+        ->OnSyncStarting(
+            request, base::BindLambdaForTesting(
+                         [&](std::unique_ptr<syncer::DataTypeActivationResponse>
+                                 response) {
+                           activation_response = std::move(response);
+                           loop.Quit();
+                         }));
+    loop.Run();
+
+    activation_response->type_processor->ConnectSync(
+        std::make_unique<testing::NiceMock<syncer::MockCommitQueue>>());
+
+    // After this update initial sync is for sure done.
+    sync_pb::ModelTypeState state;
+    state.set_initial_sync_state(
+        sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
+
+    activation_response->type_processor->OnUpdateReceived(
+        state, {}, /*gc_directive=*/std::nullopt);
+    task_environment_.RunUntilIdle();
+  }
+
+  void CreateBookmarkBridge(bool enable_account_bookmarks,
+                            bool load_reading_list_model = true) {
     bookmark_bridge_.reset();
 
-    ReadingListManagerImpl::IdGenerationFunction rl_id_gen_func =
-        base::BindRepeating([](int64_t* id) { return (*id)++; },
-                            base::Owned(std::make_unique<int64_t>(0)));
+    base::WeakPtr<FakeReadingListModelStorage>
+        local_or_syncable_model_storage_ptr;
+    auto local_or_syncable_reading_list_model = CreateReadingListModel(
+        syncer::StorageType::kUnspecified, local_or_syncable_model_storage_ptr);
 
-    local_or_syncable_reading_list_model_ =
-        CreateReadingListModel(syncer::StorageType::kUnspecified);
-    auto local_or_syncable_reading_list_manager =
-        std::make_unique<ReadingListManagerImpl>(
-            local_or_syncable_reading_list_model_.get(), rl_id_gen_func);
-    local_or_syncable_reading_list_manager_ =
-        local_or_syncable_reading_list_manager.get();
-    account_reading_list_model_ =
-        CreateReadingListModel(syncer::StorageType::kAccount);
+    base::WeakPtr<FakeReadingListModelStorage>
+        account_reading_list_model_storage_ptr;
+    auto account_reading_list_model = CreateReadingListModel(
+        syncer::StorageType::kAccount, account_reading_list_model_storage_ptr);
+
+    if (load_reading_list_model) {
+      EXPECT_TRUE(
+          local_or_syncable_model_storage_ptr->TriggerLoadCompletion() &&
+          account_reading_list_model_storage_ptr->TriggerLoadCompletion());
+    }
+
+    dual_reading_list_model_ =
+        std::make_unique<reading_list::DualReadingListModel>(
+            std::move(local_or_syncable_reading_list_model),
+            std::move(account_reading_list_model));
 
     std::unique_ptr<bookmarks::TestBookmarkClient> bookmark_client =
         std::make_unique<bookmarks::TestBookmarkClient>();
@@ -99,26 +145,26 @@ class BookmarkBridgeTest : public testing::Test {
 
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_.get());
 
-    std::unique_ptr<ReadingListManagerImpl> account_reading_list_manager =
-        nullptr;
     if (enable_account_bookmarks) {
       features_.InitWithFeatures(
-          /*enabled_features=*/{syncer::kEnableBookmarkFoldersForAccountStorage,
-                                syncer::kReplaceSyncPromosWithSignInPromos},
+          /*enabled_features=*/
+          {syncer::kEnableBookmarkFoldersForAccountStorage,
+           syncer::kReadingListEnableSyncTransportModeUponSignIn},
           /*disabled_features=*/{});
       bookmark_model_->CreateAccountPermanentFolders();
-
-      account_reading_list_manager = std::make_unique<ReadingListManagerImpl>(
-          account_reading_list_model_.get(), rl_id_gen_func);
-      account_reading_list_manager_ = account_reading_list_manager.get();
+      if (load_reading_list_model) {
+        // If the `account_reading_list_model` is not loaded, StartSyncing()
+        // will run into failure.
+        StartSyncing();
+      }
     }
 
     // TODO(crbug.com/1503231): Add image_service once a mock is available.
     bookmark_bridge_ = std::make_unique<BookmarkBridge>(
         profile_, bookmark_model_.get(), managed_bookmark_service_,
+        /*image_service=*/nullptr, dual_reading_list_model_.get(),
         partner_bookmarks_shim_,
-        std::move(local_or_syncable_reading_list_manager),
-        std::move(account_reading_list_manager), /*image_service=*/nullptr);
+        identity_test_environment_->identity_manager());
 
     bookmark_bridge_->LoadEmptyPartnerBookmarkShimForTesting(
         AttachCurrentThread());
@@ -146,6 +192,8 @@ class BookmarkBridgeTest : public testing::Test {
     partner_bookmarks_shim_ =
         PartnerBookmarksShim::BuildForBrowserContext(profile_);
 
+    identity_test_environment_ =
+        std::make_unique<signin::IdentityTestEnvironment>();
     CreateBookmarkBridge(/*enable_account_bookmarks=*/false);
   }
 
@@ -155,16 +203,18 @@ class BookmarkBridgeTest : public testing::Test {
     profile_manager_.reset();
   }
 
-  std::unique_ptr<ReadingListModel> CreateReadingListModel(
-      syncer::StorageType storage_type) {
+  std::unique_ptr<ReadingListModelImpl> CreateReadingListModel(
+      syncer::StorageType storage_type,
+      base::WeakPtr<FakeReadingListModelStorage>& storage_ptr) {
     auto storage = std::make_unique<FakeReadingListModelStorage>();
-    base::WeakPtr<FakeReadingListModelStorage> storage_ptr =
-        storage->AsWeakPtr();
+    storage_ptr = storage->AsWeakPtr();
     auto reading_list_model = std::make_unique<ReadingListModelImpl>(
         std::move(storage), storage_type,
-        syncer::WipeModelUponSyncDisabledBehavior::kNever, &clock_);
-    EXPECT_TRUE(storage_ptr->TriggerLoadCompletion());
-    return std::move(reading_list_model);
+        storage_type == syncer::StorageType::kAccount
+            ? syncer::WipeModelUponSyncDisabledBehavior::kAlways
+            : syncer::WipeModelUponSyncDisabledBehavior::kNever,
+        &clock_);
+    return reading_list_model;
   }
 
   base::test::ScopedFeatureList features_;
@@ -176,16 +226,26 @@ class BookmarkBridgeTest : public testing::Test {
   raw_ptr<ManagedBookmarkService> managed_bookmark_service_;
   raw_ptr<PartnerBookmarksShim> partner_bookmarks_shim_;
 
-  std::unique_ptr<ReadingListModel> account_reading_list_model_;
-  raw_ptr<ReadingListManagerImpl> account_reading_list_manager_;
-
-  std::unique_ptr<ReadingListModel> local_or_syncable_reading_list_model_;
-  raw_ptr<ReadingListManagerImpl> local_or_syncable_reading_list_manager_;
+  std::unique_ptr<reading_list::DualReadingListModel> dual_reading_list_model_;
 
   std::unique_ptr<BookmarkBridge> bookmark_bridge_;
 
   content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_environment_;
 };
+
+TEST_F(BookmarkBridgeTest,
+       TestAccountModelAvailabilityChangeUponChangesInSyncState) {
+  CreateBookmarkBridge(/*enable_account_bookmarks*/ true);
+  ASSERT_THAT(account_reading_list_manager(), NotNull());
+
+  dual_reading_list_model_->GetSyncControllerDelegateForTransportMode()
+      ->OnSyncStopping(syncer::CLEAR_METADATA);
+  EXPECT_THAT(account_reading_list_manager(), IsNull());
+
+  StartSyncing();
+  EXPECT_THAT(account_reading_list_manager(), NotNull());
+}
 
 TEST_F(BookmarkBridgeTest, TestGetMostRecentlyAddedUserBookmarkIdForUrl) {
   GURL url = GURL("http://foo.com");
@@ -217,43 +277,26 @@ TEST_F(BookmarkBridgeTest, TestGetMostRecentlyAddedUserBookmarkIdForUrl) {
 
 TEST_F(BookmarkBridgeTest,
        TestGetMostRecentlyAddedUserBookmarkIdForUrlBeforeReadingListLoads) {
-  GURL url = GURL("http://foo.com");
-  ASSERT_EQ(
-      nullptr,
-      bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(url));
-
-  // Add to the reading list and verify that it's the most recently added.
-  auto* recently_added =
-      local_or_syncable_reading_list_manager()->Add(url, "test");
-  ASSERT_EQ(
-      recently_added,
-      bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(url));
-
-  local_or_syncable_reading_list_manager_->SetIsLoadedForTests(false);
-  ASSERT_EQ(
-      nullptr,
-      bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(url));
+  CreateBookmarkBridge(/*enable_account_bookmarks*/ false,
+                       /*load_reading_list_model*/ false);
+  ASSERT_FALSE(local_or_syncable_reading_list_manager()->IsLoaded());
+  EXPECT_THAT(bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(
+                  GURL("http://foo.com")),
+              IsNull());
 }
 
 TEST_F(
     BookmarkBridgeTest,
     TestGetMostRecentlyAddedUserBookmarkIdForUrlBeforeReadingListLoadsWithAccountBookmarks) {
-  CreateBookmarkBridge(/*enable_account_bookmarks=*/true);
-  GURL url = GURL("http://foo.com");
-  ASSERT_EQ(
-      nullptr,
-      bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(url));
-
-  // Add to the reading list and verify that it's the most recently added.
-  auto* recently_added = account_reading_list_manager_->Add(url, "test");
-  ASSERT_EQ(
-      recently_added,
-      bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(url));
-
-  account_reading_list_manager_->SetIsLoadedForTests(false);
-  ASSERT_EQ(
-      nullptr,
-      bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(url));
+  CreateBookmarkBridge(/*enable_account_bookmarks*/ true,
+                       /*load_reading_list_model*/ false);
+  ASSERT_FALSE(local_or_syncable_reading_list_manager()->IsLoaded());
+  // When the account_reading_list_model is not loaded, sync will not start,
+  // which means `account_reading_list_manager` will be null.
+  ASSERT_THAT(account_reading_list_manager(), IsNull());
+  EXPECT_THAT(bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(
+                  GURL("http://foo.com")),
+              IsNull());
 }
 
 TEST_F(BookmarkBridgeTest, TestIsBookmarked) {
@@ -291,12 +334,11 @@ TEST_F(BookmarkBridgeTest, TestGetTopLevelFolderIds) {
       /*ignore_visibility=*/true);
 
   // The 2 folders should be: mobile bookmarks, reading list.
-  EXPECT_EQ(5u, folders.size());
+  EXPECT_EQ(4u, folders.size());
   EXPECT_EQ(u"Mobile bookmarks", folders[0]->GetTitle());
   EXPECT_EQ(u"Bookmarks bar", folders[1]->GetTitle());
   EXPECT_EQ(u"Other bookmarks", folders[2]->GetTitle());
-  EXPECT_EQ(u"Managed bookmarks", folders[3]->GetTitle());
-  EXPECT_EQ(u"Reading list", folders[4]->GetTitle());
+  EXPECT_EQ(u"Reading list", folders[3]->GetTitle());
 
   // Adding a bookmark to the bookmark bar will include it in the top level
   // folders that are returned.
@@ -321,20 +363,34 @@ TEST_F(BookmarkBridgeTest, AccountFoldersNullWhileNotEnabled) {
 // TODO(crbug.com/1509189): Also enable bookmark account folders here.
 TEST_F(BookmarkBridgeTest, TestGetTopLevelFolderIdsAccountActive) {
   CreateBookmarkBridge(/*enable_account_bookmarks=*/true);
+
+  // The 2 folders should be: mobile bookmarks, reading list.
   std::vector<const BookmarkNode*> folders =
       bookmark_bridge()->GetTopLevelFolderIdsImpl(
           /*ignore_visibility=*/false);
-
-  // The 2 folders should be: mobile bookmarks, reading list.
-  EXPECT_EQ(4u, folders.size());
+  EXPECT_EQ(2u, folders.size());
   EXPECT_EQ(u"Mobile bookmarks", folders[0]->GetTitle());
-  EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[0]));
-  EXPECT_EQ(u"Mobile bookmarks", folders[1]->GetTitle());
+  EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[0]));
+  EXPECT_EQ(u"Reading list", folders[1]->GetTitle());
   EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[1]));
-  EXPECT_EQ(u"Reading list", folders[2]->GetTitle());
+
+  // All account and some local folders should be included when ignore
+  // visibility is true.
+  folders = bookmark_bridge()->GetTopLevelFolderIdsImpl(
+      /*ignore_visibility=*/true);
+  EXPECT_EQ(6u, folders.size());
+  EXPECT_EQ(u"Mobile bookmarks", folders[0]->GetTitle());
+  EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[0]));
+  EXPECT_EQ(u"Bookmarks bar", folders[1]->GetTitle());
+  EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[1]));
+  EXPECT_EQ(u"Other bookmarks", folders[2]->GetTitle());
   EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[2]));
   EXPECT_EQ(u"Reading list", folders[3]->GetTitle());
-  EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[3]));
+  EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[3]));
+  EXPECT_EQ(u"Mobile bookmarks", folders[4]->GetTitle());
+  EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[4]));
+  EXPECT_EQ(u"Reading list", folders[5]->GetTitle());
+  EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[5]));
 
   // Adding a bookmark to the bookmark bar will include it in the top level
   // folders that are returned.
@@ -342,15 +398,22 @@ TEST_F(BookmarkBridgeTest, TestGetTopLevelFolderIdsAccountActive) {
          GURL("http://foo.com"));
   folders = bookmark_bridge()->GetTopLevelFolderIdsImpl(
       /*ignore_visibility=*/false);
+  // Adding a bookmark node to mobile bookmarks will include it in the list.
+  AddURL(bookmark_model()->mobile_node(), 0, u"second", GURL("http://foo.com"));
+  // Adding to the local reading list will include it in the list.
+  local_or_syncable_reading_list_manager()->Add(GURL("http://foo.com"),
+                                                "third");
+  folders = bookmark_bridge()->GetTopLevelFolderIdsImpl(
+      /*ignore_visibility=*/false);
   EXPECT_EQ(5u, folders.size());
   EXPECT_EQ(u"Mobile bookmarks", folders[0]->GetTitle());
-  EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[0]));
+  EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[0]));
+  EXPECT_EQ(u"Reading list", folders[1]->GetTitle());
+  EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[1]));
   EXPECT_EQ(u"Mobile bookmarks", folders[2]->GetTitle());
-  EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[2]));
-  EXPECT_EQ(u"Bookmarks bar", folders[1]->GetTitle());
-  EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[1]));
-  EXPECT_EQ(u"Reading list", folders[3]->GetTitle());
-  EXPECT_TRUE(bookmark_bridge()->IsAccountBookmarkImpl(folders[3]));
+  EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[2]));
+  EXPECT_EQ(u"Bookmarks bar", folders[3]->GetTitle());
+  EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[3]));
   EXPECT_EQ(u"Reading list", folders[4]->GetTitle());
   EXPECT_FALSE(bookmark_bridge()->IsAccountBookmarkImpl(folders[4]));
 }
@@ -417,6 +480,8 @@ TEST_F(BookmarkBridgeTest, TestAccountReadingListNodes) {
             bookmark_bridge()->GetParentNode(local_rl_node));
   clock_.Advance(base::Seconds(1));
 
+  ASSERT_THAT(account_reading_list_manager(), NotNull());
+
   account_reading_list_manager()->Add(url, "foo");
   const BookmarkNode* account_rl_node =
       bookmark_bridge()->GetMostRecentlyAddedUserBookmarkIdForUrlImpl(url);
@@ -432,6 +497,8 @@ TEST_F(BookmarkBridgeTest, TestSearchBookmarks) {
   CreateBookmarkBridge(/*enable_account_bookmarks=*/true);
 
   GURL url = GURL("http://foo.com");
+
+  ASSERT_THAT(account_reading_list_manager(), NotNull());
 
   account_reading_list_manager()->Add(url, "foo");
   local_or_syncable_reading_list_manager()->Add(url, "foo");
@@ -488,12 +555,12 @@ TEST_F(BookmarkBridgeTest, TestMoveBookmarkToReadingList) {
       AddURL(bookmark_model()->other_node(), 0, title, url);
   bookmark_bridge()->MoveBookmarkImpl(
       node, bookmarks::BOOKMARK_TYPE_NORMAL,
-      local_or_syncable_reading_list_manager_->GetRoot(),
+      local_or_syncable_reading_list_manager()->GetRoot(),
       bookmarks::BOOKMARK_TYPE_READING_LIST, 0);
   // Get children of new parent and verify it has the node in it.
   std::vector<const BookmarkNode*> children =
       bookmark_bridge()->GetChildIdsImpl(
-          local_or_syncable_reading_list_manager_->GetRoot());
+          local_or_syncable_reading_list_manager()->GetRoot());
   ASSERT_EQ(1u, children.size());
   ASSERT_EQ(children[0]->GetTitle(), title);
   ASSERT_EQ(children[0]->url(), url);
@@ -511,12 +578,12 @@ TEST_F(BookmarkBridgeTest, TestMoveBookmarkToReadingListAddFails) {
       AddURL(bookmark_model()->other_node(), 0, title, url);
   bookmark_bridge()->MoveBookmarkImpl(
       node, bookmarks::BOOKMARK_TYPE_NORMAL,
-      local_or_syncable_reading_list_manager_->GetRoot(),
+      local_or_syncable_reading_list_manager()->GetRoot(),
       bookmarks::BOOKMARK_TYPE_READING_LIST, 0);
   // Get children of new parent and verify it hasn't been moved
   std::vector<const BookmarkNode*> children =
       bookmark_bridge()->GetChildIdsImpl(
-          local_or_syncable_reading_list_manager_->GetRoot());
+          local_or_syncable_reading_list_manager()->GetRoot());
   ASSERT_EQ(0u, children.size());
 
   // Get children of old parent and verify the original bookmark is still there.
@@ -545,6 +612,6 @@ TEST_F(BookmarkBridgeTest, TestMoveReadingListToBookmark) {
 
   // Get children of old parent and verify it has no nodes.
   children = bookmark_bridge()->GetChildIdsImpl(
-      local_or_syncable_reading_list_manager_->GetRoot());
+      local_or_syncable_reading_list_manager()->GetRoot());
   ASSERT_EQ(0u, children.size());
 }

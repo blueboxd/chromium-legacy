@@ -15,6 +15,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -123,6 +124,12 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     CreateServiceErrorCallback error_callback));
   MOCK_CONST_METHOD1(GetGattService,
                      BluetoothLocalGattService*(const std::string& identifier));
+  MOCK_METHOD3(CreateLocalGattService,
+               base::WeakPtr<BluetoothLocalGattService>(
+                   const BluetoothUUID& uuid,
+                   bool is_primary,
+                   BluetoothLocalGattService::Delegate* delegate));
+
 #if BUILDFLAG(IS_CHROMEOS)
   MOCK_METHOD3(SetServiceAllowList,
                void(const UUIDList& uuids,
@@ -165,7 +172,8 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   // The observers are maintained by the default behavior of AddObserver() and
   // RemoveObserver(). Test fakes can use this function to notify the observers
   // about events.
-  base::ObserverList<device::BluetoothAdapter::Observer>::Unchecked&
+  base::ObserverList<
+      device::BluetoothAdapter::Observer>::UncheckedAndDanglingUntriaged&
   GetObservers() {
     return observers_;
   }

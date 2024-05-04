@@ -852,6 +852,7 @@
 <translation id="7589661784326793847">Подождите…</translation>
 <translation id="7600126690270271294">Сербский</translation>
 <translation id="7603724359189955920">Сетка</translation>
+<translation id="7624010287655004652">Заблокировано другим мобильным оператором</translation>
 <translation id="7627790789328695202">Файл "<ph name="FILE_NAME" />" уже существует. Задайте другое название и повторите попытку.</translation>
 <translation id="7628656427739290098">Выполнено на <ph name="PERCENT" /> %.</translation>
 <translation id="7649070708921625228">Справка</translation>
@@ -1018,7 +1019,6 @@
 <translation id="8698877009525468705">Это конфиденциальный файл, и администратор ограничил его использование</translation>
 <translation id="8712637175834984815">OK</translation>
 <translation id="8713112442029511308">Мальтийский</translation>
-<translation id="8714138378966541668">Есть ограничение оператора</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8719721339511222681">Выбран объект "<ph name="ENTRY_NAME" />".</translation>
 <translation id="872537912056138402">Хорватский</translation>

@@ -48,6 +48,7 @@ using ::chromeos::settings::mojom::kFingerprintSubpagePathV2;
 using ::chromeos::settings::mojom::kManageOtherPeopleSubpagePathV2;
 using ::chromeos::settings::mojom::kPrivacyAndSecuritySectionPath;
 using ::chromeos::settings::mojom::kPrivacyHubCameraSubpagePath;
+using ::chromeos::settings::mojom::kPrivacyHubGeolocationAdvancedSubpagePath;
 using ::chromeos::settings::mojom::kPrivacyHubGeolocationSubpagePath;
 using ::chromeos::settings::mojom::kPrivacyHubMicrophoneSubpagePath;
 using ::chromeos::settings::mojom::kPrivacyHubSubpagePath;
@@ -272,7 +273,6 @@ const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
       return init_tags;
     }
 
-    if (ash::features::IsCrosPrivacyHubV0Enabled()) {
       init_tags.push_back({IDS_OS_SETTINGS_TAG_PRIVACY_CONTROLS,
                            mojom::kPrivacyHubSubpagePath,
                            ash::features::IsOsSettingsRevampWayfindingEnabled()
@@ -311,7 +311,6 @@ const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
                              mojom::SearchResultType::kSetting,
                              {.setting = mojom::Setting::kMicrophoneOnOff}});
       }
-    }
 
     if (ash::features::IsCrosPrivacyHubLocationEnabled()) {
       init_tags.push_back(
@@ -321,6 +320,13 @@ const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
            mojom::SearchResultDefaultRank::kMedium,
            mojom::SearchResultType::kSubpage,
            {.subpage = mojom::Subpage::kPrivacyHubGeolocation}});
+      init_tags.push_back(
+          {IDS_OS_SETTINGS_TAG_GEOLOCATION_ACCURACY,
+           mojom::kPrivacyHubGeolocationAdvancedSubpagePath,
+           mojom::SearchResultIcon::kGeolocation,
+           mojom::SearchResultDefaultRank::kMedium,
+           mojom::SearchResultType::kSubpage,
+           {.subpage = mojom::Subpage::kPrivacyHubGeolocationAdvanced}});
     }
     return init_tags;
   }());
@@ -514,6 +520,12 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ACCESS_LEVEL_ONLY_ALLOWED_FOR_SYSTEM},
       {"geolocationAccessLevelDisallowed",
        IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ACCESS_LEVEL_DISALLOWED},
+      {"geolocationAccuracyToggleText",
+       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ACCURACY_TOGGLE_TEXT},
+      {"geolocationAccuracyToggleTitle",
+       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ACCURACY_TOGGLE_TITLE},
+      {"geolocationAdvancedAreaTitle",
+       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ADVANCED_AREA_TITLE},
       {"systemGeolocationDialogTitle",
        IDS_SETTINGS_PRIVACY_HUB_GEOLOCATION_DIALOG_TITLE},
       {"systemGeolocationDialogBody",
@@ -601,6 +613,8 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                           ash::features::IsSnoopingProtectionEnabled());
   html_source->AddBoolean("isQuickDimEnabled",
                           ash::features::IsQuickDimEnabled());
+  html_source->AddBoolean("isAuthPanelEnabled",
+                          ash::features::IsUseAuthPanelInSettingsEnabled());
 
   html_source->AddBoolean(
       "isPrivacyHubHatsEnabled",
@@ -610,7 +624,7 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "showAppPermissionsInsidePrivacyHub",
       ash::features::IsCrosPrivacyHubAppPermissionsEnabled());
   html_source->AddBoolean("showPrivacyHubPage",
-                          ash::features::IsCrosPrivacyHubEnabled());
+                          true);  // TODO(b/326572459): remove
   html_source->AddBoolean("showPrivacyHubLocationControl",
                           ash::features::IsCrosPrivacyHubLocationEnabled());
   html_source->AddBoolean("showSpeakOnMuteDetectionPage",
@@ -798,6 +812,18 @@ void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kGeolocation,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kPrivacyHubGeolocationSubpagePath);
+
+  // Privacy hub geolocation advanced.
+  generator->RegisterNestedSubpage(
+      IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ACCURACY_TOGGLE_TITLE,
+      mojom::Subpage::kPrivacyHubGeolocationAdvanced,
+      mojom::Subpage::kPrivacyHubGeolocation,
+      mojom::SearchResultIcon::kGeolocation,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kPrivacyHubGeolocationAdvancedSubpagePath);
+  RegisterNestedSettingBulk(mojom::Subpage::kPrivacyHubGeolocation,
+                            {{mojom::Setting::kGeolocationAdvanced}},
+                            generator);
 
   // Privacy hub camera.
   generator->RegisterNestedSubpage(

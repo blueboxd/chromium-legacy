@@ -4,12 +4,10 @@
 
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_coordinator.h"
 
-#import "base/feature_list.h"
 #import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "components/signin/public/base/signin_metrics.h"
-#import "components/signin/public/base/signin_switches.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
@@ -22,6 +20,7 @@
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
+#import "ios/chrome/browser/ui/authentication/history_sync/history_sync_capabilities_fetcher.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_mediator.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_utils.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_view_controller.h"
@@ -168,11 +167,6 @@
   _viewController = [[HistorySyncViewController alloc] init];
   _viewController.delegate = self;
 
-  // TODO(b/318349283): This property will also be based on the capability
-  // CanShowHistorySyncOptInsWithoutMinorModeRestrictions.
-  _viewController.useEquallyWeightedButtons = base::FeatureList::IsEnabled(
-      switches::kMinorModeRestrictionsForHistorySyncOptIn);
-
   ChromeAccountManagerService* chromeAccountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
   signin::IdentityManager* identityManager =
@@ -185,6 +179,8 @@
                       showUserEmail:_showUserEmail];
   _mediator.consumer = _viewController;
   _mediator.delegate = self;
+  [_mediator.capabilitiesFetcher startFetchingRestrictionCapability];
+
   if (_firstRun) {
     _viewController.modalInPresentation = YES;
     base::UmaHistogramEnumeration(first_run::kFirstRunStageHistogram,

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
@@ -128,6 +129,7 @@ class AppBannerManagerAndroid
   bool OnAppDetailsRetrieved(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
+      int request_id,
       const base::android::JavaParamRef<jobject>& japp_data,
       const base::android::JavaParamRef<jstring>& japp_title,
       const base::android::JavaParamRef<jstring>& japp_package,
@@ -196,6 +198,8 @@ class AppBannerManagerAndroid
       const std::u16string& platform) const override;
   bool IsRelatedNonWebAppInstalled(
       const blink::Manifest::RelatedApplication& related_app) const override;
+  bool ShouldAllowWebAppReplacementInstall(
+      const ManifestId& manifest_id) const override;
   void MaybeShowAmbientBadge() override;
   void OnMlInstallPrediction(base::PassKey<MLInstallabilityPromoter>,
                              std::string result_label) override;
@@ -266,6 +270,9 @@ class AppBannerManagerAndroid
 
   // Title to display in the banner for native app.
   std::u16string native_app_title_;
+
+  int next_native_request_id_ = 0;
+  std::optional<int> current_native_request_id_;
 
   std::unique_ptr<AmbientBadgeManager> ambient_badge_manager_;
 

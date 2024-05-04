@@ -56,8 +56,8 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
       return nullptr;
     }
     auto client_shared_image = sii->CreateSharedImage(
-        si_format, gpu_memory_buffer->GetSize(), color_space, surface_origin,
-        alpha_type, usage, "WebGraphicsContext3DVideoFramePool",
+        {si_format, gpu_memory_buffer->GetSize(), color_space, surface_origin,
+         alpha_type, usage, "WebGraphicsContext3DVideoFramePool"},
         gpu_memory_buffer->CloneHandle());
     CHECK(client_shared_image);
     sync_token = sii->GenVerifiedSyncToken();
@@ -75,9 +75,10 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
     auto* sii = SharedImageInterface();
     if (!sii || !gmb_manager_)
       return nullptr;
-    auto client_shared_image = sii->CreateSharedImage(
-        gpu_memory_buffer, gmb_manager_, plane, color_space, surface_origin,
-        alpha_type, usage, "WebGraphicsContext2DVideoFramePool");
+    auto client_shared_image =
+        sii->CreateSharedImage(gpu_memory_buffer, gmb_manager_, plane,
+                               {color_space, surface_origin, alpha_type, usage,
+                                "WebGraphicsContext2DVideoFramePool"});
     CHECK(client_shared_image);
     sync_token = sii->GenVerifiedSyncToken();
     return client_shared_image;
@@ -104,7 +105,7 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
 
   base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
       weak_context_provider_;
-  raw_ptr<gpu::GpuMemoryBufferManager, ExperimentalRenderer> gmb_manager_;
+  raw_ptr<gpu::GpuMemoryBufferManager> gmb_manager_;
 };
 
 }  // namespace

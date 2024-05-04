@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">‏نئے Chromium ٹیب میں تلاش شروع کریں۔</translation>
 <translation id="1431818719585918472">‏Chromium کو آپ کی پوشیدگی ٹیبز کو مقفل کرنے دیں۔</translation>
 <translation id="1472013873724362412">‏آپ کا اکاؤنٹ Chromium پر کام نہیں کرتا ہے۔ سائن ان کرنے کیلئے براہ کرم اپنے ڈومین کے منتظم سے رابطہ کریں یا ایک مستقل Google اکاؤنٹ استعمال کریں۔</translation>
+<translation id="1503199973012840174">‏آپ کا Chromium پرانا ہے۔ محفوظ رہنے کے لیے اسے اپ ڈیٹ کریں۔</translation>
 <translation id="1507010443238049608">‏Chromium کی خصوصیات اور کارکردگی کو بہتر بنانے میں مدد کریں</translation>
 <translation id="1513122820609681462">‏Chromium کو بطور ڈیفالٹ براؤزر سیٹ کریں</translation>
 <translation id="1531155317299575425">‏Chromium میں سائن ان کرنے کے لیے پرامپٹس دکھاتا ہے۔</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">‏یہ پتہ فی الحال Chromium پر محفوظ ہے۔ اسے تمام Google پروڈکٹس میں استعمال کرنے کے لیے، اسے اپنے Google اکاؤنٹ <ph name="USER_EMAIL" /> میں محفوظ کریں۔</translation>
 <translation id="2236584955986023187">‏اس کا مطلب ہے کہ Chromium ہر بار ڈیسک ٹاپ سائٹ کی درخواست کرے گا۔</translation>
 <translation id="2313870531055795960">‏Chromium میں اسٹور کردہ غیر محفوظ سائٹس کی فہرست کے URLs چیک کرتا ہے۔ اگر کوئی سائٹ آپ کا پاس ورڈ چرانے کی کوشش کرتی ہے یا جب آپ نقصان دہ فائل ڈاؤن لوڈ کرتے ہیں تو Chromium محفوظ براؤزنگ پر صفحہ کے مواد کے بائٹس سمیت URLs بھیجتا ہے۔</translation>
+<translation id="231828342043114302">‏اپنی دلچسپیوں کی بنیاد پر ذاتی نوعیت کا مواد حاصل کرنے کے لیے، Chromium میں سائن ان کریں۔</translation>
 <translation id="2374627437126809292">‏Chromium پتا لگائے گئے پتوں پر آپ کو ڈائریکشنز اور مقامی معلومات فراہم کرنے کے لیے Google Maps کا استعمال کرتا ہے۔</translation>
 <translation id="2386292341327187942">‏تلاش کے ویجیٹس باکس میں، Chromium درج کریں</translation>
 <translation id="2426113998523353159">‏آپ کی تنظیم چاہتی ہے کہ آپ Chromium استعمال کرنے کیلئے سائن ان کریں۔</translation>
@@ -78,7 +80,6 @@
 <translation id="3219277919172823720">‏Chromium میں آواز سے تلاش کریں</translation>
 <translation id="3228349498066165585">‏آپ کا کچھ Chromium ڈیٹا ابھی تک آپ کے Google اکاؤنٹ میں محفوظ نہیں ہوا ہے۔
         سائن آؤٹ کرنے سے پہلے چند منٹ انتظار کرنے کی کوشش کریں۔ اگر آپ ابھی سائن آؤٹ کرتے ہیں تو یہ ڈیٹا حذف ہو جائے گا۔</translation>
-<translation id="3256316712990552818">‏Chromium میں کاپی کر دیا گیا</translation>
 <translation id="328933489847748230">{count,plural, =1{‏اب 1 Chromium ونڈو نظر آ رہا ہے}other{‏اب {count} Chromium ونڈوز نظر آ رہے ہیں}}</translation>
 <translation id="3344973607274501920">‏Chromium آپ کے پاس ورڈز چیک نہیں کر سکا۔ اپنا انٹرنیٹ کنکشن چیک کرنے کی کوشش کریں۔</translation>
 <translation id="3366305173356742781">‏آپ کے اکاؤنٹ میں Chromium ڈیٹا</translation>
@@ -213,6 +214,7 @@
 <translation id="6752854822223394465">‏آپ کی تنظیم Chromium سیٹ اپ کر رہی ہے...</translation>
 <translation id="6794054469102824109">‏Chromium ڈائنو گیم کھلتی ہے۔</translation>
 <translation id="6820823224820483452">‏Chromium سبھی پاس ورڈز چیک نہیں کر سکا۔ کل دوبارہ کوشش کریں۔</translation>
+<translation id="6830362027989570433">‏Chromium آٹو فل کا پھیلا ہوا منظر</translation>
 <translation id="6852799557929001644">‏اس آلے پر موجود دیگر ایپس پر اپنے Chromium پاس ورڈز اور مزید تک رسائی حاصل کریں۔</translation>
 <translation id="6887138405044152640">‏اس ٹیب کو کسی اور آلے میں بھیجنے کے لیے وہاں Chromium میں سائن ان کریں۔</translation>
 <translation id="6911341667534646387">‏اپنے Google اکاؤنٹ میں Chromium ڈیٹا استعمال کرتے رہیں</translation>
@@ -310,7 +312,6 @@
 <translation id="9059693977935746710">آپ کو یہ پاس ورڈ یاد رکھنے کی ضرورت نہیں ہوگی۔ اسے پاس ورڈ مینیجر میں <ph name="EMAIL" /> کے لیے محفوظ کیا جائے گا</translation>
 <translation id="9089354809943900324">‏Chromium پرانا ہے</translation>
 <translation id="9110075932708282655">‏بطور ڈیفالٹ Chromium کا استعمال کریں</translation>
-<translation id="9137114218472648150">‏Chromium پرانا ہے، محفوظ رہنے کے لیے تازہ ترین ورژن پر اپ ڈیٹ کریں۔</translation>
 <translation id="921174536258924340">‏Chromium سبھی پاس ورڈز چیک نہیں کر سکا۔ آئندہ کل دوبارہ کوشش کریں یا <ph name="BEGIN_LINK" />اپنے Google اکاؤنٹ میں پاس ورڈز چیک کریں۔<ph name="END_LINK" /></translation>
 <translation id="971488683725792095">‏جب آپ پیغامات، دستاویزات اور دیگر ایپس میں لنکس پر تھپتھپاتے ہیں تو خودکار طور پر Chromium استعمال کریں۔</translation>
 <translation id="981812233959540767">‏Chromium ڈائنو گیم کھیلیں</translation>

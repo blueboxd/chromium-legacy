@@ -22,6 +22,7 @@
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_log.h"
+#include "media/gpu/chromeos/video_frame_resource.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_framerate_control.h"
 #include "media/gpu/v4l2/v4l2_queue.h"
@@ -51,7 +52,7 @@ void* Mmap(int fd,
 // POLLPRI (meaning a resolution change event) and from |device_fd|, this
 // function calls |dequeue_callback| or |resolution_change_callback|,
 // respectively. Since it blocks, it needs to work on its own
-// SequencedTaskRunner, in this case |event_task_runner_|.
+// SingleThreadTaskRunner, in this case |event_task_runner_|.
 // TODO(mcasas): Add an error callback too.
 void WaitOnceForEvents(int device_fd,
                        int wake_event,
@@ -259,7 +260,7 @@ void V4L2StatefulVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                           bool /*low_delay*/,
                                           CdmContext* cdm_context,
                                           InitCB init_cb,
-                                          const OutputCB& output_cb,
+                                          const PipelineOutputCB& output_cb,
                                           const WaitingCB& /*waiting_cb*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(config.IsValidConfig());
@@ -365,7 +366,7 @@ void V4L2StatefulVideoDecoder::Initialize(const VideoDecoderConfig& config,
   const bool is_h264 =
       VideoCodecProfileToVideoCodec(config.profile()) == VideoCodec::kH264;
   constexpr size_t kNumInputBuffersH264 = 16;
-  constexpr size_t kNumInputBuffersVPx = 8;
+  constexpr size_t kNumInputBuffersVPx = 2;
   const auto num_input_buffers =
       is_h264 ? kNumInputBuffersH264 : kNumInputBuffersVPx;
   if (OUTPUT_queue_->AllocateBuffers(num_input_buffers, V4L2_MEMORY_MMAP,
@@ -378,6 +379,8 @@ void V4L2StatefulVideoDecoder::Initialize(const VideoDecoderConfig& config,
     std::move(init_cb).Run(DecoderStatus::Codes::kFailedToCreateDecoder);
     return;
   }
+  client_->NotifyEstimatedMaxDecodeRequests(base::checked_cast<int>(
+      std::min(static_cast<size_t>(4), num_input_buffers)));
 
   // Subscribe to the resolution change event. This is needed for resolution
   // changes mid stream but also to initialize the |CAPTURE_queue|.
@@ -474,8 +477,12 @@ void V4L2StatefulVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   if (!event_task_runner_) {
     CHECK(!CAPTURE_queue_);  // It's the first configuration event.
-    event_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    // |event_task_runner_| will block on OS resources, so it has to be a full
+    // ThreadRunner ISO a SequencedTaskRunner, to avoid interfering with other
+    // runners of the pool.
+    event_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
     CHECK(event_task_runner_);
   }
   RearmCAPTUREQueueMonitoring();
@@ -828,7 +835,7 @@ void V4L2StatefulVideoDecoder::RearmCAPTUREQueueMonitoring() {
   //   thread that is blocked on a poll() upon the closing of an FD from a
   //   different thread, concretely the "result is unspecified").
   // - Both |device_fd_| and |wake_event_| are posted for destruction on said
-  //   background SequencedTaskRunner so that the FDs monitored by poll() are
+  //   background SingleThreadTaskRunner so that the FDs monitored by poll() are
   //   guaranteed to stay alive until poll() returns, thus avoiding unspecified
   //   behavior.
   cancelable_task_tracker_.PostTask(
@@ -894,25 +901,24 @@ void V4L2StatefulVideoDecoder::TryAndDequeueCAPTUREQueueBuffers() {
       // marker. This is seen -seldom- from venus driver (QC) when entering a
       // dynamic resolution mode: the driver flushes the queue with errored
       // buffers before sending the IsLast() buffer.
-      scoped_refptr<VideoFrame> video_frame = dequeued_buffer->GetVideoFrame();
-      CHECK(video_frame);
+      scoped_refptr<FrameResource> frame = dequeued_buffer->GetFrameResource();
+      CHECK(frame);
 
-      video_frame->set_timestamp(
-          TimeValToTimeDelta(dequeued_buffer->GetTimeStamp()));
+      frame->set_timestamp(TimeValToTimeDelta(dequeued_buffer->GetTimeStamp()));
 
-      //  For a V4L2_MEMORY_MMAP |CAPTURE_queue_| we wrap |video_frame| to
-      //  return |dequeued_buffer| to |CAPTURE_queue_|, where they are "pooled".
-      //  For a V4L2_MEMORY_DMABUF |CAPTURE_queue_|, we don't do that because
-      //  the VideoFrames are pooled in |client_|s;
+      //  For a V4L2_MEMORY_MMAP |CAPTURE_queue_| we wrap |frame| to return
+      //  |dequeued_buffer| to |CAPTURE_queue_|, where they are "pooled". For a
+      //  V4L2_MEMORY_DMABUF |CAPTURE_queue_|, we don't do that because the
+      //  VideoFrames are pooled in |client_|s;
       //  TryAndEnqueueCAPTUREQueueBuffers() will find them there.
       if (queue_type == V4L2_MEMORY_MMAP) {
         // Don't query |CAPTURE_queue_|'s GetVisibleRect() here because it races
         // with hypothetical resolution changes.
-        CHECK(gfx::Rect(video_frame->coded_size()).Contains(visible_rect_));
-        CHECK(video_frame->visible_rect().Contains(visible_rect_));
-        auto wrapped_frame = VideoFrame::WrapVideoFrame(
-            video_frame, video_frame->format(), visible_rect_,
-            /*natural_size=*/visible_rect_.size());
+        CHECK(gfx::Rect(frame->coded_size()).Contains(visible_rect_));
+        CHECK(frame->visible_rect().Contains(visible_rect_));
+        auto wrapped_frame =
+            frame->CreateWrappingFrame(visible_rect_,
+                                       /*natural_size=*/visible_rect_.size());
 
         // Make sure |dequeued_buffer| stays alive and its reference released as
         // |wrapped_frame| is destroyed, allowing -maybe- for it to get back to
@@ -936,13 +942,13 @@ void V4L2StatefulVideoDecoder::TryAndDequeueCAPTUREQueueBuffers() {
         output_cb_.Run(std::move(wrapped_frame));
       } else {
         DCHECK_EQ(queue_type, V4L2_MEMORY_DMABUF);
-        VLOGF(3) << video_frame->AsHumanReadableString();
-        framerate_control_->AttachToVideoFrame(video_frame);
-        output_cb_.Run(std::move(video_frame));
+        VLOGF(3) << frame->AsHumanReadableString();
+        framerate_control_->AttachToFrameResource(frame);
+        output_cb_.Run(std::move(frame));
       }
 
-      // We just dequeued one decoded |video_frame|; try to reclaim
-      // |OUTPUT_queue| resources that might just have been released.
+      // We just dequeued one decoded |frame|; try to reclaim |OUTPUT_queue|
+      // resources that might just have been released.
       if (!DrainOUTPUTQueue()) {
         LOG(ERROR) << "Failed to drain resources from |OUTPUT_queue_|.";
       }
@@ -997,8 +1003,8 @@ void V4L2StatefulVideoDecoder::TryAndEnqueueCAPTUREQueueBuffers() {
                 weak_ptr_factory_for_CAPTURE_availability_.GetWeakPtr())));
         return;
       }
-      auto video_frame = client_->GetVideoFramePool()->GetFrame();
-      CHECK(video_frame);
+      auto frame = client_->GetVideoFramePool()->GetFrame();
+      CHECK(frame);
 
       // TODO(mcasas): Consider using GetFreeBufferForFrame().
       auto v4l2_buffer = CAPTURE_queue_->GetFreeBuffer();
@@ -1007,7 +1013,7 @@ void V4L2StatefulVideoDecoder::TryAndEnqueueCAPTUREQueueBuffers() {
         return;
       }
 
-      if (!std::move(*v4l2_buffer).QueueDMABuf(std::move(video_frame))) {
+      if (!std::move(*v4l2_buffer).QueueDMABuf(std::move(frame))) {
         LOG(ERROR) << "CAPTURE queue failed to enqueue a DmaBuf buffer.";
         return;
       }
@@ -1175,7 +1181,7 @@ H264FrameReassembler::FindH264FrameBoundary(const uint8_t* const data,
                                             size_t data_size) {
   h264_parser_.SetStream(data, data_size);
   while (true) {
-    H264NALU nalu;
+    H264NALU nalu = {};
     H264Parser::Result result = h264_parser_.AdvanceToNextNALU(&nalu);
     if (result == H264Parser::kInvalidStream ||
         result == H264Parser::kUnsupportedStream) {
@@ -1183,8 +1189,11 @@ H264FrameReassembler::FindH264FrameBoundary(const uint8_t* const data,
       return std::nullopt;
     }
     if (result == H264Parser::kEOStream) {
-      NOTREACHED_NORETURN()
-          << "|data| did not contain a whole NALU while parsing";
+      // Not an error per se, but strange to run out of data without having
+      // found a new NALU boundary. Pretend it's a frame boundary and move on.
+      return FrameBoundaryInfo{.is_whole_frame = true,
+                               .is_start_of_new_frame = true,
+                               .nalu_size = nalu.size};
     }
     DCHECK_EQ(result, H264Parser::kOk);
 

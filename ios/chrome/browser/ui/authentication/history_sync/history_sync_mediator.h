@@ -10,6 +10,7 @@
 class AuthenticationService;
 class ChromeAccountManagerService;
 @protocol HistorySyncConsumer;
+@class HistorySyncCapabilitiesFetcher;
 @class HistorySyncMediator;
 
 namespace signin {
@@ -36,6 +37,9 @@ class SyncService;
 // Delegate.
 @property(nonatomic, weak) id<HistorySyncMediatorDelegate> delegate;
 
+@property(nonatomic, strong)
+    HistorySyncCapabilitiesFetcher* capabilitiesFetcher;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)
@@ -46,7 +50,7 @@ class SyncService;
                       syncService:(syncer::SyncService*)syncService
                     showUserEmail:(BOOL)showUserEmail NS_DESIGNATED_INITIALIZER;
 
-// Disconnect the mediator.
+// Disconnects the mediator.
 - (void)disconnect;
 
 // Opts in for history sync.

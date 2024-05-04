@@ -26,13 +26,13 @@
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_accounts/accounts_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
@@ -187,7 +187,7 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
 
 // Simulates opening `URL` from another application.
 void SimulateExternalAppURLOpeningWithURL(NSURL* URL) {
-  [ChromeEarlGreyAppInterface simulateExternalAppURLOpeningWithURL:URL];
+  [ChromeEarlGrey simulateExternalAppURLOpeningWithURL:URL];
   GREYWaitForAppToIdle(@"App failed to idle");
 }
 
@@ -288,7 +288,7 @@ void CompleteSigninFlow() {
       [self isRunningTest:@selector(testSignOutFromAccountSettingSyncEnable)] ||
       [self isRunningTest:@selector(testSignOutFromSyncSettings)] ||
       [self isRunningTest:@selector
-            (testSignOutFromSyncSettingsWithMultiWindows)]) {
+            (FLAKY_testSignOutFromSyncSettingsWithMultiWindows)]) {
     config.features_disabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
   }
@@ -336,7 +336,7 @@ void CompleteSigninFlow() {
   // triggered again when tearing down because the browser is signed out. Making
   // sure that sign-out is done and that the sign-in screen animation is done
   // before tearing down avoids the conflict.
-  [ChromeEarlGreyAppInterface signOutAndClearIdentitiesWithCompletion:nil];
+  [ChromeEarlGrey signOutAndClearIdentities];
   [ChromeEarlGrey waitForMatcher:GetForcedSigninScreenMatcher()];
 
   [super tearDown];
@@ -536,9 +536,9 @@ void CompleteSigninFlow() {
       performAction:grey_tap()];
 
   // Tap the "Sign out" button.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_text(l10n_util::GetNSString(
-                     IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE))]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kSettingsAccountsTableViewSignoutCellId)]
       performAction:grey_tap()];
 
   // Check that the sign-out snackbar does not show for BrowserSignin forced.
@@ -885,7 +885,7 @@ void CompleteSigninFlow() {
   SimulateExternalAppURLOpeningWithURL(URLToOpen);
 
   // Make sure that the page loading of the intent hasn't started yet.
-  GREYAssertFalse([ChromeEarlGreyAppInterface isLoading],
+  GREYAssertFalse([ChromeEarlGrey isLoading],
                   @"Page should not have been loaded yet");
 
   // Sign in account without enabling sync.
@@ -1085,7 +1085,8 @@ void CompleteSigninFlow() {
 
 // Tests that signing out from sync settings will trigger showing the forced
 // sign-in screen in one of the foregrounded window (when multi windows).
-- (void)testSignOutFromSyncSettingsWithMultiWindows {
+// TODO(b/328015424) : fix the flake.
+- (void)FLAKY_testSignOutFromSyncSettingsWithMultiWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
 

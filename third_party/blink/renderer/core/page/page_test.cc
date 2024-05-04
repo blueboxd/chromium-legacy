@@ -23,7 +23,8 @@ TEST(PageTest, CreateOrdinaryBrowsingContextGroup) {
   auto bcg_info = BrowsingContextGroupInfo::CreateUnique();
 
   Page* page =
-      Page::CreateOrdinary(client, /*opener=*/nullptr, *scheduler, bcg_info);
+      Page::CreateOrdinary(client, /*opener=*/nullptr, *scheduler, bcg_info,
+                           /*color_provider_colors=*/nullptr);
 
   EXPECT_EQ(page->BrowsingContextGroupToken(),
             bcg_info.browsing_context_group_token);
@@ -50,7 +51,8 @@ TEST(PageTest, BrowsingContextGroupUpdate) {
   auto initial_bcg_info = BrowsingContextGroupInfo::CreateUnique();
 
   Page* page = Page::CreateOrdinary(client, /*opener=*/nullptr, *scheduler,
-                                    initial_bcg_info);
+                                    initial_bcg_info,
+                                    /*color_provider_colors=*/nullptr);
 
   EXPECT_EQ(page->BrowsingContextGroupToken(),
             initial_bcg_info.browsing_context_group_token);
@@ -78,7 +80,8 @@ TEST(PageTest, BrowsingContextGroupUpdateWithPauser) {
   auto group_a = BrowsingContextGroupInfo::CreateUnique();
 
   Page* page1 =
-      Page::CreateOrdinary(client, /*opener=*/nullptr, *scheduler, group_a);
+      Page::CreateOrdinary(client, /*opener=*/nullptr, *scheduler, group_a,
+                           /*color_provider_colors=*/nullptr);
 
   auto pauser_for_group_a =
       std::make_unique<ScopedBrowsingContextGroupPauser>(*page1);
@@ -89,7 +92,8 @@ TEST(PageTest, BrowsingContextGroupUpdateWithPauser) {
   ASSERT_FALSE(page1->Paused());
 
   Page* page2 =
-      Page::CreateOrdinary(client, /*opener=*/nullptr, *scheduler, group_b);
+      Page::CreateOrdinary(client, /*opener=*/nullptr, *scheduler, group_b,
+                           /*color_provider_colors=*/nullptr);
   ASSERT_FALSE(page2->Paused());
 
   page2->UpdateBrowsingContextGroup(group_a);
@@ -97,6 +101,61 @@ TEST(PageTest, BrowsingContextGroupUpdateWithPauser) {
 
   pauser_for_group_a.reset();
   ASSERT_FALSE(page2->Paused());
+}
+
+TEST(PageTest, CreateOrdinaryColorProviders) {
+  test::TaskEnvironment task_environment;
+  EmptyChromeClient client;
+  auto* scheduler = scheduler::CreateDummyAgentGroupScheduler();
+  auto bcg_info = BrowsingContextGroupInfo::CreateUnique();
+  auto color_provider_colors = ColorProviderColorMaps::CreateDefault();
+
+  Page* page = Page::CreateOrdinary(client, /*opener=*/nullptr, *scheduler,
+                                    bcg_info, &color_provider_colors);
+
+  const ui::ColorProvider* light_color_provider =
+      page->GetColorProviderForPainting(
+          /*color_scheme=*/mojom::blink::ColorScheme::kLight,
+          /*in_forced_colors=*/false);
+  const ui::ColorProvider* dark_color_provider =
+      page->GetColorProviderForPainting(
+          /*color_scheme=*/mojom::blink::ColorScheme::kDark,
+          /*in_forced_colors=*/false);
+  const ui::ColorProvider* forced_colors_color_provider =
+      page->GetColorProviderForPainting(
+          /*color_scheme=*/mojom::blink::ColorScheme::kLight,
+          /*in_forced_colors=*/true);
+
+  // All color provider instances should be non-null.
+  ASSERT_TRUE(light_color_provider);
+  ASSERT_TRUE(dark_color_provider);
+  ASSERT_TRUE(forced_colors_color_provider);
+}
+
+TEST(PageTest, CreateNonOrdinaryColorProviders) {
+  test::TaskEnvironment task_environment;
+  EmptyChromeClient client;
+  auto* scheduler = scheduler::CreateDummyAgentGroupScheduler();
+
+  Page* page = Page::CreateNonOrdinary(client, *scheduler);
+
+  const ui::ColorProvider* light_color_provider =
+      page->GetColorProviderForPainting(
+          /*color_scheme=*/mojom::blink::ColorScheme::kLight,
+          /*in_forced_colors=*/false);
+  const ui::ColorProvider* dark_color_provider =
+      page->GetColorProviderForPainting(
+          /*color_scheme=*/mojom::blink::ColorScheme::kDark,
+          /*in_forced_colors=*/false);
+  const ui::ColorProvider* forced_colors_color_provider =
+      page->GetColorProviderForPainting(
+          /*color_scheme=*/mojom::blink::ColorScheme::kLight,
+          /*in_forced_colors=*/true);
+
+  // All color provider instances should be non-null.
+  ASSERT_TRUE(light_color_provider);
+  ASSERT_TRUE(dark_color_provider);
+  ASSERT_TRUE(forced_colors_color_provider);
 }
 
 }  // namespace blink

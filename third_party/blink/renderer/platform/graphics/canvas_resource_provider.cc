@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
+#include <string>
+
 #include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
@@ -690,8 +692,23 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
  private:
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override {
-    CanvasResourceProvider::OnMemoryDump(pmd);
-    resource()->OnMemoryDump(pmd, GetSkImageInfo().bytesPerPixel());
+    std::string path = base::StringPrintf("canvas/ResourceProvider_0x%" PRIXPTR,
+                                          reinterpret_cast<uintptr_t>(this));
+
+    resource()->OnMemoryDump(pmd, path, GetSkImageInfo().bytesPerPixel());
+
+    std::string cached_path = path + "/cached";
+    for (const auto& canvas_resource : canvas_resources()) {
+      auto* resource_pointer =
+          static_cast<CanvasResourceSharedImage*>(canvas_resource.get());
+      // In single buffered mode, `resource_` is not removed from
+      // `canvas_resources_`.
+      if (resource_pointer == resource()) {
+        continue;
+      }
+      resource_pointer->OnMemoryDump(pmd, cached_path,
+                                     GetSkImageInfo().bytesPerPixel());
+    }
   }
 
   const bool is_accelerated_;
@@ -1058,6 +1075,14 @@ CanvasResourceProvider::CreateWebGPUImageProvider(
     uint32_t shared_image_usage_flags,
     CanvasResourceHost* resource_host) {
   auto context_provider_wrapper = SharedGpuContext::ContextProviderWrapper();
+  // The SharedImages created by this provider serve as a means of import/export
+  // between VideoFrames/canvas and WebGPU, e.g.:
+  // * Import from VideoFrames into WebGPU via CreateExternalTexture() (the
+  //   WebGPU textures will then be read by clients)
+  // * Export from WebGPU into canvas via
+  //   GpuCanvasContext::CopyTextureToResourceProvider() (the export happens via
+  //   the WebGPU interface)
+  // Hence, both WEBGPU_READ and WEBGPU_WRITE usage are needed here.
   return CreateSharedImageProvider(
       info, cc::PaintFlags::FilterQuality::kLow,
       CanvasResourceProvider::ShouldInitialize::kNo,

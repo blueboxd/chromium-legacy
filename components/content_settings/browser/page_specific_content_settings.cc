@@ -863,6 +863,11 @@ void PageSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
   DCHECK(type != ContentSettingsType::MEDIASTREAM_MIC &&
          type != ContentSettingsType::MEDIASTREAM_CAMERA)
       << "Media stream settings handled by OnMediaStreamPermissionSet";
+
+  if (freeze_indicators_) {
+    return;
+  }
+
   if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(type)) {
     return;
   }
@@ -1171,6 +1176,15 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
     const GURL& request_origin,
     MicrophoneCameraState new_microphone_camera_state) {
   DCHECK(!IsEmbeddedPage());
+
+  // Camera and/or Mic permission request could auto-ignore in case of a page
+  // refresh. In this case `OnMediaStreamPermissionSet` should not store media
+  // stream state and it should not update activity indicators.
+  if (freeze_indicators_ && (new_microphone_camera_state.HasAny(
+                                {kMicrophoneBlocked, kCameraBlocked}))) {
+    return;
+  }
+
   media_stream_access_origin_ = request_origin;
 
   if (new_microphone_camera_state.Has(kMicrophoneAccessed)) {
@@ -1198,7 +1212,6 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
   }
 
   if (microphone_camera_state_ != new_microphone_camera_state) {
-    microphone_camera_state_ = new_microphone_camera_state;
     if (!is_updating_synced_pscs_) {
       base::AutoReset<bool> auto_reset(&is_updating_synced_pscs_, true);
       if (auto* synced_pccs = MaybeGetSyncedSettingsForPictureInPicture()) {
@@ -1206,6 +1219,21 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
                                                 new_microphone_camera_state);
       }
     }
+
+    if (base::FeatureList::IsEnabled(
+            content_settings::features::kLeftHandSideActivityIndicators)) {
+      // Microphone and Camera share an activity indicator view. If a blocked
+      // indicator is displayed, there is no need to re-show it and it will be
+      // reset automatically. An in-use indicator will be shown/hidden in
+      // `OnCapturingStateChanged`.
+      if (microphone_camera_state_.HasAny(
+              {kCameraAccessed, kMicrophoneAccessed})) {
+        return;
+      }
+    }
+
+    microphone_camera_state_ = new_microphone_camera_state;
+
     MaybeUpdateLocationBar();
   }
 
@@ -1507,6 +1535,16 @@ void PageSpecificContentSettings::OnCapturingStateChangedInternal(
   if (is_capturing) {
     microphone_camera_state_.Put(state);
     in_use_.insert(type);
+
+    // Camera and Microphone share the same activity indicator view. If one of
+    // them is in use, reset a blocked state for another as we cannot display
+    // in-use and blocked indicator at once.
+    auto t = type == ContentSettingsType::MEDIASTREAM_CAMERA
+                 ? ContentSettingsType::MEDIASTREAM_MIC
+                 : ContentSettingsType::MEDIASTREAM_CAMERA;
+    if (media_blocked_indicator_timer_.contains(t)) {
+      ResetMediaBlockedState(t, /*update_indicators=*/false);
+    }
   } else {
     microphone_camera_state_.Remove(state);
     in_use_.erase(type);
@@ -1591,12 +1629,14 @@ void PageSpecificContentSettings::StartBlockedIndicatorTimer(
   }
   media_blocked_indicator_timer_[type].Start(
       FROM_HERE, blocked_indicator_delay,
-      base::BindOnce(&PageSpecificContentSettings::HideMediaBlockedIndicator,
-                     weak_factory_.GetWeakPtr(), type));
+      base::BindOnce(&PageSpecificContentSettings::ResetMediaBlockedState,
+                     weak_factory_.GetWeakPtr(), type,
+                     /*update_indicators=*/true));
 }
 
-void PageSpecificContentSettings::HideMediaBlockedIndicator(
-    ContentSettingsType type) {
+void PageSpecificContentSettings::ResetMediaBlockedState(
+    ContentSettingsType type,
+    bool update_indicators) {
   media_blocked_indicator_timer_.erase(type);
 
   if (type == ContentSettingsType::MEDIASTREAM_MIC) {
@@ -1608,7 +1648,9 @@ void PageSpecificContentSettings::HideMediaBlockedIndicator(
     microphone_camera_state_.Remove(kCameraAccessed);
   }
 
-  MaybeUpdateLocationBar();
+  if (update_indicators) {
+    MaybeUpdateLocationBar();
+  }
 }
 
 void PageSpecificContentSettings::MaybeNotifySiteDataObservers(

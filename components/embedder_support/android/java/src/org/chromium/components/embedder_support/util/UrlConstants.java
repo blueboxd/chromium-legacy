@@ -85,6 +85,9 @@ public class UrlConstants {
     public static final String GOOGLE_ACCOUNT_ACTIVITY_CONTROLS_URL =
             "https://myaccount.google.com/activitycontrols/search";
 
+    public static final String GOOGLE_ACCOUNT_LINKED_SERVICES_URL =
+            "https://myaccount.google.com/linked-services";
+
     public static final String GOOGLE_ACCOUNT_ACTIVITY_CONTROLS_FROM_PG_URL =
             "https://myaccount.google.com/activitycontrols/search"
                     + "&utm_source=chrome&utm_medium=privacy-guide";
@@ -122,6 +125,9 @@ public class UrlConstants {
 
     public static final String MANAGEMENT_HOST = "management";
     public static final String MANAGEMENT_URL = "chrome://management/";
+
+    /* Host used for PDF native pages. */
+    public static final String PDF_HOST = "pdf";
 
     private static class Holder {
         private static final String SERIALIZED_NTP_URL =

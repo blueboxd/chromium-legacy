@@ -24,8 +24,8 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
+#import "ios/chrome/browser/ui/page_info/page_info_about_this_site_info.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
-#import "ios/chrome/browser/ui/page_info/page_info_helper.h"
 #import "ios/chrome/browser/ui/permissions/permission_info.h"
 #import "ios/chrome/browser/ui/permissions/permissions_constants.h"
 #import "ios/chrome/browser/ui/permissions/permissions_delegate.h"
@@ -42,13 +42,22 @@ namespace {
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSecurityContent,
   SectionIdentifierPermissions,
+  SectionIdentifierAboutThisSite,
 };
 
 typedef NS_ENUM(NSInteger, ItemIdentifier) {
   ItemIdentifierSecurityHeader,
   ItemIdentifierPermissionsCamera,
   ItemIdentifierPermissionsMicrophone,
+  ItemIdentifierAboutThisSiteHeader
 };
+
+// The minimum scale factor of the title label showing the URL.
+const float kTitleLabelMinimumScaleFactor = 0.7f;
+
+// The maximum number of lines we should show for a page's description in the
+// AboutThisSite section.
+const NSInteger kAboutThisSiteDetailTextNumberOfLines = 2;
 
 }  // namespace
 
@@ -66,6 +75,7 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
 
 @implementation PageInfoViewController {
   UITableViewDiffableDataSource<NSNumber*, NSNumber*>* _dataSource;
+  PageInfoAboutThisSiteInfo* _aboutThisSiteInfo;
 }
 
 #pragma mark - UIViewController
@@ -83,9 +93,16 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.navigationItem.titleView =
-      page_info::TitleViewLabelForURL(self.pageInfoSecurityDescription.siteURL);
   self.title = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_SITE_INFORMATION);
+  if (IsRevampPageInfoIosEnabled()) {
+    self.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeNever;
+    self.navigationItem.prompt = self.pageInfoSecurityDescription.siteURL;
+  } else {
+    self.navigationItem.titleView =
+        [self titleViewLabelForURL:self.pageInfoSecurityDescription.siteURL];
+  }
+
   self.tableView.accessibilityIdentifier = kPageInfoViewAccessibilityIdentifier;
   self.navigationController.navigationBar.accessibilityIdentifier =
       kPageInfoViewNavigationBarAccessibilityIdentifier;
@@ -107,6 +124,16 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
     self.tableView.alwaysBounceVertical = NO;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     return;
+  }
+
+  // Update the security information if it was fetched while the page was being
+  // loaded. If page info is opened while the page is being loaded, its
+  // certificates might not have been loaded yet and so the page is shown as
+  // insecure. The next time the user opens page info, we should update the
+  // security information when the page is fully loaded so it's up to date.
+  if (self.pageInfoSecurityDescription.isPageLoading) {
+    _pageInfoSecurityDescription =
+        [self.pageInfoPresentationHandler updatedSiteSecurityDescription];
   }
 
   [self loadModel];
@@ -145,6 +172,11 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
   for (NSNumber* permission in self.permissionsInfo.allKeys) {
     [self updateSnapshot:snapshot forPermission:permission];
   }
+
+  if (IsAboutThisSiteFeatureEnabled()) {
+    [self updateSnapshotForAboutThisSite:snapshot];
+  }
+
   [_dataSource applySnapshot:snapshot animatingDifferences:NO];
 }
 
@@ -161,14 +193,32 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
         [self.pageInfoPresentationHandler showSecurityPage];
       }
       break;
+    case ItemIdentifierAboutThisSiteHeader:
+      if (IsRevampPageInfoIosEnabled()) {
+        [self.pageInfoPresentationHandler
+            showAboutThisSitePage:_aboutThisSiteInfo.moreAboutURL];
+      }
+      break;
     default:
       break;
   }
+
+  // Deselect the row so the UI seems responsive when the action triggered by
+  // the selection (e.g. opening a new tab, opening a subpage) takes a bit
+  // longer to happen.
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
-  return section == SectionIdentifierSecurityContent
+  SectionIdentifier sectionIdentifier = static_cast<SectionIdentifier>(
+      [_dataSource sectionIdentifierForIndex:section].integerValue);
+
+  if (IsRevampPageInfoIosEnabled()) {
+    return ChromeTableViewHeightForHeaderInSection(sectionIdentifier);
+  }
+
+  return sectionIdentifier == SectionIdentifierSecurityContent
              ? kPageInfoPaddingFirstSectionHeader
              : UITableViewAutomaticDimension;
 }
@@ -179,8 +229,13 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
       [_dataSource sectionIdentifierForIndex:section].integerValue);
   switch (sectionIdentifier) {
     case SectionIdentifierSecurityContent:
+    case SectionIdentifierAboutThisSite:
       return nil;
     case SectionIdentifierPermissions: {
+      if (IsRevampPageInfoIosEnabled()) {
+        return nil;
+      }
+
       TableViewTextHeaderFooterView* header =
           DequeueTableViewHeaderFooter<TableViewTextHeaderFooterView>(
               self.tableView);
@@ -222,6 +277,8 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
       footer.attributedString = [self permissionFooterAttributedString];
       return footer;
     }
+    default:
+      return nil;
   }
 }
 
@@ -229,7 +286,7 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
 
 - (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(CrURL*)URL {
   DCHECK(URL.gurl == GURL(kPageInfoHelpCenterURL));
-  [self.pageInfoCommandsHandler showSecurityHelpPage];
+  [self.pageInfoPresentationHandler showSecurityHelpPage];
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate
@@ -298,6 +355,16 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
       [cell.switchView addTarget:self
                           action:@selector(permissionSwitchToggled:)
                 forControlEvents:UIControlEventValueChanged];
+
+      if (IsRevampPageInfoIosEnabled()) {
+        [cell setIconImage:CustomSymbolWithPointSize(kCameraSymbol,
+                                                     kPageInfoSymbolPointSize)
+                  tintColor:UIColor.whiteColor
+            backgroundColor:[UIColor colorNamed:kOrange500Color]
+               cornerRadius:kColorfulBackgroundSymbolCornerRadius
+                borderWidth:0];
+      }
+
       return cell;
     }
     case ItemIdentifierPermissionsMicrophone: {
@@ -317,6 +384,45 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
       [cell.switchView addTarget:self
                           action:@selector(permissionSwitchToggled:)
                 forControlEvents:UIControlEventValueChanged];
+
+      if (IsRevampPageInfoIosEnabled()) {
+        [cell setIconImage:DefaultSymbolWithPointSize(kMicrophoneSymbol,
+                                                      kPageInfoSymbolPointSize)
+                  tintColor:UIColor.whiteColor
+            backgroundColor:[UIColor colorNamed:kOrange500Color]
+               cornerRadius:kColorfulBackgroundSymbolCornerRadius
+                borderWidth:0];
+      }
+
+      return cell;
+    }
+    case ItemIdentifierAboutThisSiteHeader: {
+      TableViewDetailIconCell* cell =
+          DequeueTableViewCell<TableViewDetailIconCell>(tableView);
+      cell.textLabel.text =
+          l10n_util::GetNSString(IDS_IOS_PAGE_INFO_ABOUT_THIS_PAGE);
+      cell.detailText = _aboutThisSiteInfo.summary;
+      cell.detailTextNumberOfLines = kAboutThisSiteDetailTextNumberOfLines;
+      cell.textLayoutConstraintAxis = UILayoutConstraintAxisVertical;
+
+      UIImage* icon =
+#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
+          CustomSymbolTemplateWithPointSize(kPageInsightsSymbol,
+                                            kPageInfoSymbolPointSize);
+#else
+          DefaultSymbolTemplateWithPointSize(kInfoCircleSymbol,
+                                             kPageInfoSymbolPointSize);
+#endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS),
+
+      [cell setIconImage:icon
+                tintColor:UIColor.whiteColor
+          backgroundColor:[UIColor colorNamed:kPurple500Color]
+             cornerRadius:kColorfulBackgroundSymbolCornerRadius];
+
+      cell.accessoryView = [[UIImageView alloc]
+          initWithImage:DefaultAccessorySymbolConfigurationWithRegularWeight(
+                            kExternalLinkSymbol)];
+      cell.accessoryView.tintColor = [UIColor colorNamed:kTextQuaternaryColor];
       return cell;
     }
   }
@@ -338,6 +444,37 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
       }
               range:NSMakeRange(0, descriptionAttributedString.length)];
   return descriptionAttributedString;
+}
+
+// Returns an UILabel for the navigationItem titleView for `siteURL`.
+- (UILabel*)titleViewLabelForURL:(NSString*)siteURL {
+  UILabel* labelURL = [[UILabel alloc] init];
+  labelURL.lineBreakMode = NSLineBreakByTruncatingHead;
+  labelURL.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  labelURL.text = siteURL;
+  labelURL.adjustsFontSizeToFitWidth = YES;
+  labelURL.minimumScaleFactor = kTitleLabelMinimumScaleFactor;
+  return labelURL;
+}
+
+// Updates `snapshot` to reflect the changes to AboutThisSite info.
+- (void)updateSnapshotForAboutThisSite:
+    (NSDiffableDataSourceSnapshot<NSNumber*, NSNumber*>*)snapshot {
+  CHECK(IsAboutThisSiteFeatureEnabled());
+  if (!_aboutThisSiteInfo || !self.pageInfoSecurityDescription.secure) {
+    return;
+  }
+
+  NSInteger sectionIndex =
+      [snapshot indexOfSectionIdentifier:@(SectionIdentifierPermissions)];
+  SectionIdentifier afterSectionWithIdentifier =
+      (sectionIndex == NSNotFound) ? SectionIdentifierSecurityContent
+                                   : SectionIdentifierPermissions;
+  [snapshot insertSectionsWithIdentifiers:@[ @(SectionIdentifierAboutThisSite) ]
+               afterSectionWithIdentifier:@(afterSectionWithIdentifier)];
+
+  [snapshot appendItemsWithIdentifiers:@[ @(ItemIdentifierAboutThisSiteHeader) ]
+             intoSectionWithIdentifier:@(SectionIdentifierAboutThisSite)];
 }
 
 // Updates `snapshot` to reflect the changes done to `permissions`.
@@ -414,6 +551,13 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
     [snapshot
         deleteSectionsWithIdentifiers:@[ @(SectionIdentifierPermissions) ]];
   }
+}
+
+#pragma mark - PageInfoAboutThisSiteConsumer
+
+- (void)setAboutThisSiteSection:(PageInfoAboutThisSiteInfo*)info {
+  CHECK(IsAboutThisSiteFeatureEnabled());
+  _aboutThisSiteInfo = info;
 }
 
 #pragma mark - PermissionsConsumer

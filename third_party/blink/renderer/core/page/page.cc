@@ -152,17 +152,19 @@ Page* Page::CreateNonOrdinary(ChromeClient& chrome_client,
                               AgentGroupScheduler& agent_group_scheduler) {
   return MakeGarbageCollected<Page>(
       base::PassKey<Page>(), chrome_client, agent_group_scheduler,
-      BrowsingContextGroupInfo::CreateUnique(), /*is_ordinary=*/false);
+      BrowsingContextGroupInfo::CreateUnique(),
+      /*color_provider_colors=*/nullptr, /*is_ordinary=*/false);
 }
 
 Page* Page::CreateOrdinary(
     ChromeClient& chrome_client,
     Page* opener,
     AgentGroupScheduler& agent_group_scheduler,
-    const BrowsingContextGroupInfo& browsing_context_group_info) {
+    const BrowsingContextGroupInfo& browsing_context_group_info,
+    const ColorProviderColorMaps* color_provider_colors) {
   Page* page = MakeGarbageCollected<Page>(
       base::PassKey<Page>(), chrome_client, agent_group_scheduler,
-      browsing_context_group_info, /*is_ordinary=*/true);
+      browsing_context_group_info, color_provider_colors, /*is_ordinary=*/true);
 
   if (opener) {
     // Before: ... -> opener -> next -> ...
@@ -194,6 +196,7 @@ Page::Page(base::PassKey<Page>,
            ChromeClient& chrome_client,
            AgentGroupScheduler& agent_group_scheduler,
            const BrowsingContextGroupInfo& browsing_context_group_info,
+           const ColorProviderColorMaps* color_provider_colors,
            bool is_ordinary)
     : SettingsDelegate(std::make_unique<Settings>()),
       main_frame_(nullptr),
@@ -251,6 +254,10 @@ Page::Page(base::PassKey<Page>,
             "HistoryNavigation",
             WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
   }
+  UpdateColorProviders(color_provider_colors &&
+                               !color_provider_colors->IsEmpty()
+                           ? *color_provider_colors
+                           : ColorProviderColorMaps::CreateDefault());
 }
 
 Page::~Page() {
@@ -470,12 +477,6 @@ void Page::ColorSchemeChanged() {
     }
 }
 
-void Page::ColorProvidersChanged() {
-  for (Page* page : AllPages()) {
-    page->InvalidatePaint();
-  }
-}
-
 void Page::EmulateForcedColors(bool is_dark_theme) {
   emulated_forced_colors_provider_ =
       WebTestSupport::IsRunningWebTest()
@@ -491,32 +492,49 @@ void Page::DisableEmulatedForcedColors() {
 
 void Page::UpdateColorProviders(
     const ColorProviderColorMaps& color_provider_colors) {
-  if (color_provider_colors.IsEmpty()) {
-    return;
+  // Color maps should not be empty as they are needed to create the color
+  // providers.
+  CHECK(!color_provider_colors.IsEmpty());
+
+  bool did_color_provider_update = false;
+  if (!ui::IsRendererColorMappingEquivalent(
+          light_color_provider_.get(),
+          color_provider_colors.light_colors_map)) {
+    light_color_provider_ = std::make_unique<ui::ColorProvider>(
+        ui::CreateColorProviderFromRendererColorMap(
+            color_provider_colors.light_colors_map));
+    did_color_provider_update = true;
+  }
+  if (!ui::IsRendererColorMappingEquivalent(
+          dark_color_provider_.get(), color_provider_colors.dark_colors_map)) {
+    dark_color_provider_ = std::make_unique<ui::ColorProvider>(
+        ui::CreateColorProviderFromRendererColorMap(
+            color_provider_colors.dark_colors_map));
+    did_color_provider_update = true;
+  }
+  if (!ui::IsRendererColorMappingEquivalent(
+          forced_colors_color_provider_.get(),
+          color_provider_colors.forced_colors_map)) {
+    forced_colors_color_provider_ =
+        WebTestSupport::IsRunningWebTest()
+            ? std::make_unique<ui::ColorProvider>(
+                  ui::CreateEmulatedForcedColorsColorProviderForTest())
+            : std::make_unique<ui::ColorProvider>(
+                  ui::CreateColorProviderFromRendererColorMap(
+                      color_provider_colors.forced_colors_map));
+    did_color_provider_update = true;
   }
 
-  // TODO(samomekarajr): Might want to only create new ColorProviders if the
-  // renderer color maps do not match the existing ColorProviders.
-  light_color_provider_ = std::make_unique<ui::ColorProvider>(
-      ui::CreateColorProviderFromRendererColorMap(
-          color_provider_colors.light_colors_map));
-  dark_color_provider_ = std::make_unique<ui::ColorProvider>(
-      ui::CreateColorProviderFromRendererColorMap(
-          color_provider_colors.dark_colors_map));
-  forced_colors_color_provider_ =
-      WebTestSupport::IsRunningWebTest()
-          ? std::make_unique<ui::ColorProvider>(
-                ui::CreateEmulatedForcedColorsColorProviderForTest())
-          : std::make_unique<ui::ColorProvider>(
-                ui::CreateColorProviderFromRendererColorMap(
-                    color_provider_colors.forced_colors_map));
+  if (did_color_provider_update) {
+    InvalidatePaint();
+  }
 }
 
 void Page::UpdateColorProvidersForTest() {
   light_color_provider_ = std::make_unique<ui::ColorProvider>(
-      ui::CreateColorProviderForBlinkTests(/*dark_mode=*/false));
+      ui::CreateDefaultColorProviderForBlink(/*dark_mode=*/false));
   dark_color_provider_ = std::make_unique<ui::ColorProvider>(
-      ui::CreateColorProviderForBlinkTests(/*dark_mode=*/true));
+      ui::CreateDefaultColorProviderForBlink(/*dark_mode=*/true));
   forced_colors_color_provider_ = std::make_unique<ui::ColorProvider>(
       ui::CreateEmulatedForcedColorsColorProviderForTest());
 }
@@ -524,6 +542,11 @@ void Page::UpdateColorProvidersForTest() {
 const ui::ColorProvider* Page::GetColorProviderForPainting(
     mojom::blink::ColorScheme color_scheme,
     bool in_forced_colors) const {
+  // All providers should be initialized and non-null before this function is
+  // called.
+  CHECK(light_color_provider_);
+  CHECK(dark_color_provider_);
+  CHECK(forced_colors_color_provider_);
   if (in_forced_colors) {
     if (emulated_forced_colors_provider_) {
       return emulated_forced_colors_provider_.get();
@@ -831,8 +854,9 @@ void Page::SettingsChanged(ChangeType change_type) {
       for (Frame* frame = MainFrame(); frame;
            frame = frame->Tree().TraverseNext()) {
         if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-          local_frame->GetDocument()->Fetcher()->SetImagesEnabled(
-              GetSettings().GetImagesEnabled());
+          // Notify the fetcher that the image loading setting has changed,
+          // which may cause previously deferred requests to load.
+          local_frame->GetDocument()->Fetcher()->ReloadImagesIfNotDeferred();
           local_frame->GetDocument()->Fetcher()->SetAutoLoadImages(
               GetSettings().GetLoadsImagesAutomatically());
         }

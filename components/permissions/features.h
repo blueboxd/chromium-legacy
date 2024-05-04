@@ -68,13 +68,13 @@ BASE_DECLARE_FEATURE(kMitigateUnpartitionedWebviewPermissions);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
-BASE_DECLARE_FEATURE(kPermissionStorageAccessAPI);
-
-COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kWindowPlacementPermissionAlias);
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kShowRelatedWebsiteSetsPermissionGrants);
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+BASE_DECLARE_FEATURE(kCpssQuietChipTextUpdate);
 
 }  // namespace features
 namespace feature_params {

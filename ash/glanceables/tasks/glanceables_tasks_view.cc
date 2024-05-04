@@ -28,15 +28,20 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/i18n/time_formatting.h"
+#include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -49,15 +54,14 @@
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
-#include "ui/wm/core/focus_controller.h"
 #include "url/gurl.h"
 
 namespace ash {
 namespace {
 
-constexpr int kAddNewTaskIconSize = 24;
-constexpr auto kHeaderIconButtonMargins = gfx::Insets::TLBR(0, 0, 0, 4);
-constexpr int kInteriorGlanceableBubbleMargin = 16;
+constexpr auto kProgressBarPreferredSize = gfx::Size(0, 8);
+constexpr auto kHeaderIconButtonMargins = gfx::Insets::TLBR(0, 0, 0, 2);
+constexpr int kInteriorGlanceableBubbleMargin = 15;
 constexpr int kScrollViewBottomMargin = 12;
 constexpr int kListViewBetweenChildSpacing = 4;
 constexpr int kMaximumTasks = 100;
@@ -65,6 +69,33 @@ constexpr gfx::Insets kFooterBorderInsets = gfx::Insets::TLBR(4, 6, 8, 2);
 
 constexpr char kTasksManagementPage[] =
     "https://calendar.google.com/calendar/u/0/r/week?opentasks=1";
+
+api::TasksClient* GetTasksClient() {
+  return Shell::Get()->glanceables_controller()->GetTasksClient();
+}
+
+// Returns a displayable last modified time for kCantUpdateList.
+std::u16string GetLastUpdateTimeMessage(base::Time time) {
+  const std::u16string time_of_day = base::TimeFormatTimeOfDay(time);
+  const std::u16string relative_date =
+      ui::TimeFormat::RelativeDate(time, nullptr);
+  if (relative_date.empty()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_GLANCEABLES_TASKS_ERROR_LAST_UPDATE_DATE_AND_TIME, time_of_day,
+        base::TimeFormatShortDate(time));
+  }
+
+  const auto midnight_today = base::Time::Now().LocalMidnight();
+  const auto midnight_tomorrow = midnight_today + base::Days(1);
+  if (midnight_today <= time && time < midnight_tomorrow) {
+    return l10n_util::GetStringFUTF16(
+        IDS_GLANCEABLES_TASKS_ERROR_LAST_UPDATE_TIME, time_of_day);
+  } else {
+    return l10n_util::GetStringFUTF16(
+        IDS_GLANCEABLES_TASKS_ERROR_LAST_UPDATE_DATE_AND_TIME, time_of_day,
+        relative_date);
+  }
+}
 
 class AddNewTaskButton : public views::LabelButton {
   METADATA_HEADER(AddNewTaskButton, views::LabelButton)
@@ -75,15 +106,16 @@ class AddNewTaskButton : public views::LabelButton {
             l10n_util::GetStringUTF16(
                 IDS_GLANCEABLES_TASKS_ADD_NEW_TASK_BUTTON_LABEL)) {
     SetID(base::to_underlying(GlanceablesViewId::kTasksBubbleAddNewButton));
-    SetImageModel(views::Button::ButtonState::STATE_NORMAL,
-                  ui::ImageModel::FromVectorIcon(
-                      kGlanceablesTasksAddNewTaskIcon,
-                      cros_tokens::kCrosSysPrimary, kAddNewTaskIconSize));
-    SetImageLabelSpacing(14);
+    SetImageModel(
+        views::Button::ButtonState::STATE_NORMAL,
+        ui::ImageModel::FromVectorIcon(kGlanceablesTasksAddNewTaskIcon,
+                                       cros_tokens::kCrosSysPrimary));
+    SetImageLabelSpacing(12);
     SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(8, 0)));
     SetEnabledTextColorIds(cros_tokens::kCrosSysPrimary);
     label()->SetFontList(TypographyProvider::Get()->ResolveTypographyToken(
         TypographyToken::kCrosButton2));
+    views::FocusRing::Get(this)->SetColorId(cros_tokens::kCrosSysFocusRing);
   }
 
   AddNewTaskButton(const AddNewTaskButton&) = delete;
@@ -156,11 +188,12 @@ GlanceablesTasksView::GlanceablesTasksView(
   // spec.
   CHECK(layer());
   layer()->SetRoundedCornerRadius(gfx::RoundedCornersF{16.f});
-  SetBackground(
-      views::CreateThemedSolidBackground(cros_tokens::kCrosSysSystemOnBase));
+  SetBackground(views::CreateThemedSolidBackground(
+      cros_tokens::kCrosSysSystemOnBaseOpaque));
   SetBorder(nullptr);
 
   tasks_header_view_ = AddChildView(std::make_unique<views::FlexLayoutView>());
+  tasks_header_view_->SetInteriorMargin(gfx::Insets::TLBR(1, 1, 0, 1));
   tasks_header_view_->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
   tasks_header_view_->SetMainAxisAlignment(views::LayoutAlignment::kStart);
   tasks_header_view_->SetOrientation(views::LayoutOrientation::kHorizontal);
@@ -168,6 +201,7 @@ GlanceablesTasksView::GlanceablesTasksView(
       base::to_underlying(GlanceablesViewId::kTasksBubbleHeaderView));
 
   progress_bar_ = AddChildView(std::make_unique<GlanceablesProgressBarView>());
+  progress_bar_->SetPreferredSize(kProgressBarPreferredSize);
   progress_bar_->UpdateProgressBarVisibility(/*visible=*/false);
 
   auto* const scroll_view =
@@ -183,7 +217,7 @@ GlanceablesTasksView::GlanceablesTasksView(
   list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
       /*inside_border_insets=*/
-      gfx::Insets::TLBR(0, 0, kScrollViewBottomMargin, 0),
+      gfx::Insets::TLBR(1, 1, kScrollViewBottomMargin, 1),
       kListViewBetweenChildSpacing));
 
   add_new_task_button_ =
@@ -217,21 +251,7 @@ GlanceablesTasksView::GlanceablesTasksView(
       base::to_underlying(GlanceablesViewId::kTasksBubbleHeaderIcon));
 
   tasks_combobox_model_ = std::make_unique<TasksComboboxModel>(task_lists);
-  task_list_combo_box_view_ = tasks_header_view_->AddChildView(
-      std::make_unique<Combobox>(tasks_combobox_model_.get()));
-  task_list_combo_box_view_->SetID(
-      base::to_underlying(GlanceablesViewId::kTasksBubbleComboBox));
-  task_list_combo_box_view_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kPreferred));
-  combobox_view_observation_.Observe(task_list_combo_box_view_);
-
-  task_list_combo_box_view_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_GLANCEABLES_TASKS_DROPDOWN_ACCESSIBLE_NAME));
-  task_list_combo_box_view_->SetAccessibleDescription(u"");
-  task_list_combo_box_view_->SetSelectionChangedCallback(base::BindRepeating(
-      &GlanceablesTasksView::SelectedTasksListChanged, base::Unretained(this)));
+  CreateComboBoxView();
 
   list_footer_view_ =
       list_view->AddChildView(std::make_unique<GlanceablesListFooterView>(
@@ -245,7 +265,16 @@ GlanceablesTasksView::GlanceablesTasksView(
   list_footer_view_->SetBorder(views::CreateEmptyBorder(kFooterBorderInsets));
   list_footer_view_->SetVisible(false);
 
-  ScheduleUpdateTasksList(/*initial_update=*/true);
+  const auto* active_task_list = GetActiveTaskList();
+  auto* tasks =
+      GetTasksClient()->GetCachedTasksInTaskList(active_task_list->id);
+  if (tasks) {
+    UpdateTasksInTaskList(active_task_list->id, active_task_list->title,
+                          ListShownContext::kCachedList, /*fetch_success=*/true,
+                          tasks);
+  } else {
+    ScheduleUpdateTasks(ListShownContext::kInitialList);
+  }
 }
 
 GlanceablesTasksView::~GlanceablesTasksView() {
@@ -270,12 +299,31 @@ void GlanceablesTasksView::OnViewFocused(views::View* view) {
   AnnounceListStateOnComboBoxAccessibility();
 }
 
+void GlanceablesTasksView::UpdateTaskLists(
+    const ui::ListModel<api::TaskList>* task_lists) {
+  tasks_combobox_model_->UpdateTaskLists(task_lists);
+  SetIsLoading(true);
+
+  CHECK(tasks_combobox_model_->GetDefaultIndex().has_value());
+  auto* active_task_list = tasks_combobox_model_->GetTaskListAt(
+      tasks_combobox_model_->GetDefaultIndex().value());
+
+  recreate_combobox_callback_ =
+      base::BindOnce(&GlanceablesTasksView::CreateComboBoxView,
+                     weak_ptr_factory_.GetWeakPtr());
+
+  // Force fetch the updated tasks with the new active task list.
+  GetTasksClient()->GetTasks(
+      active_task_list->id, /*force_fetch=*/true,
+      base::BindOnce(&GlanceablesTasksView::UpdateTasksInTaskList,
+                     weak_ptr_factory_.GetWeakPtr(), active_task_list->id,
+                     active_task_list->title, ListShownContext::kInitialList));
+}
+
 void GlanceablesTasksView::AddNewTaskButtonPressed() {
-  const auto* const active_task_list = tasks_combobox_model_->GetTaskListAt(
-      task_list_combo_box_view_->GetSelectedIndex().value());
   // TODO(b/301253574): make sure there is only one view is in `kEdit` state.
   auto* const pending_new_task = task_items_container_view_->AddChildViewAt(
-      CreateTaskView(active_task_list->id, /*task=*/nullptr),
+      CreateTaskView(GetActiveTaskList()->id, /*task=*/nullptr),
       /*index=*/0);
   pending_new_task->UpdateTaskTitleViewForState(
       GlanceablesTaskViewV2::TaskTitleViewState::kEdit);
@@ -296,55 +344,84 @@ std::unique_ptr<GlanceablesTaskViewV2> GlanceablesTasksView::CreateTaskView(
                           base::Unretained(this), task_list_id),
       base::BindRepeating(&GlanceablesTasksView::ActionButtonPressed,
                           base::Unretained(this),
-                          TasksLaunchSource::kEditInGoogleTasksButton));
+                          TasksLaunchSource::kEditInGoogleTasksButton),
+      base::BindRepeating(&GlanceablesTasksView::ShowErrorMessageWithType,
+                          base::Unretained(this)));
 }
 
 void GlanceablesTasksView::SelectedTasksListChanged() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   tasks_requested_time_ = base::TimeTicks::Now();
   tasks_list_change_count_++;
-  ScheduleUpdateTasksList(/*initial_update=*/false);
+  ScheduleUpdateTasks(ListShownContext::kUserSelectedList);
 }
 
-void GlanceablesTasksView::ScheduleUpdateTasksList(bool initial_update) {
+void GlanceablesTasksView::ScheduleUpdateTasks(ListShownContext context) {
   if (!task_list_combo_box_view_->GetSelectedIndex().has_value()) {
     return;
   }
 
-  progress_bar_->UpdateProgressBarVisibility(/*visible=*/true);
+  SetIsLoading(true);
   task_list_combo_box_view_->SetAccessibleDescription(u"");
 
-  const auto* const active_task_list = tasks_combobox_model_->GetTaskListAt(
-      task_list_combo_box_view_->GetSelectedIndex().value());
+  const auto* const active_task_list = GetActiveTaskList();
   tasks_combobox_model_->SaveLastSelectedTaskList(active_task_list->id);
-  Shell::Get()->glanceables_controller()->GetTasksClient()->GetTasks(
-      active_task_list->id, /*force_fetch=*/false,
-      base::BindOnce(&GlanceablesTasksView::UpdateTasksList,
+  GetTasksClient()->GetTasks(
+      active_task_list->id, /*force_fetch=*/true,
+      base::BindOnce(&GlanceablesTasksView::UpdateTasksInTaskList,
                      weak_ptr_factory_.GetWeakPtr(), active_task_list->id,
-                     active_task_list->title, initial_update));
+                     active_task_list->title, context));
 }
 
-void GlanceablesTasksView::UpdateTasksList(
+void GlanceablesTasksView::UpdateTasksInTaskList(
     const std::string& task_list_id,
     const std::string& task_list_title,
-    bool initial_update,
+    ListShownContext context,
     bool fetch_success,
     const ui::ListModel<api::Task>* tasks) {
   const gfx::Size old_preferred_size = GetPreferredSize();
+  SetIsLoading(false);
 
-  if (initial_update) {
-    add_new_task_button_->SetVisible(true);
-    base::UmaHistogramCounts100(
-        "Ash.Glanceables.TimeManagement.TasksCountInDefaultTaskList",
-        tasks->item_count());
-  } else {
-    RecordNumberOfAddedTasks(added_tasks_, task_list_initially_empty_,
-                             user_with_no_tasks_);
-    added_tasks_ = 0;
+  if (!recreate_combobox_callback_.is_null()) {
+    std::move(recreate_combobox_callback_).Run();
   }
 
-  progress_bar_->UpdateProgressBarVisibility(/*visible=*/false);
+  // Discard the fetched tasks that is not shown now.
+  if (task_list_id != GetActiveTaskList()->id) {
+    return;
+  }
 
+  if (!fetch_success) {
+    if (!GetTasksClient()->GetCachedTasksInTaskList(task_list_id) &&
+        context == ListShownContext::kInitialList) {
+      // TODO(b/323959143): Show "Couldn't load item" view if there is no cached
+      // view shown.
+      return;
+    } else {
+      // TODO(b/323959143): The error message should only be shown after we
+      // implement caching the fetched tasks and show cached tasks in UI.
+      // Revisit this to see if it works.
+      ShowErrorMessageWithType(GlanceablesTasksErrorType::kCantUpdateList);
+      return;
+    }
+  }
+
+  switch (context) {
+    case ListShownContext::kCachedList:
+      break;
+    case ListShownContext::kInitialList:
+      base::UmaHistogramCounts100(
+          "Ash.Glanceables.TimeManagement.TasksCountInDefaultTaskList",
+          tasks->item_count());
+      break;
+    case ListShownContext::kUserSelectedList:
+      RecordNumberOfAddedTasks(added_tasks_, task_list_initially_empty_,
+                               user_with_no_tasks_);
+      added_tasks_ = 0;
+      break;
+  }
+
+  add_new_task_button_->SetVisible(true);
   task_items_container_view_->RemoveAllChildViews();
 
   size_t num_tasks_shown = 0;
@@ -378,24 +455,29 @@ void GlanceablesTasksView::UpdateTasksList(
 
   if (old_preferred_size != GetPreferredSize()) {
     PreferredSizeChanged();
-    if (!initial_update) {
+    if (context == ListShownContext::kUserSelectedList) {
       GetWidget()->LayoutRootViewIfNecessary();
       ScrollViewToVisible();
     }
   }
 
-  auto* controller = Shell::Get()->glanceables_controller();
-
-  if (initial_update) {
-    RecordTasksInitialLoadTime(
-        /* first_occurrence=*/controller->bubble_shown_count() == 1,
-        base::TimeTicks::Now() - controller->last_bubble_show_time());
-  } else {
-    RecordActiveTaskListChanged();
-    RecordTasksChangeLoadTime(base::TimeTicks::Now() - tasks_requested_time_);
+  switch (context) {
+    case ListShownContext::kCachedList:
+      break;
+    case ListShownContext::kInitialList: {
+      auto* controller = Shell::Get()->glanceables_controller();
+      RecordTasksInitialLoadTime(
+          /*first_occurrence=*/controller->bubble_shown_count() == 1,
+          base::TimeTicks::Now() - controller->last_bubble_show_time());
+      first_task_list_shown_ = true;
+      break;
+    }
+    case ListShownContext::kUserSelectedList:
+      RecordActiveTaskListChanged();
+      RecordTasksChangeLoadTime(base::TimeTicks::Now() - tasks_requested_time_);
+      first_task_list_shown_ = true;
+      break;
   }
-
-  first_task_list_shown_ = true;
 }
 
 void GlanceablesTasksView::AnnounceListStateOnComboBoxAccessibility() {
@@ -408,8 +490,7 @@ void GlanceablesTasksView::AnnounceListStateOnComboBoxAccessibility() {
 void GlanceablesTasksView::MarkTaskAsCompleted(const std::string& task_list_id,
                                                const std::string& task_id,
                                                bool completed) {
-  Shell::Get()->glanceables_controller()->GetTasksClient()->MarkAsCompleted(
-      task_list_id, task_id, completed);
+  GetTasksClient()->MarkAsCompleted(task_list_id, task_id, completed);
 }
 
 void GlanceablesTasksView::ActionButtonPressed(TasksLaunchSource source) {
@@ -430,21 +511,19 @@ void GlanceablesTasksView::SaveTask(
     const std::string& title,
     api::TasksClient::OnTaskSavedCallback callback) {
   if (task_id.empty()) {
-    // Manually deleting `view` may cause the focus manager try storing the
-    // dangling `view`'s descendants. Let native window handle the view deletion
-    // when it lost active.
-    if (GetWidget() &&
-        GetWidget()->GetNativeWindow() !=
-            Shell::Get()->focus_controller()->GetActiveWindow()) {
-      return;
-    }
-
     // Empty `task_id` means that the task has not yet been created. Verify that
     // this task has a non-empty title, otherwise just delete the `view` from
     // the scrollable container.
     if (title.empty() && view) {
       RecordTaskAdditionResult(TaskModificationResult::kCancelled);
-      task_items_container_view_->RemoveChildViewT(view.get());
+
+      // Removing the task immediately may cause a crash when the task is saved
+      // in response to the task title textfield losing focus, as it may result
+      // in deleting focused view while the focus manager is handling focus
+      // change to another view. b/324409607
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(&GlanceablesTasksView::RemoveTaskView,
+                                    weak_ptr_factory_.GetWeakPtr(), view));
       return;
     }
 
@@ -452,9 +531,9 @@ void GlanceablesTasksView::SaveTask(
     RecordTaskAdditionResult(TaskModificationResult::kCommitted);
   }
 
-  progress_bar_->UpdateProgressBarVisibility(/*visible=*/true);
+  SetIsLoading(true);
 
-  auto* const client = Shell::Get()->glanceables_controller()->GetTasksClient();
+  auto* const client = GetTasksClient();
   auto on_task_saved = base::BindOnce(
       &GlanceablesTasksView::OnTaskSaved, weak_ptr_factory_.GetWeakPtr(),
       std::move(view), task_id, std::move(callback));
@@ -472,7 +551,7 @@ void GlanceablesTasksView::OnTaskSaved(
     api::TasksClient::OnTaskSavedCallback callback,
     const api::Task* task) {
   if (!task) {
-    ShowErrorMessage(u"[l10n] Error");
+    ShowErrorMessageWithType(GlanceablesTasksErrorType::kCantUpdateTitle);
     if (task_id.empty() && view) {
       // Empty `task_id` means that the task has not yet been created. Delete
       // the corresponding `view` from the scrollable container in case of
@@ -482,10 +561,86 @@ void GlanceablesTasksView::OnTaskSaved(
   } else if (task->title.empty()) {
     task_items_container_view_->RemoveChildViewT(view.get());
   }
-  progress_bar_->UpdateProgressBarVisibility(/*visible=*/false);
+  SetIsLoading(false);
   std::move(callback).Run(task);
   list_footer_view_->SetVisible(task_items_container_view_->children().size() >=
                                 kMaximumTasks);
+}
+
+const api::TaskList* GlanceablesTasksView::GetActiveTaskList() const {
+  return tasks_combobox_model_->GetTaskListAt(
+      task_list_combo_box_view_->GetSelectedIndex().value());
+}
+
+void GlanceablesTasksView::ShowErrorMessageWithType(
+    GlanceablesTasksErrorType error_type) {
+  ShowErrorMessage(GetErrorString(error_type));
+}
+
+std::u16string GlanceablesTasksView::GetErrorString(
+    GlanceablesTasksErrorType error_type) const {
+  switch (error_type) {
+    case GlanceablesTasksErrorType::kCantUpdateList: {
+      auto last_modified_time =
+          GetTasksClient()->GetTasksLastUpdateTime(GetActiveTaskList()->id);
+      CHECK(last_modified_time.has_value());
+      return GetLastUpdateTimeMessage(last_modified_time.value());
+    }
+    case GlanceablesTasksErrorType::kCantMarkComplete:
+      return l10n_util::GetStringUTF16(
+          IDS_GLANCEABLES_TASKS_ERROR_MARK_COMPLETE_FAILED);
+    case GlanceablesTasksErrorType::kCantMarkCompleteNoNetwork:
+      return l10n_util::GetStringUTF16(
+          IDS_GLANCEABLES_TASKS_ERROR_MARK_COMPLETE_FAILED_WHILE_OFFLINE);
+    case GlanceablesTasksErrorType::kCantUpdateTitle:
+    case GlanceablesTasksErrorType::kCantUpdateTitleNoNetwork:
+      // TODO(b/323959143): Add the string when it is ready.
+      return u"Error";
+  }
+}
+
+void GlanceablesTasksView::RemoveTaskView(
+    base::WeakPtr<GlanceablesTaskViewV2> task_view) {
+  if (!task_view) {
+    return;
+  }
+
+  if (task_view->Contains(GetFocusManager()->GetFocusedView())) {
+    add_new_task_button_->RequestFocus();
+  }
+  task_items_container_view_->RemoveChildViewT(task_view.get());
+  PreferredSizeChanged();
+}
+
+void GlanceablesTasksView::CreateComboBoxView() {
+  if (task_list_combo_box_view_) {
+    combobox_view_observation_.Reset();
+    tasks_header_view_->RemoveChildViewT(
+        std::exchange(task_list_combo_box_view_, nullptr));
+  }
+
+  task_list_combo_box_view_ = tasks_header_view_->AddChildView(
+      std::make_unique<Combobox>(tasks_combobox_model_.get()));
+  task_list_combo_box_view_->SetID(
+      base::to_underlying(GlanceablesViewId::kTasksBubbleComboBox));
+  task_list_combo_box_view_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kPreferred));
+  combobox_view_observation_.Observe(task_list_combo_box_view_);
+
+  task_list_combo_box_view_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_GLANCEABLES_TASKS_DROPDOWN_ACCESSIBLE_NAME));
+  task_list_combo_box_view_->SetAccessibleDescription(u"");
+  task_list_combo_box_view_->SetSelectionChangedCallback(base::BindRepeating(
+      &GlanceablesTasksView::SelectedTasksListChanged, base::Unretained(this)));
+}
+
+void GlanceablesTasksView::SetIsLoading(bool is_loading) {
+  progress_bar_->UpdateProgressBarVisibility(is_loading);
+
+  // Disable all events in the subtree if the data fetch is ongoing.
+  SetCanProcessEventsWithinSubtree(!is_loading);
 }
 
 BEGIN_METADATA(GlanceablesTasksView)

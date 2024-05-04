@@ -41,8 +41,8 @@
 #include "third_party/blink/public/web/web_disallow_transition_scope.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_input_element.h"
-#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_page_popup.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -59,7 +59,6 @@ using blink::WebAXContext;
 using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebElement;
-using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebSettings;
 using blink::WebView;
@@ -100,7 +99,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
     : RenderFrameObserver(render_frame),
       render_accessibility_manager_(render_accessibility_manager),
       render_frame_(render_frame),
-      plugin_tree_source_(nullptr),
       ukm_timer_(std::make_unique<base::ElapsedTimer>()),
       last_ukm_source_id_(ukm::kInvalidSourceId) {
   mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
@@ -320,15 +318,17 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
     return;
   }
 
+  // TODO: think about how to handle this without holding onto a plugin tree
+  // source.
   std::unique_ptr<ui::AXActionTarget> target =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              data.target_node_id);
+      AXActionTargetFactory::CreateFromNodeId(
+          document, plugin_action_target_adapter_, data.target_node_id);
   std::unique_ptr<ui::AXActionTarget> anchor =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              data.anchor_node_id);
+      AXActionTargetFactory::CreateFromNodeId(
+          document, plugin_action_target_adapter_, data.anchor_node_id);
   std::unique_ptr<ui::AXActionTarget> focus =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              data.focus_node_id);
+      AXActionTargetFactory::CreateFromNodeId(
+          document, plugin_action_target_adapter_, data.focus_node_id);
 
   ax_annotators_manager_->PerformAction(data.action);
 
@@ -456,71 +456,8 @@ bool RenderAccessibilityImpl::HasActiveDocument() const {
   return ax_context_->HasActiveDocument();
 }
 
-int RenderAccessibilityImpl::GenerateAXID() {
-  DCHECK(ax_context_);
-  return ax_context_->GenerateAXID();
-}
-
 ui::AXMode RenderAccessibilityImpl::GetAXMode() const {
   return accessibility_mode_;
-}
-
-ui::AXTreeID RenderAccessibilityImpl::GetTreeIDForPluginHost() const {
-  DCHECK(render_frame_) << "A plugin tree should be under active construction "
-                           "only while this render frame is alive.";
-  DCHECK(render_frame_->GetWebFrame())
-      << "A render frame that contains an actively constructed plugin tree "
-         "should be in the list of committed web frames.";
-  // Note: the AXTreeID comes from an embedding token.
-  // TODO(1231184): There are some cases where no content is currently rendered,
-  // due to an iframe returning 204 or window.stop() being called. In these
-  // cases there will never be an AXTreeID as there is no commit, which will
-  // prevent accessibility updates from ever being sent even if the rendering is
-  // fixed. See also other TODOs related to 1231184 in this file.
-  return render_frame_->GetWebFrame()->GetAXTreeID();
-}
-
-void RenderAccessibilityImpl::SetPluginTreeSource(
-    PluginAXTreeSource* plugin_tree_source) {
-  plugin_tree_source_ = plugin_tree_source;
-  plugin_serializer_ =
-      std::make_unique<PluginAXTreeSerializer>(plugin_tree_source_);
-
-  OnPluginRootNodeUpdated();
-}
-
-void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
-  // Search the accessibility tree for plugin's root object and post a
-  // children changed notification on it to force it to update the
-  // plugin accessibility tree.
-  WebAXObject obj = GetPluginRoot();
-  if (obj.IsNull())
-    return;
-
-  MarkWebAXObjectDirty(obj);
-  // Schedule an update immediately whenever the PDF root in PDF accessibility
-  // tree changes. It is needed to ensure that changes (e.g. bounds) in PDF
-  // accessibility tree are serialized.
-  ScheduleImmediateAXUpdate();
-}
-
-void RenderAccessibilityImpl::ShowPluginContextMenu() {
-  // Search the accessibility tree for plugin's root object and invoke
-  // ShowContextMenu() on it to show context menu for plugin.
-  WebAXObject obj = GetPluginRoot();
-  if (obj.IsNull())
-    return;
-
-  const WebDocument& document = GetMainDocument();
-  if (document.IsNull())
-    return;
-
-  std::unique_ptr<ui::AXActionTarget> target =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              obj.AxID());
-  ui::AXActionData action_data;
-  action_data.action = ax::mojom::Action::kShowContextMenu;
-  target->PerformAction(action_data);
 }
 
 WebDocument RenderAccessibilityImpl::GetMainDocument() const {
@@ -537,8 +474,7 @@ bool RenderAccessibilityImpl::SerializeUpdatesAndEvents(
     WebDocument document,
     WebAXObject root,
     std::vector<ui::AXEvent>& events,
-    std::vector<ui::AXTreeUpdate>& updates,
-    bool mark_plugin_subtree_dirty) {
+    std::vector<ui::AXTreeUpdate>& updates) {
   bool had_end_of_test_event = false;
 
   // If there's a layout complete or a scroll changed message, we need to send
@@ -555,18 +491,10 @@ bool RenderAccessibilityImpl::SerializeUpdatesAndEvents(
   DCHECK(ax_context_);
   DCHECK(!accessibility_mode_.is_mode_off());
   ax_context_->SerializeDirtyObjectsAndEvents(
-      !!plugin_tree_source_, updates, events, had_end_of_test_event,
-      had_load_complete_messages, need_to_send_location_changes);
+      updates, events, had_end_of_test_event, had_load_complete_messages,
+      need_to_send_location_changes);
 
   for (auto& update : updates) {
-    if (update.node_id_to_clear > 0) {
-      mark_plugin_subtree_dirty = true;
-    }
-
-    if (plugin_tree_source_) {
-      AddPluginTreeToUpdate(&update, mark_plugin_subtree_dirty);
-    }
-
     ax_annotators_manager_->Annotate(document, &update,
                                      had_load_complete_messages);
   }
@@ -655,24 +583,17 @@ bool RenderAccessibilityImpl::AXReadyCallback() {
   }
 #endif
 
-  // Keep track of if the host document for a plugin has been invalidated,
-  // because if so, the plugin subtree will need to be re-serialized.
-  bool mark_plugin_subtree_dirty = false;
-  if (plugin_tree_source_) {
-    mark_plugin_subtree_dirty = WebAXObject::IsDirty(GetMainDocument());
-  }
-
   // The serialized list of updates and events to send to the browser.
   blink::mojom::AXUpdatesAndEventsPtr updates_and_events =
       blink::mojom::AXUpdatesAndEvents::New();
 
   bool need_to_send_location_changes = SerializeUpdatesAndEvents(
-      document, root, updates_and_events->events, updates_and_events->updates,
-      mark_plugin_subtree_dirty);
+      document, root, updates_and_events->events, updates_and_events->updates);
   if (updates_and_events->updates.empty()) {
-    // This method should never be called unless there are updates to be made.
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
     // Do not send a serialization if there are no updates.
+    // This can occur because the serializer will already toss unincluded nodes,
+    // which could have become unincluded after they were added to the dirty
+    // object queue.
     DCHECK(updates_and_events->events.empty())
         << "If there are no updates, there also shouldn't be any events, "
            "because events always mark an object dirty.";
@@ -775,7 +696,9 @@ void RenderAccessibilityImpl::OnGetImageData(const ui::AXActionTarget* target,
   }
 
   MarkWebAXObjectDirty(obj);
-  HandleAXEvent(ui::AXEvent(obj.AxID(), ax::mojom::Event::kImageFrameUpdated));
+  HandleAXEvent(ui::AXEvent(obj.AxID(), ax::mojom::Event::kImageFrameUpdated,
+                            ax::mojom::EventFrom::kAction,
+                            ax::mojom::Action::kGetImageData));
 }
 
 void RenderAccessibilityImpl::OnDestruct() {
@@ -783,51 +706,11 @@ void RenderAccessibilityImpl::OnDestruct() {
   delete this;
 }
 
-void RenderAccessibilityImpl::AddPluginTreeToUpdate(
-    ui::AXTreeUpdate* update,
-    bool mark_plugin_subtree_dirty) {
-  if (mark_plugin_subtree_dirty) {
-    plugin_serializer_->Reset();
-  }
-
-  for (ui::AXNodeData& node : update->nodes) {
-    if (node.role == ax::mojom::Role::kEmbeddedObject) {
-      const ui::AXNode* root = plugin_tree_source_->GetRoot();
-      node.child_ids.push_back(root->id());
-
-      ui::AXTreeUpdate plugin_update;
-
-      // TODO(crbug.com/324124958): meant as a short-term workaround for
-      // instability.
-      plugin_serializer_->Reset();
-
-      plugin_serializer_->SerializeChanges(root, &plugin_update);
-
-      size_t old_count = update->nodes.size();
-      size_t new_count = plugin_update.nodes.size();
-      update->nodes.resize(old_count + new_count);
-      for (size_t i = 0; i < new_count; ++i)
-        update->nodes[old_count + i] = plugin_update.nodes[i];
-      break;
-    }
-  }
-
-  if (plugin_tree_source_->GetTreeData(&update->tree_data))
-    update->has_tree_data = true;
-}
-
 blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
   blink::WebPagePopup* popup = render_frame_->GetWebView()->GetPagePopup();
   if (popup)
     return popup->GetDocument();
   return WebDocument();
-}
-
-blink::WebAXObject RenderAccessibilityImpl::GetPluginRoot() {
-  if (!ax_context_)
-    return WebAXObject();
-  ax_context_->UpdateAXForAllDocuments();
-  return ax_context_->GetPluginRoot();
 }
 
 WebAXObject RenderAccessibilityImpl::ComputeRoot() {
@@ -847,6 +730,11 @@ void RenderAccessibilityImpl::RecordInaccessiblePdfUkm() {
       GetMainDocument().GetUkmSourceId())
       .SetSeen(true)
       .Record(ukm_recorder_.get());
+}
+
+void RenderAccessibilityImpl::SetPluginAXTreeActionTargetAdapter(
+    PluginAXTreeActionTargetAdapter* adapter) {
+  plugin_action_target_adapter_ = adapter;
 }
 
 void RenderAccessibilityImpl::MaybeSendUKM() {

@@ -78,7 +78,7 @@ class ElementRuleCollectorTest : public PageTestBase {
     MatchRequest request(rule_set, scope);
 
     collector.CollectMatchingRules(request);
-    collector.SortAndTransferMatchedRules(CascadeOrigin::kNone,
+    collector.SortAndTransferMatchedRules(CascadeOrigin::kAuthor,
                                           /*is_vtt_embedded_style=*/false,
                                           /*tracker=*/nullptr);
 
@@ -270,9 +270,9 @@ TEST_F(ElementRuleCollectorTest, LinkMatchTypeHostContext) {
   ASSERT_TRUE(unvisited_host);
 
   ShadowRoot& visited_root =
-      visited_host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      visited_host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   ShadowRoot& unvisited_root =
-      unvisited_host->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      unvisited_host->AttachShadowRootForTesting(ShadowRootMode::kOpen);
 
   visited_root.setInnerHTML(R"HTML(
     <style id=style></style>

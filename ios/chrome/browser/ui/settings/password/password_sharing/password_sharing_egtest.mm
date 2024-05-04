@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #import "base/test/ios/wait_util.h"
+#import "build/branding_buildflags.h"
 #import "components/password_manager/core/browser/features/password_features.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/settings/elements/elements_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
@@ -37,11 +39,6 @@ using password_manager_test_utils::PasswordDetailsTableViewMatcher;
 using password_manager_test_utils::SavePasswordFormToProfileStore;
 
 constexpr char kGoogleHelpCenterURL[] = "support.google.com";
-
-void SignInAndEnableSync() {
-  FakeSystemIdentity* fake_identity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fake_identity enableSync:YES];
-}
 
 // Matcher for Password Sharing First Run.
 id<GREYMatcher> PasswordSharingFirstRunMatcher() {
@@ -177,7 +174,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testShareButtonVisibilityWithSharingDisabled {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -185,7 +182,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testShareButtonVisibilityWithSharingEnabled {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -201,7 +198,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 
 - (void)testShareButtonVisibilityForUserOptedInToAccountStorage {
   FakeSystemIdentity* fake_identity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fake_identity enableSync:NO];
+  [SigninEarlGrey signinWithFakeIdentity:fake_identity];
 
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
@@ -214,7 +211,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
       setBoolValue:NO
        forUserPref:password_manager::prefs::kPasswordSharingEnabled];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   // Share button should be visible and display the policy info popup upon tap.
@@ -229,7 +226,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testFamilyPickerCancelFlow {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -248,7 +245,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testPasswordPickerCancelFlow {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordsToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -266,7 +263,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testFamilyPickerSwipeToDismissFlow {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -290,7 +287,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [ChromeEarlGrey setBoolValue:YES
                    forUserPref:prefs::kPasswordSharingFlowHasBeenEntered];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -305,7 +302,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testPasswordPickerSwipeToDismissFlow {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordsToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -320,7 +317,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testSharingStatusSwipeToDismissFlow {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -351,7 +348,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [ChromeEarlGrey setBoolValue:YES
                    forUserPref:prefs::kPasswordSharingFlowHasBeenEntered];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -386,7 +383,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [ChromeEarlGrey setBoolValue:YES
                    forUserPref:prefs::kPasswordSharingFlowHasBeenEntered];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -422,7 +419,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [ChromeEarlGrey setBoolValue:YES
                    forUserPref:prefs::kPasswordSharingFlowHasBeenEntered];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -442,7 +439,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testPasswordSharingSuccess {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -494,7 +491,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testNavigationBetweenPasswordAndFamilyPicker {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordsToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -526,8 +523,16 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-- (void)testTappingLearnMoreInFamilyPickerInfoPopup {
-  SignInAndEnableSync();
+// TODO(crbug.com/328648892):reenable after fix. 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#define MAYBE_testTappingLearnMoreInFamilyPickerInfoPopup \
+  DISABLED_testTappingLearnMoreInFamilyPickerInfoPopup
+#else
+#define MAYBE_testTappingLearnMoreInFamilyPickerInfoPopup \
+  testTappingLearnMoreInFamilyPickerInfoPopup
+#endif
+- (void)MAYBE_testTappingLearnMoreInFamilyPickerInfoPopup {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -561,7 +566,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [ChromeEarlGrey setBoolValue:NO
                    forUserPref:prefs::kPasswordSharingFlowHasBeenEntered];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -589,7 +594,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [ChromeEarlGrey setBoolValue:NO
                    forUserPref:prefs::kPasswordSharingFlowHasBeenEntered];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -627,7 +632,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [ChromeEarlGrey setBoolValue:NO
                    forUserPref:prefs::kPasswordSharingFlowHasBeenEntered];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -649,7 +654,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [ChromeEarlGrey setBoolValue:NO
                    forUserPref:prefs::kPasswordSharingFlowHasBeenEntered];
 
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -671,7 +676,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testFamilyPickerViewDismissedForAuthentication {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]
@@ -693,7 +698,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testPasswordPickerViewDismissedForAuthentication {
-  SignInAndEnableSync();
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self saveExamplePasswordsToProfileStoreAndOpenDetails];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailsShareButtonMatcher()]

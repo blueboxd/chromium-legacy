@@ -14,11 +14,13 @@ source_set("grid") {
     "//base",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser",
+    "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups:tab_group_creation",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups:tab_groups_commands",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups:tab_groups_ui",
     "//ios/web/public",
   ]
 }
@@ -30,6 +32,7 @@ source_set("grid_mediator") {
   ]
   deps = [
     ":grid_consumer",
+    ":grid_item_identifier",
     ":grid_mediator_delegate",
     ":grid_mediator_item_provider",
     ":grid_toolbars_mutator",
@@ -40,6 +43,7 @@ source_set("grid_mediator") {
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
     "//components/prefs",
+    "//components/tab_groups",
     "//ios/chrome/browser/bookmarks/model",
     "//ios/chrome/browser/commerce/model",
     "//ios/chrome/browser/default_browser/model:utils",
@@ -85,6 +89,19 @@ source_set("grid_ui_constants") {
   ]
 }
 
+source_set("grid_item_identifier") {
+  sources = [
+    "grid_item_identifier.h",
+    "grid_item_identifier.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/web/public",
+  ]
+}
+
 source_set("grid_utils") {
   sources = [
     "grid_utils.h",
@@ -92,11 +109,20 @@ source_set("grid_utils") {
   ]
 
   deps = [
+    ":grid_item_identifier",
     "//base",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/tabs/model:features",
     "//ios/chrome/browser/ui/tab_switcher",
   ]
+}
+
+source_set("group_tab_info") {
+  sources = [
+    "group_tab_info.h",
+    "group_tab_info.mm",
+  ]
+  deps = []
 }
 
 source_set("grid_ui") {
@@ -117,20 +143,14 @@ source_set("grid_ui") {
     "grid_empty_view.h",
     "grid_header.h",
     "grid_header.mm",
-    "grid_item_identifier.h",
-    "grid_item_identifier.mm",
     "grid_layout.h",
     "grid_layout.mm",
     "grid_shareable_items_provider.h",
     "grid_theme.h",
-    "group_bottom_trailing_view.h",
-    "group_bottom_trailing_view.mm",
     "group_grid_cell.h",
     "group_grid_cell.mm",
     "group_grid_configurable_view.h",
     "group_grid_configurable_view.mm",
-    "group_tab_info.h",
-    "group_tab_info.mm",
     "group_tab_view.h",
     "group_tab_view.mm",
     "legacy_grid_layout.h",
@@ -138,13 +158,15 @@ source_set("grid_ui") {
   ]
 
   deps = [
+    ":grid_item_identifier",
     ":grid_mediator_item_provider",
     ":grid_ui_constants",
     ":grid_view_controller_mutator",
+    ":group_tab_info",
     "resources:tab_grid_incognito_tabs_empty",
     "resources:tab_grid_regular_tabs_empty",
     "//base",
-    "//components/supervised_user/core/common:features",
+    "//components/supervised_user/core/common:common",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/shared/public/features",
@@ -168,6 +190,7 @@ source_set("grid_ui") {
     "//ios/chrome/common/ui/elements:elements",
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser/modals:modals_api",
+    "//ios/public/provider/chrome/browser/raccoon:raccoon_api",
     "//ios/third_party/material_components_ios",
     "//ios/web/common:uikit",
     "//ios/web/public",
@@ -225,6 +248,7 @@ source_set("unit_tests") {
 
   deps = [
     ":grid",
+    ":grid_item_identifier",
     ":grid_mediator",
     ":grid_ui",
     ":grid_utils",
@@ -232,6 +256,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/commerce/core:feature_list",
+    "//components/tab_groups",
     "//ios/chrome/browser/commerce/model",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",

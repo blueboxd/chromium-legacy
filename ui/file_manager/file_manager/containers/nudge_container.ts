@@ -7,7 +7,8 @@ import '../widgets/xf_nudge.js';
 import {isNewDirectoryTreeEnabled} from '../common/js/flags.js';
 import {storage} from '../common/js/storage.js';
 import {str} from '../common/js/translations.js';
-import {NudgeDirection, XfNudge} from '../widgets/xf_nudge.js';
+import type {XfNudge} from '../widgets/xf_nudge.js';
+import {NudgeDirection} from '../widgets/xf_nudge.js';
 import type {XfTreeItem} from '../widgets/xf_tree_item.js';
 
 /**
@@ -284,8 +285,7 @@ export class NudgeContainer {
    */
   private handlePointerDown_(event: MouseEvent) {
     // Ignore pointer events on the nudge to allow copying the nudge's text.
-    if (event.composedPath().includes(
-            /** @type {!EventTarget} */ (this.nudge_))) {
+    if (event.composedPath().includes(this.nudge_)) {
       return;
     }
     this.closeNudge(this.currentNudgeType_);

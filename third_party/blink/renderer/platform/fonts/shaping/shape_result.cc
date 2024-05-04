@@ -78,10 +78,13 @@ struct SameSizeAsRunInfo {
 ASSERT_SIZE(ShapeResult::RunInfo, SameSizeAsRunInfo);
 
 struct SameSizeAsShapeResult {
-  Vector<int> vectors[2];
-  UntracedMember<void*> members[2];
   float width;
-  unsigned integers[2];
+  UntracedMember<void*> deprecated_ink_bounds_;
+  Vector<int> runs_;
+  Vector<int> character_position_;
+  UntracedMember<void*> primary_font_;
+  unsigned start_index_;
+  unsigned num_characters_;
   unsigned bitfields : 32;
 };
 
@@ -486,7 +489,7 @@ unsigned ShapeResult::NextSafeToBreakOffset(unsigned index) const {
     unsigned run_start = run->start_index_;
     if (index >= run_start) {
       unsigned offset = index - run_start;
-      if (offset <= run->num_characters_) {
+      if (offset < run->num_characters_) {
         return run->NextSafeToBreakOffset(offset) + run_start;
       }
       if (IsRtl()) {
@@ -543,7 +546,7 @@ void ShapeResult::AddUnsafeToBreak(Iterator offsets_iter,
 #endif
   unsigned offset = *offsets_iter;
   for (const auto& run : runs_) {
-    unsigned run_offset = offset - run->StartIndex() - StartIndex();
+    unsigned run_offset = offset - run->StartIndex();
     if (run_offset >= run->num_characters_) {
       continue;
     }
@@ -554,7 +557,7 @@ void ShapeResult::AddUnsafeToBreak(Iterator offsets_iter,
           return;
         }
         offset = *offsets_iter;
-        run_offset = offset - run->StartIndex() - StartIndex();
+        run_offset = offset - run->StartIndex();
         if (run_offset >= run->num_characters_) {
           break;
         }
@@ -724,8 +727,7 @@ float ShapeResult::CaretPositionForOffset(
   return PositionForOffset(offset, adjust_mid_cluster);
 }
 
-bool ShapeResult::HasFallbackFonts() const {
-  const SimpleFontData* primary_font = PrimaryFont();
+bool ShapeResult::HasFallbackFonts(const SimpleFontData* primary_font) const {
   for (const Member<RunInfo>& run : runs_) {
     if (run->font_data_ != primary_font) {
       return true;
@@ -1166,6 +1168,7 @@ void ShapeResult::ApplyTextAutoSpacingCore(Iterator offset_begin,
 }
 
 const ShapeResult* ShapeResult::UnapplyAutoSpacing(
+    float spacing_width,
     unsigned start_offset,
     unsigned break_offset) const {
   DCHECK_GE(start_offset, StartIndex());
@@ -1182,31 +1185,28 @@ const ShapeResult* ShapeResult::UnapplyAutoSpacing(
       continue;
     }
     HarfBuzzRunGlyphData& last_glyph = run->glyph_data_.back();
-    DCHECK(PrimaryFont());
-    const float width = TextAutoSpace::GetSpacingWidth(*PrimaryFont());
-    DCHECK_GE(last_glyph.advance, width);
-    last_glyph.advance -= width;
-    run->width_ -= width;
-    sub_range->width_ -= width;
+    DCHECK_GE(last_glyph.advance, spacing_width);
+    last_glyph.advance -= spacing_width;
+    run->width_ -= spacing_width;
+    sub_range->width_ -= spacing_width;
     break;
   }
   return sub_range;
 }
 
-unsigned ShapeResult::AdjustOffsetForAutoSpacing(unsigned offset,
+unsigned ShapeResult::AdjustOffsetForAutoSpacing(float spacing_width,
+                                                 unsigned offset,
                                                  float position) const {
   DCHECK(!character_position_.empty());
   DCHECK(HasAutoSpacingAfter(offset));
-  DCHECK(PrimaryFont());
-  const float autospace_width = TextAutoSpace::GetSpacingWidth(*PrimaryFont());
   DCHECK_GE(offset, StartIndex());
   offset -= StartIndex();
   DCHECK_LT(offset, NumCharacters());
-  // If the next character fits in `position + autospace_width`, then advance
+  // If the next character fits in `position + spacing_width`, then advance
   // the break offset. The auto-spacing at line edges will be removed by
   // `UnapplyAutoSpacing`.
   if (IsLtr()) {
-    position += autospace_width;
+    position += spacing_width;
     if (offset + 1 < NumCharacters()) {
       const ShapeResultCharacterData& data = character_position_[offset + 1];
       if (data.x_position <= position) {
@@ -1218,7 +1218,7 @@ unsigned ShapeResult::AdjustOffsetForAutoSpacing(unsigned offset,
       }
     }
   } else {
-    position -= autospace_width;
+    position -= spacing_width;
     if (offset + 1 < NumCharacters()) {
       const ShapeResultCharacterData& data = character_position_[offset + 1];
       if (data.x_position >= position) {
@@ -2127,12 +2127,6 @@ unsigned ShapeResult::CachedNextSafeToBreakOffset(unsigned offset) const {
   const unsigned adjusted_offset = offset - start_index_;
   const unsigned length = character_position_.size();
   DCHECK_LT(adjusted_offset, length);
-
-  // Assume it is always safe to break at the start. While not strictly correct
-  // the text has already been segmented at that offset. This also matches the
-  // non-CharacterPositionData implementation.
-  if (adjusted_offset == 0)
-    return start_index_;
 
   for (unsigned i = adjusted_offset; i < length; i++) {
     if (character_position_[i].safe_to_break_before) {

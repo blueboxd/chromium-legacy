@@ -23,12 +23,6 @@
     </message>
   </if>
 
-  <if expr="is_android or is_ios">
-    <message name="IDS_AUTOFILL_REMOVE_LOCAL_COPY_BUTTON" desc="The label of the button that removes the local copy of a Wallet Credit Card." formatter_data="android_java">
-      Remove copy
-    </message>
-  </if>
-
   <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
     Automatic credit card filling is disabled because this form does not use a secure connection.
   </message>
@@ -247,6 +241,13 @@
 
   <message name="IDS_AUTOFILL_IPH_EXTERNAL_ACCOUNT_PROFILE_SUGGESTION" desc="IPH bubble for a suggestion item with an account profile that was created somewhere outside Chrome (e.g. Google Pay)." formatter_data="android_java">
     You can now use addresses from your Google Account
+  </message>
+  <!-- TODO(b/320633229): Revisit string and mark it as translatable.-->
+  <message name="IDS_AUTOFILL_IPH_MANUAL_FALLBACK" desc="IPH bubble for triggering autofill from the context menu." translateable="false">
+    Right click to fill your saved info in any online form with less typing
+  </message>
+  <message name="IDS_AUTOFILL_IPH_MANUAL_FALLBACK_SCREENREADER" is_accessibility_with_no_ui="true" desc="Screenreader text for the IPH bubble for triggering autofill from the context menu.">
+    Right click to fill in your saved info in any online form with less typing
   </message>
 
   <!-- Autofill suggestion label separator -->

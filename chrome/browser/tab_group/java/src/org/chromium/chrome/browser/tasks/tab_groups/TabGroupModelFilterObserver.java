@@ -73,19 +73,22 @@ public interface TabGroupModelFilterObserver {
      * @param tabOriginalRootId The original root id for each modified tab.
      * @param tabOriginalTabGroupId The original tab group id for each modified tab.
      * @param destinationGroupTitle The original destination group title.
+     * @param destinationGroupColorId The original destination group color id.
      */
     default void didCreateGroup(
             List<Tab> tabs,
             List<Integer> tabOriginalIndex,
             List<Integer> tabOriginalRootId,
             List<Token> tabOriginalTabGroupId,
-            String destinationGroupTitle) {}
+            String destinationGroupTitle,
+            int destinationGroupColorId) {}
 
     /**
      * This method is called after a new tab group is created, either through drag and drop, the tab
      * selection editor, or by longpressing a link on a tab and using the context menu.
      *
      * @param newRootId The new root id of the group after merge.
+     * @param filter The {@link TabGroupModelFilter} that the new group event triggers on.
      */
-    default void didCreateNewGroup(int newRootId) {}
+    default void didCreateNewGroup(int newRootId, TabGroupModelFilter filter) {}
 }

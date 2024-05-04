@@ -58,6 +58,10 @@ extern const base::FeatureParam<EnableBoundSessionCredentialsDiceSupport>
     kEnableBoundSessionCredentialsDiceSupport;
 
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
+extern const base::FeatureParam<std::string>
+    kEnableBoundSessionCredentialsExclusiveRegistrationPath;
+
+COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kEnableChromeRefreshTokenBinding);
 
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
@@ -94,6 +98,11 @@ BASE_DECLARE_FEATURE(kUnoDesktop);
 // phases of the experiment.
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kExplicitBrowserSigninUIOnDesktop);
+// Param to control whether the bubbles are dismissible by pressing on the
+// avatar button.
+COMPONENT_EXPORT(SIGNIN_SWITCHES)
+extern const base::FeatureParam<bool>
+    kInterceptBubblesDismissibleByAvatarButton;
 
 enum class ExplicitBrowserSigninPhase {
   // Used to enable the changes made for the experimental feature `kUnoDesktop`

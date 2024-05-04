@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,7 +67,7 @@ class ScopedPlusAddressFeatureList {
  public:
   ScopedPlusAddressFeatureList() {
     features_.InitAndEnableFeatureWithParameters(
-        kFeature,
+        features::kFeature,
         {// This must be overridden by calling Reinit(server_url). A dummy is
          // provided here to bypass any checks on this during service creation.
          {"server-url", {"https://override-me-please.example"}},
@@ -81,10 +82,10 @@ class ScopedPlusAddressFeatureList {
     // Don't enable the 'sync-with-server' param so that the dialog is the
     // only way to trigger requests to the server.
     features_.InitAndEnableFeatureWithParameters(
-        kFeature, {{"server-url", {server_url}},
-                   {"oauth-scope", {kFakeOauthScope}},
-                   {"manage-url", {kFakeManagementUrl}},
-                   {"error-report-url", {kFakeErrorReportUrl}}});
+        features::kFeature, {{"server-url", {server_url}},
+                             {"oauth-scope", {kFakeOauthScope}},
+                             {"manage-url", {kFakeManagementUrl}},
+                             {"error-report-url", {kFakeErrorReportUrl}}});
   }
 
  private:

@@ -1,10 +1,9 @@
-danielng@google.com
 davidmunro@google.com
+denniskempin@google.com
 joelhockey@chromium.org
-lxj@google.com
 nverne@chromium.org
-sidereal@google.com
 timloh@chromium.org
+uekawa@chromium.org
 
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS

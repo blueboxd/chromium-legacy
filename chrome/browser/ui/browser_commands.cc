@@ -52,6 +52,7 @@
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/accelerator_utils.h"
+#include "chrome/browser/ui/autofill/address_bubbles_controller.h"
 #include "chrome/browser/ui/autofill/payments/iban_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/mandatory_reauth_bubble_controller_impl.h"
@@ -59,7 +60,6 @@
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
-#include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
@@ -851,6 +851,7 @@ base::WeakPtr<content::NavigationHandle> OpenCurrentURL(Browser* browser) {
       location_bar->navigation_params().url_typed_without_scheme;
   params.url_typed_with_http_scheme =
       location_bar->navigation_params().url_typed_with_http_scheme;
+  params.extra_headers = location_bar->navigation_params().extra_headers;
   auto result = Navigate(&params);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1090,8 +1091,9 @@ void MoveTabsToNewWindow(Browser* browser,
   }
 
   if (group.has_value()) {
-    SavedTabGroupKeyedService* const service =
-        SavedTabGroupServiceFactory::GetForProfile(browser->profile());
+    tab_groups::SavedTabGroupKeyedService* const service =
+        tab_groups::SavedTabGroupServiceFactory::GetForProfile(
+            browser->profile());
     if (service && service->model()->Contains(group.value())) {
       // If the group we are looking to move is saved:
       // 1) Stop listening to changes on it
@@ -1486,9 +1488,8 @@ void MigrateLocalCards(Browser* browser) {
 void SaveAutofillAddress(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  autofill::SaveUpdateAddressProfileBubbleControllerImpl* controller =
-      autofill::SaveUpdateAddressProfileBubbleControllerImpl::FromWebContents(
-          web_contents);
+  autofill::AddressBubblesController* controller =
+      autofill::AddressBubblesController::FromWebContents(web_contents);
   controller->OnPageActionIconClicked();
 }
 
@@ -1520,7 +1521,8 @@ void StartTabOrganizationRequest(Browser* browser) {
   UMA_HISTOGRAM_BOOLEAN("Tab.Organization.AllEntrypoints.Clicked", true);
   UMA_HISTOGRAM_BOOLEAN("Tab.Organization.ThreeDotMenu.Clicked", true);
 
-  service->RestartSessionAndShowUI(browser);
+  service->RestartSessionAndShowUI(browser,
+                                   TabOrganizationEntryPoint::kThreeDotMenu);
 }
 
 void ShowTranslateBubble(Browser* browser) {
@@ -1887,12 +1889,12 @@ void OpenTaskManager(Browser* browser) {
 
 void OpenFeedbackDialog(Browser* browser,
                         FeedbackSource source,
-                        const std::string& description_template) {
+                        const std::string& description_template,
+                        const std::string& category_tag) {
   base::RecordAction(UserMetricsAction("Feedback"));
   chrome::ShowFeedbackPage(browser, source, description_template,
                            std::string() /* description_placeholder_text */,
-                           std::string() /* category_tag */,
-                           std::string() /* extra_diagnostics */);
+                           category_tag, std::string() /* extra_diagnostics */);
 }
 
 void ToggleBookmarkBar(Browser* browser) {

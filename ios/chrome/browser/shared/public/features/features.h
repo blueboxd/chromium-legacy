@@ -33,9 +33,14 @@ BASE_DECLARE_FEATURE(kSharedHighlightingIOS);
 // Feature flag to enable Share button in web context menu in iOS.
 BASE_DECLARE_FEATURE(kShareInWebContextMenuIOS);
 
-// TODO(crbug.com/1128242): Remove this flag after the refactoring work is
-// finished. Flag to modernize the tabstrip without disturbing the existing one.
+// Feature flag to enable the modern tabstrip.
 BASE_DECLARE_FEATURE(kModernTabStrip);
+
+// Feature parameters for `kModernTabStrip`feature. If no parameter is set,
+// `kModernTabStripNTBDynamicParam` will be used.
+extern const char kModernTabStripParameterName[];
+extern const char kModernTabStripNTBDynamicParam[];
+extern const char kModernTabStripNTBStaticParam[];
 
 // Feature flag to enable revamped Incognito NTP page.
 BASE_DECLARE_FEATURE(kIncognitoNtpRevamp);
@@ -47,7 +52,16 @@ BASE_DECLARE_FEATURE(kDefaultBrowserIntentsShowSettings);
 BASE_DECLARE_FEATURE(kIOSBrowserEditMenuMetrics);
 
 // Docking Promo experiment variations.
+
+// A parameter representing the experimental arm for when the Docking Promo is
+// displayed: during the FRE, or after the FRE.
 extern const char kIOSDockingPromoExperimentType[];
+// A parameter representing how many hours of inactivity are required (for users
+// no older than 2 days) before the Docking Promo is shown.
+extern const char kIOSDockingPromoNewUserInactiveThresholdHours[];
+// A parameter representing how many hours of inactivity are required (for users
+// no older than 14 days) before the Docking Promo is shown.
+extern const char kIOSDockingPromoOldUserInactiveThresholdHours[];
 
 // Feature flag to enable the Docking Promo.
 BASE_DECLARE_FEATURE(kIOSDockingPromo);
@@ -64,6 +78,14 @@ bool IsDockingPromoEnabled();
 
 // Returns the experiment type for the Docking Promo feature.
 DockingPromoDisplayTriggerArm DockingPromoExperimentTypeEnabled();
+
+// For users no older than 2 days, how many hours of inactivity must pass before
+// showing the Docking Promo.
+int HoursInactiveForNewUsersUntilShowingDockingPromo();
+
+// For users no older than 14 days, how many hours of inactivity must pass
+// before showing the Docking Promo.
+int HoursInactiveForOldUsersUntilShowingDockingPromo();
 
 // Feature flag to enable the non-modal DB promo cooldown refactor separating
 // the cooldown periods for full screen and non-modal promos, as well as
@@ -245,25 +267,8 @@ BASE_DECLARE_FEATURE(kOnlyAccessClipboardAsync);
 // Feature flag that enables default browser video in settings experiment.
 BASE_DECLARE_FEATURE(kDefaultBrowserVideoInSettings);
 
-// Feature flag that enables default browser promo to be displayed without
-// matching all the criteria and in depth metrics collection for the displayed
-// promo.
-BASE_DECLARE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment);
-
-// Feature flag to show default browser full-screen promo on omnbibox copy-paste
-// event.
-BASE_DECLARE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste);
-
 // Feature flag to try using the page theme color in the top toolbar
 BASE_DECLARE_FEATURE(kThemeColorInTopToolbar);
-
-// Feature flag to try using the page theme color as dynamic color for the
-// toolbars.
-BASE_DECLARE_FEATURE(kDynamicThemeColor);
-
-// Feature flag to try using the page background color as dynamic color for the
-// toolbars.
-BASE_DECLARE_FEATURE(kDynamicBackgroundColor);
 
 // Feature flag enabling the Tab Grid to always bounce (even when the content
 // fits the screen already).
@@ -354,6 +359,9 @@ BASE_DECLARE_FEATURE(kIOSExternalActionURLs);
 
 // Feature flag to disable Lens LVF features.
 BASE_DECLARE_FEATURE(kDisableLensCamera);
+
+// Feature flag to enable color icons in the Omnibox.
+BASE_DECLARE_FEATURE(kOmniboxColorIcons);
 
 // Feature param under `kEnableFeedBackgroundRefresh` to also enable background
 // refresh for the Following feed.
@@ -582,5 +590,8 @@ BASE_DECLARE_FEATURE(kIOSMagicStackCollectionView);
 
 // Returns true if the MagicStack UICollectionView implementation is enabled.
 bool IsIOSMagicStackCollectionViewEnabled();
+
+// Feature flag to disable fullscreen scrolling logic.
+BASE_DECLARE_FEATURE(kDisableFullscreenScrolling);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

@@ -149,7 +149,7 @@ void OfflineAudioContext::Trace(Visitor* visitor) const {
   BaseAudioContext::Trace(visitor);
 }
 
-ScriptPromise OfflineAudioContext::startOfflineRendering(
+ScriptPromiseTyped<AudioBuffer> OfflineAudioContext::startOfflineRendering(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
@@ -162,7 +162,7 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
         DOMExceptionCode::kInvalidStateError,
         "cannot call startRendering on an OfflineAudioContext in a stopped "
         "state.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<AudioBuffer>();
   }
 
   // If the context is not in the suspended state (i.e. running), reject the
@@ -171,7 +171,7 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "cannot startRendering when an OfflineAudioContext is " + state());
-    return ScriptPromise();
+    return ScriptPromiseTyped<AudioBuffer>();
   }
 
   // Can't call startRendering more than once.  Return a rejected promise now.
@@ -179,13 +179,14 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "cannot call startRendering more than once");
-    return ScriptPromise();
+    return ScriptPromiseTyped<AudioBuffer>();
   }
 
   DCHECK(!is_rendering_started_);
 
-  complete_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
+  complete_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<AudioBuffer>>(
+          script_state, exception_state.GetContext());
 
   // Allocate the AudioBuffer to hold the rendered result.
   float sample_rate = DestinationHandler().SampleRate();
@@ -201,7 +202,7 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
             String::Number(number_of_channels) + ", " +
             String::Number(total_render_frames_) + ", " +
             String::Number(sample_rate) + ")");
-    return ScriptPromise();
+    return ScriptPromiseTyped<AudioBuffer>();
   }
 
   // Start rendering and return the promise.
@@ -281,7 +282,7 @@ ScriptPromise OfflineAudioContext::suspendContext(
   {
     // Wait until the suspend map is available for the insertion. Here we should
     // use GraphAutoLocker because it locks the graph from the main thread.
-    GraphAutoLocker locker(this);
+    DeferredTaskHandler::GraphAutoLocker locker(this);
 
     // If there is a duplicate suspension at the same quantized frame,
     // reject the promise.
@@ -397,7 +398,7 @@ bool OfflineAudioContext::HandlePreRenderTasks(
 
   {
     // OfflineGraphAutoLocker here locks the audio graph for this scope.
-    OfflineGraphAutoLocker locker(this);
+    DeferredTaskHandler::OfflineGraphAutoLocker locker(this);
     listener()->Handler().UpdateState();
     GetDeferredTaskHandler().HandleDeferredTasks();
     HandleStoppableSourceNodes();
@@ -412,7 +413,7 @@ void OfflineAudioContext::HandlePostRenderTasks() {
   // OfflineGraphAutoLocker here locks the audio graph for the same reason
   // above in `HandlePreRenderTasks()`.
   {
-    OfflineGraphAutoLocker locker(this);
+    DeferredTaskHandler::OfflineGraphAutoLocker locker(this);
 
     GetDeferredTaskHandler().BreakConnections();
     GetDeferredTaskHandler().HandleDeferredTasks();
@@ -439,7 +440,7 @@ void OfflineAudioContext::ResolveSuspendOnMainThread(size_t frame) {
 
   {
     // Wait until the suspend map is available for the removal.
-    GraphAutoLocker locker(this);
+    DeferredTaskHandler::GraphAutoLocker locker(this);
 
     // If the context is going away, m_scheduledSuspends could have had all its
     // entries removed.  Check for that here.
@@ -465,7 +466,7 @@ void OfflineAudioContext::RejectPendingResolvers() {
 
   {
     // Wait until the suspend map is available for removal.
-    GraphAutoLocker locker(this);
+    DeferredTaskHandler::GraphAutoLocker locker(this);
 
     // Offline context is going away so reject any promises that are still
     // pending.

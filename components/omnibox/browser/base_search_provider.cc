@@ -9,8 +9,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <vector>
 
-#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
@@ -330,12 +330,13 @@ void BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
 }
 
 // static
-bool BaseSearchProvider::CanSendPageURLInRequest(const GURL& page_url) {
+bool BaseSearchProvider::PageURLIsEligibleForSuggestRequest(
+    const GURL& page_url) {
   return page_url.is_valid() && page_url.SchemeIsHTTPOrHTTPS();
 }
 
 // static
-bool BaseSearchProvider::CanSendZeroSuggestRequest(
+bool BaseSearchProvider::CanSendSuggestRequestWithoutPageURL(
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
     const AutocompleteProviderClient* client) {
@@ -370,12 +371,13 @@ bool BaseSearchProvider::CanSendZeroSuggestRequest(
 }
 
 // static
-bool BaseSearchProvider::CanSendSuggestRequestWithURL(
+bool BaseSearchProvider::CanSendSuggestRequestWithPageURL(
     const GURL& current_page_url,
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
     const AutocompleteProviderClient* client) {
-  if (!CanSendZeroSuggestRequest(template_url, search_terms_data, client)) {
+  if (!CanSendSuggestRequestWithoutPageURL(template_url, search_terms_data,
+                                           client)) {
     return false;
   }
 
@@ -666,7 +668,7 @@ void BaseSearchProvider::OnDeletionComplete(
     const int response_code,
     std::unique_ptr<std::string> response_body) {
   RecordDeletionResult(response_code == 200);
-  base::EraseIf(
+  std::erase_if(
       deletion_loaders_,
       [source](const std::unique_ptr<network::SimpleURLLoader>& loader) {
         return loader.get() == source;

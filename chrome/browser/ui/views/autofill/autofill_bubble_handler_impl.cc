@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 
+#include <memory>
+
 #include "base/functional/callback_forward.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -183,16 +185,16 @@ AutofillBubbleBase* AutofillBubbleHandlerImpl::ShowOfferNotificationBubble(
 
 AutofillBubbleBase* AutofillBubbleHandlerImpl::ShowSaveAddressProfileBubble(
     content::WebContents* web_contents,
-    SaveUpdateAddressProfileBubbleController* controller,
+    std::unique_ptr<SaveAddressBubbleController> controller,
     bool is_user_gesture) {
   views::View* anchor_view = toolbar_button_provider_->GetAnchorView(
-      PageActionIconType::kSaveAutofillAddress);
-  SaveAddressProfileView* bubble =
-      new SaveAddressProfileView(anchor_view, web_contents, controller);
+      PageActionIconType::kAutofillAddress);
+  SaveAddressProfileView* bubble = new SaveAddressProfileView(
+      std::move(controller), anchor_view, web_contents);
   DCHECK(bubble);
   PageActionIconView* icon_view =
       toolbar_button_provider_->GetPageActionIconView(
-          PageActionIconType::kSaveAutofillAddress);
+          PageActionIconType::kAutofillAddress);
   DCHECK(icon_view);
   bubble->SetHighlightedButton(icon_view);
   views::BubbleDialogDelegateView::CreateBubble(bubble);
@@ -203,16 +205,16 @@ AutofillBubbleBase* AutofillBubbleHandlerImpl::ShowSaveAddressProfileBubble(
 
 AutofillBubbleBase* AutofillBubbleHandlerImpl::ShowUpdateAddressProfileBubble(
     content::WebContents* web_contents,
-    SaveUpdateAddressProfileBubbleController* controller,
+    std::unique_ptr<UpdateAddressBubbleController> controller,
     bool is_user_gesture) {
   views::View* anchor_view = toolbar_button_provider_->GetAnchorView(
-      PageActionIconType::kSaveAutofillAddress);
-  UpdateAddressProfileView* bubble =
-      new UpdateAddressProfileView(anchor_view, web_contents, controller);
+      PageActionIconType::kAutofillAddress);
+  UpdateAddressProfileView* bubble = new UpdateAddressProfileView(
+      std::move(controller), anchor_view, web_contents);
   DCHECK(bubble);
   PageActionIconView* icon_view =
       toolbar_button_provider_->GetPageActionIconView(
-          PageActionIconType::kSaveAutofillAddress);
+          PageActionIconType::kAutofillAddress);
   DCHECK(icon_view);
   bubble->SetHighlightedButton(icon_view);
   views::BubbleDialogDelegateView::CreateBubble(bubble);

@@ -6,13 +6,14 @@
 
 #include <stddef.h>
 #include <cstring>
+#include <vector>
 
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -21,6 +22,7 @@
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_display.h"
@@ -166,7 +168,7 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
     // Make sure that the display infos we got have valid connector IDs.
     // If not, we need to remove the display info from the list. This removes
     // any zombie connectors.
-    base::EraseIf(
+    std::erase_if(
         display_infos, [&valid_connector_ids](const auto& display_info) {
           return !base::Contains(valid_connector_ids,
                                  display_info->connector()->connector_id);
@@ -327,7 +329,7 @@ bool DrmGpuDisplayManager::ShouldDisplayEventTriggerConfiguration(
 
 bool DrmGpuDisplayManager::ConfigureDisplays(
     const std::vector<display::DisplayConfigurationParams>& config_requests,
-    uint32_t modeset_flag) {
+    display::ModesetFlags modeset_flags) {
   ScreenManager::ControllerConfigsList controllers_to_configure;
   for (const auto& config : config_requests) {
     int64_t display_id = config.id;
@@ -356,13 +358,14 @@ bool DrmGpuDisplayManager::ConfigureDisplays(
   }
 
   bool config_success = screen_manager_->ConfigureDisplayControllers(
-      controllers_to_configure, modeset_flag);
+      controllers_to_configure, modeset_flags);
 
   if (displays_configured_callback_)
     displays_configured_callback_.Run();
 
-  const bool test_only = modeset_flag == display::kTestModeset;
-  if (!test_only && config_success) {
+  const bool is_commit =
+      modeset_flags.Has(display::ModesetFlag::kCommitModeset);
+  if (is_commit && config_success) {
     for (const auto& controller : controllers_to_configure)
       FindDisplay(controller.display_id)->SetOrigin(controller.origin);
   }
@@ -418,6 +421,17 @@ void DrmGpuDisplayManager::SetColorTemperatureAdjustment(
   display->SetColorTemperatureAdjustment(cta);
 }
 
+void DrmGpuDisplayManager::SetColorCalibration(
+    int64_t display_id,
+    const display::ColorCalibration& calibration) {
+  DrmDisplay* display = FindDisplay(display_id);
+  if (!display) {
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
+    return;
+  }
+  display->SetColorCalibration(calibration);
+}
+
 void DrmGpuDisplayManager::SetGammaAdjustment(
     int64_t display_id,
     const display::GammaAdjustment& adjustment) {
@@ -427,6 +441,18 @@ void DrmGpuDisplayManager::SetGammaAdjustment(
     return;
   }
   display->SetGammaAdjustment(adjustment);
+}
+
+void DrmGpuDisplayManager::SetColorMatrix(
+    int64_t display_id,
+    const std::vector<float>& color_matrix) {
+  DrmDisplay* display = FindDisplay(display_id);
+  if (!display) {
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
+    return;
+  }
+
+  display->SetColorMatrix(color_matrix);
 }
 
 void DrmGpuDisplayManager::SetBackgroundColor(int64_t display_id,
@@ -440,6 +466,18 @@ void DrmGpuDisplayManager::SetBackgroundColor(int64_t display_id,
   display->SetBackgroundColor(background_color);
 }
 
+void DrmGpuDisplayManager::SetGammaCorrection(
+    int64_t display_id,
+    const display::GammaCurve& degamma,
+    const display::GammaCurve& gamma) {
+  DrmDisplay* display = FindDisplay(display_id);
+  if (!display) {
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
+    return;
+  }
+  display->SetGammaCorrection(degamma, gamma);
+}
+
 bool DrmGpuDisplayManager::SetPrivacyScreen(int64_t display_id, bool enabled) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
@@ -450,7 +488,25 @@ bool DrmGpuDisplayManager::SetPrivacyScreen(int64_t display_id, bool enabled) {
   return display->SetPrivacyScreen(enabled);
 }
 
-DrmDisplay* DrmGpuDisplayManager::FindDisplay(int64_t display_id) {
+std::optional<display::RefreshRange>
+DrmGpuDisplayManager::GetSeamlessRefreshRates(int64_t display_id) const {
+  DrmDisplay* display = FindDisplay(display_id);
+  if (!display) {
+    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
+    return std::nullopt;
+  }
+
+  // TODO(b/323362145): Only include modes that can be switched to seamlessly
+  // and support contiguity logic.
+  display::RefreshRange range;
+  for (const drmModeModeInfo& mode : display->modes()) {
+    float refresh = ModeRefreshRate(mode);
+    range.push_back(display::RefreshRangeNode(refresh));
+  }
+  return range;
+}
+
+DrmDisplay* DrmGpuDisplayManager::FindDisplay(int64_t display_id) const {
   for (const auto& display : displays_) {
     if (display->display_id() == display_id)
       return display.get();

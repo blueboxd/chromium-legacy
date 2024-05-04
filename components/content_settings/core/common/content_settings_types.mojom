@@ -395,6 +395,11 @@ enum ContentSettingsType {
   // user for the installation of sub apps.
   SUB_APP_INSTALLATION_PROMPTS,
 
+  // Whether an application can enumerate audio output device.
+  SPEAKER_SELECTION,
+
+  // Content settings for access to the Direct Sockets API.
+  DIRECT_SOCKETS,
+
   NUM_TYPES,
 };
-

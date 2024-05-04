@@ -99,6 +99,11 @@ const char kReleaseLtsTag[] = "cros.system.releaseLtsTag";
 const char kDeviceChannelDowngradeBehavior[] =
     "cros.system.channelDowngradeBehavior";
 
+// A boolean pref that allows a device owner to opt in eligible devices to
+// Extended Automatic Updates.
+const char kDeviceExtendedAutoUpdateEnabled[] =
+    "cros.system.device_extended_auto_update_enabled";
+
 // This setting is used to enforce usage of system audio echo cancellation.
 const char kDeviceSystemAecEnabled[] = "cros.audio.device_system_aec_enabled";
 
@@ -513,10 +518,6 @@ const char kPluginVmAllowed[] = "cros.device.plugin_vm_allowed";
 // An enum pref specifying the case when device needs to reboot on user sign
 // out.
 const char kDeviceRebootOnUserSignout[] = "cros.device.reboot_on_user_signout";
-
-// A boolean pref that indicates whether running wilco diagnostics and telemetry
-// controller on Chrome OS is allowed.
-const char kDeviceWilcoDtcAllowed[] = "cros.device.wilco_dtc_allowed";
 
 // An enum pref that specifies the device dock MAC address source.
 const char kDeviceDockMacAddressSource[] =

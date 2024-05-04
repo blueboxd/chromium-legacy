@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/content/renderer/test_utils.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -41,6 +42,9 @@
 #include "third_party/blink/public/web/web_select_element.h"
 #include "third_party/blink/public/web/web_view.h"
 
+namespace autofill::form_util {
+namespace {
+
 using autofill::mojom::ButtonTitleType;
 using blink::WebDocument;
 using blink::WebElement;
@@ -62,9 +66,6 @@ using ::testing::IsTrue;
 using ::testing::Optional;
 using ::testing::Pointwise;
 using ::testing::Values;
-
-namespace autofill::form_util {
-namespace {
 
 struct AutofillFieldUtilCase {
   const char* description;
@@ -181,8 +182,8 @@ void VerifyButtonTitleCache(const WebFormElement& form_target,
                             const ButtonTitleList& expected_button_titles,
                             const ButtonTitlesCache& actual_cache) {
   EXPECT_THAT(actual_cache,
-              testing::ElementsAre(testing::Pair(GetFormRendererId(form_target),
-                                                 expected_button_titles)));
+              ElementsAre(testing::Pair(GetFormRendererId(form_target),
+                                        expected_button_titles)));
 }
 
 bool HaveSameFormControlId(const WebFormControlElement& element,
@@ -217,10 +218,10 @@ TEST_F(FormAutofillUtilsTest, WebFormElementToFormData_IdAndNames) {
       <input type=text id=input-id name=input-name>
     </form>
   )");
-  FormData form_data = *WebFormElementToFormDataForTesting(
+  FormData form_data = *ExtractFormData(
+      GetMainFrame()->GetDocument(),
       GetFormElementById(GetMainFrame()->GetDocument(), "form-id"),
-      WebFormControlElement(), field_data_manager(), {ExtractOption::kOptions},
-      /*field=*/nullptr);
+      field_data_manager(), {ExtractOption::kOptions});
   EXPECT_EQ(form_data.name, u"form-name");
   EXPECT_EQ(form_data.id_attribute, u"form-id");
   EXPECT_EQ(form_data.name_attribute, u"form-name");
@@ -249,9 +250,8 @@ TEST_F(FormAutofillUtilsTest, TruncateLargeOptionValuesAndContents) {
   WebDocument doc = GetMainFrame()->GetDocument();
   auto web_form = GetFormElementById(doc, "form");
 
-  FormData form_data = *WebFormElementToFormDataForTesting(
-      web_form, WebFormControlElement(), field_data_manager(),
-      {ExtractOption::kOptions}, /*field=*/nullptr);
+  FormData form_data = *ExtractFormData(doc, web_form, field_data_manager(),
+                                        {ExtractOption::kOptions});
 
   ASSERT_EQ(form_data.fields.size(), 1u);
   ASSERT_EQ(form_data.fields[0].options.size(), 1u);
@@ -824,10 +824,8 @@ TEST_F(FormAutofillUtilsTest, IsActionEmptyFalse) {
   WebDocument doc = GetMainFrame()->GetDocument();
   auto web_form = GetFormElementById(doc, "form1");
 
-  FormData form_data = *WebFormElementToFormDataForTesting(
-      web_form, WebFormControlElement(), field_data_manager(),
-      {ExtractOption::kValue},
-      /*field=*/nullptr);
+  FormData form_data = *ExtractFormData(doc, web_form, field_data_manager(),
+                                        {ExtractOption::kValue});
 
   EXPECT_FALSE(form_data.is_action_empty);
 }
@@ -837,10 +835,8 @@ TEST_F(FormAutofillUtilsTest, IsActionEmptyTrue) {
   WebDocument doc = GetMainFrame()->GetDocument();
   auto web_form = GetFormElementById(doc, "form1");
 
-  FormData form_data = *WebFormElementToFormDataForTesting(
-      web_form, WebFormControlElement(), field_data_manager(),
-      {ExtractOption::kValue},
-      /*field=*/nullptr);
+  FormData form_data = *ExtractFormData(doc, web_form, field_data_manager(),
+                                        {ExtractOption::kValue});
 
   EXPECT_TRUE(form_data.is_action_empty);
 }
@@ -1059,7 +1055,7 @@ TEST_F(FormAutofillUtilsTest, IsVisibleIframeTest) {
   }
 }
 
-// Tests the visibility detection of iframes.
+// Tests the visibility detection of fields.
 // This test checks many scenarios. It's intentionally not a parameterized test
 // for performance reasons.
 // This test is very similar to the IsVisibleIframeTest test.
@@ -1537,7 +1533,7 @@ INSTANTIATE_TEST_SUITE_P(FormAutofillUtilsTest,
                          SelectListAutofillParamTest,
                          ::testing::Bool());
 
-// Test that WebFormElementToFormDataForTesting() ignores <selectlist> if
+// Test that ExtractFormData() ignores <selectlist> if
 // features::kAutofillEnableSelectList is disabled.
 TEST_P(SelectListAutofillParamTest, WebFormElementToFormData) {
   LoadHTML(R"(
@@ -1553,10 +1549,8 @@ TEST_P(SelectListAutofillParamTest, WebFormElementToFormData) {
   WebDocument doc = GetMainFrame()->GetDocument();
 
   auto form_element = GetFormElementById(doc, "form");
-  FormData form_data = *WebFormElementToFormDataForTesting(
-      form_element, WebFormControlElement(), field_data_manager(),
-      /*extract_options=*/{},
-      /*field=*/nullptr);
+  FormData form_data = *ExtractFormData(doc, form_element, field_data_manager(),
+                                        /*extract_options=*/{});
   EXPECT_EQ(form_data.fields.size(),
             IsAutofillingSelectListEnabled() ? 2u : 1u);
 
@@ -1600,10 +1594,8 @@ TEST_F(FormAutofillUtilsTest, ExtractNoFramesIfTooManyIframes) {
   WebDocument doc = GetMainFrame()->GetDocument();
   WebFormElement form = GetFormElementById(doc, "f");
   {
-    FormData form_data = *WebFormElementToFormDataForTesting(
-        form, WebFormControlElement(), field_data_manager(),
-        /*extract_options=*/{},
-        /*field=*/nullptr);
+    FormData form_data = *ExtractFormData(doc, form, field_data_manager(),
+                                          /*extract_options=*/{});
     EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
     EXPECT_EQ(form_data.child_frames.size(), kMaxExtractableChildFrames);
   }
@@ -1613,10 +1605,8 @@ TEST_F(FormAutofillUtilsTest, ExtractNoFramesIfTooManyIframes) {
   // different numbers of <iframe> elements.
   for (int i = 0; i < 3; ++i) {
     CreateFormElement("iframe");
-    FormData form_data = *WebFormElementToFormDataForTesting(
-        form, WebFormControlElement(), field_data_manager(),
-        /*extract_options=*/{},
-        /*field=*/nullptr);
+    FormData form_data = *ExtractFormData(doc, form, field_data_manager(),
+                                          /*extract_options=*/{});
     EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
     EXPECT_TRUE(form_data.child_frames.empty());
   }
@@ -1645,10 +1635,8 @@ TEST_F(FormAutofillUtilsTest, ExtractNoFieldsOrFramesIfTooManyFields) {
   WebDocument doc = GetMainFrame()->GetDocument();
   WebFormElement form = GetFormElementById(doc, "f");
   {
-    FormData form_data = *WebFormElementToFormDataForTesting(
-        form, WebFormControlElement(), field_data_manager(),
-        /*extract_options=*/{},
-        /*field=*/nullptr);
+    FormData form_data = *ExtractFormData(doc, form, field_data_manager(),
+                                          /*extract_options=*/{});
     EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
     EXPECT_EQ(form_data.child_frames.size(), kMaxExtractableChildFrames);
   }
@@ -1659,10 +1647,8 @@ TEST_F(FormAutofillUtilsTest, ExtractNoFieldsOrFramesIfTooManyFields) {
   for (int i = 0; i < 3; ++i) {
     SCOPED_TRACE(base::NumberToString(i));
     CreateFormElement("input");
-    ASSERT_FALSE(WebFormElementToFormDataForTesting(
-        form, WebFormControlElement(), field_data_manager(),
-        /*extract_options=*/{},
-        /*field=*/nullptr));
+    ASSERT_FALSE(ExtractFormData(doc, form, field_data_manager(),
+                                 /*extract_options=*/{}));
   }
 }
 
@@ -2021,6 +2007,7 @@ TEST_F(FormAutofillUtilsTest, FindFormForContentEditableFailures) {
 }
 
 TEST_F(FormAutofillUtilsTest, ExtractFormData_OwnedForm) {
+  base::HistogramTester histogram_tester;
   LoadHTML(R"(
       <html><title>Checkout</title></head>
       <form id=form_of_interest>
@@ -2043,9 +2030,14 @@ TEST_F(FormAutofillUtilsTest, ExtractFormData_OwnedForm) {
                               Field(&FormFieldData::name, u"check_input"),
                               Field(&FormFieldData::name, u"number_input"),
                               Field(&FormFieldData::name, u"select_input")))));
+  histogram_tester.ExpectTotalCount("Autofill.ExtractFormUnowned.FieldCount",
+                                    0);
+  histogram_tester.ExpectUniqueSample("Autofill.ExtractFormOwned.FieldCount", 4,
+                                      1);
 }
 
 TEST_F(FormAutofillUtilsTest, ExtractFormData_UnownedForm) {
+  base::HistogramTester histogram_tester;
   LoadHTML(R"(
       <html><title>Checkout</title></head>
       <input type=text name=text_input>
@@ -2065,6 +2057,223 @@ TEST_F(FormAutofillUtilsTest, ExtractFormData_UnownedForm) {
                               Field(&FormFieldData::name, u"check_input"),
                               Field(&FormFieldData::name, u"number_input"),
                               Field(&FormFieldData::name, u"select_input")))));
+  histogram_tester.ExpectTotalCount("Autofill.ExtractFormOwned.FieldCount", 0);
+  histogram_tester.ExpectUniqueSample("Autofill.ExtractFormUnowned.FieldCount",
+                                      4, 1);
+}
+
+// Tests that the owning form of a form control element in light DOM is its
+// associated form (i.e. the form explicitly set via form attribute or its
+// closest ancestor).
+TEST_F(FormAutofillUtilsTest, GetOwningFormInLightDom) {
+  LoadHTML(R"(
+    <html>
+      <body>
+        <form id=f>
+          <input id=t1>
+          <input id=t2>
+        </form>
+        <input id=t3>
+      </body>
+    </html>)");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  WebFormElement f = GetFormElementById(doc, "f");
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t1")), f);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t2")), f);
+  EXPECT_TRUE(GetOwningForm(GetFormControlElementById(doc, "t3")).IsNull());
+}
+
+// Tests that explicit association overrules DOM ancestry when determining the
+// owning form.
+TEST_F(FormAutofillUtilsTest, GetOwningFormInLightDomWithExplicitAssociation) {
+  LoadHTML(R"(
+    <html>
+      <body>
+        <form id=f1>
+          <input id=t1>
+          <input id=t2 form=f2>
+        </form>
+        <form id=f2>
+          <input id=t3>
+          <input id=t4 form=f1>
+        </form>
+        <input id=t5 form=f1>
+        <input id=t6 form=f2>
+      </body>
+    </html>)");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  WebFormElement f1 = GetFormElementById(doc, "f1");
+  WebFormElement f2 = GetFormElementById(doc, "f2");
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t1")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t2")), f2);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t3")), f2);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t4")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t5")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t6")), f2);
+}
+
+// Tests that input elements in shadow DOM whose closest ancestor is in the
+// light DOM are extracted correctly.
+TEST_F(FormAutofillUtilsTest, GetOwningFormInShadowDomWithoutFormInShadowDom) {
+  LoadHTML(R"(
+    <html>
+      <body>
+        <form id=f1>
+          <div id=host1>
+            <template shadowrootmode=open>
+              <input id=t1>
+            </template>
+            <input id=t2>
+          </div>
+        </form>
+        <div id=host2>
+          <template shadowrootmode=open>
+            <input id=t3>
+          </template>
+        </div>
+      </body>
+    </html>)");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  WebNode shadow_root1 = GetElementById(doc, "host1").ShadowRoot();
+  WebNode shadow_root2 = GetElementById(doc, "host2").ShadowRoot();
+  WebFormElement f1 = GetFormElementById(doc, "f1");
+
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t1")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(doc, "t2")), f1);
+  EXPECT_TRUE(
+      GetOwningForm(GetFormControlElementById(shadow_root2, "t3")).IsNull());
+}
+
+// Tests that the owning form of a form control element is the furthest
+// shadow-including ancestor form element (in absence of explicit associations).
+TEST_F(FormAutofillUtilsTest, GetOwningFormInShadowDomWithFormInShadowDom) {
+  base::test::ScopedFeatureList feature_list{
+      blink::features::kAutofillIncludeFormElementsInShadowDom};
+
+  LoadHTML(R"(
+    <html>
+      <body>
+        <form id=f1>
+          <div id=host1>
+            <template shadowrootmode=open>
+              <form id=f2>
+                <input id=t1>
+              </form>
+              <input id=t2>
+            </template>
+          </div>
+        </form>
+        <div id=host2>
+          <template shadowrootmode=open>
+            <form id=f3>
+              <input id=t3>
+            </form>
+          </template>
+        </div>
+      </body>
+    </html>)");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  WebNode shadow_root1 = GetElementById(doc, "host1").ShadowRoot();
+  WebNode shadow_root2 = GetElementById(doc, "host2").ShadowRoot();
+  WebFormElement f1 = GetFormElementById(doc, "f1");
+  WebFormElement f3 = GetFormElementById(shadow_root2, "f3");
+
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t1")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t2")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root2, "t3")), f3);
+}
+
+// Tests that the owning form is returned correctly even if there are multiple
+// levels of Shadow DOM.
+TEST_F(FormAutofillUtilsTest,
+       GetOwningFormInShadowDomWithFormInShadowDomWithMultipleLevels) {
+  base::test::ScopedFeatureList feature_list{
+      blink::features::kAutofillIncludeFormElementsInShadowDom};
+
+  LoadHTML(R"(
+    <html>
+      <body>
+        <form id=f1>
+          <div id=host1>
+            <template shadowrootmode=open>
+              <form id=f2>
+                <input id=t1>
+              </form>
+              <div id=host2>
+                <template shadowrootmode=open>
+                  <form id=f3>
+                    <input id=t2>
+                  </form>
+                  <input id=t3>
+                </template>
+                <input id=t4>
+              </div>
+              <input id=t5>
+            </template>
+          </div>
+        </form>
+      </body>
+    </html>)");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  WebNode shadow_root1 = GetElementById(doc, "host1").ShadowRoot();
+  WebNode shadow_root2 = GetElementById(shadow_root1, "host2").ShadowRoot();
+  WebFormElement f1 = GetFormElementById(doc, "f1");
+
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t1")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root2, "t2")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root2, "t3")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t4")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t5")), f1);
+}
+
+// Tests that the owning form is computed correctly for form control elements
+// inside the shadow DOM that have explicit form attributes.
+TEST_F(FormAutofillUtilsTest,
+       GetOwningFormInShadowDomWithFormInShadowDomAndExplicitAssociation) {
+  base::test::ScopedFeatureList feature_list{
+      blink::features::kAutofillIncludeFormElementsInShadowDom};
+
+  LoadHTML(R"(
+    <html>
+      <body>
+        <form id=f1>
+          <div id=host1>
+            <template shadowrootmode=open>
+              <form id=f2>
+                <input id=t1>
+              </form>
+              <input id=t2>
+              <form id=f3>
+                <input id=t3 form=f2>
+              </form>
+              <input id=t4 form=f2>
+              <input id=t5 form=f3>
+              <input id=t6 form=f1>
+            </template>
+          </div>
+        </form>
+        <div id=host2>
+          <template shadowrootmode=open>
+            <form id=f4>
+              <input id=t7>
+            </form>
+          </template>
+        </div>
+      </body>
+    </html>)");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  WebNode shadow_root1 = GetElementById(doc, "host1").ShadowRoot();
+  WebNode shadow_root2 = GetElementById(doc, "host2").ShadowRoot();
+  WebFormElement f1 = GetFormElementById(doc, "f1");
+  WebFormElement f4 = GetFormElementById(shadow_root2, "f4");
+
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t1")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t2")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t3")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t4")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t5")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root1, "t6")), f1);
+  EXPECT_EQ(GetOwningForm(GetFormControlElementById(shadow_root2, "t7")), f4);
 }
 
 }  // namespace

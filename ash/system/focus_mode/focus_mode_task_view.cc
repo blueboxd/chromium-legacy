@@ -122,7 +122,7 @@ class FocusModeTaskView::TaskTextfield : public SystemTextfield {
   bool show_selected_state_ = false;
 };
 
-BEGIN_METADATA(FocusModeTaskView, TaskTextfield, SystemTextfield)
+BEGIN_METADATA(FocusModeTaskView, TaskTextfield)
 END_METADATA
 
 //---------------------------------------------------------------------
@@ -225,7 +225,7 @@ FocusModeTaskView::FocusModeTaskView() {
                               weak_factory_.GetWeakPtr())));
   textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_PLACEHOLDER));
-  textfield_->SetBackgroundColorEnabled(false);
+  textfield_->SetBackgroundEnabled(false);
   textfield_->SetPlaceholderText(l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_PLACEHOLDER));
   textfield_->SetPlaceholderTextColorId(cros_tokens::kCrosSysSecondary);

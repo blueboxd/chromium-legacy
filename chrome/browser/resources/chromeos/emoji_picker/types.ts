@@ -73,8 +73,9 @@ export type EmojiGroupData = EmojiGroup[];
 
 export interface VisualContent {
   id: string;
-  url: {full: Url, preview: Url};
+  url: {full: Url, preview: Url, previewImage: Url};
   previewSize: Size;
+  // `fullSize` is currently unused by Emoji Picker.
 }
 
 export interface SubcategoryData {

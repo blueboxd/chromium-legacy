@@ -48,8 +48,6 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor
             "Autofill.VirtualCard.SettingsPageEnrollment";
 
     private Profile mProfile;
-    private View mLocalCopyLabel;
-    private View mClearLocalCopy;
     private TextView mVirtualCardEnrollmentButton;
     private boolean mVirtualCardEnrollmentButtonShowsUnenroll;
     private AutofillPaymentMethodsDelegate mDelegate;
@@ -124,30 +122,27 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (ChromeFeatureList.isEnabled(
-                ChromeFeatureList.AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT)) {
-            mDelegate = new AutofillPaymentMethodsDelegate(mProfile);
-            mVirtualCardEnrollmentUpdateResponseCallback =
-                    isUpdateSuccessful -> {
-                        // If the server card editor page was closed when the server call was in
-                        // progress, cleanup the delegate. Else, update the enrollment button.
-                        if (mServerCardEditorClosed) {
-                            mDelegate.cleanup();
+        mDelegate = new AutofillPaymentMethodsDelegate(mProfile);
+        mVirtualCardEnrollmentUpdateResponseCallback =
+                isUpdateSuccessful -> {
+                    // If the server card editor page was closed when the server call was in
+                    // progress, cleanup the delegate. Else, update the enrollment button.
+                    if (mServerCardEditorClosed) {
+                        mDelegate.cleanup();
+                    } else {
+                        // Mark completion of the server call.
+                        mAwaitingUpdateVirtualCardEnrollmentResponse = false;
+                        if (isUpdateSuccessful) {
+                            // Update the button label.
+                            setVirtualCardEnrollmentButtonLabel(
+                                    !mVirtualCardEnrollmentButtonShowsUnenroll);
                         } else {
-                            // Mark completion of the server call.
-                            mAwaitingUpdateVirtualCardEnrollmentResponse = false;
-                            if (isUpdateSuccessful) {
-                                // Update the button label.
-                                setVirtualCardEnrollmentButtonLabel(
-                                        !mVirtualCardEnrollmentButtonShowsUnenroll);
-                            } else {
-                                // If update was not successful, enable the button so users can try
-                                // again.
-                                mVirtualCardEnrollmentButton.setEnabled(true);
-                            }
+                            // If update was not successful, enable the button so users can try
+                            // again.
+                            mVirtualCardEnrollmentButton.setEnabled(true);
                         }
-                    };
-        }
+                    }
+                };
     }
 
     @Override
@@ -225,22 +220,6 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor
             virtualCardContainerLayout.setVisibility(View.GONE);
         }
 
-        mLocalCopyLabel = v.findViewById(R.id.local_copy_label);
-        mClearLocalCopy = v.findViewById(R.id.clear_local_copy);
-
-        if (mCard.getIsCached()) {
-            mClearLocalCopy.setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            PersonalDataManager.getInstance().clearUnmaskedCache(mGUID);
-                            removeLocalCopyViews();
-                        }
-                    });
-        } else {
-            removeLocalCopyViews();
-        }
-
         initializeButtons(v);
         return v;
     }
@@ -249,17 +228,14 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor
     public void onDestroy() {
         super.onDestroy();
         // Ensure that the native AutofillPaymentMethodsDelegateMobile instance is cleaned up.
-        if (ChromeFeatureList.isEnabled(
-                ChromeFeatureList.AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT)) {
-            // If a server call is in progress, do not cleanup the delegate yet.
-            if (mAwaitingUpdateVirtualCardEnrollmentResponse) {
-                // Mark that the server card editor page was closed, so when the server call is
-                // completed, the delegate can be cleaned up.
-                mServerCardEditorClosed = true;
-                return;
-            }
-            mDelegate.cleanup();
+        // If a server call is in progress, do not cleanup the delegate yet.
+        if (mAwaitingUpdateVirtualCardEnrollmentResponse) {
+            // Mark that the server card editor page was closed, so when the server call is
+            // completed, the delegate can be cleaned up.
+            mServerCardEditorClosed = true;
+            return;
         }
+        mDelegate.cleanup();
     }
 
     private void showVirtualCardEnrollmentDialog(
@@ -324,20 +300,10 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor
         dialog.show();
     }
 
-    private void removeLocalCopyViews() {
-        ViewGroup parent = (ViewGroup) mClearLocalCopy.getParent();
-        if (parent == null) return;
-
-        parent.removeView(mLocalCopyLabel);
-        parent.removeView(mClearLocalCopy);
-    }
-
     private boolean showVirtualCardEnrollmentButton() {
-        return (ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT)
-                && (mCard.getVirtualCardEnrollmentState() == VirtualCardEnrollmentState.ENROLLED
-                        || mCard.getVirtualCardEnrollmentState()
-                                == VirtualCardEnrollmentState.UNENROLLED_AND_ELIGIBLE));
+        return (mCard.getVirtualCardEnrollmentState() == VirtualCardEnrollmentState.ENROLLED
+                || mCard.getVirtualCardEnrollmentState()
+                        == VirtualCardEnrollmentState.UNENROLLED_AND_ELIGIBLE);
     }
 
     /** Updates the Virtual Card Enrollment button label. */

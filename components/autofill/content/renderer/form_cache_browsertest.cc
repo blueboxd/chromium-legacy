@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/content/renderer/form_cache.h"
+
 #include <optional>
 #include <string_view>
 
-#include "base/test/scoped_feature_list.h"
-
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/autofill/content/renderer/focus_test_utils.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
-#include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/form_cache_test_api.h"
 #include "components/autofill/content/renderer/test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -407,7 +408,7 @@ TEST_F(FormCacheBrowserTest, ExtractFormsAfterModification) {
 }
 
 struct FillElementData {
-  blink::WebFormControlElement& element;
+  const raw_ref<blink::WebFormControlElement> element;
   std::u16string value;
 };
 
@@ -419,12 +420,11 @@ FormFieldData* FindFieldByName(FormData& form_data,
 }
 
 // Fills the fields referenced in `form_fill_data`. Fills `checkbox_element`, if
-// non-null. `autofill_initiating_element` is the element which initiates the
-// autofill.
+// non-null.
 void FillAndCheckState(
+    const WebDocument& document,
     const FormData& form_data,
     FieldDataManager& field_data_manager,
-    const blink::WebFormControlElement& autofill_initiating_element,
     const std::vector<FillElementData>& form_to_fill,
     std::optional<blink::WebInputElement> checkbox_element = std::nullopt,
     CheckStatus fill_checkbox_check_status =
@@ -432,7 +432,7 @@ void FillAndCheckState(
   FormData values_to_fill = form_data;
   for (const FillElementData& field_to_fill : form_to_fill) {
     FormFieldData* value_to_fill = FindFieldByName(
-        values_to_fill, field_to_fill.element.NameForAutofill());
+        values_to_fill, field_to_fill.element->NameForAutofill());
     ASSERT_TRUE(value_to_fill != nullptr);
     value_to_fill->value = field_to_fill.value;
     value_to_fill->is_autofilled = true;
@@ -452,11 +452,11 @@ void FillAndCheckState(
     fields_to_fill.emplace_back(field);
   }
   form_util::ApplyFormAction(
-      fields_to_fill, autofill_initiating_element, mojom::ActionType::kFill,
+      document, fields_to_fill, mojom::FormActionType::kFill,
       mojom::ActionPersistence::kFill, field_data_manager);
 
   for (const FillElementData& field_to_fill : form_to_fill) {
-    EXPECT_EQ(field_to_fill.value, field_to_fill.element.Value().Utf16());
+    EXPECT_EQ(field_to_fill.value, field_to_fill.element->Value().Utf16());
   }
 
   if (checkbox_element) {
@@ -491,10 +491,10 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
   auto select_element = GetFormControlElementById(doc, "select");
   auto selectlist_element = GetFormControlElementById(doc, "selectlist");
 
-  FillAndCheckState(forms.updated_forms[0], GetFieldDataManager(), text,
-                    {{text, u"test"},
-                     {select_element, u"first"},
-                     {selectlist_element, u"uno"}});
+  FillAndCheckState(doc, forms.updated_forms[0], GetFieldDataManager(),
+                    {{raw_ref(text), u"test"},
+                     {raw_ref(select_element), u"first"},
+                     {raw_ref(selectlist_element), u"uno"}});
 
   // Validate that clearing works, in particular that the previous values
   // were saved correctly.
@@ -540,7 +540,8 @@ TEST_F(FormCacheBrowserTest,
       GetFormControlElementById(GetMainFrame()->GetDocument(), "fname");
 
   // Simulate filling the form using Autofill.
-  form_util::ApplyFormAction(values_to_fill, fname, mojom::ActionType::kFill,
+  form_util::ApplyFormAction(GetMainFrame()->GetDocument(), values_to_fill,
+                             mojom::FormActionType::kFill,
                              mojom::ActionPersistence::kFill,
                              GetFieldDataManager());
 
@@ -616,7 +617,7 @@ TEST_F(FormCacheBrowserTest, DoNotStoreEmptyForms) {
   EXPECT_TRUE(forms.updated_forms.empty());
   EXPECT_TRUE(forms.removed_forms.empty());
 
-  EXPECT_EQ(1u, GetMainFrame()->GetDocument().Forms().size());
+  EXPECT_EQ(1u, GetMainFrame()->GetDocument().GetTopLevelForms().size());
   EXPECT_EQ(0u, test_api(form_cache).extracted_forms_size());
 }
 
@@ -638,7 +639,7 @@ TEST_F(FormCacheBrowserTest, FormCacheSizeUpperBound) {
   EXPECT_TRUE(forms.removed_forms.empty());
 
   EXPECT_EQ(kMaxExtractableFields + 1,
-            GetMainFrame()->GetDocument().Forms().size());
+            GetMainFrame()->GetDocument().GetTopLevelForms().size());
   EXPECT_EQ(kMaxExtractableFields, test_api(form_cache).extracted_forms_size());
 }
 
@@ -652,7 +653,7 @@ TEST_F(FormCacheBrowserTest, FieldLimit) {
   LoadHTML(html.c_str());
 
   ASSERT_EQ(kMaxExtractableFields + 1,
-            GetMainFrame()->GetDocument().Forms().size());
+            GetMainFrame()->GetDocument().GetTopLevelForms().size());
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms = UpdateFormCache(form_cache);
@@ -671,7 +672,7 @@ TEST_F(FormCacheBrowserTest, FrameLimit) {
   LoadHTML(html.c_str());
 
   ASSERT_EQ(kMaxExtractableChildFrames + 1,
-            GetMainFrame()->GetDocument().Forms().size());
+            GetMainFrame()->GetDocument().GetTopLevelForms().size());
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms = UpdateFormCache(form_cache);
@@ -702,7 +703,7 @@ TEST_F(FormCacheBrowserTest, MAYBE_FieldAndFrameLimit) {
   LoadHTML(html.c_str());
 
   ASSERT_EQ(kMaxExtractableFields + 1,
-            GetMainFrame()->GetDocument().Forms().size());
+            GetMainFrame()->GetDocument().GetTopLevelForms().size());
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms = UpdateFormCache(form_cache);

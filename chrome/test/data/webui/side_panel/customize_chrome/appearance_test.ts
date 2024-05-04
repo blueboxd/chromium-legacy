@@ -11,7 +11,7 @@ import {CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote} fro
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
 import type {ManagedDialogElement} from 'chrome://resources/cr_components/managed_dialog/managed_dialog.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {assertEquals, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import type {MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
 import {fakeMetricsPrivate} from 'chrome://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -327,12 +327,33 @@ suite('AppearanceTest', () => {
           appearanceElement.$.setClassicChromeButton, 'display', 'none');
       assertStyle(appearanceElement.$.themeSnapshot, 'display', 'none');
       assertNotStyle(appearanceElement.$.chromeColors, 'display', 'none');
-
-      const clickEvent =
-          eventToPromise('wallpaper-search-click', appearanceElement);
-      appearanceElement.$.searchedImageButton.click();
-      await clickEvent;
     });
+
+    test(
+        'searched image button opens themes when feature disabled',
+        async () => {
+          const clickEvent =
+              eventToPromise('edit-theme-click', appearanceElement);
+          appearanceElement.$.searchedImageButton.click();
+          await clickEvent;
+        });
+  });
+
+  suite('WallpaperSearch', async () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        'wallpaperSearchEnabled': true,
+      });
+    });
+
+    test(
+        'searched image button opens wallpaper search when feature enabled',
+        async () => {
+          const clickEvent =
+              eventToPromise('wallpaper-search-click', appearanceElement);
+          appearanceElement.$.searchedImageButton.click();
+          await clickEvent;
+        });
   });
 
   suite('Metrics', () => {
@@ -346,6 +367,130 @@ suite('AppearanceTest', () => {
           metrics.count(
               'NewTabPage.CustomizeChromeSidePanelAction',
               CustomizeChromeAction.EDIT_THEME_CLICKED));
+    });
+
+    test('Clicking set to classic Chrome button sets metric', async () => {
+      const theme = createTheme();
+      theme.backgroundImage = createBackgroundImage('chrome://theme/foo');
+
+      callbackRouterRemote.setTheme(theme);
+      await callbackRouterRemote.$.flushForTesting();
+
+      appearanceElement.$.setClassicChromeButton.click();
+
+      assertEquals(
+          1, metrics.count('NewTabPage.CustomizeChromeSidePanelAction'));
+      assertEquals(
+          1,
+          metrics.count(
+              'NewTabPage.CustomizeChromeSidePanelAction',
+              CustomizeChromeAction.SET_CLASSIC_CHROME_THEME_CLICKED));
+    });
+  });
+
+  suite('WallpaperSearchButton', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        wallpaperSearchButtonEnabled: true,
+        categoriesHeader: 'wallpaper search button enabled',
+        changeTheme: 'wallpaper search button disabled',
+      });
+    });
+
+    test('wallpaper search button shows if it is enabled', () => {
+      // Both edit buttons show.
+      assertTrue(!!appearanceElement.shadowRoot!.querySelector(
+          '#wallpaperSearchButton'));
+      assertTrue(!!appearanceElement.$.editThemeButton);
+      // Buttons share space in their parent container.
+      const editThemeButtonWidth =
+          appearanceElement.$.editThemeButton.offsetWidth;
+      const wallpaperSearchButtonWidth =
+          $$<HTMLElement>(
+              appearanceElement, '#wallpaperSearchButton')!.offsetWidth;
+      assertTrue(wallpaperSearchButtonWidth > 0 && editThemeButtonWidth > 0);
+      const editButtonsContainerWidthMinusGap =
+          $$<HTMLElement>(
+              appearanceElement, '#editButtonsContainer')!.offsetWidth -
+          8;
+      assertEquals(
+          editButtonsContainerWidthMinusGap,
+          editThemeButtonWidth + wallpaperSearchButtonWidth);
+      // Only wallpaper search button has an icon.
+      assertNotStyle(
+          $$(appearanceElement, '#wallpaperSearchButton .edit-theme-icon')!,
+          'display', 'none');
+      assertStyle(
+          $$(appearanceElement, '#editThemeButton .edit-theme-icon')!,
+          'display', 'none');
+      // Edit theme button shows the right text.
+      assertEquals(
+          appearanceElement.$.editThemeButton.textContent!.trim(),
+          'wallpaper search button enabled');
+    });
+
+    test(
+        'clicking wallpaper search button creates event and sets metric',
+        async () => {
+          const eventPromise =
+              eventToPromise('wallpaper-search-click', appearanceElement);
+
+          $$<HTMLElement>(appearanceElement, '#wallpaperSearchButton')!.click();
+
+          const event = await eventPromise;
+          assertTrue(!!event);
+          assertEquals(
+              1, metrics.count('NewTabPage.CustomizeChromeSidePanelAction'));
+          assertEquals(
+              1,
+              metrics.count(
+                  'NewTabPage.CustomizeChromeSidePanelAction',
+                  CustomizeChromeAction
+                      .WALLPAPER_SEARCH_APPEARANCE_BUTTON_CLICKED));
+        });
+
+    test('respects policy for wallpaper search button', async () => {
+      const theme = createTheme();
+      theme.backgroundManagedByPolicy = true;
+      callbackRouterRemote.setTheme(theme);
+      await callbackRouterRemote.$.flushForTesting();
+      await waitAfterNextRender(appearanceElement);
+
+      $$<HTMLElement>(appearanceElement, '#wallpaperSearchButton')!.click();
+      await waitAfterNextRender(appearanceElement);
+
+      const managedDialog =
+          $$<ManagedDialogElement>(appearanceElement, 'managed-dialog');
+      assertTrue(!!managedDialog);
+      assertTrue(managedDialog.$.dialog.open);
+    });
+
+    suite('ButtonDisabled', () => {
+      suiteSetup(() => {
+        loadTimeData.overrideValues({
+          wallpaperSearchButtonEnabled: false,
+        });
+      });
+
+      test('wallpaper search button is not shown if it is disabled', () => {
+        // Only edit theme button shows.
+        assertFalse(!!appearanceElement.shadowRoot!.querySelector(
+            '#wallpaperSearchButton'));
+        assertTrue(!!appearanceElement.$.editThemeButton);
+        // Edit theme button takes up the full container.
+        assertEquals(
+            $$<HTMLElement>(
+                appearanceElement, '#editButtonsContainer')!.offsetWidth,
+            appearanceElement.$.editThemeButton.offsetWidth);
+        // Edit theme button shows an icon with the correct text.
+        assertNotStyle(
+            $$(appearanceElement, '#editThemeButton .edit-theme-icon')!,
+            'display', 'none');
+        assertEquals(
+            $$<HTMLElement>(
+                appearanceElement, '#editThemeButton')!.textContent!.trim(),
+            'wallpaper search button disabled');
+      });
     });
   });
 });

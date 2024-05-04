@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_BASE_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <optional>
 #include <ostream>
@@ -232,13 +233,6 @@ class AppServiceProxyBase : public KeyedService,
 
   // Sets |permission| for the app identified by |app_id|.
   void SetPermission(const std::string& app_id, PermissionPtr permission);
-
-  // Uninstalls an app for the given |app_id|. If |parent_window| is specified,
-  // the uninstall dialog will be created as a modal dialog anchored at
-  // |parent_window|. Otherwise, the browser window will be used as the anchor.
-  virtual void Uninstall(const std::string& app_id,
-                         UninstallSource uninstall_source,
-                         gfx::NativeWindow parent_window) = 0;
 
   // Uninstalls an app for the given |app_id| without prompting the user to
   // confirm.

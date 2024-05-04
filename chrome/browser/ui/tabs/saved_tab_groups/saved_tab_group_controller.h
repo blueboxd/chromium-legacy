@@ -10,13 +10,15 @@
 
 class Browser;
 
+namespace tab_groups {
+
 // The API for performing updates to the SavedTabGroup feature.
 class SavedTabGroupController {
   // Opens a Saved Tab Group in a specified browser and sets all of the required
   // state in the SavedTabGroupService.
   virtual void OpenSavedTabGroupInBrowser(
       Browser* browser,
-      const base::Uuid& saved_group_guid) = 0;
+      const base::Uuid saved_group_guid) = 0;
 
   // Saves a group. Finds the TabGroup by groupid from all browsers, constructs
   // the saved tab group, and starts listening to all tabs.
@@ -48,5 +50,7 @@ class SavedTabGroupController {
       const tab_groups::TabGroupId& local_group_id,
       const base::Uuid& saved_group_guid) = 0;
 };
+
+}  // namespace tab_groups
 
 #endif  // CHROME_BROWSER_UI_TABS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_CONTROLLER_H_

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accelerators/rapid_key_sequence_recorder.h"
 #include "ash/accelerators/shortcut_input_handler.h"
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_util.h"
@@ -56,6 +57,7 @@
 #include "chrome/browser/ash/arc/memory_pressure/container_app_killer.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/audio/audio_survey_handler.h"
+#include "chrome/browser/ash/bluetooth/bluetooth_log_controller.h"
 #include "chrome/browser/ash/bluetooth/hats_bluetooth_revamp_trigger_impl.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/ash/camera/camera_general_survey_handler.h"
@@ -164,6 +166,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/chromeos/kcer/kcer_factory.h"
+#include "chrome/browser/chromeos/mahi/mahi_web_contents_manager.h"
 #include "chrome/browser/chromeos/video_conference/video_conference_manager_client.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/defaults.h"
@@ -858,6 +861,9 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
 
   g_browser_process->platform_part()->InitializeUserManager();
 
+  bluetooth_log_controller_ = std::make_unique<ash::BluetoothLogController>(
+      user_manager::UserManager::Get());
+
   if (base::FeatureList::IsEnabled(features::kPerUserMetrics)) {
     // Enable per-user metrics support as soon as user_manager is created.
     g_browser_process->metrics_service()->InitPerUserMetrics();
@@ -971,6 +977,10 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   // Initialize `SimpleGeolocationProvider` for the system parts.
   SimpleGeolocationProvider::Initialize(
       g_browser_process->shared_url_loader_factory());
+
+  // Instantiate TImeZoneResolverManager here, so it subscribes to
+  // SessionManager and profile creation notification is properly propagated.
+  g_browser_process->platform_part()->GetTimezoneResolverManager();
 
   // On Chrome OS, Chrome does not exit when all browser windows are closed.
   // UnregisterKeepAlive is called from chrome::HandleAppExitingForPlatform.
@@ -1276,6 +1286,16 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
         base::BindOnce(ShillSetPropertyErrorCallback,
                        shill::kEnableRFC8925Property));
 
+    ash::ShillManagerClient::Get()->SetProperty(
+        shill::kDisconnectWiFiOnEthernetProperty,
+        base::Value(base::FeatureList::IsEnabled(
+                        features::kDisconnectWiFiOnEthernetConnected)
+                        ? shill::kDisconnectWiFiOnEthernetConnected
+                        : shill::kDisconnectWiFiOnEthernetOff),
+        base::DoNothing(),
+        base::BindOnce(ShillSetPropertyErrorCallback,
+                       shill::kDisconnectWiFiOnEthernetProperty));
+
     // Notify patchpanel and shill about QoS feature enabled flag.
     const bool wifi_qos_enabled =
         base::FeatureList::IsEnabled(features::kEnableWifiQos);
@@ -1339,6 +1359,7 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
     Shell::Get()->shortcut_input_handler()->Initialize();
   }
   Shell::Get()->modifier_key_combo_recorder()->Initialize();
+  Shell::Get()->rapid_key_sequence_recorder()->Initialize();
 
   // Enable the KeyboardDrivenEventRewriter if the OEM manifest flag is on.
   if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
@@ -1442,6 +1463,10 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
       NetworkHandler::Get()->managed_cellular_pref_handler(),
       NetworkHandler::Get()->managed_network_configuration_handler(),
       NetworkHandler::Get()->network_state_handler());
+
+  if (chromeos::features::IsMahiEnabled()) {
+    mahi::MahiWebContentsManager::Get()->Initialize();
+  }
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -1704,6 +1729,8 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   if (pre_profile_init_called_) {
     network_portal_detector::Shutdown();
   }
+
+  bluetooth_log_controller_.reset();
 
   g_browser_process->platform_part()->ShutdownSessionManager();
   // Ash needs to be closed before UserManager is destroyed.

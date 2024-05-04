@@ -7,8 +7,10 @@
 #import "base/check.h"
 #import "base/i18n/time_formatting.h"
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
+#import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_mutator.h"
@@ -47,17 +49,26 @@ constexpr CGFloat kTitleBackgroundCornerRadius = 17;
   UIColor* _groupColor;
   // Group's creation date.
   base::Time _groupCreationDate;
+  // The title of the view.
+  UIView* _primaryTitle;
+  // The blur background.
+  UIVisualEffectView* _blurView;
+  // Currently displayed group.
+  const TabGroup* _tabGroup;
 }
 
-#pragma mark - UIViewController
+#pragma mark - Public
 
 - (instancetype)initWithHandler:(id<TabGroupsCommands>)handler
-                     lightTheme:(BOOL)lightTheme {
+                     lightTheme:(BOOL)lightTheme
+                       tabGroup:(const TabGroup*)tabGroup {
   CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
       << "You should not be able to create a tab group view controller outside "
          "the Tab Groups experiment.";
+  CHECK(tabGroup);
   if (self = [super init]) {
     _handler = handler;
+    _tabGroup = tabGroup;
     _gridViewController = [[BaseGridViewController alloc] init];
     if (lightTheme) {
       _gridViewController.theme = GridThemeLight;
@@ -69,24 +80,69 @@ constexpr CGFloat kTitleBackgroundCornerRadius = 17;
   return self;
 }
 
-- (void)viewDidLoad {
-  [super viewDidLoad];
-  if (!UIAccessibilityIsReduceTransparencyEnabled()) {
-    self.view.backgroundColor = [[UIColor colorNamed:kGrey900Color]
+- (void)prepareForPresentation {
+  [self.view layoutIfNeeded];
+  CGAffineTransform scaleDown =
+      CGAffineTransformScale(CGAffineTransformIdentity, 0.5, 0.5);
+  _navigationBar.alpha = 0;
+  _primaryTitle.alpha = 0;
+  _primaryTitle.transform = CGAffineTransformTranslate(
+      scaleDown, -_primaryTitle.bounds.size.width / 5.0, 0);
+
+  _gridViewController.view.alpha = 0;
+  CGPoint center = [_gridViewController.view convertPoint:self.view.center
+                                                 fromView:self.view];
+  [_gridViewController centerVisibleCellsToPoint:center withScale:0.1];
+}
+
+- (void)animateTopElementsPresentation {
+  _navigationBar.alpha = 1;
+  _primaryTitle.alpha = 1;
+  _primaryTitle.transform = CGAffineTransformIdentity;
+}
+
+- (void)animateGridPresentation {
+  _gridViewController.view.alpha = 1;
+  [_gridViewController resetVisibleCellsCenterAndScale];
+}
+
+- (void)fadeBlurIn {
+  if (UIAccessibilityIsReduceTransparencyEnabled()) {
+    self.view.backgroundColor = UIColor.blackColor;
+  } else {
+    self.view.backgroundColor = [[UIColor colorNamed:kStaticGrey900Color]
         colorWithAlphaComponent:kBackgroundAlpha];
     UIBlurEffect* blurEffect =
         [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-    UIVisualEffectView* blurEffectView =
-        [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    blurEffectView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:blurEffectView];
-    AddSameConstraints(self.view, blurEffectView);
-  } else {
-    self.view.backgroundColor = [UIColor blackColor];
+    _blurView.effect = blurEffect;
+  }
+}
+
+- (void)animateDismissal {
+  CGPoint center = [_gridViewController.view convertPoint:self.view.center
+                                                 fromView:self.view];
+  [_gridViewController centerVisibleCellsToPoint:center withScale:0.1];
+}
+
+- (void)fadeBlurOut {
+  _blurView.effect = nil;
+}
+
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.view.backgroundColor = UIColor.clearColor;
+  if (!UIAccessibilityIsReduceTransparencyEnabled()) {
+    _blurView = [[UIVisualEffectView alloc] initWithEffect:nil];
+    _blurView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:_blurView];
+    AddSameConstraints(self.view, _blurView);
   }
 
   [self configureNavigationBar];
   UIView* primaryTitle = [self configuredPrimaryTitle];
+  _primaryTitle = primaryTitle;
   UIView* secondaryTitle = [self configuredSubTitle];
 
   UIView* gridView = _gridViewController.view;
@@ -195,7 +251,7 @@ constexpr CGFloat kTitleBackgroundCornerRadius = 17;
   _navigationBar.shadowImage = [[UIImage alloc] init];
   _navigationBar.translucent = YES;
 
-  _navigationBar.tintColor = [UIColor colorNamed:kSolidWhiteColor];
+  _navigationBar.tintColor = UIColor.whiteColor;
   _navigationBar.delegate = self;
   [self.view addSubview:_navigationBar];
 
@@ -227,7 +283,7 @@ constexpr CGFloat kTitleBackgroundCornerRadius = 17;
 // Returns the title label view.
 - (UILabel*)groupTitleView {
   UILabel* titleLabel = [[UILabel alloc] init];
-  titleLabel.textColor = [UIColor colorNamed:kSolidWhiteColor];
+  titleLabel.textColor = UIColor.whiteColor;
   titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle];
 
@@ -329,10 +385,12 @@ constexpr CGFloat kTitleBackgroundCornerRadius = 17;
   // TODO(crbug.com/1501837): Add action to the button.
   UIButton* menuButton = [[UIButton alloc] init];
   menuButton.translatesAutoresizingMaskIntoConstraints = NO;
+  menuButton.menu = [self configuredTabGroupMenu];
+  menuButton.showsMenuAsPrimaryAction = YES;
   [menuButton
       setImage:DefaultSymbolWithPointSize(kMenuSymbol, kThreeDotButtonSize)
       forState:UIControlStateNormal];
-  menuButton.tintColor = [UIColor colorNamed:kSolidWhiteColor];
+  menuButton.tintColor = UIColor.whiteColor;
 
   [subTitleView addSubview:numberOfTabsLabel];
   [subTitleView addSubview:dotSeparation];
@@ -369,6 +427,45 @@ constexpr CGFloat kTitleBackgroundCornerRadius = 17;
   ]];
 
   return subTitleView;
+}
+
+// Displays the menu to rename and change the color of the currently displayed
+// group.
+- (void)displayEditionMenu {
+  [_handler showTabGroupEditionForGroup:_tabGroup];
+}
+
+// Returns the tab group menu.
+- (UIMenu*)configuredTabGroupMenu {
+  ActionFactory* actionFactory = [[ActionFactory alloc]
+      initWithScenario:kMenuScenarioHistogramTabGroupViewEntry];
+
+  __weak TabGroupViewController* weakSelf = self;
+  UIAction* renameGroup = [actionFactory actionToRenameTabGroupWithBlock:^{
+    [weakSelf displayEditionMenu];
+  }];
+
+  UIAction* newTabAction = [actionFactory actionToAddNewTabInGroupWithBlock:^{
+      // TODO(crbug.com/1501837): Add new tab in current group and open it.
+  }];
+  newTabAction.image =
+      DefaultSymbolWithPointSize(kPlusInSquareSymbol, kSymbolActionPointSize);
+
+  UIAction* ungroupAction = [actionFactory actionToUngroupTabGroupWithBlock:^{
+      // TODO(crbug.com/1501837): Remove the group but keep tabs and
+      // dismiss the view.
+  }];
+
+  UIAction* closeGroupAction = [actionFactory actionToCloseTabGroupWithBlock:^{
+      // TODO(crbug.com/1501837): Close all the tabs from the
+      // current group, remove the group and dismiss the view.
+  }];
+
+  return
+      [UIMenu menuWithTitle:@""
+                   children:@[
+                     renameGroup, newTabAction, ungroupAction, closeGroupAction
+                   ]];
 }
 
 @end

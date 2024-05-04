@@ -17,12 +17,14 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_drop_target.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_grid_test_api.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
@@ -489,7 +491,7 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
   ASSERT_TRUE(drag_indicators());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapSecondary,
             drag_indicators()->current_window_dragging_state());
-  EXPECT_EQ(overview_grid()->bounds_for_testing().y(),
+  EXPECT_EQ(OverviewGridTestApi(overview_grid()).bounds().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 
   // Drag back to the middle, the desks bar should be shifted again.
@@ -506,7 +508,7 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
   ASSERT_TRUE(drag_indicators());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary,
             drag_indicators()->current_window_dragging_state());
-  EXPECT_EQ(overview_grid()->bounds_for_testing().y(),
+  EXPECT_EQ(OverviewGridTestApi(overview_grid()).bounds().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 
   // Drop it at this location and expect the window to snap. The desks bar
@@ -516,7 +518,7 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(window.get(), split_view_controller()->primary_window());
-  EXPECT_EQ(overview_grid()->bounds_for_testing().y(),
+  EXPECT_EQ(OverviewGridTestApi(overview_grid()).bounds().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 }
 
@@ -547,7 +549,7 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
   event_generator->ReleaseLeftButton();  // Drop.
   EXPECT_FALSE(desks_util::BelongsToActiveDesk(window.get()));
   EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
-  EXPECT_EQ(overview_grid()->bounds_for_testing().y(),
+  EXPECT_EQ(OverviewGridTestApi(overview_grid()).bounds().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             drag_indicators()->current_window_dragging_state());

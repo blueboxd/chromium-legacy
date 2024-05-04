@@ -86,6 +86,13 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData final
   std::optional<cc::SnappedTargetData> snapped_target_data_;
   std::optional<cc::SnappedTargetData> snapchanging_target_data_;
   std::unique_ptr<cc::SnapSelectionStrategy> impl_snap_strategy_;
+  // If this is a snap container, this represents the cc::ElementId of the snap
+  // area (snapped to by this snap container) that is targeted[1] or contains a
+  // targeted[1] element.
+  // It is std::nullopt if no such snap area exists or if this is not a
+  // snap container.
+  // [1]https://drafts.csswg.org/selectors/#the-target-pseudo
+  std::optional<cc::ElementId> targeted_snap_area_id_;
   Vector<gfx::Rect> tickmarks_override_;
 };
 
@@ -268,7 +275,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void DidCompositorScroll(const gfx::PointF&) override;
 
   bool ShouldScrollOnMainThread() const override;
-  void SetShouldScrollOnMainThread(bool);
 
   bool IsActive() const override;
   bool IsScrollCornerVisible() const override;
@@ -606,6 +612,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   gfx::Size PixelSnappedBorderBoxSize() const;
 
+  std::optional<cc::ElementId> GetTargetedSnapAreaId() override {
+    return RareData() ? RareData()->targeted_snap_area_id_ : std::nullopt;
+  }
+  void SetTargetedSnapAreaId(const std::optional<cc::ElementId>& id) override {
+    EnsureRareData().targeted_snap_area_id_ = id;
+  }
+
  private:
   bool NeedsHypotheticalScrollbarThickness(ScrollbarOrientation) const;
   int ComputeHypotheticalScrollbarThickness(
@@ -715,9 +728,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   unsigned is_scrollbar_freeze_root_ : 1;
   unsigned is_horizontal_scrollbar_frozen_ : 1;
   unsigned is_vertical_scrollbar_frozen_ : 1;
-
-  // This is updated after PaintArtifactCompositor::Update().
-  unsigned should_scroll_on_main_thread_ : 1;
 
   // There are 6 possible combinations of writing mode and direction. Scroll
   // origin will be non-zero in the x or y axis if there is any reversed

@@ -44,7 +44,7 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 
-import java.util.Collections;
+import java.util.Map;
 
 /** Unit tests for {@link ReengagementNotificationController}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -76,7 +76,9 @@ public class ReengagementNotificationControllerTest {
     @Before
     public void setUp() throws Exception {
         FeatureList.setTestFeatures(
-                Collections.singletonMap(ChromeFeatureList.REENGAGEMENT_NOTIFICATION, true));
+                Map.of(
+                        ChromeFeatureList.REENGAGEMENT_NOTIFICATION,
+                        true));
         mContext = ApplicationProvider.getApplicationContext();
         mShadowNotificationManager =
                 Shadows.shadowOf(

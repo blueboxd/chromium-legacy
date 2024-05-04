@@ -183,7 +183,6 @@ try_.orchestrator_builder(
             "no_secondary_abi",
             "use_clang_coverage",
             "partial_code_coverage_instrumentation",
-            "enable_dangling_raw_ptr_feature_flag",
         ],
     ),
     compilator = "android-arm64-rel-compilator",
@@ -207,6 +206,23 @@ try_.compilator_builder(
     name = "android-arm64-rel-compilator",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     main_list_view = "try",
+)
+
+try_.builder(
+    name = "android-mte-arm64-rel",
+    description_html = "Run chromium tests on Android with MTE enabled in SYNC mode.",
+    mirrors = [
+        "ci/android-mte-arm64-rel",
+    ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-mte-arm64-rel",
+            "release_try_builder",
+            "minimal_symbols",
+        ],
+    ),
+    contact_team_email = "chrome-mte@google.com",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 # TODO(crbug.com/1367523): Reenable this builder once the reboot issue is resolved.
@@ -270,12 +286,14 @@ try_.builder(
         "$build/binary_size": {
             "analyze_targets": [
                 "//chrome/android:trichrome_32_minimal_apks",
+                "//chrome/android:trichrome_library_64_apk",
                 "//chrome/android:validate_expectations",
                 "//tools/binary_size:binary_size_trybot_py",
             ],
             "compile_targets": [
                 "check_chrome_static_initializers",
                 "trichrome_32_minimal_apks",
+                "trichrome_library_64_apk",
                 "validate_expectations",
             ],
         },
@@ -369,18 +387,77 @@ try_.builder(
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
+# TODO: crbug.com/41484811 - use a "mirrors" argument to
+# reshape these two RISC-V64 entries to look like the other
+# android-cronet-mainline entries.
+
 try_.builder(
     name = "android-cronet-mainline-clang-riscv64-dbg",
-    mirrors = ["ci/android-cronet-mainline-clang-riscv64-dbg"],
-    gn_args = "ci/android-cronet-mainline-clang-riscv64-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(config = "main_builder"),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "riscv64",
+            "cronet_android_mainline_clang",
+        ],
+    ),
     contact_team_email = "cronet-team@google.com",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-cronet-mainline-clang-riscv64-rel",
-    mirrors = ["ci/android-cronet-mainline-clang-riscv64-rel"],
-    gn_args = "ci/android-cronet-mainline-clang-riscv64-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(config = "main_builder"),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "riscv64",
+            "strip_debug_info",
+            "cronet_android_mainline_clang",
+        ],
+    ),
     contact_team_email = "cronet-team@google.com",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
@@ -911,7 +988,7 @@ try_.builder(
     mirrors = [
         "ci/Android arm64 Builder (dbg)",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -1004,7 +1081,7 @@ try_.builder(
     mirrors = [
         "ci/Android arm64 Builder All Targets (dbg)",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -1038,7 +1115,7 @@ try_.builder(
     mirrors = [
         "ci/Android x64 Builder All Targets (dbg)",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -1087,7 +1164,7 @@ try_.builder(
     mirrors = [
         "ci/Android x86 Builder (dbg)",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -1123,7 +1200,7 @@ try_.builder(
     mirrors = [
         "ci/android-cronet-arm-rel",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         is_compile_only = True,
     ),
     gn_args = gn_args.config(
@@ -1164,7 +1241,7 @@ try_.gpu.optional_tests_builder(
         ),
         build_gs_bucket = "chromium-gpu-fyi-archive",
     ),
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         retry_failed_shards = False,
     ),
     gn_args = gn_args.config(
@@ -1221,7 +1298,7 @@ try_.gpu.optional_tests_builder(
         "ci/GPU FYI Android arm64 Builder",
         "ci/Android FYI Release (Pixel 6)",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         retry_failed_shards = False,
     ),
     gn_args = "ci/GPU FYI Android arm64 Builder",

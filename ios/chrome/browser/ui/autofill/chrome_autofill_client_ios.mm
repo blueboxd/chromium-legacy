@@ -20,6 +20,7 @@
 #import "components/autofill/core/browser/form_data_importer.h"
 #import "components/autofill/core/browser/logging/log_manager.h"
 #import "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
+#import "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_delegate.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_ui_info.h"
@@ -59,6 +60,8 @@
 #import "ios/chrome/browser/passwords/model/password_tab_helper.h"
 #import "ios/chrome/browser/plus_addresses/model/plus_address_service_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/public/commands/autofill_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
@@ -214,7 +217,7 @@ payments::PaymentsAutofillClient*
 ChromeAutofillClientIOS::GetPaymentsAutofillClient() {
   if (!payments_autofill_client_) {
     payments_autofill_client_ =
-        std::make_unique<payments::IOSChromePaymentsAutofillClient>();
+        std::make_unique<payments::IOSChromePaymentsAutofillClient>(this);
   }
 
   return payments_autofill_client_.get();
@@ -405,8 +408,7 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
       if (existing_delegate->is_infobar_visible()) {
         // AutoDecline the new prompt if the existing prompt is visible.
         std::move(callback).Run(
-            AutofillClient::SaveAddressProfileOfferUserDecision::kAutoDeclined,
-            profile);
+            AutofillClient::AddressPromptUserDecision::kAutoDeclined, profile);
         return;
       } else {
         // If the existing prompt is not visible, it means that the user has
@@ -514,6 +516,17 @@ void ChromeAutofillClientIOS::HideAutofillPopup(PopupHidingReason reason) {
   [bridge_ hideAutofillPopup];
 }
 
+void ChromeAutofillClientIOS::ShowAutofillErrorDialog(
+    AutofillErrorDialogContext context) {
+  // TODO(b/324609813): Move this function from ChromeAutofillClientIOS to
+  // IOSChromePaymentsAutofillClient to avoid this call.
+  if (!payments_autofill_client_) {
+    payments_autofill_client_ =
+        std::make_unique<payments::IOSChromePaymentsAutofillClient>(this);
+  }
+  payments_autofill_client_->ShowAutofillErrorDialog(std::move(context));
+}
+
 bool ChromeAutofillClientIOS::IsAutocompleteEnabled() const {
   return prefs::IsAutocompleteEnabled(GetPrefs());
 }
@@ -558,17 +571,19 @@ bool ChromeAutofillClientIOS::IsLastQueriedField(FieldGlobalId field_id) {
   return [bridge_ isLastQueriedField:field_id];
 }
 
+bool ChromeAutofillClientIOS::ShouldFormatForLargeKeyboardAccessory() const {
+  return IsKeyboardAccessoryUpgradeEnabled();
+}
+
 std::unique_ptr<device_reauth::DeviceAuthenticator>
 ChromeAutofillClientIOS::GetDeviceAuthenticator() {
   device_reauth::DeviceAuthParams params(
       base::Seconds(60), device_reauth::DeviceAuthSource::kAutofill);
-  id<ReauthenticationProtocol> reauthModule;
-  if (ScopedAutofillPaymentReauthModuleOverride::instance) {
-    reauthModule = ScopedAutofillPaymentReauthModuleOverride::instance->module;
-  } else {
+  id<ReauthenticationProtocol> reauthModule =
+      ScopedAutofillPaymentReauthModuleOverride::Get();
+  if (!reauthModule) {
     reauthModule = [[ReauthenticationModule alloc] init];
   }
-
   return CreateIOSDeviceAuthenticator(reauthModule, browser_state_, params);
 }
 VirtualCardEnrollmentManager*

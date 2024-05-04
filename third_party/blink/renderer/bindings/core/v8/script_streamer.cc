@@ -21,14 +21,15 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_compile_hints_common.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_compile_hints_consumer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_compile_hints_for_streaming.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_compile_hints_producer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_local_compile_hints_consumer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/heap/cross_thread_persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -47,149 +48,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 namespace blink {
-
-bool DecodingEnabled() {
-  return base::FeatureList::IsEnabled(features::kDecodeScriptSourceOffThread);
-}
-
-// ScriptDecoder decodes and hashes the script source on a worker thread, and
-// then forwards the data to the client on the loader thread.
-class ResourceScriptStreamer::ScriptDecoder {
- public:
-  ScriptDecoder(ResponseBodyLoaderClient* response_body_loader_client,
-                std::unique_ptr<TextResourceDecoder> decoder,
-                scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
-      : decoding_enabled_(DecodingEnabled()),
-        decoder_(std::move(decoder)),
-        response_body_loader_client_(response_body_loader_client),
-        loading_task_runner_(std::move(loading_task_runner)),
-        decoding_task_runner_(decoding_enabled_
-                                  ? worker_pool::CreateSequencedTaskRunner(
-                                        {base::TaskPriority::USER_BLOCKING})
-                                  : nullptr) {}
-
-  void DidReceiveData(std::unique_ptr<char[]> data,
-                      size_t data_size,
-                      bool send_to_client) {
-    if (ShouldPostToDecodingThread()) {
-      PostCrossThreadTask(
-          *decoding_task_runner_, FROM_HERE,
-          CrossThreadBindOnce(&ScriptDecoder::DidReceiveData,
-                              CrossThreadUnretained(this), std::move(data),
-                              data_size, send_to_client));
-      return;
-    }
-
-    if (decoding_enabled_)
-      AppendData(decoder_->Decode(data.get(), data_size));
-
-    if (send_to_client) {
-      RunOrPostToLoadingThread(FROM_HERE,
-                               CrossThreadBindOnce(NotifyClientDidReceiveData,
-                                                   response_body_loader_client_,
-                                                   std::move(data), data_size));
-    }
-  }
-
-  void FinishDecode(CrossThreadOnceClosure main_thread_continuation) {
-    if (ShouldPostToDecodingThread()) {
-      PostCrossThreadTask(
-          *decoding_task_runner_, FROM_HERE,
-          CrossThreadBindOnce(&ScriptDecoder::FinishDecode,
-                              CrossThreadUnretained(this),
-                              std::move(main_thread_continuation)));
-      return;
-    }
-
-    if (decoding_enabled_) {
-      AppendData(decoder_->Flush());
-
-      DigestValue digest_value;
-      digestor_.Finish(digest_value);
-
-      RunOrPostToLoadingThread(
-          FROM_HERE,
-          CrossThreadBindOnce(
-              NotifyClientDidFinishLoading, response_body_loader_client_,
-              builder_.ReleaseString(),
-              std::make_unique<ParkableStringImpl::SecureDigest>(digest_value),
-              std::move(main_thread_continuation)));
-    } else {
-      RunOrPostToLoadingThread(FROM_HERE, std::move(main_thread_continuation));
-    }
-  }
-
-  void Delete() const {
-    if (decoding_task_runner_)
-      decoding_task_runner_->DeleteSoon(FROM_HERE, this);
-    else
-      delete this;
-  }
-
- private:
-  void RunOrPostToLoadingThread(const base::Location& from_here,
-                                CrossThreadOnceClosure closure) {
-    if (loading_task_runner_->RunsTasksInCurrentSequence()) {
-      std::move(closure).Run();
-      return;
-    }
-
-    PostCrossThreadTask(*loading_task_runner_, from_here, std::move(closure));
-  }
-
-  bool ShouldPostToDecodingThread() {
-    return decoding_task_runner_ &&
-           !decoding_task_runner_->RunsTasksInCurrentSequence();
-  }
-
-  void AppendData(const String& data) {
-    digestor_.Update(base::as_bytes(base::make_span(
-        static_cast<const char*>(data.Bytes()), data.CharactersSizeInBytes())));
-    builder_.Append(data);
-  }
-
-  static void NotifyClientDidReceiveData(
-      ResponseBodyLoaderClient* response_body_loader_client,
-      std::unique_ptr<char[]> data,
-      size_t data_size) {
-    // The response_body_loader_client is held weakly, so it may be dead by the
-    // time this callback is called. If so, we can simply drop this chunk.
-    if (!response_body_loader_client)
-      return;
-
-    response_body_loader_client->DidReceiveData(
-        base::make_span(data.get(), data_size));
-  }
-
-  static void NotifyClientDidFinishLoading(
-      ResponseBodyLoaderClient* response_body_loader_client,
-      const String& decoded_data,
-      std::unique_ptr<ParkableStringImpl::SecureDigest> digest,
-      CrossThreadOnceClosure main_thread_continuation) {
-    if (response_body_loader_client) {
-      response_body_loader_client->DidReceiveDecodedData(decoded_data,
-                                                         std::move(digest));
-    }
-
-    std::move(main_thread_continuation).Run();
-  }
-
-  const bool decoding_enabled_;
-  StringBuilder builder_;
-  std::unique_ptr<TextResourceDecoder> decoder_;
-  Digestor digestor_{kHashAlgorithmSha256};
-
-  CrossThreadWeakPersistent<ResponseBodyLoaderClient>
-      response_body_loader_client_;
-  scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> decoding_task_runner_;
-};
-
-void ResourceScriptStreamer::ScriptDecoderDeleter::operator()(
-    const ScriptDecoder* ptr) {
-  if (ptr)
-    ptr->Delete();
-}
 
 // SourceStream implements the streaming interface towards V8. The main
 // functionality is preparing the data to give to V8 on main thread, and
@@ -258,10 +116,10 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
           // TODO(leszeks): It would be nice to get rid of this second copy, and
           // either share ownership of the chunks, or only give chunks back to
           // the client once the streaming completes.
-          auto copy_for_resource = std::make_unique<char[]>(num_bytes);
-          memcpy(copy_for_resource.get(), buffer, num_bytes);
-          script_decoder_->DidReceiveData(std::move(copy_for_resource),
-                                          num_bytes, true);
+          script_decoder_->DidReceiveData(
+              Vector<char>(
+                  base::make_span(static_cast<const char*>(buffer), num_bytes)),
+              /*send_to_client=*/true);
 
           result = data_pipe_->EndReadData(num_bytes);
           CHECK_EQ(result, MOJO_RESULT_OK);
@@ -342,11 +200,10 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     cancelled_.Set();
   }
 
-  void TakeDataAndPipeOnMainThread(
-      ScriptResource* resource,
-      ResourceScriptStreamer* streamer,
-      mojo::ScopedDataPipeConsumerHandle data_pipe,
-      ResourceScriptStreamer::ScriptDecoder* script_decoder) {
+  void TakeDataAndPipeOnMainThread(ScriptResource* resource,
+                                   ResourceScriptStreamer* streamer,
+                                   mojo::ScopedDataPipeConsumerHandle data_pipe,
+                                   ScriptDecoderWithClient* script_decoder) {
     DCHECK(IsMainThread());
     CHECK(data_pipe);
     CHECK(!ready_to_run_.IsSet());
@@ -406,7 +263,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   size_t initial_data_len_ = 0;
 
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
-  ResourceScriptStreamer::ScriptDecoder* script_decoder_;
+  ScriptDecoderWithClient* script_decoder_;
 };
 
 std::tuple<ResourceScriptStreamer*, ScriptStreamer::NotStreamingReason>
@@ -533,6 +390,13 @@ bool ScriptStreamer::ConvertEncoding(
   // are Latin1 or UTF-8 anyway, so this should be enough for most
   // real world purposes.
   return false;
+}
+
+v8_compile_hints::V8LocalCompileHintsConsumer*
+ResourceScriptStreamer::GetV8LocalCompileHintsConsumerForTest() const {
+  return compile_hints_
+             ? compile_hints_->GetV8LocalCompileHintsConsumerForTest()
+             : nullptr;
 }
 
 bool ResourceScriptStreamer::IsStreamingStarted() const {
@@ -753,79 +617,20 @@ bool ResourceScriptStreamer::TryStartStreamingTask() {
   source_ = std::make_unique<v8::ScriptCompiler::StreamedSource>(
       std::move(stream_ptr), encoding_);
 
-  v8::ScriptCompiler::CompileOptions compile_options =
-      v8::ScriptCompiler::kNoCompileOptions;
-  v8::CompileHintCallback compile_hint_callback = nullptr;
-  void* compile_hint_callback_data = nullptr;
-
-  v8_compile_hints::V8CrowdsourcedCompileHintsProducer* compile_hints_producer =
-      script_resource_->GetV8CrowdsourcedCompileHintsProducer();
-  v8_compile_hints::V8CrowdsourcedCompileHintsConsumer* compile_hints_consumer =
-      script_resource_->GetV8CrowdsourcedCompileHintsConsumer();
-
-  bool local_compile_hints_enabled =
-      base::FeatureList::IsEnabled(features::kLocalCompileHints);
-
-  if (compile_hints_producer && compile_hints_producer->MightGenerateData()) {
-    DCHECK(base::FeatureList::IsEnabled(features::kProduceCompileHints2));
-    compile_options = v8::ScriptCompiler::kProduceCompileHints;
-    base::UmaHistogramEnumeration(
-        v8_compile_hints::kStatusHistogram,
-        v8_compile_hints::Status::kProduceCompileHintsStreaming);
-  } else if (local_compile_hints_enabled &&
-             V8CodeCache::HasCompileHints(
-                 script_resource_->CacheHandler(),
-                 CachedMetadataHandler::kAllowUnchecked) &&
-             V8CodeCache::HasHotTimestamp(script_resource_->CacheHandler())) {
-    // For now, we can only consume local or crowdsourced compile hints, but
-    // not both at the same time.
-    // TODO(chromium:1495723): Enable consuming both at the same time.
-
-    // TODO(1495723): It's not clear what we should do if the resource is not
-    // hot but we have compile hints. 1) Consume compile hints and produce new
-    // ones (currently not possible in the API) and combine both compile hints.
-    // 2) Ignore existing compile hints (we're anyway not creating the
-    // code cache yet) and produce new ones.
-    CachedMetadataHandler* cache_handler = script_resource_->CacheHandler();
-    scoped_refptr<CachedMetadata> cached_metadata =
-        V8CodeCache::GetCachedMetadataForCompileHints(
-            cache_handler, CachedMetadataHandler::kAllowUnchecked);
-    local_compile_hints_consumer_ =
-        std::make_unique<v8_compile_hints::V8LocalCompileHintsConsumer>(
-            cached_metadata.get());
-    if (!local_compile_hints_consumer_->IsRejected()) {
-      compile_hint_callback_data = local_compile_hints_consumer_.get();
-      compile_hint_callback =
-          v8_compile_hints::V8LocalCompileHintsConsumer::GetCompileHint;
-      compile_options = v8::ScriptCompiler::kConsumeCompileHints;
-      base::UmaHistogramEnumeration(
-          v8_compile_hints::kStatusHistogram,
-          v8_compile_hints::Status::kConsumeLocalCompileHintsStreaming);
-    }
-  } else if (compile_hints_consumer && compile_hints_consumer->HasData()) {
-    // This doesn't need to be gated behind a runtime flag, because there won't
-    // be any data unless the v8_compile_hints::kConsumeCompileHints
-    // flag is on.
-    crowdsourced_compile_hint_callback_data_ =
-        compile_hints_consumer->GetDataWithScriptNameHash(
-            v8_compile_hints::ScriptNameHash(script_resource_->Url()));
-    compile_hint_callback_data = crowdsourced_compile_hint_callback_data_.get();
-    compile_hint_callback =
-        &v8_compile_hints::V8CrowdsourcedCompileHintsConsumer::
-            CompileHintCallback;
-    compile_options = v8::ScriptCompiler::kConsumeCompileHints;
-    base::UmaHistogramEnumeration(
-        v8_compile_hints::kStatusHistogram,
-        v8_compile_hints::Status::kConsumeCrowdsourcedCompileHintsStreaming);
-  } else if (local_compile_hints_enabled) {
-    // Produce local compile hints. TODO(chromium:1495723): If we later find out
-    // there were local compile hints (but the cache arrived late), we'll need
-    // to use them.
-    compile_options = v8::ScriptCompiler::kProduceCompileHints;
-    base::UmaHistogramEnumeration(
-        v8_compile_hints::kStatusHistogram,
-        v8_compile_hints::Status::kProduceCompileHintsStreaming);
-  }
+  compile_hints_ =
+      v8_compile_hints::CompileHintsForStreaming::Builder(
+          script_resource_->GetV8CrowdsourcedCompileHintsProducer(),
+          script_resource_->GetV8CrowdsourcedCompileHintsConsumer(),
+          script_resource_->Url())
+          .Build(
+              (V8CodeCache::HasCompileHints(
+                   script_resource_->CacheHandler(),
+                   CachedMetadataHandler::kAllowUnchecked) &&
+               V8CodeCache::HasHotTimestamp(script_resource_->CacheHandler()))
+                  ? V8CodeCache::GetCachedMetadataForCompileHints(
+                        script_resource_->CacheHandler(),
+                        CachedMetadataHandler::kAllowUnchecked)
+                  : nullptr);
 
   v8::Isolate* isolate = script_resource_->GetIsolateOrNull();
   if (!isolate) {
@@ -840,8 +645,13 @@ bool ResourceScriptStreamer::TryStartStreamingTask() {
   std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
       script_streaming_task =
           base::WrapUnique(v8::ScriptCompiler::StartStreaming(
-              isolate, source_.get(), script_type_, compile_options,
-              compile_hint_callback, compile_hint_callback_data));
+              isolate, source_.get(), script_type_,
+              compile_hints_ ? compile_hints_->compile_options()
+                             : v8::ScriptCompiler::kNoCompileOptions,
+              compile_hints_ ? compile_hints_->GetCompileHintCallback()
+                             : nullptr,
+              compile_hints_ ? compile_hints_->GetCompileHintCallbackData()
+                             : nullptr));
 
   if (!script_streaming_task) {
     // V8 cannot stream the script.
@@ -911,9 +721,10 @@ ResourceScriptStreamer::ResourceScriptStreamer(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
     : script_resource_(script_resource),
       response_body_loader_client_(response_body_loader_client),
-      script_decoder_(new ScriptDecoder(response_body_loader_client,
-                                        std::move(decoder),
-                                        loading_task_runner)),
+      script_decoder_(
+          ScriptDecoderWithClient::Create(response_body_loader_client,
+                                          std::move(decoder),
+                                          loading_task_runner)),
       data_pipe_(std::move(data_pipe)),
       script_url_string_(script_resource->Url().GetString()),
       script_resource_identifier_(script_resource->InspectorId()),
@@ -998,14 +809,10 @@ void ResourceScriptStreamer::OnDataPipeReadable(
   // There should be data, so this read should succeed.
   CHECK_EQ(begin_read_result, MOJO_RESULT_OK);
 
-  response_body_loader_client_->DidReceiveData(
-      base::make_span(static_cast<const char*>(data), data_size));
-  if (DecodingEnabled()) {
-    auto copy_for_decoding = std::make_unique<char[]>(data_size);
-    memcpy(copy_for_decoding.get(), data, data_size);
-    script_decoder_->DidReceiveData(std::move(copy_for_decoding), data_size,
-                                    false);
-  }
+  auto data_span = base::make_span(static_cast<const char*>(data), data_size);
+  response_body_loader_client_->DidReceiveData(data_span);
+  script_decoder_->DidReceiveData(Vector<char>(data_span),
+                                  /*send_to_client=*/false);
 
   MojoResult end_read_result = data_pipe_->EndReadData(data_size);
 

@@ -64,8 +64,9 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
             PasswordCheckFragmentView fragmentView,
             HelpAndFeedbackLauncher helpAndFeedbackLauncher,
             SettingsLauncher settingsLauncher,
-            PasswordCheckComponentUi.CustomTabIntentHelper customTabIntentHelper,
-            PasswordCheckComponentUi.TrustedIntentHelper trustedIntentHelper) {
+            CustomTabIntentHelper customTabIntentHelper,
+            TrustedIntentHelper trustedIntentHelper,
+            Profile profile) {
         mHelpAndFeedbackLauncher = helpAndFeedbackLauncher;
         mFragmentView = fragmentView;
         mSettingsLauncher = settingsLauncher;
@@ -88,7 +89,7 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
                         trustedIntentHelper);
         PasswordCheckIconHelper iconHelper =
                 new PasswordCheckIconHelper(
-                        new LargeIconBridge(Profile.getLastUsedRegularProfile()),
+                        new LargeIconBridge(profile),
                         mFragmentView
                                 .getResources()
                                 .getDimensionPixelSize(R.dimen.default_favicon_size));

@@ -58,10 +58,10 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.OmniboxMetrics;
+import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteMediator.EditSessionState;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
-import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -100,7 +100,10 @@ import java.util.List;
             AutocompleteMediatorUnitTest.ShadowTemplateUrlServiceFactory.class,
             ShadowLooper.class
         })
-@EnableFeatures({ChromeFeatureList.CLEAR_OMNIBOX_FOCUS_AFTER_NAVIGATION})
+@EnableFeatures({
+    ChromeFeatureList.CLEAR_OMNIBOX_FOCUS_AFTER_NAVIGATION,
+    ChromeFeatureList.OMNIBOX_SUGGESTION_GROUPING_FOR_NON_ZPS
+})
 public class AutocompleteMediatorUnitTest {
     private static final int SUGGESTION_MIN_HEIGHT = 20;
     private static final int HEADER_MIN_HEIGHT = 15;
@@ -124,7 +127,6 @@ public class AutocompleteMediatorUnitTest {
     private @Mock WindowAndroid mMockWindowAndroid;
     private @Mock OmniboxActionDelegate mOmniboxActionDelegate;
     private @Mock LargeIconBridge.Natives mLargeIconBridgeJniMock;
-    private @Mock HistoryClustersProcessor.OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
     private @Mock OmniboxActionFactoryJni mActionFactoryJni;
     private @Mock TemplateUrlService mTemplateUrlService;
     private @Mock NavigationHandle mNavigationHandle;
@@ -178,8 +180,7 @@ public class AutocompleteMediatorUnitTest {
                         tab -> {},
                         mTabWindowManagerSupplier,
                         url -> false,
-                        mOmniboxActionDelegate,
-                        mOpenHistoryClustersDelegate);
+                        mOmniboxActionDelegate);
 
         mMediator
                 .getDropdownItemViewInfoListBuilderForTest()
@@ -726,6 +727,34 @@ public class AutocompleteMediatorUnitTest {
                             .model
                             .get(SuggestionCommonProperties.LAYOUT_DIRECTION));
         }
+    }
+
+    @Test
+    public void onSuggestionDropdownHeightChanged_noNativeCallsUntilNativeIsReady() {
+        mMediator.onSuggestionDropdownHeightChanged(Integer.MAX_VALUE);
+        verifyNoMoreInteractions(mAutocompleteController);
+    }
+
+    @Test
+    public void onSuggestionDropdownHeightChanged_noNativeCallsUntilProfileIsReady() {
+        mMediator.onNativeInitialized();
+        mMediator.onSuggestionDropdownHeightChanged(Integer.MAX_VALUE);
+        verifyNoMoreInteractions(mAutocompleteController);
+    }
+
+    @Test
+    public void onSuggestionDropdownHeightChanged_updatedHeightPassedToNative() {
+        mMediator.onNativeInitialized();
+        mMediator.setAutocompleteProfile(mProfile);
+
+        var res = ContextUtils.getApplicationContext().getResources();
+        int suggestionHeight = res.getDimensionPixelSize(R.dimen.omnibox_suggestion_content_height);
+        float displayDensity = res.getDisplayMetrics().density;
+
+        mMediator.onSuggestionDropdownHeightChanged(100);
+
+        verify(mAutocompleteController)
+                .onSuggestionDropdownHeightChanged((int) (100 * displayDensity), suggestionHeight);
     }
 
     @Test

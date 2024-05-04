@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/public/renderer/render_thread.h"
@@ -15,6 +16,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_text_utils.h"
@@ -125,8 +127,8 @@ bool ReadAnythingAppModel::PostProcessSelection() {
   // redraw either a) the new selected content or b) the original distilled
   // content if the new selection is inside that or if the selection was
   // cleared.
-  bool need_to_draw = !selection_from_action_ && !SelectionInsideDisplayNodes();
-
+  bool need_to_draw = !selection_from_action_ && !NoCurrentSelection() &&
+                      !SelectionInsideDisplayNodes();
   // Save the current selection
   UpdateSelection();
 
@@ -278,8 +280,43 @@ ui::AXNode* ReadAnythingAppModel::GetParentForSelection(ui::AXNode* node) {
   return parent;
 }
 
+bool ReadAnythingAppModel::ContentNodesOnlyContainHeadings() {
+  for (ui::AXNodeID node_id : content_node_ids_) {
+    ui::AXNode* node = GetAXNode(node_id);
+    if (!node || node->IsInvisibleOrIgnored() ||
+        node->GetRole() == ax::mojom::Role::kHeading) {
+      continue;
+    }
+
+    // Check the ancestors for a heading node, as inline text boxes or static
+    // text nodes could be deeply nested under one.
+    base::queue<ui::AXNode*> ancestors =
+        node->GetAncestorsCrossingTreeBoundaryAsQueue();
+    bool found_heading = false;
+    while (!ancestors.empty()) {
+      if (ancestors.front()->GetRole() == ax::mojom::Role::kHeading) {
+        found_heading = true;
+        break;
+      }
+      ancestors.pop();
+    }
+    if (!found_heading) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void ReadAnythingAppModel::ComputeDisplayNodeIdsForDistilledTree() {
   DCHECK(!content_node_ids_.empty());
+
+  // RM should not display just headings, return early to allow "highlight to
+  // use RM" empty state screen to show.
+  // TODO(crbug.com/1266555): Remove when Screen2x doesn't return just headings.
+  if (features::IsReadAnythingWithAlgorithmEnabled() &&
+      ContentNodesOnlyContainHeadings()) {
+    return;
+  }
 
   // Display nodes are the nodes which will be displayed by the rendering
   // algorithm of Read Anything app.ts. We wish to create a subtree which
@@ -336,6 +373,12 @@ void ReadAnythingAppModel::ComputeDisplayNodeIdsForDistilledTree() {
       }
     }
   }
+}
+
+bool ReadAnythingAppModel::NoCurrentSelection() {
+  return start_node_id_ == end_node_id_ ||
+         (start_node_id_ == ui::kInvalidAXNodeID &&
+          end_node_id_ == ui::kInvalidAXNodeID);
 }
 
 bool ReadAnythingAppModel::SelectionInsideDisplayNodes() {
@@ -742,6 +785,10 @@ void ReadAnythingAppModel::ProcessNonGeneratedEvents(
       case ax::mojom::Event::kHitTestResult:
       case ax::mojom::Event::kHover:
       case ax::mojom::Event::kImageFrameUpdated:
+        if (event.event_from_action == ax::mojom::Action::kGetImageData) {
+          image_to_update_node_id_ = event.id;
+        }
+        break;
       case ax::mojom::Event::kLayoutComplete:
       case ax::mojom::Event::kLiveRegionCreated:
       case ax::mojom::Event::kLiveRegionChanged:
@@ -992,6 +1039,24 @@ std::string ReadAnythingAppModel::GetHtmlTag(ui::AXNodeID ax_node_id) const {
   }
 
   return html_tag;
+}
+
+std::string ReadAnythingAppModel::GetAltText(ui::AXNodeID ax_node_id) const {
+  ui::AXNode* ax_node = GetAXNode(ax_node_id);
+  CHECK(ax_node);
+  std::string alt_text =
+      ax_node->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  return alt_text;
+}
+
+std::string ReadAnythingAppModel::GetImageDataUrl(
+    ui::AXNodeID ax_node_id) const {
+  ui::AXNode* ax_node = GetAXNode(ax_node_id);
+  CHECK(ax_node);
+
+  std::string url =
+      ax_node->GetStringAttribute(ax::mojom::StringAttribute::kImageDataUrl);
+  return url;
 }
 
 std::string ReadAnythingAppModel::GetAriaLevel(ui::AXNode* ax_node) const {
@@ -1293,7 +1358,7 @@ ReadAnythingAppModel::GetNextNodes() {
 
 // Returns either the node or the lowest platform ancestor of the node, if it's
 // a leaf.
-ui::AXNode* ReadAnythingAppModel::GetNodeFromCurrentPosition() {
+ui::AXNode* ReadAnythingAppModel::GetNodeFromCurrentPosition() const {
   if (ax_position_->GetAnchor()->IsChildOfLeaf()) {
     return ax_position_->GetAnchor()->GetLowestPlatformAncestor();
   }
@@ -1308,7 +1373,7 @@ ui::AXNode* ReadAnythingAppModel::GetNodeFromCurrentPosition() {
 // Some of the checks here right now are probably unneeded.
 ui::AXNodePosition::AXPositionInstance
 ReadAnythingAppModel::GetNextValidPositionFromCurrentPosition(
-    ReadAnythingAppModel::ReadAloudCurrentGranularity current_granularity) {
+    ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity) {
   ui::AXNodePosition::AXPositionInstance new_position =
       ui::AXNodePosition::CreateNullPosition();
 
@@ -1379,8 +1444,8 @@ int ReadAnythingAppModel::GetCurrentTextEndIndex(ui::AXNodeID node_id) {
 }
 
 bool ReadAnythingAppModel::NodeBeenOrWillBeSpoken(
-    ReadAnythingAppModel::ReadAloudCurrentGranularity current_granularity,
-    ui::AXNodeID id) {
+    ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity,
+    ui::AXNodeID id) const {
   if (base::Contains(current_granularity.segments, id)) {
     return true;
   }
@@ -1417,7 +1482,7 @@ bool ReadAnythingAppModel::IsTextForReadAnything(
   return (GetHtmlTag(ax_node_id).length() == 0) || is_list_marker;
 }
 
-bool ReadAnythingAppModel::IsOpeningPunctuation(char c) {
+bool ReadAnythingAppModel::IsOpeningPunctuation(char& c) const {
   return (c == '(' || c == '{' || c == '[' || c == '<');
 }
 
@@ -1426,13 +1491,13 @@ bool ReadAnythingAppModel::IsOpeningPunctuation(char c) {
 // our current granularity segment.
 bool ReadAnythingAppModel::ShouldSplitAtParagraph(
     ui::AXNodePosition::AXPositionInstance& position,
-    ReadAloudCurrentGranularity& current_granularity) {
+    ReadAloudCurrentGranularity& current_granularity) const {
   return position->AtStartOfParagraph() &&
          (current_granularity.node_ids.size() > 0);
 }
 
 ui::AXNode* ReadAnythingAppModel::GetAnchorNode(
-    ui::AXNodePosition::AXPositionInstance& position) {
+    ui::AXNodePosition::AXPositionInstance& position) const {
   bool is_leaf = position->GetAnchor()->IsChildOfLeaf();
   // If the node is a leaf, use the parent node instead.
   return is_leaf ? position->GetAnchor()->GetLowestPlatformAncestor()
@@ -1441,7 +1506,8 @@ ui::AXNode* ReadAnythingAppModel::GetAnchorNode(
 
 bool ReadAnythingAppModel::IsValidAXPosition(
     ui::AXNodePosition::AXPositionInstance& position,
-    ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity) {
+    ReadAnythingAppModel::ReadAloudCurrentGranularity& current_granularity)
+    const {
   ui::AXNode* anchor_node = GetAnchorNode(position);
   bool was_previously_spoken =
       NodeBeenOrWillBeSpoken(current_granularity, anchor_node->id());

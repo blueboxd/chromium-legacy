@@ -28,12 +28,12 @@ group("resources") {
       "bookmarks:resources",
       "commerce:resources",
       "downloads:resources",
-      "feed:resources",
       "feedback:resources",
       "gaia_auth_host:resources",
       "hats:resources",
       "history:resources",
       "identity_internals:resources",
+      "lens/overlay:resources",
       "management:resources",
       "new_tab_page:resources",
       "new_tab_page_instant:resources",
@@ -67,7 +67,6 @@ group("resources") {
     if (is_chrome_branded) {
       public_deps += [
         "lens:resources",
-        "lens:untrusted_resources",
         "media_router/cast_feedback:resources",
       ]
     }
@@ -75,6 +74,7 @@ group("resources") {
 
   if (is_chromeos_ash) {
     public_deps += [
+      "ash/extended_updates:resources",
       "ash/inline_login:resources",
       "ash/settings:resources",
       "chromeos:resources",

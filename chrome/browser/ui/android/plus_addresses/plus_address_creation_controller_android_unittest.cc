@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/android/plus_addresses/plus_address_creation_controller_android.h"
+
 #include <memory>
 #include <optional>
 
@@ -147,7 +148,7 @@ class PlusAddressCreationControllerAndroidEnabledTest
   }
 
  protected:
-  base::test::ScopedFeatureList features_{kFeature};
+  base::test::ScopedFeatureList features_{features::kFeature};
   // Ensures that the feature is known to be enabled, such that
   // `PlusAddressServiceFactory` doesn't bail early with a null return.
   profiles::testing::ScopedProfileSelectionsForFactoryTesting
@@ -378,7 +379,7 @@ class PlusAddressCreationControllerAndroidDisabledTest
     : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
-    features_.InitAndDisableFeature(kFeature);
+    features_.InitAndDisableFeature(features::kFeature);
     ChromeRenderViewHostTestHarness::SetUp();
     PlusAddressServiceFactory::GetInstance()->SetTestingFactory(
         browser_context(),

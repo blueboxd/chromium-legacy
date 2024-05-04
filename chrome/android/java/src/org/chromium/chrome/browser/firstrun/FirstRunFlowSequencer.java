@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncUtils;
 import org.chromium.components.crash.CrashKeyIndex;
 import org.chromium.components.crash.CrashKeys;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -69,7 +70,6 @@ public abstract class FirstRunFlowSequencer {
             }
             assert mProfileSupplier.get() != null;
             Profile profile = mProfileSupplier.get().getOriginalProfile();
-            // TODO(crbug.com/1520791): Review this logic for history sync for UNO.
             final IdentityManager identityManager =
                     IdentityServicesProvider.get().getIdentityManager(profile);
             if (identityManager.hasPrimaryAccount(ConsentLevel.SYNC) || !isSyncAllowed()) {
@@ -79,6 +79,23 @@ public abstract class FirstRunFlowSequencer {
             }
             // Show the sync consent page only to the signed-in users.
             return identityManager.hasPrimaryAccount(ConsentLevel.SIGNIN);
+        }
+
+        boolean shouldShowHistorySyncOptIn(boolean isChild) {
+            assert mProfileSupplier.get() != null;
+            Profile profile = mProfileSupplier.get().getOriginalProfile();
+            if (isChild) {
+                return !HistorySyncUtils.isHistorySyncDisabledByCustodian(profile);
+            }
+            if (HistorySyncUtils.isHistorySyncDisabledByPolicy(profile)
+                    || !isSyncAllowed()
+                    || HistorySyncUtils.didAlreadyOptIn(profile)) {
+                return false;
+            }
+            // Show the page only to signed-in users.
+            return IdentityServicesProvider.get()
+                    .getIdentityManager(profile)
+                    .hasPrimaryAccount(ConsentLevel.SIGNIN);
         }
 
         /** @return true if the Search Engine promo page should be shown. */
@@ -108,7 +125,6 @@ public abstract class FirstRunFlowSequencer {
                 OneshotSupplier<ProfileProvider> profileSupplier);
     }
 
-    private final Activity mActivity;
 
     /**
      * The delegate to be used by the Sequencer. By default, it's an instance of
@@ -132,10 +148,8 @@ public abstract class FirstRunFlowSequencer {
     public abstract void onFlowIsKnown(Bundle freProperties);
 
     public FirstRunFlowSequencer(
-            Activity activity,
             OneshotSupplier<ProfileProvider> profileSupplier,
             OneshotSupplier<Boolean> childAccountStatusSupplier) {
-        mActivity = activity;
 
         mDelegate =
                 sDelegateFactoryForTesting != null
@@ -176,6 +190,10 @@ public abstract class FirstRunFlowSequencer {
         return mDelegate.shouldShowSyncConsentPage(mIsChild);
     }
 
+    private boolean shouldShowHistorySyncOptIn() {
+        return mDelegate.shouldShowHistorySyncOptIn(mIsChild);
+    }
+
     private void setChildAccountStatus(boolean isChild) {
         assert mIsChild == null;
         mIsChild = isChild;
@@ -204,12 +222,16 @@ public abstract class FirstRunFlowSequencer {
         boolean isHistorySyncEnabled =
                 ChromeFeatureList.isEnabled(
                         ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS);
-        freProperties.putBoolean(
-                FirstRunActivity.SHOW_SYNC_CONSENT_PAGE,
-                !isHistorySyncEnabled && shouldShowSyncConsentPage());
-        freProperties.putBoolean(
-                FirstRunActivity.SHOW_HISTORY_SYNC_PAGE,
-                isHistorySyncEnabled && shouldShowSyncConsentPage());
+        if (isHistorySyncEnabled) {
+            freProperties.putBoolean(FirstRunActivity.SHOW_SYNC_CONSENT_PAGE, false);
+            freProperties.putBoolean(
+                    FirstRunActivity.SHOW_HISTORY_SYNC_PAGE, shouldShowHistorySyncOptIn());
+        } else {
+            freProperties.putBoolean(
+                    FirstRunActivity.SHOW_SYNC_CONSENT_PAGE, shouldShowSyncConsentPage());
+            freProperties.putBoolean(FirstRunActivity.SHOW_HISTORY_SYNC_PAGE, false);
+        }
+
         freProperties.putBoolean(
                 FirstRunActivity.SHOW_SEARCH_ENGINE_PAGE, shouldShowSearchEnginePage());
     }

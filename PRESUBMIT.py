@@ -260,7 +260,7 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
       ),
     ),
     BanRule(
-      'Profile.getLastUsedRegularProfile()',
+      'ProfileManager.getLastUsedRegularProfile()',
       (
        'Prefer passing in the Profile reference instead of relying on the '
        'static getLastUsedRegularProfile() call. Only top level entry points '
@@ -1308,6 +1308,18 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
+      r'/\bstd::to_address\b',
+      (
+        'std::to_address is banned because it is not guaranteed to be',
+        'SFINAE-compatible. Use base::to_address instead.',
+      ),
+      True,
+      [
+        # Needed in base::to_address implementation.
+        r'base/types/to_address.h',
+        _THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
       r'/#include <syncstream>',
       (
         '<syncstream> is banned.',
@@ -1800,7 +1812,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       treat_as_error = True,
       excluded_paths = _TEST_CODE_EXCLUDED_PATHS + (
         '^chrome/browser/about_flags.cc',
-        '^chrome/browser/chrome_content_browser_client.cc',
+        '^chrome/browser/web_applications/isolated_web_apps/chrome_content_browser_client_isolated_web_apps_part.cc',
         '^chrome/browser/ui/startup/bad_flags_prompt.cc',
         '^content/shell/browser/shell_content_browser_client.cc'
       )
@@ -5294,12 +5306,12 @@ _ACCESSIBILITY_PATHS = (
     r"^chrome/browser/extensions/api/automation.*/",
     r"^chrome/renderer/extensions/accessibility_.*",
     r"^chrome/tests/data/accessibility/",
-    r"^components/services/screen_ai/",
     r"^content/browser/accessibility/",
     r"^content/renderer/accessibility/",
     r"^content/tests/data/accessibility/",
     r"^extensions/renderer/api/automation/",
     r"^services/accessibility/",
+    r"^services/screen_ai/",
     r"^ui/accessibility/",
     r"^ui/views/accessibility/",
 )
@@ -6588,7 +6600,9 @@ def CheckStableMojomChanges(input_api, output_api):
         return [
             output_api.PresubmitError(
                 'One or more [Stable] mojom definitions appears to have been changed '
-                'in a way that is not backward-compatible.',
+                'in a way that is not backward-compatible. See '
+                'https://chromium.googlesource.com/chromium/src/+/HEAD/mojo/public/tools/bindings/README.md#versioning'
+                ' for details.',
                 long_text=error)
         ]
     return []

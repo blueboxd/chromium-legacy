@@ -130,13 +130,12 @@ ReadAnythingUntrustedUI::ReadAnythingUntrustedUI(content::WebUI* web_ui)
       "https://fonts.gstatic.com;");
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ImgSrc,
-      "img-src 'self' chrome-untrusted://resources;");
+      "img-src 'self' data: chrome-untrusted://resources;");
   raw_ptr<Profile> profile = Profile::FromWebUI(web_ui);
 
   // If the ThemeSource isn't added here, since Read Anything is
   // chrome-untrusted, it will be unable to load stylesheets until a new tab
   // is opened.
-  // TODO(crbug.com/1465029): Remove workaround code, as this is now unneeded.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(
                                            profile, /*serve_untrusted=*/true));
 }
@@ -169,11 +168,19 @@ void ReadAnythingUntrustedUI::CreateUntrustedPageHandler(
   read_anything_untrusted_page_handler_ =
       std::make_unique<ReadAnythingUntrustedPageHandler>(
           std::move(page), std::move(receiver), web_ui());
+
+  if (!features::IsReadAnythingDelaySidePanelLoadEnabled()) {
+    if (embedder()) {
+      embedder()->ShowUI();
+    }
+  }
 }
 
 void ReadAnythingUntrustedUI::ShouldShowUI() {
   // Show the UI after the Side Panel content has loaded.
-  if (embedder()) {
-    embedder()->ShowUI();
+  if (features::IsReadAnythingDelaySidePanelLoadEnabled()) {
+    if (embedder()) {
+      embedder()->ShowUI();
+    }
   }
 }

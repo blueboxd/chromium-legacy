@@ -75,6 +75,9 @@ StyleResolverState::StyleResolverState(
       container_unit_context_(style_recalc_context
                                   ? style_recalc_context->container
                                   : element.ParentOrShadowHostElement()),
+      anchor_evaluator_(style_recalc_context
+                            ? style_recalc_context->anchor_evaluator
+                            : nullptr),
       originating_element_style_(style_request.originating_element_style),
       is_for_highlight_(IsHighlightPseudoElement(style_request.pseudo_id)),
       uses_highlight_pseudo_inheritance_(
@@ -82,11 +85,7 @@ StyleResolverState::StyleResolverState(
       is_outside_flat_tree_(style_recalc_context
                                 ? style_recalc_context->is_outside_flat_tree
                                 : false),
-      can_trigger_animations_(style_request.can_trigger_animations),
-      // TODO(crbug.com/1475321): Remove is_resolving_position_fallback_style
-      // when auto-fallbacks are reworked.
-      is_resolving_position_fallback_style_(
-          style_recalc_context && style_recalc_context->is_interleaved_oof) {
+      can_trigger_animations_(style_request.can_trigger_animations) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (UsesHighlightPseudoInheritance()) {
@@ -162,6 +161,7 @@ void StyleResolverState::UpdateLengthConversionData() {
       *style_builder_, ParentStyle(), RootElementStyle(),
       GetDocument().GetStyleEngine().GetViewportSize(),
       CSSToLengthConversionData::ContainerSizes(container_unit_context_),
+      CSSToLengthConversionData::AnchorData(styled_element_, anchor_evaluator_),
       StyleBuilder().EffectiveZoom(), length_conversion_flags_);
   element_style_resources_.UpdateLengthConversionData(
       &css_to_length_conversion_data_);
@@ -180,10 +180,11 @@ CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData(
       GetDocument().GetLayoutView());
   CSSToLengthConversionData::ContainerSizes container_sizes(
       container_unit_context_);
-
+  CSSToLengthConversionData::AnchorData anchor_data(styled_element_,
+                                                    anchor_evaluator_);
   return CSSToLengthConversionData(
       StyleBuilder().GetWritingMode(), font_sizes, line_height_size,
-      viewport_size, container_sizes, 1, length_conversion_flags_);
+      viewport_size, container_sizes, anchor_data, 1, length_conversion_flags_);
 }
 
 CSSToLengthConversionData StyleResolverState::FontSizeConversionData() {

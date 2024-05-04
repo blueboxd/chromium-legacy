@@ -202,6 +202,9 @@ void SaveCardBubbleControllerImpl::ShowConfirmationBubbleView(bool card_saved) {
 
     // Show upload confirmation bubble.
     ShowBubble();
+  } else {
+    autofill_metrics::LogCreditCardUploadConfirmationViewShownMetric(
+        /*is_shown=*/false, card_saved);
   }
 }
 
@@ -215,11 +218,6 @@ std::u16string SaveCardBubbleControllerImpl::GetWindowTitle() const {
           IDS_AUTOFILL_SAVE_CVC_PROMPT_TITLE_LOCAL);
     case BubbleType::UPLOAD_SAVE:
     case BubbleType::UPLOAD_IN_PROGRESS:
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillEnableNewSaveCardBubbleUi)) {
-        return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V5);
-      }
       return features::ShouldShowImprovedUserConsentForCreditCardSave()
                  ? l10n_util::GetStringUTF16(
                        IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V4)
@@ -273,12 +271,6 @@ std::u16string SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
           AutofillClient::CardSaveType::kCardSaveWithCvc) {
     return l10n_util::GetStringUTF16(
         IDS_AUTOFILL_SAVE_CARD_WITH_CVC_PROMPT_EXPLANATION_UPLOAD);
-  }
-
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableNewSaveCardBubbleUi)) {
-    return l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V4);
   }
 
   if (options_.should_request_name_from_user) {
@@ -421,7 +413,12 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
             autofill_metrics::SaveCardPromptResult::kAccepted, is_upload_save_,
             is_reshow_, options_, GetSecurityLevel(),
             personal_data_manager_->GetPaymentsSigninStateForMetrics());
+        autofill_metrics::LogCreditCardUploadLoadingViewShownMetric(
+            /*is_shown=*/true);
         current_bubble_type_ = BubbleType::UPLOAD_IN_PROGRESS;
+      } else {
+        autofill_metrics::LogCreditCardUploadLoadingViewShownMetric(
+            /*is_shown=*/false);
       }
 
       std::move(upload_save_card_prompt_callback_)
@@ -526,8 +523,16 @@ void SaveCardBubbleControllerImpl::OnBubbleClosed(
           GetSecurityLevel(),
           personal_data_manager_->GetPaymentsSigninStateForMetrics());
       break;
-    // TODO(b/308969412): Metrics for closing the UPLOAD_COMPLETED bubble.
-    default:
+    case BubbleType::UPLOAD_IN_PROGRESS:
+      autofill_metrics::LogCreditCardUploadLoadingViewResultMetric(
+          get_metric(closed_reason));
+      break;
+    case BubbleType::UPLOAD_COMPLETED:
+      autofill_metrics::LogCreditCardUploadConfirmationViewResultMetric(
+          get_metric(closed_reason), confirmation_ui_params_->is_success);
+      break;
+    case BubbleType::INACTIVE:
+    case BubbleType::MANAGE_CARDS:
       break;
   }
 
@@ -737,9 +742,11 @@ void SaveCardBubbleControllerImpl::DoShowBubble() {
       LogManageCardsPromptMetric(ManageCardsPromptMetric::kManageCardsShown,
                                  is_upload_save_);
       break;
-    case BubbleType::UPLOAD_IN_PROGRESS:
-    // TODO(b/308969412): Metrics for showing the UPLOAD_COMPLETED bubble.
     case BubbleType::UPLOAD_COMPLETED:
+      autofill_metrics::LogCreditCardUploadConfirmationViewShownMetric(
+          /*is_shown=*/true, confirmation_ui_params_->is_success);
+      break;
+    case BubbleType::UPLOAD_IN_PROGRESS:
       break;
     case BubbleType::INACTIVE:
       NOTREACHED();

@@ -289,6 +289,7 @@ const OncFieldSignature cellular_provider_fields[] = {
     {nullptr}};
 
 const OncFieldSignature cellular_apn_fields[] = {
+    {::onc::kRecommended, &kRecommendedSignature},
     {::onc::cellular_apn::kAccessPointName, &kStringSignature},
     {::onc::cellular_apn::kName, &kStringSignature},
     {::onc::cellular_apn::kUsername, &kStringSignature},
@@ -363,6 +364,7 @@ const OncFieldSignature cellular_with_state_fields[] = {
 
 const OncFieldSignature network_configuration_fields[] = {
     {::onc::network_config::kCellular, &kCellularSignature},
+    {::onc::network_config::kCheckCaptivePortal, &kStringSignature},
     {::onc::network_config::kEthernet, &kEthernetSignature},
     {::onc::network_config::kGUID, &kStringSignature},
     {::onc::network_config::kIPAddressConfigType, &kStringSignature,

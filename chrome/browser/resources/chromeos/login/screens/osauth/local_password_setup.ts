@@ -23,8 +23,8 @@ import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/p
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
 import {OobeDialogHostBehavior, OobeDialogHostBehaviorInterface} from '../../components/behaviors/oobe_dialog_host_behavior.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
+import {OobeUiState} from '../../components/display_manager_types.js';
 
 import {getTemplate} from './local_password_setup.html.js';
 
@@ -39,13 +39,12 @@ enum LocalPasswordSetupState {
 
 const LocalPasswordSetupBase = mixinBehaviors(
                                    [
-                                     OobeI18nBehavior,
                                      OobeDialogHostBehavior,
                                      LoginScreenBehavior,
                                      MultiStepBehavior,
                                    ],
-                                   PolymerElement) as {
-  new (): PolymerElement & OobeI18nBehaviorInterface &
+                                   OobeI18nMixin(PolymerElement)) as {
+  new (): PolymerElement & OobeI18nMixinInterface &
       LoginScreenBehaviorInterface & OobeDialogHostBehaviorInterface &
       MultiStepBehaviorInterface,
 };
@@ -109,8 +108,8 @@ export class LocalPasswordSetup extends LocalPasswordSetupBase {
 
   /** Initial UI State for screen */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  override getOobeUIInitialState(): OOBE_UI_STATE {
-    return OOBE_UI_STATE.ONBOARDING;
+  override getOobeUIInitialState(): OobeUiState {
+    return OobeUiState.ONBOARDING;
   }
 
   /**

@@ -66,6 +66,7 @@ const redesignedPages: Route[] = [
   // routes.SITE_SETTINGS_WINDOW_MANAGEMENT,
 
   // Doesn't contain toggle or radio buttons
+  // routes.SITE_SETTINGS_AUTOMATIC_FULLSCREEN,
   // routes.SITE_SETTINGS_INSECURE_CONTENT,
   // routes.SITE_SETTINGS_ZOOM_LEVELS,
 ];
@@ -233,6 +234,20 @@ suite('PrivacyPage', function() {
     assertTrue(isVisible(categorySettingExceptions[1]!));
     assertEquals(
         ContentSetting.ALLOW, categorySettingExceptions[1]!.categorySubtype);
+  });
+
+  test('AutomaticFullscreenPage', async function() {
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS_AUTOMATIC_FULLSCREEN);
+    await flushTasks();
+
+    assertTrue(isChildVisible(page, '#automaticFullscreenBlock'));
+    const categorySettingExceptions =
+        page.shadowRoot!.querySelector('category-setting-exceptions');
+    assertTrue(!!categorySettingExceptions);
+    assertTrue(isVisible(categorySettingExceptions));
+    assertEquals(
+        ContentSettingsTypes.AUTOMATIC_FULLSCREEN,
+        categorySettingExceptions.category);
   });
 });
 
@@ -904,55 +919,6 @@ suite('NotificationPermissionReviewSafetyHubDisabled', function() {
         oneElementMockData);
     await flushTasks();
     assertTrue(isChildVisible(page, 'review-notification-permissions'));
-  });
-});
-
-// TODO(crbug.com/1443466): Remove the test once Notification Permission Review
-// feature has been rolled out.
-suite('NotificationPermissionReviewDisabled', function() {
-  let page: SettingsPrivacyPageElement;
-  let siteSettingsBrowserProxy: TestSafetyHubBrowserProxy;
-
-  const oneElementMockData = [{
-    origin: 'www.example.com',
-    notificationInfoString: 'About 4 notifications a day',
-  }];
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      enableSafetyHub: false,
-      safetyCheckNotificationPermissionsEnabled: false,
-    });
-  });
-
-  setup(function() {
-    Router.getInstance().navigateTo(routes.SITE_SETTINGS_NOTIFICATIONS);
-    siteSettingsBrowserProxy = new TestSafetyHubBrowserProxy();
-    SafetyHubBrowserProxyImpl.setInstance(siteSettingsBrowserProxy);
-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  function createPage() {
-    page = document.createElement('settings-privacy-page');
-    document.body.appendChild(page);
-    return flushTasks();
-  }
-
-  test('InvisibleWhenFeatureDisabled', async function() {
-    // The element should not be visible if there is no element in the list.
-    await createPage();
-    assertFalse(isChildVisible(page, 'review-notification-permissions'));
-
-    // The element should not be visible even if there is any element in the
-    // list.
-    siteSettingsBrowserProxy.setNotificationPermissionReview(
-        oneElementMockData);
-    await createPage();
-    assertFalse(isChildVisible(page, 'review-notification-permissions'));
   });
 });
 

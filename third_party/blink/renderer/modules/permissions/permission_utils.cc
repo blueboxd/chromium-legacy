@@ -66,8 +66,12 @@ void ConnectToPermissionService(
       std::move(receiver));
 }
 
+V8PermissionState ToV8PermissionState(mojom::blink::PermissionStatus status) {
+  return V8PermissionState(ToPermissionStateEnum(status));
+}
+
 String PermissionStatusToString(mojom::blink::PermissionStatus status) {
-  return V8PermissionState(ToPermissionStateEnum(status)).AsString();
+  return ToV8PermissionState(status).AsString();
 }
 
 String PermissionNameToString(PermissionName name) {
@@ -127,6 +131,8 @@ String PermissionNameToString(PermissionName name) {
       return "top-level-storage-access";
     case PermissionName::CAPTURED_SURFACE_CONTROL:
       return "captured-surface-control";
+    case PermissionName::SPEAKER_SELECTION:
+      return "speaker-selection";
   }
   NOTREACHED();
   return "unknown";
@@ -379,6 +385,15 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
       return nullptr;
     }
     return CreatePermissionDescriptor(PermissionName::CAPTURED_SURFACE_CONTROL);
+  }
+  if (name == V8PermissionName::Enum::kSpeakerSelection) {
+    if (!RuntimeEnabledFeatures::SpeakerSelectionEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError(
+          "The Speaker Selection API is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::SPEAKER_SELECTION);
   }
   return nullptr;
 }

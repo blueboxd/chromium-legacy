@@ -1101,7 +1101,9 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
 
     AXNode* node = GetFromId(new_data.id);
-    if (node &&
+
+    // For performance, skip text deletion/insertion events on ignored nodes.
+    if (node && !new_data.IsIgnored() && !node->data().IsIgnored() &&
         notified_node_attributes_will_change.insert(new_data.id).second) {
       for (AXTreeObserver& observer : observers_) {
         if (new_data.HasIntListAttribute(
@@ -1419,20 +1421,6 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
 void AXTree::CheckTreeConsistency(const AXTreeUpdate& update) {
   // Return early if no expected node count was supplied.
   if (!update.tree_checks || !update.tree_checks->node_count) {
-    return;
-  }
-
-  // Do not check pages with child trees.
-  // Required to pass PDFExtensionAccessibilityTreeDumpTest tests.
-  if (has_plugin_) {
-    return;
-  }
-  for (const auto& node_data : update.nodes) {
-    if (node_data.role == ax::mojom::Role::kEmbeddedObject) {
-      has_plugin_ = true;
-    }
-  }
-  if (has_plugin_) {
     return;
   }
 
@@ -1997,14 +1985,21 @@ void AXTree::NotifyNodeAttributesHaveBeenChanged(
   for (AXTreeObserver& observer : observers_)
     observer.OnNodeDataChanged(this, old_data, new_data);
 
+  if (base::Contains(update_state.ignored_state_changed_ids, new_data.id)) {
+    for (AXTreeObserver& observer : observers_) {
+      observer.OnIgnoredChanged(this, node, node->IsIgnored());
+    }
+  }
+
+  // For performance reasons, it is better to skip processing and firing of
+  // events related to property changes for ignored nodes.
+  if (old_data.IsIgnored() || new_data.IsIgnored()) {
+    return;
+  }
+
   if (old_data.role != new_data.role) {
     for (AXTreeObserver& observer : observers_)
       observer.OnRoleChanged(this, node, old_data.role, new_data.role);
-  }
-
-  if (base::Contains(update_state.ignored_state_changed_ids, new_data.id)) {
-    for (AXTreeObserver& observer : observers_)
-      observer.OnIgnoredChanged(this, node, node->IsIgnored());
   }
 
   if (old_data.state != new_data.state) {

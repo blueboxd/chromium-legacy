@@ -49,6 +49,7 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom.h"
+#include "third_party/blink/public/mojom/frame/remote_frame.mojom.h"
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
@@ -81,6 +82,7 @@ class KeepAliveURLLoaderService;
 class BucketManager;
 class CacheStorageControlWrapper;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+class CdmStorageDataModel;
 class CdmStorageManager;
 class MediaLicenseManager;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -95,6 +97,7 @@ class HostZoomLevelContext;
 class IndexedDBControlWrapper;
 class InterestGroupManagerImpl;
 class LockManager;
+class NavigationStateKeepAlive;
 class PaymentAppContextImpl;
 class PrivateAggregationDataModel;
 class PrivateAggregationManager;
@@ -205,6 +208,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   AttributionDataModel* GetAttributionDataModel() override;
   PrivateAggregationDataModel* GetPrivateAggregationDataModel() override;
   CookieDeprecationLabelManager* GetCookieDeprecationLabelManager() override;
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  CdmStorageDataModel* GetCdmStorageDataModel() override;
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   void SetProtoDatabaseProvider(
       std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider)
@@ -273,7 +279,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   FontAccessManager* GetFontAccessManager();
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   MediaLicenseManager* GetMediaLicenseManager();
-  CdmStorageManager* GetCdmStorageManager();
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   storage::SharedStorageManager* GetSharedStorageManager() override;
@@ -337,6 +342,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   void Clone(
       mojo::PendingReceiver<network::mojom::URLLoaderNetworkServiceObserver>
           listener) override;
+  void OnWebSocketConnectedToPrivateNetwork(
+      network::mojom::IPAddressSpace ip_address_space) override;
   void OnAuthRequired(
       const std::optional<base::UnguessableToken>& window_id,
       uint32_t request_id,
@@ -457,6 +464,15 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // Called by BrowserContextImpl prior to destruction.
   void OnBrowserContextWillBeDestroyed();
+
+  // Store `receiver` and its corresponding `handle`. These will be kept alive
+  // as long as the remote endpoint of `receiver` is still alive on the renderer
+  // side. The receiver will be automatically deleted when the endpoint is
+  // disconnected.
+  void RegisterKeepAliveHandle(
+      mojo::PendingReceiver<blink::mojom::NavigationStateKeepAliveHandle>
+          receiver,
+      std::unique_ptr<NavigationStateKeepAlive> handle);
 
   enum class ContextType {
     kRenderFrameHostContext,
@@ -644,6 +660,8 @@ class CONTENT_EXPORT StoragePartitionImpl
       const url::Origin& origin,
       const base::UnguessableToken* nonce);
 
+  GlobalRenderFrameHostId GetRenderFrameHostIdFromNetworkContext();
+
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the
   // BrowserContext is destroyed, `this` will be destroyed too.
@@ -800,6 +818,21 @@ class CONTENT_EXPORT StoragePartitionImpl
       url_loader_network_observers_;
 
   int next_pending_trust_token_issuance_callback_key_ = 0;
+
+  // Active keepalive handles for in-flight navigations. They are retained
+  // on `StoragePartition` because, by design, they may need to outlive the
+  // `RenderFrameHostImpl` that initiated the navigation, but shouldn't be used
+  // in a different StoragePartition.
+  // Note that this set may contain in-flight navigations for different
+  // RenderFrameHosts, and furthermore, there may even be multiple in-flight
+  // navigations for a single RenderFrameHost.
+  // Lookups should not be done from this set. Accessing PolicyContainerHosts
+  // kept alive by NavigationStateKeepAlive should be done through
+  // PolicyContainerHost::FromFrameToken.
+  // TODO(crbug.com/323753235, yangsharon): Add token keep alive map to
+  // StoragePartition.
+  mojo::UniqueReceiverSet<blink::mojom::NavigationStateKeepAliveHandle>
+      keep_alive_handles_receiver_set_;
 
 #if DCHECK_IS_ON()
   bool on_browser_context_will_be_destroyed_called_ = false;

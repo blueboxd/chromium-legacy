@@ -187,7 +187,7 @@ try_.builder(
     mirrors = [
         "ci/Win Builder (dbg)",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -214,7 +214,7 @@ try_.builder(
     mirrors = [
         "ci/Win Builder",
     ],
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
@@ -306,7 +306,8 @@ try_.builder(
 )
 
 try_.builder(
-    name = "win11-x64-fyi-rel",
+    name = "win11-rel",
+    description_html = "This builder run tests for Windows 11 release build.",
     mirrors = [
         "ci/Win x64 Builder",
         "ci/Win11 Tests x64",
@@ -323,10 +324,9 @@ try_.builder(
     ),
     builderless = True,
     os = os.WINDOWS_10,
+    contact_team_email = "chrome-desktop-engprod@google.com",
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(
-        # TODO(https://crbug.com/1441206): Enable after resources verified.
-        experiment_percentage = 100,
         location_filters = [
             "sandbox/win/.+",
             "sandbox/policy/win/.+",
@@ -449,7 +449,7 @@ try_.gpu.optional_tests_builder(
         ),
         build_gs_bucket = "chromium-gpu-fyi-archive",
     ),
-    try_settings = builder_config.try_settings(
+    builder_config_settings = builder_config.try_settings(
         retry_failed_shards = False,
     ),
     gn_args = gn_args.config(

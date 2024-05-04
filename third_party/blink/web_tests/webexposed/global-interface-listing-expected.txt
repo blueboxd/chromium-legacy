@@ -755,6 +755,7 @@ interface CSSKeyframeRule : CSSRule
 interface CSSKeyframesRule : CSSRule
     attribute @@toStringTag
     getter cssRules
+    getter length
     getter name
     method @@iterator
     method appendRule
@@ -862,6 +863,12 @@ interface CSSPositionFallbackRule : CSSGroupingRule
     attribute @@toStringTag
     getter name
     method constructor
+interface CSSPositionTryRule : CSSRule
+    attribute @@toStringTag
+    getter name
+    getter style
+    method constructor
+    setter style
 interface CSSPositionValue : CSSStyleValue
     attribute @@toStringTag
     getter x
@@ -1129,6 +1136,7 @@ interface CanvasRenderingContext2D
     method arcTo
     method beginLayer
     method beginPath
+    method beginWebGPUAccess
     method bezierCurveTo
     method clearRect
     method clip
@@ -1148,12 +1156,14 @@ interface CanvasRenderingContext2D
     method drawMesh
     method ellipse
     method endLayer
+    method endWebGPUAccess
     method fill
     method fillRect
     method fillText
     method getContextAttributes
     method getImageData
     method getLineDash
+    method getTextureFormat
     method getTransform
     method isContextLost
     method isPointInPath
@@ -1422,7 +1432,6 @@ interface CredentialsContainer
     method create
     method get
     method preventSilentAccess
-    method requestIdentity
     method store
 interface CropTarget
     static method fromElement
@@ -3367,6 +3376,8 @@ interface HTMLAnchorElement : HTMLElement
     getter href
     getter hrefTranslate
     getter hreflang
+    getter interestAction
+    getter interestTargetElement
     getter name
     getter origin
     getter password
@@ -3396,6 +3407,8 @@ interface HTMLAnchorElement : HTMLElement
     setter href
     setter hrefTranslate
     setter hreflang
+    setter interestAction
+    setter interestTargetElement
     setter name
     setter password
     setter pathname
@@ -3544,6 +3557,8 @@ interface HTMLButtonElement : HTMLElement
     getter formMethod
     getter formNoValidate
     getter formTarget
+    getter interestAction
+    getter interestTargetElement
     getter invokeAction
     getter invokeTargetElement
     getter labels
@@ -3565,6 +3580,8 @@ interface HTMLButtonElement : HTMLElement
     setter formMethod
     setter formNoValidate
     setter formTarget
+    setter interestAction
+    setter interestTargetElement
     setter invokeAction
     setter invokeTargetElement
     setter name
@@ -3934,12 +3951,14 @@ interface HTMLFencedFrameElement : HTMLElement
     getter allow
     getter config
     getter height
+    getter onfencedtreeclick
     getter sandbox
     getter width
     method constructor
     setter allow
     setter config
     setter height
+    setter onfencedtreeclick
     setter sandbox
     setter width
 interface HTMLFieldSetElement : HTMLElement
@@ -4132,6 +4151,7 @@ interface HTMLIFrameElement : HTMLElement
     getter referrerPolicy
     getter sandbox
     getter scrolling
+    getter sharedStorageWritable
     getter src
     getter srcdoc
     getter width
@@ -4157,6 +4177,7 @@ interface HTMLIFrameElement : HTMLElement
     setter referrerPolicy
     setter sandbox
     setter scrolling
+    setter sharedStorageWritable
     setter src
     setter srcdoc
     setter width
@@ -4181,6 +4202,7 @@ interface HTMLImageElement : HTMLElement
     getter naturalHeight
     getter naturalWidth
     getter referrerPolicy
+    getter sharedStorageWritable
     getter sizes
     getter src
     getter srcset
@@ -4206,6 +4228,7 @@ interface HTMLImageElement : HTMLElement
     setter lowsrc
     setter name
     setter referrerPolicy
+    setter sharedStorageWritable
     setter sizes
     setter src
     setter srcset
@@ -4233,6 +4256,8 @@ interface HTMLInputElement : HTMLElement
     getter height
     getter incremental
     getter indeterminate
+    getter interestAction
+    getter interestTargetElement
     getter invokeAction
     getter invokeTargetElement
     getter labels
@@ -4294,6 +4319,8 @@ interface HTMLInputElement : HTMLElement
     setter height
     setter incremental
     setter indeterminate
+    setter interestAction
+    setter interestTargetElement
     setter invokeAction
     setter invokeTargetElement
     setter max
@@ -5343,6 +5370,7 @@ interface Image
     getter naturalHeight
     getter naturalWidth
     getter referrerPolicy
+    getter sharedStorageWritable
     getter sizes
     getter src
     getter srcset
@@ -5368,6 +5396,7 @@ interface Image
     setter lowsrc
     setter name
     setter referrerPolicy
+    setter sharedStorageWritable
     setter sizes
     setter src
     setter srcset
@@ -5644,10 +5673,16 @@ interface ML
 interface MLActivation
     attribute @@toStringTag
     method constructor
+interface MLBuffer
+    attribute @@toStringTag
+    getter size
+    method constructor
+    method destroy
 interface MLContext
     attribute @@toStringTag
     method compute
     method constructor
+    method createBuffer
 interface MLGraph
     attribute @@toStringTag
     method constructor
@@ -5680,6 +5715,7 @@ interface MLGraphBuilder
     method gemm
     method greater
     method greaterOrEqual
+    method gru
     method hardSigmoid
     method hardSwish
     method identity
@@ -5729,6 +5765,7 @@ interface MLGraphBuilder
     method tan
     method tanh
     method transpose
+    method triangular
     method where
 interface MLModelLoader
     attribute @@toStringTag
@@ -6386,18 +6423,6 @@ interface MouseEvent : UIEvent
     method constructor
     method getModifierState
     method initMouseEvent
-interface MutationEvent : Event
-    attribute @@toStringTag
-    attribute ADDITION
-    attribute MODIFICATION
-    attribute REMOVAL
-    getter attrChange
-    getter attrName
-    getter newValue
-    getter prevValue
-    getter relatedNode
-    method constructor
-    method initMutationEvent
 interface MutationObserver
     attribute @@toStringTag
     method constructor
@@ -6561,6 +6586,7 @@ interface Navigator
     getter gpu
     getter hardwareConcurrency
     getter hid
+    getter identity
     getter ink
     getter keyboard
     getter language
@@ -6797,8 +6823,12 @@ interface OTPCredential : Credential
 interface Observable
     attribute @@toStringTag
     method constructor
+    method drop
+    method filter
     method forEach
+    method map
     method subscribe
+    method take
     method takeUntil
     method toArray
 interface OfflineAudioCompletionEvent : Event
@@ -6861,6 +6891,7 @@ interface OffscreenCanvasRenderingContext2D
     method arcTo
     method beginLayer
     method beginPath
+    method beginWebGPUAccess
     method bezierCurveTo
     method clearRect
     method clip
@@ -6879,11 +6910,13 @@ interface OffscreenCanvasRenderingContext2D
     method drawMesh
     method ellipse
     method endLayer
+    method endWebGPUAccess
     method fill
     method fillRect
     method fillText
     method getImageData
     method getLineDash
+    method getTextureFormat
     method getTransform
     method isContextLost
     method isPointInPath
@@ -6973,12 +7006,12 @@ interface OverscrollEvent : Event
     getter deltaX
     getter deltaY
     method constructor
-interface PageConcealEvent : Event
-    attribute @@toStringTag
-    getter activation
-    method constructor
 interface PageRevealEvent : Event
     attribute @@toStringTag
+    method constructor
+interface PageSwapEvent : Event
+    attribute @@toStringTag
+    getter activation
     method constructor
 interface PageTransitionEvent : Event
     attribute @@toStringTag
@@ -7399,6 +7432,7 @@ interface PreferenceObject
     attribute @@toStringTag
     getter override
     getter validValues
+    getter value
     method clearOverride
     method constructor
     method requestOverride
@@ -7645,10 +7679,12 @@ interface RTCIceCandidate
     getter protocol
     getter relatedAddress
     getter relatedPort
+    getter relayProtocol
     getter sdpMLineIndex
     getter sdpMid
     getter tcpType
     getter type
+    getter url
     getter usernameFragment
     method constructor
     method toJSON
@@ -7745,6 +7781,7 @@ interface RTCPeerConnectionIceEvent : Event
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
+    getter jitterBufferTarget
     getter playoutDelayHint
     getter rtcpTransport
     getter track
@@ -7755,6 +7792,7 @@ interface RTCRtpReceiver
     method getParameters
     method getStats
     method getSynchronizationSources
+    setter jitterBufferTarget
     setter playoutDelayHint
 interface RTCRtpSender
     static method getCapabilities
@@ -7870,12 +7908,14 @@ interface ReadableByteStreamController
 interface ReadableStream
     attribute @@toStringTag
     getter locked
+    method @@asyncIterator
     method cancel
     method constructor
     method getReader
     method pipeThrough
     method pipeTo
     method tee
+    method values
 interface ReadableStreamBYOBReader
     attribute @@toStringTag
     getter closed
@@ -9314,6 +9354,7 @@ interface Serial : EventTarget
     setter ondisconnect
 interface SerialPort : EventTarget
     attribute @@toStringTag
+    getter connected
     getter onconnect
     getter ondisconnect
     getter readable
@@ -11755,6 +11796,7 @@ interface WebTransport
     method constructor
     method createBidirectionalStream
     method createUnidirectionalStream
+    method getStats
 interface WebTransportBidirectionalStream
     attribute @@toStringTag
     getter readable
@@ -12164,6 +12206,7 @@ interface XRSession : EventTarget
     getter frameRate
     getter inputSources
     getter interactionMode
+    getter isSystemKeyboardSupported
     getter onend
     getter onframeratechange
     getter oninputsourceschange
@@ -12714,10 +12757,10 @@ namespace console
     getter onoffline
     getter ononline
     getter onoverscroll
-    getter onpageconceal
     getter onpagehide
     getter onpagereveal
     getter onpageshow
+    getter onpageswap
     getter onpause
     getter onplay
     getter onplaying
@@ -12946,10 +12989,10 @@ namespace console
     setter onoffline
     setter ononline
     setter onoverscroll
-    setter onpageconceal
     setter onpagehide
     setter onpagereveal
     setter onpageshow
+    setter onpageswap
     setter onpause
     setter onplay
     setter onplaying

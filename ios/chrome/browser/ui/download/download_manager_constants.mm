@@ -6,6 +6,8 @@
 
 NSString* const kDownloadManagerDownloadAccessibilityIdentifier =
     @"kDownloadManagerDownloadAccessibilityIdentifier";
+NSString* const kDownloadManagerSaveEllipsisAccessibilityIdentifier =
+    @"kDownloadManagerSaveEllipsisAccessibilityIdentifier";
 NSString* const kDownloadManagerOpenInAccessibilityIdentifier =
     @"kDownloadManagerOpenInAccessibilityIdentifier";
 NSString* const kDownloadManagerOpenInDriveAccessibilityIdentifier =
@@ -14,5 +16,7 @@ NSString* const kDownloadManagerInstallAppAccessibilityIdentifier =
     @"kDownloadManagerInstallAppAccessibilityIdentifier";
 NSString* const kDownloadManagerTryAgainAccessibilityIdentifier =
     @"kDownloadManagerTryAgainAccessibilityIdentifier";
+NSString* const kDownloadManagerCloseButtonAccessibilityIdentifier =
+    @"kDownloadManagerCloseButtonAccessibilityIdentifier";
 
 const NSTimeInterval kDownloadManagerAnimationDuration = 0.2;

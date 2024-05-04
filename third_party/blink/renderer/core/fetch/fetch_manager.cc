@@ -301,6 +301,7 @@ class FetchLoaderBase : public GarbageCollectedMixin {
     visitor->Trace(script_state_);
     visitor->Trace(signal_);
     visitor->Trace(abort_handle_);
+    visitor->Trace(world_);
   }
 
  protected:
@@ -332,14 +333,14 @@ class FetchLoaderBase : public GarbageCollectedMixin {
     return fetch_request_data_.Get();
   }
   ScriptState* GetScriptState() { return script_state_.Get(); }
-  scoped_refptr<const DOMWrapperWorld> World() { return world_; }
+  const DOMWrapperWorld* World() { return world_; }
   AbortSignal* Signal() { return signal_.Get(); }
 
  private:
   Member<ExecutionContext> execution_context_;
   Member<FetchRequestData> fetch_request_data_;
   Member<ScriptState> script_state_;
-  scoped_refptr<const DOMWrapperWorld> world_;
+  Member<const DOMWrapperWorld> world_;
   Member<AbortSignal> signal_;
   Member<AbortSignal::AlgorithmHandle> abort_handle_;
 };
@@ -351,7 +352,7 @@ class FetchManager::Loader final
  public:
   Loader(ExecutionContext*,
          FetchManager*,
-         ScriptPromiseResolver*,
+         ScriptPromiseResolverTyped<Response>*,
          FetchRequestData*,
          ScriptState*,
          AbortSignal*);
@@ -499,7 +500,7 @@ class FetchManager::Loader final
       std::optional<base::UnguessableToken> issue_id = std::nullopt) override;
 
   Member<FetchManager> fetch_manager_;
-  Member<ScriptPromiseResolver> resolver_;
+  Member<ScriptPromiseResolverTyped<Response>> resolver_;
   Member<ThreadableLoader> threadable_loader_;
   Member<PlaceHolderBytesConsumer> place_holder_body_;
   bool failed_;
@@ -515,7 +516,7 @@ class FetchManager::Loader final
 
 FetchManager::Loader::Loader(ExecutionContext* execution_context,
                              FetchManager* fetch_manager,
-                             ScriptPromiseResolver* resolver,
+                             ScriptPromiseResolverTyped<Response>* resolver,
                              FetchRequestData* fetch_request_data,
                              ScriptState* script_state,
                              AbortSignal* signal)
@@ -720,7 +721,8 @@ void FetchManager::Loader::DidStartLoadingResponseBody(BytesConsumer& body) {
     // https://fetch.spec.whatwg.org/#fetching
     // The user agent should ignore the suspension request if the ongoing
     // fetch is updating the response in the HTTP cache for the request.
-    place_holder_body_->Update(BufferingBytesConsumer::CreateWithDelay(&body));
+    place_holder_body_->Update(BufferingBytesConsumer::CreateWithDelay(
+        &body, GetExecutionContext()->GetTaskRunner(TaskType::kNetworking)));
   } else {
     place_holder_body_->Update(&body);
   }
@@ -794,7 +796,7 @@ void FetchLoaderBase::Start(ExceptionState& exception_state) {
 
   // "- should fetching |request| be blocked as content security returns
   //    blocked"
-  if (!execution_context_->GetContentSecurityPolicyForWorld(world_.get())
+  if (!execution_context_->GetContentSecurityPolicyForWorld(world_.Get())
            ->AllowConnectToSource(fetch_request_data_->Url(),
                                   fetch_request_data_->Url(),
                                   RedirectStatus::kNoRedirect)) {
@@ -887,10 +889,15 @@ void FetchManager::Loader::Dispose() {
   SetExecutionContext(nullptr);
 }
 
+// https://fetch.spec.whatwg.org/#abort-fetch
+// To abort a fetch() call with a promise, request, responseObject, and an
+// error:
 void FetchManager::Loader::Abort() {
+  ScriptState* script_state = GetScriptState();
+  v8::Local<v8::Value> error = Signal()->reason(script_state).V8Value();
+  // 1. Reject promise with error.
   if (resolver_) {
-    resolver_->Reject(
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+    resolver_->Reject(error);
     resolver_.Clear();
   }
   if (threadable_loader_) {
@@ -898,6 +905,16 @@ void FetchManager::Loader::Abort() {
     auto loader = threadable_loader_;
     threadable_loader_ = nullptr;
     loader->Cancel();
+  }
+
+  // 2. If request’s body is non-null and is readable, then cancel request’s
+  //  body with error.
+  if (FetchRequestData* fetch_request_data = GetFetchRequestData()) {
+    if (BodyStreamBuffer* body_stream_buffer = fetch_request_data->Buffer()) {
+      if (ReadableStream* readable_stream = body_stream_buffer->Stream()) {
+        ReadableStream::Cancel(script_state, readable_stream, error);
+      }
+    }
   }
   LogIfKeepalive(FetchKeepAliveRendererMetricType::kAbortedByUser);
   NotifyFinished();
@@ -1482,21 +1499,22 @@ class FetchLaterManager::DeferredLoader final
 FetchManager::FetchManager(ExecutionContext* execution_context)
     : ExecutionContextLifecycleObserver(execution_context) {}
 
-ScriptPromise FetchManager::Fetch(ScriptState* script_state,
-                                  FetchRequestData* request,
-                                  AbortSignal* signal,
-                                  ExceptionState& exception_state) {
+ScriptPromiseTyped<Response> FetchManager::Fetch(
+    ScriptState* script_state,
+    FetchRequestData* request,
+    AbortSignal* signal,
+    ExceptionState& exception_state) {
   DCHECK(signal);
   if (signal->aborted()) {
     exception_state.RethrowV8Exception(signal->reason(script_state).V8Value());
-    return ScriptPromise();
+    return ScriptPromiseTyped<Response>();
   }
 
   request->SetDestination(network::mojom::RequestDestination::kEmpty);
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<Response>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   auto* loader = MakeGarbageCollected<Loader>(
       GetExecutionContext(), this, resolver, request, script_state, signal);

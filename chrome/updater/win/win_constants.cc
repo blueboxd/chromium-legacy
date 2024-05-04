@@ -24,6 +24,7 @@ const wchar_t kRegValueBrandCode[] = L"brand";
 const wchar_t kRegValueAP[] = L"ap";
 const wchar_t kRegValueDateOfLastActivity[] = L"DayOfLastActivity";
 const wchar_t kRegValueDateOfLastRollcall[] = L"DayOfLastRollCall";
+const wchar_t kRegValueDayOfInstall[] = L"DayOfInstall";
 const wchar_t kRegValueName[] = L"name";
 const wchar_t kRegValueUninstallCmdLine[] = L"UninstallCmdLine";
 const wchar_t kRegValueVersion[] = L"version";
@@ -65,6 +66,8 @@ const wchar_t kRegValueCloudManagementEnrollmentToken[] =
 const wchar_t kRegValueEnrollmentMandatory[] = L"EnrollmentMandatory";
 
 const wchar_t kRegKeyCompanyEnrollment[] = COMPANY_KEY L"Enrollment\\";
+const wchar_t kRegKeyCompanyLegacyEnrollment[] =
+    COMPANY_KEY L"\\" BROWSER_NAME_STRING L"\\Enrollment\\";
 const wchar_t kRegValueDmToken[] = L"dmtoken";
 
 const wchar_t kWindowsServiceName[] = L"Service";

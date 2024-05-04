@@ -409,8 +409,8 @@
     </summary>
     <metric name="App" type="hmac-string">
       <summary>
-        App ID of the most-recently-opened app when this launch occurred. This can be
-        an app ID of a Chrome app, Arc++ app, or PWA.
+        App ID of the most-recently-opened app when this launch occurred. This can
+        be an app ID of a Chrome app, Arc++ app, or PWA.
       </summary>
     </metric>
     <metric name="Domain" type="hmac-string">
@@ -932,6 +932,229 @@
     <metric name="AppId" type="raw-string">
       <summary>
         Identifier of the app that is being installed.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="CameraApp.StartSession">
+    <summary>
+      Event recorded when the camera app is started.
+    </summary>
+    <metric name="LaunchType" type="int">
+      <summary>
+        The type indicates how the camera app is launched.
+      </summary>
+    </metric>
+    <metric name="Language" type="int">
+      <summary>
+        The integer maps to the LocaleCodeISO639 enum indicating the language that
+        CCA UI uses.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="CameraApp.Capture">
+    <summary>
+      Event recorded when the camera app executes a capture.
+    </summary>
+    <metric name="Mode" type="int">
+      <summary>
+        The mode where the capture happens.
+      </summary>
+    </metric>
+    <metric name="Facing" type="int">
+      <summary>
+        The facing of the capturing camera.
+      </summary>
+    </metric>
+    <metric name="IsMirrored" type="int">
+      <summary>
+        Boolean indicating whether the camera preview is mirrored when the capture
+        happens.
+      </summary>
+    </metric>
+    <metric name="GridType" type="int">
+      <summary>
+        The applied grid setting when the capture happens.
+      </summary>
+    </metric>
+    <metric name="TimerType" type="int">
+      <summary>
+        The applied timer setting when the capture happens.
+      </summary>
+    </metric>
+    <metric name="ShutterType" type="int">
+      <summary>
+        The shutter type which triggers the camera capture.
+      </summary>
+    </metric>
+    <metric name="AndroidIntentResultType" type="int">
+      <summary>
+        The type of Android intent result which the capture leads to.
+      </summary>
+    </metric>
+    <metric name="IsWindowMaximized" type="int">
+      <summary>
+        Boolean indicating whether the window is maximized when the capture happens.
+      </summary>
+    </metric>
+    <metric name="IsWindowPortrait" type="int">
+      <summary>
+        Boolean indicating whether the window is in portrait orientation when the
+        capture happens.
+      </summary>
+    </metric>
+    <metric name="ResolutionWidth" type="int">
+      <summary>
+        The width of the capture resolution.
+      </summary>
+    </metric>
+    <metric name="ResolutionHeight" type="int">
+      <summary>
+        The height of the capture resolution.
+      </summary>
+    </metric>
+    <metric name="ResolutionLevel" type="int">
+      <summary>
+        The level that the capture resolution falls within.
+      </summary>
+    </metric>
+    <metric name="AspectRatioSet" type="int">
+      <summary>
+        The aspect ratio set that the capture aspect ratio falls within.
+      </summary>
+    </metric>
+    <metric name="IsVideoSnapshot" type="int">
+      <summary>
+        Boolean indicating whether the photo is a snapshot taken during video
+        recording.
+      </summary>
+    </metric>
+    <metric name="IsMuted" type="int">
+      <summary>
+        Boolean indicating whether the video is recorded with mic muted.
+      </summary>
+    </metric>
+    <metric name="Fps" type="int">
+      <summary>
+        The targeting frame rate of the video recording. 0 if the capture is not
+        recording.
+      </summary>
+    </metric>
+    <metric name="EverPaused" type="int">
+      <summary>
+        Boolean indicating whether the user has ever paused the recording.
+      </summary>
+    </metric>
+    <metric name="Duration" type="int">
+      <summary>
+        The duration of the captured video in milliseconds.
+      </summary>
+    </metric>
+    <metric name="RecordType" type="int">
+      <summary>
+        The type of the video recording.
+      </summary>
+    </metric>
+    <metric name="GifResultType" type="int">
+      <summary>
+        The type of the GIF recording result.
+      </summary>
+    </metric>
+    <metric name="TimelapseSpeed" type="int">
+      <summary>
+        The acceleration speed that time-lapse feature applied. 0 if the capture is
+        not time-lapse.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="CameraApp.AndroidIntent">
+    <summary>
+      Event recorded when the camera app is successfully handled an Android camera
+      intent.
+    </summary>
+    <metric name="Mode" type="int">
+      <summary>
+        The mode where the Android camera intent is corresponding to.
+      </summary>
+    </metric>
+    <metric name="ShouldHandleResult" type="int">
+      <summary>
+        Boolean indicating whether the camera app should handle the captured result
+        for the Android camera intent.
+      </summary>
+    </metric>
+    <metric name="ShouldDownscale" type="int">
+      <summary>
+        Boolean indicating whether the camera app should downscale the captured
+        result for the Android camera intent.
+      </summary>
+    </metric>
+    <metric name="IsSecure" type="int">
+      <summary>
+        Boolean indicating whether the camera intent is launched under the secure
+        mode.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="CameraApp.OpenPTZPanel">
+    <summary>
+      Event recorded when the PTZ panel is opened in the camera app.
+    </summary>
+    <metric name="SupportPan" type="int">
+      <summary>
+        Boolean indicating whether pan control is supported on the current camera.
+      </summary>
+    </metric>
+    <metric name="SupportTilt" type="int">
+      <summary>
+        Boolean indicating whether tilt control is supported on the current camera.
+      </summary>
+    </metric>
+    <metric name="SupportZoom" type="int">
+      <summary>
+        Boolean indicating whether zoom control is supported on the current camera.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="CameraApp.DocScanAction">
+    <summary>
+      Event recorded when action related to document scanning is performed.
+    </summary>
+    <metric name="ActionType" type="int">
+      <summary>
+        The type of the document scanning related action.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="CameraApp.DocScanResult">
+    <summary>
+      Event recorded when the user finishes a document scanning session.
+    </summary>
+    <metric name="ResultType" type="int">
+      <summary>
+        The type of the result of this document scanning session.
+      </summary>
+    </metric>
+    <metric name="FixTypes" type="int">
+      <summary>
+        Integer used as a bit mask indicating the type(s) of fix that the user
+        applied on the document scanning result.
+      </summary>
+    </metric>
+    <metric name="FixCount" type="int">
+      <summary>
+        Integer indicating how many times the user performed a fix on the document
+        scanning result.
+      </summary>
+    </metric>
+    <metric name="PageCount" type="int">
+      <summary>
+        Integer indicating how many pages are there in the document scanning result.
       </summary>
     </metric>
   </event>

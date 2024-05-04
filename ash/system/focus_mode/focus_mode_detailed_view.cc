@@ -25,6 +25,7 @@
 #include "ash/system/focus_mode/focus_mode_countdown_view.h"
 #include "ash/system/focus_mode/focus_mode_task_view.h"
 #include "ash/system/focus_mode/focus_mode_util.h"
+#include "ash/system/focus_mode/sounds/focus_mode_sounds_view.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/palette/palette_tray.h"
@@ -341,6 +342,8 @@ FocusModeDetailedView::FocusModeDetailedView(DetailedViewDelegate* delegate)
 
   CreateTaskView();
 
+  scroll_content()->AddChildView(std::make_unique<FocusModeSoundsView>());
+
   FocusModeController* focus_mode_controller = FocusModeController::Get();
   const bool in_focus_session = focus_mode_controller->in_focus_session();
 
@@ -508,7 +511,6 @@ void FocusModeDetailedView::CreateToggleView() {
       toggle_view_->tri_view()->box_layout();
   toggle_view_tri_view_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  toggle_view_tri_view_layout->InvalidateLayout();
 }
 
 void FocusModeDetailedView::UpdateToggleButtonAccessibility(
@@ -793,7 +795,6 @@ void FocusModeDetailedView::CreateDoNotDisturbContainer() {
       toggle_row->tri_view()->box_layout();
   toggle_view_tri_view_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  toggle_view_tri_view_layout->InvalidateLayout();
 }
 
 void FocusModeDetailedView::OnDoNotDisturbToggleClicked() {
@@ -840,7 +841,8 @@ void FocusModeDetailedView::CreateFeedbackButton() {
 void FocusModeDetailedView::OnFeedbackButtonPressed() {
   Shell::Get()->shell_delegate()->OpenFeedbackDialog(
       ShellDelegate::FeedbackSource::kFocusMode,
-      /*description_template=*/"#FocusMode");
+      /*description_template=*/"#FocusMode",
+      /*category_tag=*/std::string());
 }
 
 void FocusModeDetailedView::OnClockMinutePassed() {

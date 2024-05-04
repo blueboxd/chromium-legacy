@@ -19,12 +19,13 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/cpu.h"
 #include "base/environment.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -548,8 +549,8 @@ bool IsGen9Gpu() {
   return is_gen9_gpu;
 }
 
-// Returns true if the SoC has a 9.5 GPU. CPU model IDs are referenced from the
-// following file in the kernel source:  arch/x86/include/asm/intel-family.h.
+// Returns true if the SoC has a Gen9.5 GPU. CPU model IDs are referenced from
+// the following file in the kernel source: arch/x86/include/asm/intel-family.h.
 bool IsGen95Gpu() {
   constexpr int kPentiumAndLaterFamily = 0x06;
   constexpr int kKabyLakeModelId = 0x9E;
@@ -566,6 +567,17 @@ bool IsGen95Gpu() {
                                     cpuid->model() == kCometLakeModelId ||
                                     cpuid->model() == kCometLake_LModelId);
   return is_gen95_gpu;
+}
+
+// Returns true if the SoC has a Gen11 GPU. CPU model IDs are referenced from
+// the following file in the kernel source: arch/x86/include/asm/intel-family.h.
+bool IsGen11Gpu() {
+  constexpr int kPentiumAndLaterFamily = 0x06;
+  constexpr int kJasperLakeModelId = 0x9C;
+  static const base::NoDestructor<base::CPU> cpuid;
+  static const bool is_gen11_gpu = cpuid->family() == kPentiumAndLaterFamily &&
+                                   (cpuid->model() == kJasperLakeModelId);
+  return is_gen11_gpu;
 }
 
 // Returns true if the intel hybrid driver is used for decoding |va_profile|.
@@ -1638,6 +1650,25 @@ VAImplementation VaapiWrapper::GetImplementationType() {
 }
 
 // static
+int VaapiWrapper::GetMaxNumDecoderInstances() {
+  if (!base::FeatureList::IsEnabled(media::kLimitConcurrentDecoderInstances)) {
+    return std::numeric_limits<int>::max();
+  }
+
+  // Chromebook "grunt", with an AMD Radeon R5 (Stoney Ridge) GPU, b/266003084.
+  constexpr int kAMDStoneyRidgeMaxNumOfInstances = 10;
+  auto va_display_state_handle = VADisplayStateSingleton::GetHandle();
+  if (va_display_state_handle &&
+      base::Contains(va_display_state_handle->vendor_string(), "stoney")) {
+    return kAMDStoneyRidgeMaxNumOfInstances;
+  }
+  // TODO(andrescj): we can relax this once we extract video decoding into its
+  // own process.
+  constexpr int kDefaultMaxNumOfInstances = 16;
+  return kDefaultMaxNumOfInstances;
+}
+
+// static
 scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
     CodecMode mode,
     VAProfile va_profile,
@@ -1665,6 +1696,18 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
     return nullptr;
   }
 
+  if (mode == kDecode) {
+    static const auto decoder_instances_limit =
+        VaapiWrapper::GetMaxNumDecoderInstances();
+    const bool can_create_decoder =
+        num_decoder_instances_.Increment() < decoder_instances_limit ||
+        !base::FeatureList::IsEnabled(media::kLimitConcurrentDecoderInstances);
+    if (!can_create_decoder) {
+      num_decoder_instances_.Decrement();
+      return nullptr;
+    }
+  }
+
   scoped_refptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper(
       std::move(va_display_state_handle), mode, enforce_sequence_affinity));
   if (vaapi_wrapper->VaInitialize(report_error_to_uma_cb)) {
@@ -1675,6 +1718,9 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
              << vaProfileStr(va_profile);
   return nullptr;
 }
+
+// static
+base::AtomicRefCount VaapiWrapper::num_decoder_instances_(0);
 
 // static
 scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
@@ -3045,7 +3091,17 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
     pipeline_param->output_region = &output_region;
     pipeline_param->output_background_color = 0xff000000;
     pipeline_param->output_color_standard = VAProcColorStandardNone;
-    pipeline_param->filter_flags = VA_FILTER_SCALING_DEFAULT;
+    // SFC-AVS is the default iHD driver scaling setting on all Intel platforms,
+    // however, it has limitation on the older GPU before Gen12, EU-Bilinear is
+    // reconmmended on Intel GPUs before Gen12.
+    if (IsGen8Gpu() || IsGen9Gpu() || IsGen95Gpu() || IsGen11Gpu()) {
+      // EU-bilinear.
+      pipeline_param->filter_flags =
+          VA_FILTER_SCALING_HQ | VA_FILTER_INTERPOLATION_BILINEAR;
+    } else {
+      // SFC-AVS on Intel iHD driver.
+      pipeline_param->filter_flags = VA_FILTER_SCALING_DEFAULT;
+    }
     pipeline_param->rotation_state = VA_ROTATION_NONE;
   }
 
@@ -3144,6 +3200,9 @@ VaapiWrapper::~VaapiWrapper() {
   DestroyPendingBuffers();
   DestroyContext();
   Deinitialize();
+  if (mode_ == kDecode) {
+    num_decoder_instances_.Decrement();
+  }
 }
 
 bool VaapiWrapper::Initialize(VAProfile va_profile,
@@ -3378,7 +3437,7 @@ void VaapiWrapper::DestroySurfaces(std::vector<VASurfaceID> va_surfaces) {
   DVLOG(2) << "Destroying " << va_surfaces.size() << " surfaces";
 
   // vaDestroySurfaces() makes no guarantees about VA_INVALID_SURFACE.
-  base::Erase(va_surfaces, VA_INVALID_SURFACE);
+  std::erase(va_surfaces, VA_INVALID_SURFACE);
   if (va_surfaces.empty())
     return;
 

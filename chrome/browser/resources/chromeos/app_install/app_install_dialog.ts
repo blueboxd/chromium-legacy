@@ -56,22 +56,32 @@ class AppInstallDialogElement extends HTMLElement {
       const dialogArgs = await this.proxy.handler.getDialogArgs();
       assert(dialogArgs.args);
 
-      const nameElement = this.$<HTMLSpanElement>('#name');
+      const nameElement = this.$<HTMLParagraphElement>('#name');
       assert(nameElement);
       nameElement.textContent = dialogArgs.args.name;
 
-      const urlElement = this.$<HTMLSpanElement>('#url');
+      const urlElement = this.$<HTMLAnchorElement>('#url-link');
       assert(urlElement);
       urlElement.textContent = dialogArgs.args.url.url;
 
-      const descriptionElement = this.$<HTMLSpanElement>('#description');
-      assert(descriptionElement);
-      descriptionElement.textContent = dialogArgs.args.description;
-
-      const iconElement = this.$<HTMLImageElement>('#icon');
+      const iconElement = this.$<HTMLImageElement>('#app-icon');
       assert(iconElement);
       iconElement.setAttribute('auto-src', dialogArgs.args.iconUrl.url);
 
+      if (dialogArgs.args.description) {
+        this.$<HTMLDivElement>('#description').textContent =
+            dialogArgs.args.description;
+        this.$<HTMLDivElement>('#description-and-screenshots').hidden = false;
+        this.$<HTMLHRElement>('#divider').hidden = false;
+      }
+
+      if (dialogArgs.args.screenshotUrls[0]) {
+        this.$<HTMLSpanElement>('#description-and-screenshots').hidden = false;
+        this.$<HTMLHRElement>('#divider').hidden = false;
+        this.$<HTMLSpanElement>('#screenshot-container').hidden = false;
+        this.$<HTMLImageElement>('#screenshot')
+            .setAttribute('auto-src', dialogArgs.args.screenshotUrls[0].url);
+      }
     } catch (e) {
       // TODO(crbug.com/1488697) Define expected behavior.
       console.error(`Unable to get dialog arguments . Error: ${e}.`);
@@ -123,34 +133,46 @@ class AppInstallDialogElement extends HTMLElement {
     assert(installButton);
     switch (state) {
       case DialogState.INSTALL:
+        this.$<HTMLElement>('#title-icon-install').style.display = 'block';
+        this.$<HTMLElement>('#title-icon-installed').style.display = 'none';
+        this.$<HTMLElement>('#title').textContent =
+            loadTimeData.getString('installAppToDevice');
+
         installButton.disabled = false;
         installButton.label = loadTimeData.getString('install');
         installButton.addEventListener(
             'click', this.onInstallButtonClick.bind(this), {once: true});
 
-        this.$<HTMLSpanElement>('#installing-icon').setAttribute('slot', '');
-        this.$<HTMLSpanElement>('#install-icon')
+        this.$<HTMLElement>('#installing-icon').setAttribute('slot', '');
+        this.$<HTMLElement>('#install-icon')
             .setAttribute('slot', 'leading-icon');
         break;
       case DialogState.INSTALLING:
+        this.$<HTMLElement>('#title').textContent =
+            loadTimeData.getString('installingApp');
+
         installButton.disabled = true;
         installButton.label = loadTimeData.getString('installing');
         installButton.classList.replace('install', 'installing');
 
-        this.$<HTMLSpanElement>('#install-icon').setAttribute('slot', '');
-        this.$<HTMLSpanElement>('#installing-icon')
+        this.$<HTMLElement>('#install-icon').setAttribute('slot', '');
+        this.$<HTMLElement>('#installing-icon')
             .setAttribute('slot', 'leading-icon');
         break;
       case DialogState.INSTALLED:
+        this.$<HTMLElement>('#title-icon-install').style.display = 'none';
+        this.$<HTMLElement>('#title-icon-installed').style.display = 'block';
+        this.$<HTMLElement>('#title').textContent =
+            loadTimeData.getString('appInstalled');
+
         installButton.disabled = false;
-        // TODO(crbug.com/1488697): Localize string.
-        installButton.label = 'Open app';
+        installButton.label = loadTimeData.getString('openApp');
         installButton.classList.replace('installing', 'installed');
         installButton.addEventListener(
             'click', this.onOpenAppButtonClick.bind(this));
 
-        this.$<HTMLSpanElement>('#installing-icon').setAttribute('slot', '');
-        this.$<HTMLSpanElement>('#installed-icon')
+        this.$<HTMLElement>('#installing-icon').setAttribute('slot', '');
+        this.$<HTMLElement>('#installed-icon')
             .setAttribute('slot', 'leading-icon');
         break;
       default:

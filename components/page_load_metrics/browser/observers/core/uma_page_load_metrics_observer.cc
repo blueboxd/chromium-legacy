@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "base/trace_event/named_trigger.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_id_helper.h"
 #include "base/tracing/protos/chrome_track_event.pbzero.h"
@@ -77,6 +78,15 @@ std::unique_ptr<base::trace_event::TracedValue> FirstInputDelayTraceData(
       timing.interactive_timing->first_input_timestamp->InMillisecondsF());
   return data;
 }
+
+#define TRACE_WITH_TIMESTAMP0(category_group, name, trace_id, begin_time,   \
+                              end_time)                                     \
+  do {                                                                      \
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(category_group, name,  \
+                                                     trace_id, begin_time); \
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(category_group, name,    \
+                                                   trace_id, end_time);     \
+  } while (0)
 
 }  // namespace
 
@@ -292,7 +302,13 @@ UmaPageLoadMetricsObserver::UmaPageLoadMetricsObserver()
       was_no_store_main_resource_(false),
       cache_bytes_(0),
       network_bytes_(0),
-      network_bytes_including_headers_(0) {}
+      network_bytes_including_headers_(0) {
+  // Emit a trigger to allow trace collection tied to navigations. For
+  // simplicity, this signal happens during `WillStartRequest`, which is a bit
+  // later than the `navigation_start` timestamp used in
+  // `PageLoad.PaintTiming.NavigationToFirstContentfulPaint`.
+  base::trace_event::EmitNamedTrigger("navigation-start");
+}
 
 UmaPageLoadMetricsObserver::~UmaPageLoadMetricsObserver() {}
 
@@ -712,6 +728,12 @@ void UmaPageLoadMetricsObserver::OnLoadedResource(
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramCommitSentToFirstSubresourceLoadStart,
         timing_info.request_start - commit_sent_time);
+
+    TRACE_WITH_TIMESTAMP0(
+        "loading", "CommitSentToFirstSubresourceLoadStart",
+        TRACE_ID_WITH_SCOPE("CommitSentToFirstSubresourceLoadStart",
+                            TRACE_ID_LOCAL(this)),
+        commit_sent_time, timing_info.request_start);
   }
 }
 

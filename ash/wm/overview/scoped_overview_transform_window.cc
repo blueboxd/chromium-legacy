@@ -29,6 +29,7 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_constants.h"
+#include "base/auto_reset.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
@@ -103,6 +104,7 @@ class UndoPropertyObserver : public ui::ImplicitAnimationObserver,
 // whether the given `window` belongs to a group or not.
 gfx::RoundedCornersF GetRoundedCornersForTransformWindow(aura::Window* window,
                                                          float scale) {
+  const int corner_radius = window_util::GetMiniWindowRoundedCornerRadius();
   if (SnapGroupController* snap_group_controller = SnapGroupController::Get()) {
     if (SnapGroup* snap_group =
             snap_group_controller->GetSnapGroupForGivenWindow(window)) {
@@ -111,12 +113,12 @@ gfx::RoundedCornersF GetRoundedCornersForTransformWindow(aura::Window* window,
                        /*upper_left=*/0,
                        /*upper_right=*/0, /*lower_right=*/0,
                        /*lower_left=*/
-                       kWindowMiniViewCornerRadius / scale)
+                       corner_radius / scale)
                  : gfx::RoundedCornersF(
                        /*upper_left=*/0,
                        /*upper_right=*/0,
                        /*lower_right=*/
-                       kWindowMiniViewCornerRadius / scale,
+                       corner_radius / scale,
                        /*lower_left=*/0);
     }
   }
@@ -124,8 +126,8 @@ gfx::RoundedCornersF GetRoundedCornersForTransformWindow(aura::Window* window,
   return gfx::RoundedCornersF(
       /*upper_left=*/0,
       /*upper_right=*/0,
-      /*lower_right=*/kWindowMiniViewCornerRadius / scale,
-      /*lower_left=*/kWindowMiniViewCornerRadius / scale);
+      /*lower_right=*/corner_radius / scale,
+      /*lower_left=*/corner_radius / scale);
 }
 
 }  // namespace
@@ -272,9 +274,12 @@ ScopedOverviewTransformWindow::GetWindowDimensionsType(const gfx::Size& size) {
 
 void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform,
                                                   bool animate) {
+  base::AutoReset<bool> restoring(&is_restoring_, true);
+
   // Shadow controller may be null on shutdown.
-  if (Shell::Get()->shadow_controller())
-    Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
+  if (auto* shadow_controller = Shell::Get()->shadow_controller()) {
+    shadow_controller->UpdateShadowForWindow(window_);
+  }
 
   // We will handle clipping here, no need to do anything in the destructor.
   reset_clip_on_shutdown_ = false;
@@ -628,8 +633,9 @@ void ScopedOverviewTransformWindow::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
-  if (window == window_)
+  if (window == window_ || is_restoring_) {
     return;
+  }
 
   // Transient window is repositioned. The new position within the
   // overview item needs to be recomputed. No need to recompute if the

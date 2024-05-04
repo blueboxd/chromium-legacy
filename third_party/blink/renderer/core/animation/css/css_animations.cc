@@ -367,8 +367,7 @@ StringKeyframeVector ProcessKeyframesRule(
           properties.PropertyAt(j);
       CSSPropertyRef ref(property_reference.Name(), document);
       const CSSProperty& property = ref.GetProperty();
-      if (RuntimeEnabledFeatures::CSSAnimationCompositionEnabled() &&
-          property.PropertyID() == CSSPropertyID::kAnimationComposition) {
+      if (property.PropertyID() == CSSPropertyID::kAnimationComposition) {
         if (const auto* value_list =
                 DynamicTo<CSSValueList>(property_reference.Value())) {
           if (const auto* identifier_value =
@@ -1871,6 +1870,10 @@ bool AffectsBackgroundColor(const AnimationEffect& effect) {
   return effect.Affects(PropertyHandle(GetCSSPropertyBackgroundColor()));
 }
 
+bool AffectsClipPath(const AnimationEffect& effect) {
+  return effect.Affects(PropertyHandle(GetCSSPropertyClipPath()));
+}
+
 void UpdateAnimationFlagsForEffect(const AnimationEffect& effect,
                                    ComputedStyleBuilder& builder) {
   if (effect.Affects(PropertyHandle(GetCSSPropertyOpacity())))
@@ -1889,15 +1892,18 @@ void UpdateAnimationFlagsForEffect(const AnimationEffect& effect,
     builder.SetHasCurrentBackdropFilterAnimation(true);
   if (AffectsBackgroundColor(effect))
     builder.SetHasCurrentBackgroundColorAnimation(true);
-  if (effect.Affects(PropertyHandle(GetCSSPropertyClipPath())))
+  if (AffectsClipPath(effect)) {
     builder.SetHasCurrentClipPathAnimation(true);
+  }
 }
 
 void SetCompositablePaintAnimationChangedIfAffected(
     const AnimationEffect& effect,
     ComputedStyleBuilder& builder) {
-  if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
-      AffectsBackgroundColor(effect)) {
+  if ((RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
+       AffectsBackgroundColor(effect)) ||
+      (RuntimeEnabledFeatures::CompositeClipPathAnimationEnabled() &&
+       AffectsClipPath(effect))) {
     builder.SetCompositablePaintAnimationChanged(true);
   }
 }

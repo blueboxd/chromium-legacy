@@ -135,9 +135,9 @@ declare_args() {
   enable_cet_shadow_stack = target_cpu == "x64"
 
   # Set to true to enable using the ML inliner in LLVM. This currently only
-  # enables the ML inliner when targeting Android.
-  # Currently the ML inliner is only supported on linux hosts
-  use_ml_inliner = host_os == "linux" && is_android &&
+  # enables the ML inliner when targeting Android for a size-optimized build.
+  # Currently the ML inliner is only supported on linux hosts.
+  use_ml_inliner = host_os == "linux" && is_android && optimize_for_size &&
                    !llvm_android_mainline  # https://crbug.com/1468680
 
   # Set to true to use the android unwinder V2 implementation.
@@ -200,10 +200,7 @@ if (is_chromeos) {
       # but overall shrinks binaries considerably by avoiding huge unwind
       # tables.
       (current_cpu == "x86" && !exclude_unwind_tables && optimize_for_size) ||
-      using_sanitizer ||
-      # For caller-callee instrumentation version which needs frame pointers to
-      # get the caller address.
-      use_call_graph
+      using_sanitizer
 } else if (is_fuchsia) {
   # Fuchsia on arm64 could use shadow call stack for unwinding.
   enable_frame_pointers = current_cpu != "arm64"

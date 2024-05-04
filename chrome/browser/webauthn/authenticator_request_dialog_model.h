@@ -157,12 +157,22 @@ class AuthenticatorRequestDialogModel
     kAttestationPermissionRequest,
     kEnterpriseAttestationPermissionRequest,
 
+    // GPM Pin (6-digit).
+    kGPMCreatePin,
+    kGPMEnterPin,
+
+    // GPM Pin (alphanumeric).
+    kGPMCreateArbitraryPin,
+    kGPMEnterArbitraryPin,
+
+    // GPM passkey creation.
+    kGPMOnboarding,
+    kGPMCreatePasskey,
     kCreatePasskey,
+
+    // Device bootstrap to use GPM passkeys.
     kRecoverSecurityDomain,
     kTrustThisComputer,
-    kGPMCreatePasskey,
-    kGPMCreatePin,
-    kGPMOnboarding,
     kWaitingForEnclave,
 
     // User verification prompt for GPM for demo purposes.
@@ -197,6 +207,9 @@ class AuthenticatorRequestDialogModel
 
     // Called when the user clicks “Manage Devices” to manage their phones.
     virtual void OnManageDevicesClicked() {}
+
+    // Called when the UI should update the state of the buttons.
+    virtual void OnButtonsStateChanged() {}
   };
 
   // A Mechanism is a user-visible method of authenticating. It might be a
@@ -280,6 +293,12 @@ class AuthenticatorRequestDialogModel
     kEmpty,
     // The enclave is ready to use.
     kReady,
+  };
+
+  // Possible error states during GPM pin entry / creation.
+  enum class GpmPinError {
+    kNone,
+    kWrongPin,
   };
 
   explicit AuthenticatorRequestDialogModel(
@@ -452,6 +471,10 @@ class AuthenticatorRequestDialogModel
   // changes, which will trigger notifying observers of OnSheetModelChanged.
   void OnSheetModelDidChange();
 
+  // Called by the AuthenticatorRequestSheetModel subclasses when the state of
+  // their buttons changes.
+  void OnButtonsStateChange();
+
   // The |observer| must either outlive the object, or unregister itself on its
   // destruction.
   void AddObserver(Observer* observer);
@@ -556,9 +579,22 @@ class AuthenticatorRequestDialogModel
   // using passkeys.
   void OnGPMOnboardingAccepted();
 
-  // These functions are currently placeholders.
-  void OnGPMCreate() {}
+  // Called when the user accepts passkey creation in the GPM bubble.
+  // TODO(enclave): Add transition to authentication or bootstrapping device.
+  void OnGPMCreatePasskey() {}
+
+  // Called when the user enters the GPM pin in the UI (during initial setup or
+  // authentication).
+  void OnGPMPinEntered(const std::u16string& pin);
+
+  // Called when the user accepts enrolling a device to use passkeys.
   void OnTrustThisComputer();
+
+  // Called when the user needs to set their GPM PIN for the first time.
+  void OnCreateGPMPin();
+
+  // Return the last entered GPM PIN.
+  std::string&& TakeGPMPin();
 
   // Adds or removes an authenticator to the list of known authenticators. The
   // first authenticator added with transport `kInternal` (or without a
@@ -712,6 +748,8 @@ class AuthenticatorRequestDialogModel
 
   void set_allow_icloud_keychain(bool);
   void set_should_create_in_icloud_keychain(bool);
+
+  GpmPinError gpm_pin_error() const { return gpm_pin_error_; }
 
 #if BUILDFLAG(IS_MAC)
   void RecordMacOsStartedHistogram();
@@ -966,6 +1004,12 @@ class AuthenticatorRequestDialogModel
 
   // Records the state of the primary account for the profile, if any.
   AccountState account_state_ = AccountState::kNone;
+
+  // Records the error during GPM pin entry / creation, if any.
+  GpmPinError gpm_pin_error_ = GpmPinError::kNone;
+
+  // The entered GPM PIN.
+  std::string gpm_pin_;
 
 #if BUILDFLAG(IS_MAC)
   // did_record_macos_start_histogram_ is set to true if a histogram record of

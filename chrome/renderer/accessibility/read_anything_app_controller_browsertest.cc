@@ -9,12 +9,15 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/renderer/accessibility/ax_tree_distiller.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_frame.h"
 #include "read_anything_app_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "url/gurl.h"
 
@@ -76,6 +79,10 @@ class MockReadAnythingUntrustedPageHandler
   MOCK_METHOD(void,
               OnHighlightGranularityChanged,
               (read_anything::mojom::HighlightGranularity color),
+              (override));
+  MOCK_METHOD(void,
+              OnImageDataRequested,
+              (const ::ui::AXTreeID& target_tree_id, int32_t target_node_id),
               (override));
 
   mojo::PendingRemote<read_anything::mojom::UntrustedPageHandler>
@@ -323,12 +330,25 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     return controller_->GetChildren(ax_node_id);
   }
 
+  std::string GetDisplayNameForLocale(std::string locale,
+                                      std::string display_locale) {
+    return controller_->GetDisplayNameForLocale(locale, display_locale);
+  }
+
   std::string GetDataFontCss(ui::AXNodeID ax_node_id) {
     return controller_->GetDataFontCss(ax_node_id);
   }
 
   std::string GetHtmlTag(ui::AXNodeID ax_node_id) {
     return controller_->GetHtmlTag(ax_node_id);
+  }
+
+  std::string GetAltText(ui::AXNodeID ax_node_id) {
+    return controller_->GetAltText(ax_node_id);
+  }
+
+  std::string GetImageDataUrl(ui::AXNodeID ax_node_id) {
+    return controller_->GetImageDataUrl(ax_node_id);
   }
 
   std::string GetTextContent(ui::AXNodeID ax_node_id) {
@@ -349,12 +369,18 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
 
   bool IsGoogleDocs() { return controller_->IsGoogleDocs(); }
 
+  bool IsReadAloudEnabled() { return controller_->IsReadAloudEnabled(); }
+
   bool IsLeafNode(ui::AXNodeID ax_node_id) {
     return controller_->IsLeafNode(ax_node_id);
   }
 
   void OnLinkClicked(ui::AXNodeID ax_node_id) {
     controller_->OnLinkClicked(ax_node_id);
+  }
+
+  void RequestImageDataUrl(ui::AXNodeID node_id) {
+    controller_->RequestImageDataUrl(node_id);
   }
 
   void OnSelectionChange(ui::AXNodeID anchor_node_id,
@@ -392,12 +418,20 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
   ui::AXTreeID tree_id_;
   raw_ptr<MockAXTreeDistiller, DanglingUntriaged> distiller_ = nullptr;
   testing::StrictMock<MockReadAnythingUntrustedPageHandler> page_handler_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   // ReadAnythingAppController constructor and destructor are private so it's
   // not accessible by std::make_unique.
   raw_ptr<ReadAnythingAppController, DanglingUntriaged> controller_ = nullptr;
 };
+
+TEST_F(ReadAnythingAppControllerTest, IsReadAloudEnabled) {
+  EXPECT_FALSE(IsReadAloudEnabled());
+
+  scoped_feature_list_.InitAndEnableFeature(features::kReadAnythingReadAloud);
+  EXPECT_TRUE(IsReadAloudEnabled());
+}
 
 TEST_F(ReadAnythingAppControllerTest, Theme) {
   std::string font_name = "Roboto";
@@ -751,6 +785,80 @@ TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_InaccessiblePDF) {
   EXPECT_EQ("br", GetHtmlTag(2));
 }
 
+TEST_F(ReadAnythingAppControllerTest, GetAltText) {
+  std::string img = "img";
+  std::string sample_alt_text = "sample_alt_text";
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  ui::AXNodeData img_node;
+  img_node.id = 2;
+  img_node.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, img);
+  img_node.AddStringAttribute(ax::mojom::StringAttribute::kName,
+                              sample_alt_text);
+
+  update.nodes = {img_node};
+
+  AccessibilityEventReceived({update});
+  OnAXTreeDistilled({});
+  EXPECT_EQ(img, GetHtmlTag(2));
+  EXPECT_EQ(sample_alt_text, GetAltText(2));
+}
+
+TEST_F(ReadAnythingAppControllerTest, GetAltText_Unset) {
+  std::string img = "img";
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  ui::AXNodeData img_node;
+  img_node.id = 2;
+  img_node.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, img);
+
+  update.nodes = {img_node};
+
+  AccessibilityEventReceived({update});
+  OnAXTreeDistilled({});
+  EXPECT_EQ(img, GetHtmlTag(2));
+  EXPECT_EQ("", GetAltText(2));
+}
+
+TEST_F(ReadAnythingAppControllerTest, GetImageDataUrl) {
+  std::string img = "img";
+  std::string img_data =
+      "data:image/"
+      "png;base64,"
+      "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAADElEQVQImWNgoBMAAABpAAFE"
+      "I8ARAAAAAElFTkSuQmCC";
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  ui::AXNodeData img_node;
+  img_node.id = 2;
+  img_node.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, img);
+  img_node.AddStringAttribute(ax::mojom::StringAttribute::kImageDataUrl,
+                              img_data);
+
+  update.nodes = {img_node};
+
+  AccessibilityEventReceived({update});
+  OnAXTreeDistilled({});
+  EXPECT_EQ(img, GetHtmlTag(2));
+  EXPECT_EQ(img_data, GetImageDataUrl(2));
+}
+
+TEST_F(ReadAnythingAppControllerTest, GetImageDataUrl_Unset) {
+  std::string img = "img";
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  ui::AXNodeData img_node;
+  img_node.id = 2;
+  img_node.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, img);
+
+  update.nodes = {img_node};
+
+  AccessibilityEventReceived({update});
+  OnAXTreeDistilled({});
+  EXPECT_EQ(img, GetHtmlTag(2));
+  EXPECT_EQ("", GetImageDataUrl(2));
+}
+
 TEST_F(ReadAnythingAppControllerTest, GetTextContent_NoSelection) {
   std::string text_content = "Hello";
   std::string more_text_content = " world";
@@ -879,6 +987,16 @@ TEST_F(ReadAnythingAppControllerTest,
   EXPECT_EQ("", GetTextContent(1));
   EXPECT_EQ("", GetTextContent(2));
   EXPECT_EQ("", GetTextContent(3));
+}
+
+TEST_F(ReadAnythingAppControllerTest, GetDisplayNameForLocale) {
+  EXPECT_EQ(GetDisplayNameForLocale("en-US", "en"), "English (United States)");
+  EXPECT_EQ(GetDisplayNameForLocale("en-US", "es"), "inglés (Estados Unidos)");
+  EXPECT_EQ(GetDisplayNameForLocale("en-US", "en-US"),
+            "English (United States)");
+  EXPECT_EQ(GetDisplayNameForLocale("en-UK", "en"), "English (United Kingdom)");
+  EXPECT_EQ(GetDisplayNameForLocale("en-UK", "foo5"), "");
+  EXPECT_EQ(GetDisplayNameForLocale("foo", "en"), "");
 }
 
 TEST_F(ReadAnythingAppControllerTest, GetUrl) {
@@ -1662,6 +1780,19 @@ TEST_F(ReadAnythingAppControllerTest, OnLinkClicked) {
   ui::AXNodeID ax_node_id = 2;
   EXPECT_CALL(page_handler_, OnLinkClicked(tree_id_, ax_node_id)).Times(1);
   OnLinkClicked(ax_node_id);
+  page_handler_.FlushForTesting();
+  Mock::VerifyAndClearExpectations(distiller_);
+}
+
+TEST_F(ReadAnythingAppControllerTest, RequestImageDataUrl) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kReadAnythingImagesViaAlgorithm}, {});
+
+  ui::AXNodeID ax_node_id = 2;
+  EXPECT_CALL(page_handler_, OnImageDataRequested(tree_id_, ax_node_id))
+      .Times(1);
+  RequestImageDataUrl(ax_node_id);
   page_handler_.FlushForTesting();
   Mock::VerifyAndClearExpectations(distiller_);
 }

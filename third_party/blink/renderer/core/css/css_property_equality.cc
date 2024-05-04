@@ -372,7 +372,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.GetFontDescription().FontOpticalSizing() ==
              b.GetFontDescription().FontOpticalSizing();
     case CSSPropertyID::kFontPalette:
-      return base::ValuesEquivalent(a.FontPalette(), b.FontPalette());
+      return base::ValuesEquivalent(a.GetFontPalette(), b.GetFontPalette());
     case CSSPropertyID::kFontFeatureSettings:
       return a.GetFontDescription().FeatureSettings() ==
              b.GetFontDescription().FeatureSettings();
@@ -597,6 +597,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
                                     b.PositionFallbackBounds());
     case CSSPropertyID::kQuotes:
       return a.Quotes() == b.Quotes();
+    case CSSPropertyID::kReadingOrderItems:
+      return a.ReadingOrderItems() == b.ReadingOrderItems();
     case CSSPropertyID::kResize:
       return a.Resize() == b.Resize();
     case CSSPropertyID::kRight:
@@ -686,6 +688,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.TextAnchor() == b.TextAnchor();
     case CSSPropertyID::kTextAutospace:
       return a.TextAutospace() == b.TextAutospace();
+    case blink::CSSPropertyID::kTextBoxEdge:
+      return a.GetTextBoxEdge() == b.GetTextBoxEdge();
     case blink::CSSPropertyID::kTextBoxTrim:
       return a.TextBoxTrim() == b.TextBoxTrim();
     case CSSPropertyID::kTextDecorationColor:
@@ -1241,6 +1245,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kPlaceContent:
     case CSSPropertyID::kPlaceItems:
     case CSSPropertyID::kPlaceSelf:
+    case CSSPropertyID::kPositionTry:
     case CSSPropertyID::kScrollMargin:
     case CSSPropertyID::kScrollPadding:
     case CSSPropertyID::kScrollStart:

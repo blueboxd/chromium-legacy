@@ -172,23 +172,24 @@ ClipboardHostImpl::IsPasteAllowedRequest::~IsPasteAllowedRequest() = default;
 
 bool ClipboardHostImpl::IsPasteAllowedRequest::AddCallback(
     IsClipboardPasteAllowedCallback callback) {
-  // If this request has already completed, invoke the callback immediately
-  // and return.
-  if (data_.has_value()) {
-    std::move(callback).Run(data_.value());
-    return false;
-  }
-
   callbacks_.push_back(std::move(callback));
 
   // If this is the first callback registered tell the caller to start the scan.
   return callbacks_.size() == 1;
 }
 
+void ClipboardHostImpl::IsPasteAllowedRequest::AddData(
+    ClipboardPasteData data) {
+  data_.Merge(std::move(data));
+}
+
 void ClipboardHostImpl::IsPasteAllowedRequest::Complete(
     IsClipboardPasteAllowedCallbackArgType data) {
   completed_time_ = base::Time::Now();
-  data_ = std::move(data);
+  data_allowed_ = data.has_value();
+  if (*data_allowed_) {
+    AddData(std::move(*data));
+  }
   InvokeCallbacks();
 }
 
@@ -202,12 +203,17 @@ base::Time ClipboardHostImpl::IsPasteAllowedRequest::completed_time() {
 }
 
 void ClipboardHostImpl::IsPasteAllowedRequest::InvokeCallbacks() {
-  DCHECK(data_);
+  DCHECK(data_allowed_.has_value());
 
   auto callbacks = std::move(callbacks_);
   for (auto& callback : callbacks) {
-    if (!callback.is_null())
-      std::move(callback).Run(data_.value());
+    if (!callback.is_null()) {
+      if (*data_allowed_) {
+        std::move(callback).Run(data_);
+      } else {
+        std::move(callback).Run(std::nullopt);
+      }
+    }
   }
 }
 
@@ -325,21 +331,23 @@ void ClipboardHostImpl::ReadText(ui::ClipboardBuffer clipboard_buffer,
     return;
   }
 
-  std::u16string text = ExtractText(clipboard_buffer, CreateDataEndpoint());
-  ClipboardPasteData clipboard_paste_data =
-      ClipboardPasteData(base::UTF16ToUTF8(text), std::string(), {});
+  ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.text =
+      ExtractText(clipboard_buffer, CreateDataEndpoint());
+
   PasteIfPolicyAllowed(
       clipboard_buffer, ui::ClipboardFormatType::PlainTextType(),
       std::move(clipboard_paste_data),
       base::BindOnce(
-          [](std::u16string result, ReadTextCallback callback,
+          [](ReadTextCallback callback,
              std::optional<ClipboardPasteData> clipboard_paste_data) {
-            if (!clipboard_paste_data) {
-              result.clear();
+            std::u16string result;
+            if (clipboard_paste_data) {
+              result = std::move(clipboard_paste_data->text);
             }
-            std::move(callback).Run(result);
+            std::move(callback).Run(std::move(result));
           },
-          std::move(text), std::move(callback)));
+          std::move(callback)));
 }
 
 void ClipboardHostImpl::ReadHtml(ui::ClipboardBuffer clipboard_buffer,
@@ -349,32 +357,31 @@ void ClipboardHostImpl::ReadHtml(ui::ClipboardBuffer clipboard_buffer,
     return;
   }
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  std::u16string markup;
+  ClipboardPasteData clipboard_paste_data;
   std::string src_url_str;
   uint32_t fragment_start = 0;
   uint32_t fragment_end = 0;
   auto data_dst = CreateDataEndpoint();
-  clipboard->ReadHTML(clipboard_buffer, data_dst.get(), &markup, &src_url_str,
-                      &fragment_start, &fragment_end);
+  clipboard->ReadHTML(clipboard_buffer, data_dst.get(),
+                      &clipboard_paste_data.html, &src_url_str, &fragment_start,
+                      &fragment_end);
 
-  ClipboardPasteData clipboard_paste_data =
-      ClipboardPasteData(base::UTF16ToUTF8(markup), std::string(), {});
   PasteIfPolicyAllowed(
       clipboard_buffer, ui::ClipboardFormatType::HtmlType(),
       std::move(clipboard_paste_data),
       base::BindOnce(
-          [](std::u16string markup, std::string src_url_str,
-             uint32_t fragment_start, uint32_t fragment_end,
-             ReadHtmlCallback callback,
+          [](std::string src_url_str, uint32_t fragment_start,
+             uint32_t fragment_end, ReadHtmlCallback callback,
              std::optional<ClipboardPasteData> clipboard_paste_data) {
-            if (!clipboard_paste_data) {
-              markup.clear();
+            std::u16string markup;
+            if (clipboard_paste_data) {
+              markup = std::move(clipboard_paste_data->html);
             }
             std::move(callback).Run(std::move(markup), GURL(src_url_str),
                                     fragment_start, fragment_end);
           },
-          std::move(markup), std::move(src_url_str), fragment_start,
-          fragment_end, std::move(callback)));
+          std::move(src_url_str), fragment_start, fragment_end,
+          std::move(callback)));
 }
 
 void ClipboardHostImpl::ReadSvg(ui::ClipboardBuffer clipboard_buffer,
@@ -383,24 +390,24 @@ void ClipboardHostImpl::ReadSvg(ui::ClipboardBuffer clipboard_buffer,
     std::move(callback).Run(std::u16string());
     return;
   }
-  std::u16string markup;
+  ClipboardPasteData clipboard_paste_data;
   ui::Clipboard::GetForCurrentThread()->ReadSvg(clipboard_buffer,
-                                                /*data_dst=*/nullptr, &markup);
+                                                /*data_dst=*/nullptr,
+                                                &clipboard_paste_data.svg);
 
-  ClipboardPasteData clipboard_paste_data =
-      ClipboardPasteData(base::UTF16ToUTF8(markup), std::string(), {});
   PasteIfPolicyAllowed(
       clipboard_buffer, ui::ClipboardFormatType::SvgType(),
       std::move(clipboard_paste_data),
       base::BindOnce(
-          [](std::u16string markup, ReadSvgCallback callback,
+          [](ReadSvgCallback callback,
              std::optional<ClipboardPasteData> clipboard_paste_data) {
-            if (!clipboard_paste_data) {
-              markup.clear();
+            std::u16string svg;
+            if (clipboard_paste_data) {
+              svg = std::move(clipboard_paste_data->svg);
             }
-            std::move(callback).Run(std::move(markup));
+            std::move(callback).Run(std::move(svg));
           },
-          std::move(markup), std::move(callback)));
+          std::move(callback)));
 }
 
 void ClipboardHostImpl::ReadRtf(ui::ClipboardBuffer clipboard_buffer,
@@ -409,25 +416,25 @@ void ClipboardHostImpl::ReadRtf(ui::ClipboardBuffer clipboard_buffer,
     std::move(callback).Run(std::string());
     return;
   }
-  std::string result;
-  auto data_dst = CreateDataEndpoint();
-  ui::Clipboard::GetForCurrentThread()->ReadRTF(clipboard_buffer,
-                                                data_dst.get(), &result);
 
-  ClipboardPasteData clipboard_paste_data =
-      ClipboardPasteData(result, std::string(), {});
+  ClipboardPasteData clipboard_paste_data;
+  auto data_dst = CreateDataEndpoint();
+  ui::Clipboard::GetForCurrentThread()->ReadRTF(
+      clipboard_buffer, data_dst.get(), &clipboard_paste_data.rtf);
+
   PasteIfPolicyAllowed(
       clipboard_buffer, ui::ClipboardFormatType::RtfType(),
       std::move(clipboard_paste_data),
       base::BindOnce(
-          [](std::string result, ReadRtfCallback callback,
+          [](ReadRtfCallback callback,
              std::optional<ClipboardPasteData> clipboard_paste_data) {
-            if (!clipboard_paste_data) {
-              result.clear();
+            std::string result;
+            if (clipboard_paste_data) {
+              result = std::move(clipboard_paste_data->rtf);
             }
-            std::move(callback).Run(result);
+            std::move(callback).Run(std::move(result));
           },
-          std::move(result), std::move(callback)));
+          std::move(callback)));
 }
 
 void ClipboardHostImpl::ReadPng(ui::ClipboardBuffer clipboard_buffer,
@@ -448,22 +455,25 @@ void ClipboardHostImpl::OnReadPng(ui::ClipboardBuffer clipboard_buffer,
                                   ReadPngCallback callback,
                                   const std::vector<uint8_t>& data) {
   // Pass both image and associated text for content analysis.
-  ClipboardPasteData clipboard_paste_data = ClipboardPasteData(
-      base::UTF16ToUTF8(ExtractText(clipboard_buffer, CreateDataEndpoint())),
-      std::string(data.begin(), data.end()), {});
+  ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.text =
+      ExtractText(clipboard_buffer, CreateDataEndpoint());
+  clipboard_paste_data.png = data;
+
   PasteIfPolicyAllowed(
       clipboard_buffer, ui::ClipboardFormatType::PngType(),
       std::move(clipboard_paste_data),
       base::BindOnce(
-          [](std::vector<uint8_t> data, ReadPngCallback callback,
+          [](ReadPngCallback callback,
              std::optional<ClipboardPasteData> clipboard_paste_data) {
             if (!clipboard_paste_data.has_value()) {
               std::move(callback).Run(mojo_base::BigBuffer());
               return;
             }
-            std::move(callback).Run(mojo_base::BigBuffer(data));
+            std::move(callback).Run(
+                mojo_base::BigBuffer(std::move(clipboard_paste_data->png)));
           },
-          std::move(data), std::move(callback)));
+          std::move(callback)));
 }
 
 void ClipboardHostImpl::ReadFiles(ui::ClipboardBuffer clipboard_buffer,
@@ -488,8 +498,8 @@ void ClipboardHostImpl::ReadFiles(ui::ClipboardBuffer clipboard_buffer,
   paths.reserve(filenames.size());
   base::ranges::transform(filenames, std::back_inserter(paths),
                           [](const ui::FileInfo& info) { return info.path; });
-  ClipboardPasteData clipboard_paste_data =
-      ClipboardPasteData(std::string(), std::string(), std::move(paths));
+  ClipboardPasteData clipboard_paste_data;
+  clipboard_paste_data.file_paths = std::move(paths);
 
   // This code matches the drag-and-drop DataTransfer code in
   // RenderWidgetHostImpl::DragTargetDrop().
@@ -549,25 +559,26 @@ void ClipboardHostImpl::ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
     std::move(callback).Run(std::u16string());
     return;
   }
-  std::u16string result;
-  auto data_dst = CreateDataEndpoint();
-  ui::Clipboard::GetForCurrentThread()->ReadCustomData(clipboard_buffer, type,
-                                                       data_dst.get(), &result);
 
-  ClipboardPasteData clipboard_paste_data =
-      ClipboardPasteData(base::UTF16ToUTF8(result), std::string(), {});
+  ClipboardPasteData clipboard_paste_data;
+  auto data_dst = CreateDataEndpoint();
+  ui::Clipboard::GetForCurrentThread()->ReadCustomData(
+      clipboard_buffer, type, data_dst.get(),
+      &clipboard_paste_data.custom_data[type]);
+
   PasteIfPolicyAllowed(
       clipboard_buffer, ui::ClipboardFormatType::WebCustomDataType(),
       std::move(clipboard_paste_data),
       base::BindOnce(
-          [](std::u16string result, ReadCustomDataCallback callback,
+          [](ReadCustomDataCallback callback, const std::u16string& type,
              std::optional<ClipboardPasteData> clipboard_paste_data) {
-            if (!clipboard_paste_data) {
-              result.clear();
+            std::u16string result;
+            if (clipboard_paste_data) {
+              result = std::move(clipboard_paste_data->custom_data[type]);
             }
-            std::move(callback).Run(result);
+            std::move(callback).Run(std::move(result));
           },
-          std::move(result), std::move(callback)));
+          std::move(callback), type));
 }
 
 void ClipboardHostImpl::WriteText(const std::u16string& text) {
@@ -725,9 +736,19 @@ void ClipboardHostImpl::PasteIfPolicyAllowed(
   // Add |callback| to the callbacks associated to the sequence number, adding
   // an entry to the map if one does not exist.
   auto& request = is_allowed_requests_[seqno];
+
+  // If this request has already completed, invoke the callback immediately
+  // and return.
+  if (request.is_complete()) {
+    std::move(callback).Run(std::move(clipboard_paste_data));
+    return;
+  }
+
   if (request.AddCallback(std::move(callback))) {
     StartIsPasteAllowedRequest(seqno, data_type, clipboard_buffer,
                                std::move(clipboard_paste_data));
+  } else {
+    request.AddData(std::move(clipboard_paste_data));
   }
 }
 
@@ -738,8 +759,7 @@ void ClipboardHostImpl::StartIsPasteAllowedRequest(
     ClipboardPasteData clipboard_paste_data) {
   std::optional<size_t> data_size;
   if (clipboard_paste_data.file_paths.empty()) {
-    data_size =
-        clipboard_paste_data.text.size() + clipboard_paste_data.image.size();
+    data_size = clipboard_paste_data.size();
   }
 
   static_cast<RenderFrameHostImpl&>(render_frame_host())

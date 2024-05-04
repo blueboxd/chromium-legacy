@@ -148,6 +148,11 @@ const char kAllowBackForwardCacheForCacheControlNoStorePageEnabled[] =
 const char kLocalTestPoliciesForNextStartup[] =
     "local_test_policies_for_next_startup";
 
+// A boolean pref indicating whether to fire deprecated/removed mutation events.
+// If false, mutation events might not be fired.
+const char kMutationEventsEnabled[] =
+    "policy.deprecated_mutation_events_enabled";
+
 // A boolean pref indicating whether to allow deprecation of the "unload"
 // event.
 // If false, the deprecation rollout will be ignored.
@@ -159,6 +164,9 @@ const char kForcePermissionPolicyUnloadDefaultEnabled[] =
 // applied when a AlwaysOn VPN is active but not connected.
 const char kAlwaysOnVpnPreConnectUrlAllowlist[] =
     "policy.alwayson_vpn_pre_connect_url_allowlist";
+
+// Boolean value for the FloatingWorkspaceEnabled policy
+const char kFloatingWorkspaceEnabled[] = "ash.floating_workspace_enabled";
 #endif
 }  // namespace policy_prefs
 }  // namespace policy

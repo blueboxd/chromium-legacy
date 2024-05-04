@@ -50,6 +50,16 @@ BASE_FEATURE(kBeforeUnloadBrowserResponseQueue,
 #endif
 );
 
+// When enabled, attempts to navigate an iframe by an initiator that isn't
+// same-origin to the iframe's parent are blocked. Exceptions are: (i) same-
+// document navigations when the frame is already about:srcdoc, and (ii) when
+// an about:srcdoc frame reloads itself.
+// This feature is enabled by default, and is intended to be used as a
+// kill-switch if the new behaviour causes problems.
+BASE_FEATURE(kBlockCrossOriginInitiatedAboutSrcdocNavigations,
+             "BlockCrossOriginInitiatedAboutSrcdocNavigations",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // When this feature is enabled, requests to localhost initiated from non-secure
 // contexts in the `unknown` IP address space are blocked.
 //
@@ -69,6 +79,13 @@ BASE_FEATURE(kHistoryInterventionSameDocumentFix,
 BASE_FEATURE(kBrowserVerifiedUserActivationKeyboard,
              "BrowserVerifiedUserActivationKeyboard",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, changes to the zoom level are temporary and are forgotten when
+// the tab is closed. If disabled, changes to the zoom level persist, as though
+// the user affected them through the browser's UX.
+BASE_FEATURE(kCapturedSurfaceControlTemporaryZoom,
+             "CapturedSurfaceControlTemporaryZoom",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
@@ -91,11 +108,7 @@ BASE_FEATURE(kCodeCacheDeletionWithoutFilter,
 // proxy.
 BASE_FEATURE(kConsolidatedIPCForProxyCreation,
              "ConsolidatedIPCForProxyCreation",
-#if BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // When enabled, event.movement is calculated in blink instead of in browser.
 BASE_FEATURE(kConsolidatedMovementXY,
@@ -367,17 +380,6 @@ BASE_FEATURE(kPreloadingConfig,
 BASE_FEATURE(kPrivacySandboxAdsAPIsM1Override,
              "PrivacySandboxAdsAPIsM1Override",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables Private Network Access checks in warning mode for navigations.
-//
-// Does nothing if `kPrivateNetworkAccessForNavigations` is disabled.
-//
-// If both this and `kPrivateNetworkAccessForNavigations` are enabled, then PNA
-// preflight requests for navigations are not required to succeed. If
-// one fails, a warning is simply displayed in DevTools.
-BASE_FEATURE(kPrivateNetworkAccessForNavigationsWarningOnly,
-             "PrivateNetworkAccessForNavigationsWarningOnly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables reporting ResourceTiming entries for document, who initiated a
 // cancelled navigation in one of their <iframe>.

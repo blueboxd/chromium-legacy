@@ -158,8 +158,21 @@ class TfLiteOpResolver : public tflite::MutableOpResolver {
     AddBuiltin(tflite::BuiltinOperator_RELU,
                tflite::ops::builtin::Register_RELU(), /* min_version = */ 1,
                /* max_version = */ 2);
+    AddBuiltin(tflite::BuiltinOperator_RELU_N1_TO_1,
+               tflite::ops::builtin::Register_RELU_N1_TO_1());
+    AddBuiltin(tflite::BuiltinOperator_RELU6,
+               tflite::ops::builtin::Register_RELU6(), /* min_version = */ 1,
+               /* max_version = */ 2);
     AddBuiltin(tflite::BuiltinOperator_RESHAPE,
                tflite::ops::builtin::Register_RESHAPE());
+    AddBuiltin(tflite::BuiltinOperator_RESIZE_BILINEAR,
+               tflite::ops::builtin::Register_RESIZE_BILINEAR(),
+               /* min_version = */ 1,
+               /* max_version = */ 3);
+    AddBuiltin(tflite::BuiltinOperator_RESIZE_NEAREST_NEIGHBOR,
+               tflite::ops::builtin::Register_RESIZE_NEAREST_NEIGHBOR(),
+               /* min_version = */ 1,
+               /* max_version = */ 3);
     AddBuiltin(tflite::BuiltinOperator_SIN,
                tflite::ops::builtin::Register_SIN());
     AddBuiltin(tflite::BuiltinOperator_SOFTMAX,
@@ -267,7 +280,8 @@ struct ElementWiseAddTester {
     auto* constant = BuildConstant(builder, rhs.dimensions, rhs.data_type,
                                    rhs.values, scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
-        scope, builder, ElementWiseBinaryKind::kAdd, input, constant);
+        scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+        input, constant);
     EXPECT_EQ(output->DataType(), expected.data_type);
     auto [graph, exception] =
         helper.BuildGraph(scope, builder, {{"output", output}});
@@ -439,6 +453,30 @@ struct Conv2dExceptionTester {
   }
 };
 
+template <typename T>
+struct ClampExceptionTester {
+  OperandInfo<T> input;
+  String error_message;
+
+  void Test(MLGraphTestTfLite& helper,
+            V8TestingScope& scope,
+            MLClampOptions* options = MLClampOptions::Create()) {
+    // Build the graph.
+    auto* builder =
+        CreateMLGraphBuilder(scope.GetExecutionContext(),
+                             scope.GetScriptState(), scope.GetExceptionState());
+    auto* input_operand =
+        BuildInput(builder, "input", input.dimensions, input.data_type,
+                   scope.GetExceptionState());
+    auto* output_operand =
+        builder->clamp(input_operand, options, scope.GetExceptionState());
+    auto [graph, build_exception] =
+        helper.BuildGraph(scope, builder, {{"output", output_operand}});
+    ASSERT_THAT(graph, testing::IsNull());
+    EXPECT_EQ(build_exception->message(), error_message);
+  }
+};
+
 }  // namespace
 
 class FakeWebNNModel : public blink_mojom::Model {
@@ -595,13 +633,36 @@ TEST_P(MLGraphTestTfLite, Conv2dTest) {
   }
 }
 
-const TestVariety kGraphTestModelLoaderVariety[] = {
-    {BackendType::kModelLoader, ExecutionMode::kAsync},
-};
+TEST_P(MLGraphTestTfLite, ClampTest) {
+  MLGraphV8TestingScope scope;
+  {
+    // Test clamp operator with default options that no minimum and maximum
+    // values are defined.
+    ClampExceptionTester<float>{
+        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
+                  .dimensions = {1, 2, 2, 1},
+                  .values = {-10.0, -0.5, 0.5, 10.0}},
+        .error_message =
+            "The range of clamp is not supported in tflite schema."}
+        .Test(*this, scope);
+  }
+  {
+    // Test clamp operator with the maximum value defined.
+    MLClampOptions* options = MLClampOptions::Create();
+    options->setMaxValue(6.0);
+    ClampExceptionTester<float>{
+        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
+                  .dimensions = {1, 2, 2, 1},
+                  .values = {-10.0, -0.5, 0.5, 10.0}},
+        .error_message =
+            "The range of clamp is not supported in tflite schema."}
+        .Test(*this, scope, options);
+  }
+}
 
 INSTANTIATE_TEST_SUITE_P(All,
                          MLGraphTestTfLite,
-                         testing::ValuesIn(kGraphTestModelLoaderVariety),
-                         TestVarietyToString);
+                         testing::Values(BackendType::kModelLoader),
+                         TestParamInfoToString);
 
 }  // namespace blink

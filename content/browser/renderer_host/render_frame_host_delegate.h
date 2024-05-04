@@ -303,6 +303,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void AccessibilityLocationChangesReceived(
       const std::vector<AXLocationChangeNotificationDetails>& details) {}
 
+  // Indicates an unrecoverable error in accessibility. Gracefully turns off
+  // accessibility in all frames.
+  virtual void AccessibilityFatalError() {}
+
   // Gets the GeolocationContext associated with this delegate.
   virtual device::mojom::GeolocationContext* GetGeolocationContext();
 
@@ -705,6 +709,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // If a timer for an unresponsive renderer fires, whether it should be
   // ignored.
   virtual bool ShouldIgnoreUnresponsiveRenderer();
+
+  // Returns the base permissions policy that should be applied to the Isolated
+  // Web App running in the given RenderFrameHostImpl. If std::nullopt is
+  // returned the default non-isolated permissions policy will be applied.
+  virtual std::optional<blink::ParsedPermissionsPolicy>
+  GetPermissionsPolicyForIsolatedWebApp(RenderFrameHostImpl* source);
 
  protected:
   virtual ~RenderFrameHostDelegate() = default;

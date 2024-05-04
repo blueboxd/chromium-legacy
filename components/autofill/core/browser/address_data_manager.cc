@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/metrics/profile_token_quality_metrics.h"
 #include "components/autofill/core/browser/metrics/stored_profile_metrics.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/sync/base/model_type.h"
 #include "components/webdata/common/web_data_results.h"
 
 namespace autofill {
@@ -61,10 +62,20 @@ AddressDataManager::AddressDataManager(
     webdata_service_->SetAutofillProfileChangedCallback(
         base::BindRepeating(&AddressDataManager::OnAutofillProfileChanged,
                             weak_factory_.GetWeakPtr()));
+    webdata_service_observer_.Observe(webdata_service_.get());
   }
 }
 
-AddressDataManager::~AddressDataManager() = default;
+AddressDataManager::~AddressDataManager() {
+  CancelAllPendingQueries();
+}
+
+void AddressDataManager::OnAutofillChangedBySync(syncer::ModelType model_type) {
+  if (model_type == syncer::ModelType::AUTOFILL_PROFILE ||
+      model_type == syncer::ModelType::CONTACT_INFO) {
+    LoadProfiles();
+  }
+}
 
 void AddressDataManager::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle handle,
@@ -101,14 +112,7 @@ void AddressDataManager::OnWebDataServiceRequestDone(
     has_initial_load_finished_ = true;
     LogStoredDataMetrics();
   }
-  // TODO(b/322170538): Notify observers: `PDM::Refresh()` is the only
-  // mechanism to read from the database. Since the DB sequence is a sequenced
-  // task runner, and since address data is queried before payments data,
-  // `PDM::OnWebDataServiceRequestDone()` is always called after this
-  // function. This makes sure that observers are notified.
-  // By notifying observers here too, more events are triggered (once when
-  // address data has finished reloading and once when credit card data has
-  // finished reloading). This breaks just about every test.
+  notify_pdm_observers_.Run();
 }
 
 std::vector<AutofillProfile*> AddressDataManager::GetProfiles(
@@ -203,6 +207,10 @@ void AddressDataManager::UpdateProfile(const AutofillProfile& profile) {
 }
 
 void AddressDataManager::RemoveProfile(const std::string& guid) {
+  if (!webdata_service_) {
+    return;
+  }
+
   // Find the profile to remove.
   // TODO(crbug.com/1420547): This shouldn't be necessary. Providing a `guid`
   // to the `AutofillProfileChange()` should suffice for removals.

@@ -45,11 +45,23 @@ BASE_FEATURE(kScreenPowerListenerForNativeWinOcclusion,
 // name `kApplyNativeOcclusionToCompositorType`.
 BASE_FEATURE(kApplyNativeOcclusionToCompositor,
              "ApplyNativeOcclusionToCompositor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 // Field trial param name for `kApplyNativeOcclusionToCompositor`.
 const base::FeatureParam<std::string> kApplyNativeOcclusionToCompositorType{
-    &kApplyNativeOcclusionToCompositor, "type", /*default=*/""};
+    &kApplyNativeOcclusionToCompositor, "type",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    /*default=*/"throttle_and_release"
+#else
+    /*default=*/""
+#endif
+};
+
 // When the WindowTreeHost is occluded or hidden, resources are released and
 // the compositor is hidden. See WindowTreeHost for specifics on what this
 // does.
@@ -82,14 +94,6 @@ BASE_FEATURE(kNotificationsIgnoreRequireInteraction,
 
 bool IsNotificationsIgnoreRequireInteractionEnabled() {
   return base::FeatureList::IsEnabled(kNotificationsIgnoreRequireInteraction);
-}
-
-BASE_FEATURE(kShortcutCustomizationApp,
-             "ShortcutCustomizationApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsShortcutCustomizationAppEnabled() {
-  return base::FeatureList::IsEnabled(kShortcutCustomizationApp);
 }
 
 BASE_FEATURE(kShortcutCustomization,
@@ -352,7 +356,7 @@ bool IsKeyboardAccessibleTooltipEnabled() {
 // TODO(https://b/288337080): Remove this flag once the feature is ready.
 BASE_FEATURE(kNotificationGesturesUpdate,
              "NotificationGesturesUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsNotificationGesturesUpdateEnabled() {
   return base::FeatureList::IsEnabled(kNotificationGesturesUpdate);
@@ -438,6 +442,9 @@ BASE_FEATURE(kVariableRefreshRateAvailable,
 BASE_FEATURE(kEnableVariableRefreshRate,
              "EnableVariableRefreshRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kVariableRefreshRateDefaultEnabled,
+             "VariableRefreshRateDefaultEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 // This param indicates whether to ignore the VRR availability flag. It is set
 // to false by Finch for non-forced groups.
 const base::FeatureParam<bool> kVrrIgnoreAvailability{
@@ -445,6 +452,16 @@ const base::FeatureParam<bool> kVrrIgnoreAvailability{
     /*default_value=*/true};
 bool IsVariableRefreshRateEnabled() {
   if (base::FeatureList::IsEnabled(kEnableVariableRefreshRateAlwaysOn)) {
+    return true;
+  }
+
+  // Special default case for devices with |kVariableRefreshRateDefaultEnabled|
+  // set. Requires |kVariableRefreshRateAvailable| to also be set.
+  // TODO(b/310666603): Remove after VRR is enabled-by-default for all hardware.
+  if (!base::FeatureList::GetInstance()->IsFeatureOverridden(
+          kEnableVariableRefreshRate.name) &&
+      base::FeatureList::IsEnabled(kVariableRefreshRateDefaultEnabled) &&
+      base::FeatureList::IsEnabled(kVariableRefreshRateAvailable)) {
     return true;
   }
 

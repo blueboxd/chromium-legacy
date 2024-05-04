@@ -4,26 +4,21 @@
 
 #include "content/browser/indexed_db/indexed_db_factory_client.h"
 
-#include <stddef.h>
-
-#include <algorithm>
+#include <forward_list>
 #include <memory>
+#include <ostream>
 #include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
+#include "base/location.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/time/time.h"
-#include "content/browser/indexed_db/database_impl.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_cursor.h"
+#include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
-#include "content/browser/indexed_db/indexed_db_return_value.h"
-#include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/indexed_db_value.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "storage/browser/quota/quota_manager.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBKey;
@@ -95,7 +90,8 @@ void IndexedDBFactoryClient::OnUpgradeNeeded(
   }
 
   mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase> pending =
-      DatabaseImpl::CreateAndBind(std::move(connection));
+      IndexedDBConnection::MakeSelfOwnedReceiverAndBindRemote(
+          std::move(connection));
   remote_->UpgradeNeeded(std::move(pending), old_version, data_loss_info.status,
                          data_loss_info.message, metadata);
 }
@@ -127,8 +123,8 @@ void IndexedDBFactoryClient::OnOpenSuccess(
 
   mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase> pending_remote;
   if (database_connection) {
-    pending_remote =
-        DatabaseImpl::CreateAndBind(std::move(database_connection));
+    pending_remote = IndexedDBConnection::MakeSelfOwnedReceiverAndBindRemote(
+        std::move(database_connection));
   }
   remote_->OpenSuccess(std::move(pending_remote), metadata);
   complete_ = true;

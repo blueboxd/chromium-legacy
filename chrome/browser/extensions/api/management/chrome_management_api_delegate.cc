@@ -236,12 +236,13 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     auto* provider = web_app::WebAppProvider::GetForWebApps(
         Profile::FromBrowserContext(context));
 
-    provider->scheduler().InstallFromInfo(
+    provider->scheduler().InstallFromInfoWithParams(
         std::move(web_app_info),
         /*overwrite_existing_manifest_fields=*/false,
         webapps::WebappInstallSource::MANAGEMENT_API,
         base::BindOnce(OnGenerateAppForLinkCompleted,
-                       base::RetainedRef(function)));
+                       base::RetainedRef(function)),
+        web_app::WebAppInstallParams());
   }
 
   extensions::api::management::ExtensionInfo CreateExtensionInfoFromWebApp(
@@ -407,8 +408,7 @@ bool ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   apps::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
   Profile* profile = Profile::FromBrowserContext(context);
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   if (extensions::IsExtensionUnsupportedDeprecatedApp(profile,
                                                       extension->id())) {
     return false;

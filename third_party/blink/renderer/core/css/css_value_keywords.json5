@@ -776,6 +776,19 @@
     "no-autospace",
 
     //
+    // text-box-edge
+    //
+    // "alphabetic",
+    // "text"
+    //
+    // not implemented
+    // "ideographic",
+    // "ideographic-ink",
+    "cap",
+    "ex",
+    "leading",
+
+    //
     // text-overflow
     //
     "clip",
@@ -878,6 +891,9 @@
     // stretch
     // repeat
     "round",
+    // TODO(crbug.com/1511354): "bikeshed" is a temporary name for stylable
+    // <select>. It should be renamed when a standardized name is chosen.
+    "bikeshed",
 
     //
     // background-clip/background-origin
@@ -1556,6 +1572,9 @@
     "-internal-variable-value",
     "env",
 
+    // CSS Functions
+    "arg",
+
     // break-before, break-after, break-inside
     "avoid-page",
     "page",
@@ -1803,5 +1822,17 @@
     "flip-block",
     "flip-inline",
     "flip-start",
+
+    // reading-order-items
+    // normal
+    "flex-visual",
+    "flex-flow",
+    "grid-rows",
+    "grid-columns",
+    "grid-order",
+
+    // fill / stroke
+    "context-fill",
+    "context-stroke"
   ],
 }

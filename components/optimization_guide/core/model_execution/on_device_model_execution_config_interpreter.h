@@ -14,6 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
+#include "components/optimization_guide/core/model_execution/on_device_model_feature_adapter.h"
+#include "components/optimization_guide/core/model_execution/substitution.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
 
 namespace optimization_guide {
@@ -36,19 +38,8 @@ class OnDeviceModelExecutionConfigInterpreter {
   // Whether there is an on-device model execution config for `feature`.
   bool HasConfigForFeature(proto::ModelExecutionFeature feature) const;
 
-  struct InputStringConstructionResult {
-    // The input string for the feature and request. Will return
-    // std::nullopt if there is not a valid config for the feature or the
-    // request could not be fulfilled for any reason.
-    std::string input_string;
-
-    // If this is not a request for input context, this returns whether the
-    // existing input context should be ignored for the execution.
-    bool should_ignore_input_context = false;
-  };
-
   // Constructs the input string for `feature` and `request`.
-  std::optional<InputStringConstructionResult> ConstructInputString(
+  std::optional<SubstitutionResult> ConstructInputString(
       proto::ModelExecutionFeature feature,
       const google::protobuf::MessageLite& request,
       bool want_input_context) const;
@@ -60,27 +51,16 @@ class OnDeviceModelExecutionConfigInterpreter {
       proto::ModelExecutionFeature feature,
       const std::string& output) const;
 
-  // Returns the string that is used for checking redaction against.
-  std::string GetStringToCheckForRedacting(
-      proto::ModelExecutionFeature feature,
-      const google::protobuf::MessageLite& message) const;
-
-  // Returns the Redactor for the specified feature. Return value is owned by
-  // this and may be null.
-  const Redactor* GetRedactorForFeature(
-      proto::ModelExecutionFeature feature) const;
+  // Redacts the content of current response, given the last executed message.
+  RedactResult Redact(proto::ModelExecutionFeature feature,
+                      const google::protobuf::MessageLite& last_message,
+                      std::string& current_response) const;
 
  private:
-  // Contains the state applicable to a feature.
-  struct FeatureData {
-    FeatureData();
-    ~FeatureData();
-    proto::OnDeviceModelExecutionFeatureConfig config;
-    std::unique_ptr<Redactor> redactor;
-  };
-
-  void RegisterFeature(
-      const proto::OnDeviceModelExecutionFeatureConfig& config);
+  // Get the adapter for a particular feature.
+  // Return value is owned by this and may be null.
+  const OnDeviceModelFeatureAdapter* GetAdapter(
+      proto::ModelExecutionFeature feature) const;
 
   // Populates `feature_to_data_` based on `config`.
   void PopulateFeatureConfigs(
@@ -90,8 +70,9 @@ class OnDeviceModelExecutionConfigInterpreter {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // Map from feature to associated state.
-  base::flat_map<proto::ModelExecutionFeature, std::unique_ptr<FeatureData>>
-      feature_to_data_;
+  base::flat_map<proto::ModelExecutionFeature,
+                 std::unique_ptr<OnDeviceModelFeatureAdapter>>
+      adapters_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

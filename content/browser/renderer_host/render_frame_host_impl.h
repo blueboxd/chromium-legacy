@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <cstdint>
 #include <deque>
 #include <list>
@@ -43,7 +44,6 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/accessibility/web_ax_platform_tree_manager_delegate.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/buckets/bucket_context.h"
@@ -178,6 +178,7 @@
 #include "ui/accessibility/ax_action_handler_base.h"
 #include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/platform/ax_platform_tree_manager.h"
+#include "ui/accessibility/platform/ax_platform_tree_manager_delegate.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -305,7 +306,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public base::SupportsUserData,
       public mojom::FrameHost,
       public mojom::DomAutomationControllerHost,
-      public WebAXPlatformTreeManagerDelegate,
+      public ui::AXPlatformTreeManagerDelegate,
       public SiteInstanceGroup::Observer,
       public blink::mojom::AssociatedInterfaceProvider,
       public blink::mojom::BackForwardCacheControllerHost,
@@ -327,12 +328,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Data used with IsClipboardPasteAllowedByPolicy() method.
   using ClipboardPasteData = content::ClipboardPasteData;
-
-  // An accessibility reset is only allowed to prevent very rare corner cases
-  // or race conditions where the browser and renderer get out of sync. If
-  // this happens more than this many times, kill the renderer.
-  // Can be set to 0 to fail immediately during tests.
-  static int max_accessibility_resets_;
 
   static RenderFrameHostImpl* FromID(GlobalRenderFrameHostId id);
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
@@ -469,7 +464,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsRenderFrameLive() override;
   LifecycleState GetLifecycleState() override;
   bool IsInLifecycleState(LifecycleState lifecycle_state) override;
-  bool IsActive() override;
+  bool IsActive() const override;
   bool IsInactiveAndDisallowActivation(uint64_t reason) override;
   size_t GetProxyCount() override;
   bool HasSelection() override;
@@ -660,7 +655,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::ScopedInterfaceEndpointHandle handle) override;
   std::string ToDebugString() override;
 
-  // WebAXPlatformTreeManagerDelegate
+  // ui::AXPlatformTreeManagerDelegate
   void AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool AccessibilityViewHasFocus() override;
   void AccessibilityViewSetFocus() override;
@@ -678,8 +673,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       base::OnceCallback<void(ui::AXPlatformTreeManager* hit_manager,
                               ui::AXNodeID hit_node_id)> opt_callback) override;
   gfx::NativeWindow GetTopLevelNativeWindow() override;
+  bool CanFireAccessibilityEvents() const override;
   bool AccessibilityIsRootFrame() const override;
-  RenderFrameHostImpl* AccessibilityRenderFrameHost() override;
+  bool ShouldSuppressAXLoadComplete() override;
   WebContentsAccessibility* AccessibilityGetWebContentsAccessibility() override;
 
   // SiteInstanceGroup::Observer
@@ -2461,6 +2457,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
           remote_frame_interfaces,
       const blink::RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token) override;
+  void ForwardFencedFrameEventToEmbedder(
+      const std::string& event_type) override;
   void OnViewTransitionOptInChanged(blink::mojom::ViewTransitionSameOriginOptIn
                                         view_transition_opt_in) override;
   void StartDragging(blink::mojom::DragDataPtr drag_data,
@@ -2469,10 +2467,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
                      const gfx::Vector2d& cursor_offset_in_dip,
                      const gfx::Rect& drag_obj_rect_in_dip,
                      blink::mojom::DragEventSourceInfoPtr event_info) override;
+  void IssueKeepAliveHandle(
+      mojo::PendingReceiver<blink::mojom::NavigationStateKeepAliveHandle>
+          receiver) override;
 
   // blink::mojom::BackForwardCacheControllerHost:
-  void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason,
-                                 blink::mojom::BlockingDetailsPtr) override;
+  void EvictFromBackForwardCache(
+      blink::mojom::RendererEvictionReason,
+      blink::mojom::ScriptSourceLocationPtr) override;
 
   void DidChangeBackForwardCacheDisablingFeatures(
       BackForwardCacheBlockingDetails details) override;
@@ -2653,10 +2655,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // for the entire program duration.
   std::unique_ptr<mojo::MessageFilter> CreateMessageFilterForAssociatedReceiver(
       const char* interface_name);
-
-  int accessibility_fatal_error_count_for_testing() const {
-    return accessibility_fatal_error_count_;
-  }
 
   // TODO(https://crbug.com/1179502): FrameTree and FrameTreeNode are not const
   // as with prerenderer activation the page needs to move between
@@ -2907,7 +2905,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ClearUserActivation();
   void ConsumeTransientUserActivation();
   void ActivateUserActivation(
-      blink::mojom::UserActivationNotificationType notification_type);
+      blink::mojom::UserActivationNotificationType notification_type,
+      bool sticky_only = false);
 
   // These are called only when RenderFrameHostOwner is iterating over all
   // frames, not directly from the renderer.
@@ -3143,6 +3142,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            ComputeSiteForCookiesParentNavigatedAway);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            CheckIsCurrentBeforeAndAfterUnload);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest, NavigationStateKeepAlive);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            FindImmediateLocalRoots);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
@@ -3358,17 +3358,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojom::DidCommitSameDocumentNavigationParamsPtr same_document_params)
       override;
   void DidOpenDocumentInputStream(const GURL& url) override;
-  // |initiator_policy_container_host_keep_alive_handle| is needed to
-  // ensure that the PolicyContainerHost of the initiator RenderFrameHost
-  // can still be retrieved even if the RenderFrameHost has been deleted in
-  // between.
+  // |initiator_navigation_state_keep_alive_handle| is needed to ensure that the
+  // NavigationStateKeepAlive of the initiator RenderFrameHost can still be
+  // retrieved even if the RenderFrameHost has been deleted.
   void BeginNavigation(
       blink::mojom::CommonNavigationParamsPtr common_params,
       blink::mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
-      mojo::PendingRemote<blink::mojom::PolicyContainerHostKeepAliveHandle>
-          initiator_policy_container_host_keep_alive_handle,
+      mojo::PendingRemote<blink::mojom::NavigationStateKeepAliveHandle>
+          initiator_navigation_state_keep_alive_handle,
       mojo::PendingReceiver<mojom::NavigationRendererCancellationListener>
           renderer_cancellation_listener) override;
   void SubresourceResponseStarted(const url::SchemeHostPort& final_response_url,
@@ -4484,11 +4483,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // for a WebContents' frames, and one for all subsequent requests.
   bool is_first_accessibility_request_ = true;
 
-  // A count of the number of times we received an unexpected fatal
-  // accessibility error and needed to reset accessibility, so we don't keep
-  // trying to reset forever.
-  int accessibility_fatal_error_count_ = 0;
-
   // The last AXTreeData for this frame received from the RenderFrame.
   ui::AXTreeData ax_tree_data_;
 
@@ -4713,7 +4707,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Set of isolated world origins that require a separate URLLoaderFactory
   // (e.g. for handling requests initiated by extension content scripts that
-  // require relaxed CORS/CORB rules).
+  // require relaxed CORS/ORB rules).
   //
   // TODO(https://crbug.com/1098410): Remove the field below once Chrome
   // Platform Apps are gone.
@@ -5060,7 +5054,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // document commit occurs (including a BFCache activation).
 
   // The value is manually reset on cross-document navigations in
-  // ClearUserActivation via ResetForNavigation, and not via
+  // ClearUserActivation via UpdateUserActivationState, and not via
   // DocumentAssociatedData (which does not get reset for BFCache activations).
   bool honor_sticky_activation_for_history_intervention_ = true;
 

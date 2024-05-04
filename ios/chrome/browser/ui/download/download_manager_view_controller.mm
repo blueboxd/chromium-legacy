@@ -26,10 +26,8 @@ namespace {
 
 #if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 // Names of icons used in Download buttons or as leading icon.
-NSString* const kFilesAppImage = @"apple_files_app";
 NSString* const kFilesAppWithBackgroundImage =
     @"apple_files_app_with_background";
-NSString* const kDriveAppImage = @"google_drive_app";
 NSString* const kDriveAppWithBackgroundImage =
     @"google_drive_app_with_background";
 #endif
@@ -42,15 +40,17 @@ constexpr CGFloat kWidthConstraintCompactMultiplier = 1.0;
 constexpr CGFloat kRowHeight = 32;
 constexpr CGFloat kRowHorizontalMargins = 16;
 constexpr CGFloat kRowVerticalMargins = 8;
-constexpr CGFloat kRowSpacing = 8;
+constexpr CGFloat kRowSpacing = 12;
 
 // Other UI elements constants.
 constexpr CGFloat kLeadingIconSize = 24;
-constexpr CGFloat kLeadingIconBorderWidth = 1;
-constexpr CGFloat kLeadingIconCornerRadius = 3.5;
 constexpr CGFloat kTextStackSpacing = 2;
 constexpr CGFloat kProgressViewLineWidth = 2.5;
 constexpr CGFloat kCloseButtonIconSize = 30;
+
+// Where to put the action button depending on the layout.
+constexpr int kButtonIndexInTextStack = 2;
+constexpr int kButtonIndexInDownloadRowStack = 3;
 
 // Returns formatted size string.
 NSString* GetSizeString(int64_t size_in_bytes) {
@@ -64,20 +64,16 @@ NSString* GetSizeString(int64_t size_in_bytes) {
   return result;
 }
 
-// Returns the appropriate image for a destination icon, with or without
-// background.
-UIImage* GetDownloadFileDestinationImage(DownloadFileDestination destination,
-                                         bool with_background) {
+// Returns the appropriate image for a destination icon.
+UIImage* GetDownloadFileDestinationImage(DownloadFileDestination destination) {
   NSString* image_name = nil;
 #if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
   switch (destination) {
     case DownloadFileDestination::kFiles:
-      image_name =
-          with_background ? kFilesAppWithBackgroundImage : kFilesAppImage;
+      image_name = kFilesAppWithBackgroundImage;
       break;
     case DownloadFileDestination::kDrive:
-      image_name =
-          with_background ? kDriveAppWithBackgroundImage : kDriveAppImage;
+      image_name = kDriveAppWithBackgroundImage;
       break;
   }
 
@@ -85,14 +81,18 @@ UIImage* GetDownloadFileDestinationImage(DownloadFileDestination destination,
   return image_name ? [UIImage imageNamed:image_name] : nil;
 }
 
+// The font used for action buttons.
+UIFont* ActionButtonFont() {
+  UIFont* font = [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold];
+  return [[UIFontMetrics defaultMetrics] scaledFontForFont:font];
+}
+
 // Creates the title for an action button ("DOWNLOAD", "SAVE...", "OPEN", "GET
 // THE APP" or "TRY AGAIN").
 NSAttributedString* CreateActionButtonTitle(NSString* title) {
-  UIFont* font = [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold];
-  font = [[UIFontMetrics defaultMetrics] scaledFontForFont:font];
-  return
-      [[NSAttributedString alloc] initWithString:title
-                                      attributes:@{NSFontAttributeName : font}];
+  return [[NSAttributedString alloc]
+      initWithString:title
+          attributes:@{NSFontAttributeName : ActionButtonFont()}];
 }
 
 // Creates an action button ("DOWNLOAD", "SAVE...", "OPEN", "GET THE APP" or
@@ -108,12 +108,16 @@ UIButton* CreateActionButton(NSString* title,
   conf.contentInsets = insets;
   UIButton* button = [UIButton buttonWithConfiguration:conf
                                          primaryAction:action];
+  [button setTranslatesAutoresizingMaskIntoConstraints:NO];
   [button setContentHuggingPriority:UILayoutPriorityRequired
                             forAxis:UILayoutConstraintAxisHorizontal];
   [button
-      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisHorizontal];
+  [button setContentHuggingPriority:UILayoutPriorityRequired
+                            forAxis:UILayoutConstraintAxisVertical];
   button.accessibilityIdentifier = accessibility_identifier;
+  button.pointerInteractionEnabled = YES;
   return button;
 }
 
@@ -160,6 +164,7 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
 @property(nonatomic, strong) UIButton* installAppButton;
 @property(nonatomic, strong) UIButton* tryAgainButton;
 @property(nonatomic, strong) UIButton* closeButton;
+@property(nonatomic, weak) UIButton* currentButton;
 @property(nonatomic, strong) UIStackView* downloadControlsRow;
 
 // Represents constraint for self.view.widthAnchor, which is anchored to
@@ -203,13 +208,12 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
   [self.progressView addSubview:self.filesProgressIcon];
   [self.progressView addSubview:self.driveProgressIcon];
   [self.downloadControlsRow addArrangedSubview:self.progressView];
-  [self.downloadControlsRow addArrangedSubview:self.downloadButton];
-  [self.downloadControlsRow addArrangedSubview:self.openInButton];
-  [self.downloadControlsRow addArrangedSubview:self.openInDriveButton];
-  [self.downloadControlsRow addArrangedSubview:self.installAppButton];
-  [self.downloadControlsRow addArrangedSubview:self.tryAgainButton];
   [self.downloadControlsRow addArrangedSubview:self.closeButton];
   [self.view addSubview:self.downloadControlsRow];
+  if (@available(iOS 17, *)) {
+    [self registerForTraitChanges:@[ UITraitPreferredContentSizeCategory.self ]
+                       withAction:@selector(updateActionButtonLayout)];
+  }
 
   self.bottomMarginGuide = [[UILayoutGuide alloc] init];
   [self.view addLayoutGuide:self.bottomMarginGuide];
@@ -221,6 +225,7 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
     return;
   }
 
+  [self updateActionButtonLayout];
   // `self.view`, bottom margin, download controls row constraints.
   UIView* view = self.view;
   UILayoutGuide* bottomMarginGuide = self.bottomMarginGuide;
@@ -262,6 +267,12 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
     [leadingIconNotStarted.heightAnchor
         constraintEqualToConstant:kLeadingIconSize],
   ]];
+
+  // Add a constraint on the detail label so it take as few lines as possible.
+  NSLayoutConstraint* widthConstraint = [self.detailLabel.widthAnchor
+      constraintEqualToAnchor:self.textStack.widthAnchor];
+  widthConstraint.priority = UILayoutPriorityDefaultHigh;
+  widthConstraint.active = YES;
 
   // Progress view constraints.
   UIView* progressView = self.progressView;
@@ -393,14 +404,6 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
     _leadingIcon = [[UIImageView alloc] init];
     _leadingIcon.translatesAutoresizingMaskIntoConstraints = NO;
     _leadingIcon.contentMode = UIViewContentModeCenter;
-    _leadingIcon.layer.borderColor =
-        [[UIColor colorNamed:kGrey200Color]
-            resolvedColorWithTraitCollection:
-                [UITraitCollection traitCollectionWithUserInterfaceStyle:
-                                       UIUserInterfaceStyleLight]]
-            .CGColor;
-    _leadingIcon.layer.borderWidth = kLeadingIconBorderWidth;
-    _leadingIcon.layer.cornerRadius = kLeadingIconCornerRadius;
     [_leadingIcon setContentHuggingPriority:UILayoutPriorityRequired
                                     forAxis:UILayoutConstraintAxisHorizontal];
   }
@@ -443,6 +446,9 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
     _detailLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _detailLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+    [_detailLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                    forAxis:UILayoutConstraintAxisHorizontal];
+    _detailLabel.translatesAutoresizingMaskIntoConstraints = NO;
   }
 
   return _detailLabel;
@@ -453,9 +459,8 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
     _textStack = [[UIStackView alloc] init];
     _textStack.translatesAutoresizingMaskIntoConstraints = NO;
     _textStack.axis = UILayoutConstraintAxisVertical;
-    _textStack.distribution = UIStackViewDistributionEqualCentering;
     _textStack.spacing = kTextStackSpacing;
-    _textStack.alignment = UIStackViewAlignmentFill;
+    _textStack.alignment = UIStackViewAlignmentLeading;
     [_textStack
         setContentCompressionResistancePriority:UILayoutPriorityRequired
                                         forAxis:
@@ -592,12 +597,10 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
     }];
     _closeButton = [UIButton buttonWithConfiguration:closeButtonConf
                                        primaryAction:closeAction];
-    [_closeButton setContentHuggingPriority:UILayoutPriorityRequired
-                                    forAxis:UILayoutConstraintAxisHorizontal];
-    [_closeButton
-        setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                        forAxis:
-                                            UILayoutConstraintAxisHorizontal];
+    _closeButton.accessibilityIdentifier =
+        kDownloadManagerCloseButtonAccessibilityIdentifier;
+    [_closeButton.widthAnchor constraintEqualToConstant:kCloseButtonIconSize]
+        .active = YES;
   }
 
   return _closeButton;
@@ -616,6 +619,22 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
 }
 
 #pragma mark - UI Updates
+
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+  [self updateActionButtonLayout];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  if (@available(iOS 17, *)) {
+    return;
+  }
+  [self updateActionButtonLayout];
+}
 
 // Updates and activates constraints which depend on ui size class.
 - (void)updateConstraintsForTraitCollection:
@@ -661,12 +680,32 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
                                         : UIUserInterfaceStyleUnspecified;
 }
 
+// Return the button that should be visible according to the current state, if
+// any.
+- (UIButton*)currentVisibleButton {
+  switch (_state) {
+    case kDownloadManagerStateNotStarted:
+      return self.downloadButton;
+    case kDownloadManagerStateSucceeded:
+      switch (_downloadFileDestination) {
+        case DownloadFileDestination::kFiles:
+          return self.openInButton;
+        case DownloadFileDestination::kDrive:
+          return _installDriveButtonVisible ? self.installAppButton
+                                            : self.openInDriveButton;
+      }
+    case kDownloadManagerStateFailed:
+      return self.tryAgainButton;
+    case kDownloadManagerStateInProgress:
+    case kDownloadManagerStateFailedNotResumable:
+      return nil;
+  }
+}
+
 // Updates views `hidden` attribute according to the current state.
 - (void)updateViewsVisibility {
   const bool taskNotStarted = _state == kDownloadManagerStateNotStarted;
   const bool taskInProgress = _state == kDownloadManagerStateInProgress;
-  const bool taskSucceeded = _state == kDownloadManagerStateSucceeded;
-  const bool taskFailed = _state == kDownloadManagerStateFailed;
   const bool destinationIsFiles =
       _downloadFileDestination == DownloadFileDestination::kFiles;
   const bool destinationIsDrive =
@@ -680,23 +719,17 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
   self.leadingIcon.hidden = YES;
 #endif
 
-  // Views only shown when task has not started.
-  self.downloadButton.hidden = !taskNotStarted;
+  UIButton* currentButton = [self currentVisibleButton];
+  if (currentButton != _currentButton) {
+    [_currentButton removeFromSuperview];
+    _currentButton = currentButton;
+    [self updateActionButtonLayout];
+  }
 
   // Views only shown when task is in progress.
   self.progressView.hidden = !taskInProgress;
   self.filesProgressIcon.hidden = !taskInProgress || !destinationIsFiles;
   self.driveProgressIcon.hidden = !taskInProgress || !destinationIsDrive;
-
-  // Views only shown when task has succeeded.
-  self.openInButton.hidden = !taskSucceeded || !destinationIsFiles;
-  self.openInDriveButton.hidden =
-      !taskSucceeded || !destinationIsDrive || _installDriveButtonVisible;
-  self.installAppButton.hidden =
-      !taskSucceeded || !destinationIsDrive || !_installDriveButtonVisible;
-
-  // Views only shown when task has failed.
-  self.tryAgainButton.hidden = !taskFailed;
 }
 
 // Sets up views for the state `kDownloadManagerStateNotStarted`.
@@ -704,8 +737,7 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
   // Update status label text.
   self.statusLabel.text = [self localizedFileNameAndSizeWithPeriod:NO];
   // Update detail label text.
-  if (base::FeatureList::IsEnabled(kIOSIncognitoDownloadsWarning) &&
-      self.incognito) {
+  if (self.incognito) {
     self.detailLabel.text =
         l10n_util::GetNSString(IDS_IOS_DOWNLOAD_INCOGNITO_WARNING_MESSAGE);
     // Set to '0' to ensure the entire incognito warning is visible.
@@ -715,21 +747,28 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
     self.detailLabel.text = nil;
   }
 
-  // Update title of download button.
+  // Update title and accessibility identifier of download button.
   UIButtonConfiguration* downloadButtonConfiguration =
       self.downloadButton.configuration;
-  downloadButtonConfiguration.attributedTitle = CreateActionButtonTitle(
-      _multipleDestinationsAvailable
-          ? l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_SAVE_ELLIPSIS)
-          : [l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_DOWNLOAD)
-                localizedUppercaseString]);
+  if (_multipleDestinationsAvailable) {
+    downloadButtonConfiguration.attributedTitle = CreateActionButtonTitle(
+        l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_SAVE_ELLIPSIS));
+    self.downloadButton.accessibilityIdentifier =
+        kDownloadManagerSaveEllipsisAccessibilityIdentifier;
+  } else {
+    downloadButtonConfiguration.attributedTitle = CreateActionButtonTitle(
+        [l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_DOWNLOAD)
+            localizedUppercaseString]);
+    self.downloadButton.accessibilityIdentifier =
+        kDownloadManagerDownloadAccessibilityIdentifier;
+  }
   self.downloadButton.configuration = downloadButtonConfiguration;
 }
 
 // Sets up views for the state `kDownloadManagerStateInProgress`.
 - (void)updateViewsForStateInProgress {
   self.leadingIcon.image =
-      GetDownloadFileDestinationImage(_downloadFileDestination, true);
+      GetDownloadFileDestinationImage(_downloadFileDestination);
 
   switch (_downloadFileDestination) {
       // File is being downloaded to local Downloads folder.
@@ -760,7 +799,7 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
 // Sets up views for the state `kDownloadManagerStateSucceeded`.
 - (void)updateViewsForStateSucceeded {
   self.leadingIcon.image =
-      GetDownloadFileDestinationImage(_downloadFileDestination, true);
+      GetDownloadFileDestinationImage(_downloadFileDestination);
   switch (_downloadFileDestination) {
     // File was downloaded to local Downloads folder.
     case DownloadFileDestination::kFiles:
@@ -783,7 +822,7 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
 // Sets up views for the state `kDownloadManagerStateFailed`.
 - (void)updateViewsForStateFailed {
   self.leadingIcon.image =
-      GetDownloadFileDestinationImage(_downloadFileDestination, true);
+      GetDownloadFileDestinationImage(_downloadFileDestination);
   self.statusLabel.text =
       l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_COULDNT_DOWNLOAD);
   self.detailLabel.text = _fileName;
@@ -793,11 +832,53 @@ UIImageView* CreateProgressIcon(NSString* symbol_name) {
 // Sets up views for the state `kDownloadManagerStateFailedNotResumable`.
 - (void)updateViewsForStateFailedNotResumable {
   self.leadingIcon.image =
-      GetDownloadFileDestinationImage(_downloadFileDestination, true);
+      GetDownloadFileDestinationImage(_downloadFileDestination);
   self.statusLabel.text =
       l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_CANNOT_BE_RETRIED);
   self.detailLabel.text = _fileName;
   self.detailLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
+}
+
+// Check where to put the action button.
+// Rule are that button must be on one line, but should not take more than
+// a third of the text area.
+// Otherwise, it is put under on its own row.
+- (void)updateActionButtonLayout {
+  if (_currentButton) {
+    // Compute the width of the button string.
+    // It is not possible to use `UIButton intrinsicContentSize` or
+    // `NSAttributedString size` are both those may return multi line size.
+    // Instead get the raw string and recompoute its size.
+    // Add the button insets to compute the button size.
+    CGSize stringSize = [[_currentButton.configuration.attributedTitle string]
+        sizeWithAttributes:@{NSFontAttributeName : ActionButtonFont()}];
+    CGFloat stringWidth = ceil(stringSize.width);
+    stringWidth += _currentButton.configuration.contentInsets.leading +
+                   _currentButton.configuration.contentInsets.trailing;
+
+    // This is the available text size.
+    CGFloat availableWidth =
+        self.view.frame.size.width -
+        (kLeadingIconSize + kCloseButtonIconSize + 2 * kRowSpacing);
+
+    BOOL isSmallButton = stringWidth < availableWidth / 3;
+    UIView* buttonSuperview =
+        isSmallButton ? self.downloadControlsRow : self.textStack;
+
+    if (_currentButton.superview != buttonSuperview) {
+      // Button needs to be moved.
+      // Remove from the superview as insertArrangedSubview will not do it.
+      [_currentButton removeFromSuperview];
+      if (isSmallButton) {
+        [self.downloadControlsRow
+            insertArrangedSubview:_currentButton
+                          atIndex:kButtonIndexInDownloadRowStack];
+      } else {
+        [self.textStack insertArrangedSubview:_currentButton
+                                      atIndex:kButtonIndexInTextStack];
+      }
+    }
+  }
 }
 
 #pragma mark - FullscreenUIElement

@@ -10,8 +10,8 @@
 #include "base/functional/bind.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/affiliations/affiliation_service_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/password_manager/affiliation_service_factory.h"
 #include "chrome/browser/password_manager/affiliations_prefetcher_factory.h"
 #include "chrome/browser/password_manager/credentials_cleaner_runner_factory.h"
 #include "chrome/browser/password_manager/password_store_backend_factory.h"
@@ -63,7 +63,7 @@ scoped_refptr<RefcountedKeyedService> BuildPasswordStore(
 #endif
   DCHECK(ps);
 
-  password_manager::AffiliationService* affiliation_service =
+  affiliations::AffiliationService* affiliation_service =
       AffiliationServiceFactory::GetForProfile(profile);
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper =
       std::make_unique<AffiliatedMatchHelper>(affiliation_service);

@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -444,8 +445,8 @@ TEST(ScriptPromiseTest, CastPromise) {
   test::TaskEnvironment task_environment;
   V8TestingScope scope;
   ScriptPromise promise = Resolver(scope.GetScriptState()).Promise();
-  ScriptPromise new_promise =
-      ScriptPromise::Cast(scope.GetScriptState(), promise.V8Value());
+  ScriptPromise new_promise = ScriptPromise::FromUntypedValueForBindings(
+      scope.GetScriptState(), promise.V8Value());
 
   ASSERT_FALSE(promise.IsEmpty());
   EXPECT_EQ(promise.V8Value(), new_promise.V8Value());
@@ -458,10 +459,10 @@ TEST(ScriptPromiseTest, CastNonPromise) {
 
   ScriptValue value =
       ScriptValue(scope.GetIsolate(), V8String(scope.GetIsolate(), "hello"));
-  ScriptPromise promise1 =
-      ScriptPromise::Cast(scope.GetScriptState(), ScriptValue(value));
-  ScriptPromise promise2 =
-      ScriptPromise::Cast(scope.GetScriptState(), ScriptValue(value));
+  ScriptPromiseTyped<IDLAny> promise1 =
+      ToResolvedPromise<IDLAny>(scope.GetScriptState(), value);
+  ScriptPromiseTyped<IDLAny> promise2 =
+      ToResolvedPromise<IDLAny>(scope.GetScriptState(), value);
   promise1.Then(CreateFunction<FunctionForScriptPromiseTest>(
                     scope.GetScriptState(), &on_fulfilled1),
                 CreateFunction<FunctionForScriptPromiseTest>(
@@ -571,9 +572,9 @@ TEST(ScriptPromiseTest, AllWithResolvedPromises) {
   ScriptValue on_fulfilled, on_rejected;
 
   HeapVector<ScriptPromise> promises;
-  promises.push_back(ScriptPromise::Cast(
+  promises.push_back(ToResolvedPromise<IDLAny>(
       scope.GetScriptState(), V8String(scope.GetIsolate(), "hello")));
-  promises.push_back(ScriptPromise::Cast(
+  promises.push_back(ToResolvedPromise<IDLAny>(
       scope.GetScriptState(), V8String(scope.GetIsolate(), "world")));
 
   ScriptPromise promise = ScriptPromise::All(scope.GetScriptState(), promises);
@@ -602,9 +603,9 @@ TEST(ScriptPromiseTest, AllWithRejectedPromise) {
   ScriptValue on_fulfilled, on_rejected;
 
   HeapVector<ScriptPromise> promises;
-  promises.push_back(ScriptPromise::Cast(
+  promises.push_back(ToResolvedPromise<IDLAny>(
       scope.GetScriptState(), V8String(scope.GetIsolate(), "hello")));
-  promises.push_back(ScriptPromise::Reject(
+  promises.push_back(ScriptPromiseTyped<IDLAny>::Reject(
       scope.GetScriptState(), V8String(scope.GetIsolate(), "world")));
 
   ScriptPromise promise = ScriptPromise::All(scope.GetScriptState(), promises);

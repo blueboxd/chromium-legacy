@@ -10,7 +10,6 @@
 #include <set>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
@@ -61,10 +60,6 @@ const char kPasswordNotesStateHistogramName[] =
     "Sync.PasswordNotesStateInUpdate";
 constexpr char kEntityEncryptionResultHistogramName[] =
     "Sync.EntityEncryptionSucceeded";
-
-BASE_FEATURE(kSyncKeepGcDirectiveDuringSyncCycle,
-             "SyncKeepGcDirectiveDuringSyncCycle",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -501,8 +496,7 @@ void ModelTypeWorker::ProcessGetUpdatesResponse(
   // TODO(rlarocque): Handle data type context conflicts.
   *model_type_state_.mutable_type_context() = mutated_context;
 
-  if (progress_marker.has_gc_directive() &&
-      base::FeatureList::IsEnabled(kSyncKeepGcDirectiveDuringSyncCycle)) {
+  if (progress_marker.has_gc_directive()) {
     // Clean up all the pending updates because a new GC directive has been
     // received which means that all existing data should be cleaned up.
     pending_updates_.clear();
@@ -550,7 +544,7 @@ void ModelTypeWorker::ProcessGetUpdatesResponse(
           // |server_id|, don't clear it: outdated data is better than nothing.
           // Such entry should be encrypted with another key, since |key_name|'s
           // queued updates would've have been dropped by now.
-          DCHECK(!base::Contains(entries_pending_decryption_, server_id) ||
+          DCHECK(!entries_pending_decryption_.contains(server_id) ||
                  GetEncryptionKeyName(entries_pending_decryption_[server_id]) !=
                      key_name);
           SyncRecordModelTypeUpdateDropReason(
@@ -1121,7 +1115,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
 
 bool ModelTypeWorker::ShouldIgnoreUpdatesEncryptedWith(
     const std::string& key_name) {
-  if (!base::Contains(unknown_encryption_keys_by_name_, key_name)) {
+  if (!unknown_encryption_keys_by_name_.contains(key_name)) {
     return false;
   }
   if (unknown_encryption_keys_by_name_.at(key_name)
@@ -1166,15 +1160,15 @@ ModelTypeWorker::RemoveKeysNoLongerUnknown() {
   }
 
   std::vector<ModelTypeWorker::UnknownEncryptionKeyInfo> removed_keys;
-  std::erase_if(
-      unknown_encryption_keys_by_name_, [&](const auto& key_and_info) {
-        if (base::Contains(keys_blocking_updates, key_and_info.first)) {
-          return false;
-        }
-        removed_keys.push_back(key_and_info.second);
-        return true;
-      });
-
+  for (const auto& [key_name, info] : unknown_encryption_keys_by_name_) {
+    if (!keys_blocking_updates.contains(key_name)) {
+      removed_keys.push_back(info);
+    }
+  }
+  std::erase_if(unknown_encryption_keys_by_name_,
+                [&](const auto& key_and_info) {
+                  return !keys_blocking_updates.contains(key_and_info.first);
+                });
   return removed_keys;
 }
 
@@ -1216,14 +1210,6 @@ void ModelTypeWorker::ExtractGcDirective() {
     // Keep a new GC directive if received.
     pending_gc_directive_ = model_type_state_.progress_marker().gc_directive();
     model_type_state_.mutable_progress_marker()->clear_gc_directive();
-    return;
-  }
-
-  if (pending_gc_directive_.has_value() &&
-      !base::FeatureList::IsEnabled(kSyncKeepGcDirectiveDuringSyncCycle)) {
-    // Remove the GC directive if not present in the response, to mimic the
-    // previous behavior.
-    pending_gc_directive_.reset();
     return;
   }
 

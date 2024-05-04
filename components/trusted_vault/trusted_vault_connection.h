@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/types/strong_alias.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 struct CoreAccountInfo;
 
@@ -93,7 +95,17 @@ enum class DownloadAuthenticationFactorsRegistrationStateResult {
   kMaxValue = kIrrecoverable,
 };
 
-enum class AuthenticationFactorType { kPhysicalDevice, kUnspecified };
+// Authentication factor types:
+using PhysicalDevice =
+    base::StrongAlias<class PhysicalDeviceTag, absl::monostate>;
+// UnspecifiedAuthenticationFactorType carries a type hint for the backend.
+using UnspecifiedAuthenticationFactorType =
+    base::StrongAlias<class UnspecifiedAuthenticationFactorTypeTag, int>;
+// GPM PINs carry a bytestring of opaque metadata.
+using GpmPin = base::StrongAlias<class GpmPinTag, std::string>;
+
+using AuthenticationFactorType =
+    absl::variant<PhysicalDevice, UnspecifiedAuthenticationFactorType, GpmPin>;
 
 struct TrustedVaultKeyAndVersion {
   TrustedVaultKeyAndVersion(const std::vector<uint8_t>& key, int version);
@@ -109,14 +121,12 @@ struct TrustedVaultKeyAndVersion {
 // vault backend sequence.
 class TrustedVaultConnection {
  public:
+  // The result of attempting to add a member to the security domain. If the
+  // status is successful then `key_version` carries the current version of
+  // the security domain, otherwise it's zero.
   using RegisterAuthenticationFactorCallback =
-      base::OnceCallback<void(TrustedVaultRegistrationStatus)>;
-  // If registration request was successful without local keys, it means only
-  // constant key exists server-side and it's exposed as
-  // |vault_key_and_version|.
-  using RegisterDeviceWithoutKeysCallback = base::OnceCallback<void(
-      TrustedVaultRegistrationStatus,
-      const TrustedVaultKeyAndVersion& /*vault_key_and_version*/)>;
+      base::OnceCallback<void(TrustedVaultRegistrationStatus,
+                              /*key_version=*/int)>;
   using DownloadNewKeysCallback =
       base::OnceCallback<void(TrustedVaultDownloadKeysStatus,
                               const std::vector<std::vector<uint8_t>>& /*keys*/,
@@ -155,7 +165,6 @@ class TrustedVaultConnection {
       int last_trusted_vault_key_version,
       const SecureBoxPublicKey& authentication_factor_public_key,
       AuthenticationFactorType authentication_factor_type,
-      std::optional<int> authentication_factor_type_hint,
       RegisterAuthenticationFactorCallback callback) = 0;
 
   // Special version of the above for the case where the caller has no local
@@ -164,7 +173,7 @@ class TrustedVaultConnection {
   [[nodiscard]] virtual std::unique_ptr<Request> RegisterDeviceWithoutKeys(
       const CoreAccountInfo& account_info,
       const SecureBoxPublicKey& device_public_key,
-      RegisterDeviceWithoutKeysCallback callback) = 0;
+      RegisterAuthenticationFactorCallback callback) = 0;
 
   // Asynchronously attempts to download new vault keys (e.g. keys with version
   // greater than the on in |last_trusted_vault_key_and_version|) from the

@@ -325,7 +325,7 @@ class CONTENT_EXPORT NavigationRequest
   bool ShouldRequestSiteIsolationForCOOP();
 
   // NavigationHandle implementation:
-  int64_t GetNavigationId() override;
+  int64_t GetNavigationId() const override;
   ukm::SourceId GetNextPageUkmSourceId() override;
   const GURL& GetURL() override;
   SiteInstanceImpl* GetStartingSiteInstance() override;
@@ -1054,8 +1054,8 @@ class CONTENT_EXPORT NavigationRequest
 
   base::WeakPtr<NavigationRequest> GetWeakPtr();
 
-  bool is_potentially_prerendered_page_activation_for_testing() const {
-    return is_potentially_prerendered_page_activation_for_testing_;
+  bool is_running_potential_prerender_activation_checks() const {
+    return is_running_potential_prerender_activation_checks_;
   }
 
   int prerender_frame_tree_node_id() const {
@@ -1323,9 +1323,13 @@ class CONTENT_EXPORT NavigationRequest
   bool HasLoader() const;
 
   // Notifies that an IPC will be sent to the old Document's renderer to
-  // dispatch the `pageconceal` event. Returns the parameters which should be
+  // dispatch the `pageswap` event. Returns the parameters which should be
   // used for the event if this is a same-origin navigation.
-  blink::mojom::PageConcealEventParamsPtr WillDispatchPageConceal();
+  blink::mojom::PageSwapEventParamsPtr WillDispatchPageSwap();
+
+  // Returns true if this navigation is eligible for dispatching a `pageswap`
+  // event on the old Document and the event has not been dispatched already.
+  bool ShouldDispatchPageSwapEvent() const;
 
  private:
   friend class NavigationRequestTest;
@@ -2527,7 +2531,7 @@ class CONTENT_EXPORT NavigationRequest
   // activation. This is needed as PrerenderHost hasn't been reserved and
   // prerender_frame_tree_node_id() is not available yet while they are
   // running.
-  bool is_potentially_prerendered_page_activation_for_testing_ = false;
+  bool is_running_potential_prerender_activation_checks_ = false;
 
   // Set to true before the fenced frame url mapping. Reset to false when the
   // mapping finishes. If the initial mapping state of the urn:uuid is pending,
@@ -2590,7 +2594,9 @@ class CONTENT_EXPORT NavigationRequest
   // NavigationRequest.
   std::vector<ConsoleMessage> console_messages_;
 
-  // Indicates that this navigation is for PDF content in a renderer.
+  // Indicates that this navigation is for PDF content in a renderer. On
+  // Android, this can only be true when a PDF NativePage is created for
+  // a main frame navigation.
   bool is_pdf_ = false;
 
   // Indicates that this navigation is an embedder-initiated navigation of a
@@ -2848,12 +2854,12 @@ class CONTENT_EXPORT NavigationRequest
   // value is available.
   std::optional<url::Origin> tentative_data_origin_to_commit_;
 
-  // `pageconceal` can be fired at different stages of the navigation lifecycle:
+  // `pageswap` can be fired at different stages of the navigation lifecycle:
   // - ready to commit if this navigation is associated with a ViewTransition.
   // - unload old document if there is no ViewTransition opt-in.
-  // This tracks whether the pageconceal event has been fired for this
+  // This tracks whether the pageswap event has been fired for this
   // navigation.
-  bool did_fire_page_conceal_ = false;
+  bool did_fire_page_swap_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

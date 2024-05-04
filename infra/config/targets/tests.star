@@ -219,16 +219,7 @@ targets.tests.gtest_test(
 )
 
 targets.tests.gtest_test(
-    name = "blink_unit_tests_v2",
-    binary = "blink_unittests_v2",
-)
-
-targets.tests.gtest_test(
     name = "blink_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "blink_unittests_v2",
 )
 
 targets.tests.isolated_script_test(
@@ -742,56 +733,6 @@ targets.tests.gtest_test(
 )
 
 targets.tests.gtest_test(
-    name = "cr23_browser_tests",
-    mixins = [
-        "chrome-refresh-2023",
-    ],
-    binary = "browser_tests",
-)
-
-targets.tests.gtest_test(
-    name = "cr23_interactive_ui_tests",
-    mixins = [
-        "chrome-refresh-2023",
-    ],
-    binary = "interactive_ui_tests",
-)
-
-targets.tests.gtest_test(
-    name = "cr23_pixel_browser_tests",
-    mixins = [
-        "skia_gold_test",
-        "chrome-refresh-2023",
-    ],
-    args = [
-        "--browser-ui-tests-verify-pixels",
-        "--enable-pixel-output-in-tests",
-    ],
-    binary = "browser_tests",
-)
-
-targets.tests.gtest_test(
-    name = "cr23_pixel_interactive_ui_tests",
-    mixins = [
-        "skia_gold_test",
-        "chrome-refresh-2023",
-    ],
-    args = [
-        "--browser-ui-tests-verify-pixels",
-        "--enable-pixel-output-in-tests",
-    ],
-    binary = "interactive_ui_tests",
-)
-
-targets.tests.gtest_test(
-    name = "cr23_views_unittests",
-    mixins = [
-        "chrome-refresh-2023",
-    ],
-    binary = "views_unittests",
-)
-
-targets.tests.gtest_test(
     name = "crashpad_tests",
 )
 
@@ -917,6 +858,15 @@ targets.tests.gpu_telemetry_test(
 
 targets.tests.gpu_telemetry_test(
     name = "expected_color_pixel_metal_passthrough_graphite_test",
+    telemetry_test_name = "expected_color",
+    mixins = [
+        "skia_gold_test",
+        "has_native_resultdb_integration",
+    ],
+)
+
+targets.tests.gpu_telemetry_test(
+    name = "expected_color_pixel_passthrough_graphite_test",
     telemetry_test_name = "expected_color",
     mixins = [
         "skia_gold_test",
@@ -1771,6 +1721,15 @@ targets.tests.gpu_telemetry_test(
 )
 
 targets.tests.gpu_telemetry_test(
+    name = "pixel_skia_gold_passthrough_graphite_test",
+    telemetry_test_name = "pixel",
+    mixins = [
+        "skia_gold_test",
+        "has_native_resultdb_integration",
+    ],
+)
+
+targets.tests.gpu_telemetry_test(
     name = "pixel_skia_gold_passthrough_test",
     telemetry_test_name = "pixel",
     mixins = [
@@ -2126,6 +2085,10 @@ targets.tests.gtest_test(
 
 targets.tests.isolated_script_test(
     name = "test_env_py_unittests",
+)
+
+targets.tests.gtest_test(
+    name = "test_sample_jni_apk",
 )
 
 targets.tests.gtest_test(
@@ -2687,11 +2650,6 @@ targets.tests.script_test(
 targets.tests.gtest_test(
     name = "webkit_unit_tests",
     binary = "blink_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "webkit_unit_tests_v2",
-    binary = "blink_unittests_v2",
 )
 
 targets.tests.gtest_test(

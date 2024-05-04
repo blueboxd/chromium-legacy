@@ -360,6 +360,7 @@ export class SettingsManageA11ySubpageElement extends
           Setting.kColorCorrectionEnabled,
           Setting.kColorCorrectionFilterType,
           Setting.kColorCorrectionFilterAmount,
+          Setting.kReducedAnimationsEnabled,
         ]),
       },
     };
@@ -413,7 +414,7 @@ export class SettingsManageA11ySubpageElement extends
   }
 
   redirectToNewA11ySettings(): void {
-    location.href = 'chrome://os-settings/osAccessibility';
+    Router.getInstance().navigateTo(routes.OS_ACCESSIBILITY);
   }
 
   override connectedCallback(): void {

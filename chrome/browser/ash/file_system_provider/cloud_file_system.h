@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_error_or.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_system_provider/abort_callback.h"
+#include "chrome/browser/ash/file_system_provider/content_cache/cache_manager.h"
 #include "chrome/browser/ash/file_system_provider/content_cache/content_cache.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
@@ -41,7 +43,7 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
       std::unique_ptr<ProvidedFileSystemInterface> file_system);
 
   CloudFileSystem(std::unique_ptr<ProvidedFileSystemInterface> file_system,
-                   ContentCache* content_cache);
+                  CacheManager* cache_manager);
 
   CloudFileSystem(const CloudFileSystem&) = delete;
   CloudFileSystem& operator=(const CloudFileSystem&) = delete;
@@ -136,8 +138,15 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
  private:
   const std::string GetFileSystemId() const;
   void OnTimer();
+  void OnContentCacheInitialized(
+      base::FileErrorOr<std::unique_ptr<ContentCache>> error_or_cache);
+  // Called when opening a file is completed with either a success or an error.
+  void OnOpenFileCompleted(OpenFileCallback callback,
+                           int file_handle,
+                           base::File::Error result);
+
   std::unique_ptr<ProvidedFileSystemInterface> file_system_;
-  raw_ptr<ContentCache> content_cache_;  // Not owned.
+  std::unique_ptr<ContentCache> content_cache_;
   base::MetronomeTimer timer_;
   int file_manager_watchers_ = 0;
 

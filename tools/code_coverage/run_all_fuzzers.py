@@ -13,7 +13,11 @@ from multiprocessing import Process, Manager, cpu_count, Pool
 import os
 import subprocess
 
-FUZZ_RETRIES = 3
+WHOLE_CORPUS_RETRIES = 2
+WHOLE_CORPUS_TIMEOUT_SECS = 1200
+INDIVIDUAL_TESTCASE_TIMEOUT_SECS = 60
+INDIVIDUAL_TESTCASES_MAX_TO_TRY = 500
+INDIVIDUAL_TESTCASES_SUCCESSES_NEEDED = 100
 
 
 def _run_fuzzer_target(args):
@@ -49,13 +53,12 @@ def _run_fuzzer_target(args):
   fullcorpus_cmd = cmd.copy()
   if corpus_dir is not None:
     fullcorpus_cmd.append(corpus_dir)
-  valid_profraws = set()
-  for i in range(FUZZ_RETRIES):
+  for i in range(WHOLE_CORPUS_RETRIES):
     print("Trying command with full corpus %s" % str(fullcorpus_cmd))
     try:
       subprocess.run(fullcorpus_cmd,
                      env=env,
-                     timeout=1800,
+                     timeout=WHOLE_CORPUS_TIMEOUT_SECS,
                      capture_output=True,
                      check=True)
       break
@@ -73,11 +76,16 @@ def _run_fuzzer_target(args):
         print("*** FULL FUZZING OUTPUT ABOVE ***")
   if os.path.exists(
       fullcorpus_profraw) and os.path.getsize(fullcorpus_profraw) > 0:
-    valid_profraws.add(fullcorpus_profraw)
-  if len(valid_profraws) == 0 and corpus_dir is not None:
+    llvm_profdata_cmd = [llvm_profdata, 'merge', '-sparse', fullcorpus_profraw,
+      '-o', target_profdata]
+    subprocess.check_call(llvm_profdata_cmd)
+  else:
     # We failed to run the fuzzer with the whole corpus in one go. That probably
     # means one of the test cases caused a crash. Let's run each test
-    # case one at a time.
+    # case one at a time. The resulting profraw files can be hundreds of MB
+    # each so after each test case, we merge them into an accumulated
+    # profdata file.
+    valid_profraws = 0
     for count, corpus_entry in enumerate(os.listdir(corpus_dir)):
       specific_test_case_profraw = os.path.join(
           profraw_dir, target + "_" + str(count) + ".profraw")
@@ -89,7 +97,7 @@ def _run_fuzzer_target(args):
       try:
         subprocess.run(specific_test_case_cmd,
                        env=env,
-                       timeout=1800,
+                       timeout=INDIVIDUAL_TESTCASE_TIMEOUT_SECS,
                        capture_output=True,
                        check=True)
       except Exception as e:
@@ -105,33 +113,37 @@ def _run_fuzzer_target(args):
           print("*** FULL FUZZING OUTPUT ABOVE ***")
       if os.path.exists(specific_test_case_profraw
                         ) and os.path.getsize(specific_test_case_profraw) > 0:
-        valid_profraws.add(specific_test_case_profraw)
+        # We recorded valid profraw, let's merge this into
+        # the accumulating profdata
+        valid_profraws += 1
+        prof_files_to_merge = [specific_test_case_profraw]
+        temp_profdata = os.path.join(
+          profraw_dir, target + "_accumlated.profraw")
+        if os.path.exists(target_profdata):
+          os.path.rename(target_profdata, temp_profdata)
+          prof_files_to_merge.append(temp_profdata)
+        llvm_profdata_cmd = [llvm_profdata, 'merge', '-sparse'
+                            ] + prof_files_to_merge + ['-o', target_profdata]
+        os.unlink(specific_test_case_profraw)
+        if os.path.exists(temp_profdata):
+          os.unlink(temp_profdata)
       # The corpus may be huge - don't keep going forever.
-      if count > 1000:
-        print("Skipping remaining test cases - >1000 tried")
+      if count > INDIVIDUAL_TESTCASES_MAX_TO_TRY:
+        print("Skipping remaining test cases - >%d tried" %
+              INDIVIDUAL_TESTCASES_MAX_TO_TRY)
         break
-      # And if we've got 10 valid coverage files, assume this is a
+      # And if we've got enough valid coverage files, assume this is a
       # reasonable approximation of the total coverage. This is partly
       # to ensure the profdata command line isn't too huge, partly
       # to reduce processing time to something reasonable, and partly
       # because profraw files are huge and can fill up bot disk space.
-      if len(valid_profraws) > 10:
-        print(
-            "Skipping remaining individual test cases, >10 valid profiles recorded."
-        )
+      if valid_profraws > INDIVIDUAL_TESTCASES_SUCCESSES_NEEDED:
+        print("Skipping remaining test cases, >%d valid profiles recorded." %
+              INDIVIDUAL_TESTCASES_SUCCESSES_NEEDED)
         break
-  if len(valid_profraws) == 0:
+  if valid_profraws == 0:
     failed_targets.append(target)
     return
-  # This script is currently run only on Linux. If in future we want to use
-  # it on Windows, where command line length limits are smaller, we might
-  # want to use the -f argument instead of listing them all
-  llvm_profdata_cmd = [llvm_profdata, 'merge', '-sparse'
-                       ] + list(valid_profraws) + ['-o', target_profdata]
-  subprocess.check_call(llvm_profdata_cmd)
-  # Free up disk space by deleting all non-zero-length profraw files
-  for f in valid_profraws:
-    os.unlink(f)
   verified_fuzzer_targets.append(target)
 
 
@@ -195,6 +207,10 @@ for fuzzer_target in os.listdir(args.fuzzer_corpora_dir):
          'not a directory') % fuzzer_target)
     incomplete_targets.append(fuzzer_target)
   else:
+    env = dict()
+    if 'DISPLAY' in os.environ:
+      # Inherit X settings from the real environment
+      env['DISPLAY'] = os.environ['DISPLAY']
     all_target_details.append({
         'name':
         fuzzer_target,
@@ -203,7 +219,7 @@ for fuzzer_target in os.listdir(args.fuzzer_corpora_dir):
         'profdata_file':
         os.path.join(reportdir, fuzzer_target + ".profdata"),
         'env':
-        dict(),
+        env,
         # RSS limit 8GB. Some of our fuzzers which involve running significant
         # chunks of Chromium code require more than the 2GB default.
         'cmd': [fuzzer_target_binpath, '-runs=0', '-rss_limit_mb=8192'],

@@ -67,13 +67,12 @@ PasswordForm CreateTestForm() {
 }
 
 std::vector<PasswordForm> CreateTestLogins() {
-  std::vector<PasswordForm> forms;
-  forms.push_back(*CreateEntry("Todd Tester", "S3cr3t",
-                               GURL(u"https://example.com"),
-                               PasswordForm::MatchType::kExact));
-  forms.push_back(*CreateEntry("Marcus McSpartanGregor", "S0m3th1ngCr34t1v3",
-                               GURL(u"https://m.example.com"),
-                               PasswordForm::MatchType::kPSL));
+  std::vector<PasswordForm> forms = {
+      CreateEntry("Todd Tester", "S3cr3t", GURL(u"https://example.com"),
+                  PasswordForm::MatchType::kExact),
+      CreateEntry("Marcus McSpartanGregor", "S0m3th1ngCr34t1v3",
+                  GURL(u"https://m.example.com"),
+                  PasswordForm::MatchType::kPSL)};
   return forms;
 }
 
@@ -717,12 +716,6 @@ INSTANTIATE_TEST_SUITE_P(
                           .is_using_split_account_local_stores = true,
                           .android_is_main_backend = true},
 
-        UpmVariationParam{.is_sync_enabled = true,
-                          .is_unenrolled = true,
-                          .is_account_store = true,
-                          .is_using_split_account_local_stores = true,
-                          .android_is_main_backend = false},
-
         // Sync disabled should still route calls to the android backend who
         // will filter them. There is no fallback on the built-in backend in
         // this case.
@@ -730,20 +723,7 @@ INSTANTIATE_TEST_SUITE_P(
                           .is_unenrolled = false,
                           .is_account_store = true,
                           .is_using_split_account_local_stores = true,
-                          .android_is_main_backend = true},
-
-        // The account store is designed to always respect unenrollment in order
-        // to reduce special-casing in the code.
-        // For non syncinc clients this makes very little difference in
-        // practice, as both backends will reply with an empty list of
-        // passwords. If the client is unenrolled, the account backend will
-        // behave like on desktop when the user isn't syncing, where it forwards
-        // calls to an empty login database.
-        UpmVariationParam{.is_sync_enabled = false,
-                          .is_unenrolled = true,
-                          .is_account_store = true,
-                          .is_using_split_account_local_stores = true,
-                          .android_is_main_backend = false}),
+                          .android_is_main_backend = true}),
 
     [](const ::testing::TestParamInfo<UpmVariationParam>& info) {
       std::string syncing =

@@ -157,7 +157,6 @@
 #include "base/version.h"
 #include "chrome/browser/lacros/browser_test_util.h"
 #include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
-#include "chrome/browser/ui/lacros/window_utility.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom-test-utils.h"
 #include "chromeos/lacros/lacros_service.h"
@@ -296,10 +295,7 @@ bool WaitForWindowCreation(Browser* browser) {
     CHECK(IsTestControllerAvailable());
     // Wait for window creation to complete in Ash in order to avoid
     // wayland-crosapi race conditions in subsequent test steps.
-    aura::Window* window = browser->window()->GetNativeWindow();
-    std::string id =
-        lacros_window_utility::GetRootWindowUniqueId(window->GetRootWindow());
-    return browser_test_util::WaitForWindowCreation(id);
+    return browser_test_util::WaitForWindowCreation(browser);
   }
 #endif
   return true;
@@ -325,6 +321,14 @@ InProcessBrowserTest::InProcessBrowserTest(
     std::unique_ptr<views::ViewsDelegate> views_delegate) {
   Initialize();
   views_delegate_ = std::move(views_delegate);
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void InProcessBrowserTest::set_launch_browser_for_testing(
+    std::unique_ptr<ash::full_restore::ScopedLaunchBrowserForTesting>
+        launch_browser_for_testing) {
+  launch_browser_for_testing_ = std::move(launch_browser_for_testing);
 }
 #endif
 
@@ -469,10 +473,6 @@ void InProcessBrowserTest::Initialize() {
   launch_browser_for_testing_ =
       std::make_unique<ash::full_restore::ScopedLaunchBrowserForTesting>();
 #endif
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  CertDbInitializerFactory::GetInstance()
-      ->SetCreateWithBrowserContextForTesting(/*should_create=*/false);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() {

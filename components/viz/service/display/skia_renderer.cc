@@ -18,6 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/angle_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
@@ -83,7 +84,6 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
-#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/linear_gradient.h"
 #include "ui/gfx/geometry/rect.h"
@@ -1170,8 +1170,17 @@ void SkiaRenderer::FinishDrawingFrame() {
       surface_candidate.damage_rect =
           use_partial_swap_ ? gfx::RectF(swap_buffer_rect_)
                             : gfx::RectF(surface_plane.resource_size);
-      current_frame()->overlay_list.insert(
-          current_frame()->overlay_list.begin(), surface_candidate);
+#if BUILDFLAG(IS_MAC)
+      // Mac doesn't use the plane_z_order field and it needs to have primary
+      // plane last in the list of overlays.
+      auto insert_positon = current_frame()->overlay_list.end();
+#else
+      // Most platforms respect plane_z_order so the list order doesn't matter
+      // but Ozone DRM needs the primary plane as the first overlay when overlay
+      // testing.
+      auto insert_positon = current_frame()->overlay_list.begin();
+#endif
+      current_frame()->overlay_list.insert(insert_positon, surface_candidate);
     }
   } else {
     if (buffer_queue_) {
@@ -1636,7 +1645,7 @@ void SkiaRenderer::PrepareGradient(
 
   SkPoint start_end[2];
 
-  float rad_angle = gfx::DegToRad(static_cast<float>(angle));
+  float rad_angle = base::DegToRad(static_cast<float>(angle));
   float s = std::sin(rad_angle);
   float c = std::cos(rad_angle);
 
@@ -2644,10 +2653,12 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
 
   // We need only RGB portion of the color space, YUV conversion handled in
   // skia.
-  const gfx::ColorSpace& src_color_space =
+  const gfx::ColorSpace src_color_space =
       resource_provider()
           ->GetColorSpace(quad->resource_id())
           .GetAsFullRangeRGB();
+  const gfx::HDRMetadata& src_hdr_metadata =
+      resource_provider()->GetHDRMetadata(quad->resource_id());
   const bool needs_color_conversion_filter =
       ((quad->is_video_frame && src_color_space.IsHDR()) ||
        src_color_space.IsToneMappedByDefault()) &&
@@ -2658,16 +2669,6 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   if (needs_color_conversion_filter) {
     override_color_space = CurrentRenderPassSkColorSpace();
   }
-
-    // TODO(b/221643955): Some Chrome OS tests rely on the old GLRenderer
-    // behavior of skipping color space conversions if the quad's color space is
-    // invalid. Once these tests are migrated, we can remove the override here
-    // and revert to Skia's default behavior of assuming sRGB on invalid.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!src_color_space.IsValid()) {
-    override_color_space = CurrentRenderPassSkColorSpace();
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
   if (quad->is_stream_video) {
@@ -2815,7 +2816,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
     DCHECK(SkColorSpace::Equals(image->colorSpace(),
                                 CurrentRenderPassSkColorSpace().get()));
     sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
-        src_color_space, std::nullopt, quad->hdr_metadata, dst_color_space,
+        src_color_space, std::nullopt, src_hdr_metadata, dst_color_space,
         quad->is_video_frame);
     paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
   }
@@ -3070,7 +3071,7 @@ void SkiaRenderer::ScheduleOverlays() {
         overlay.resource_size_in_pixels = gfx::Size(1, 1);
         // This can now be treated as a regular overlay with a mailbox backing.
         overlay.is_solid_color = false;
-        locks.emplace_back(this, overlay.mailbox);
+        locks.emplace_back(overlay.mailbox);
       }
 #else
       // All other platforms that support solid color overlays don't need fake
@@ -3317,18 +3318,24 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
 
     // Besides ensuring the output of the backdrop filter doesn't go beyond its
     // bounds, it should not read pixels outside of its bounds to prevent color
-    // bleeding. If it's a pixel-moving filter, we compose a kClamp-tiling Crop
-    // image filter to enforce this requirement.
-    // TODO(crbug.com/978031): Revisit the tilemode, perhaps kMirror is better
+    // bleeding. If it's a pixel-moving filter, we compose a kMirror-tiling Crop
+    // image filter to enforce this requirement. Mirror tiling avoids jarring
+    // discontinuities and flickering when content moves in and out of the
+    // background. See https://github.com/w3c/fxtf-drafts/issues/374.
+    // NOTE: The above comment refers to the intended ideal behavior. Originally
+    // the edge mode was kClamp and a feature controls the active mode.
     SkIRect sk_crop_rect = backdrop_rect.roundOut();
     SkIRect sk_src_rect = rpdq_params.backdrop_filter->filterBounds(
         sk_crop_rect, SkMatrix::I(), SkImageFilter::kReverse_MapDirection,
         /*inputRect=*/nullptr);
     if (!sk_crop_rect.contains(sk_src_rect)) {
+      SkTileMode sk_tile_mode =
+          base::FeatureList::IsEnabled(features::kBackdropFilterMirrorEdgeMode)
+              ? SkTileMode::kMirror
+              : SkTileMode::kClamp;
       rpdq_params.backdrop_filter = SkImageFilters::Compose(
           /*outer=*/std::move(rpdq_params.backdrop_filter),
-          /*inner=*/SkImageFilters::Crop(backdrop_rect, SkTileMode::kClamp,
-                                         nullptr));
+          /*inner=*/SkImageFilters::Crop(backdrop_rect, sk_tile_mode, nullptr));
     }
 
     // Update |filter_bounds| to include content produced by the backdrop. Under
@@ -4379,6 +4386,10 @@ SkiaRenderer::OverlayLock::OverlayLock(SkiaRenderer::OverlayLock&& other) {
 #if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
   render_pass_lock = std::move(other.render_pass_lock);
 #endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
+
+#if BUILDFLAG(IS_OZONE)
+  solid_color_buffer = std::move(other.solid_color_buffer);
+#endif  // BUILDFLAG(IS_OZONE)
 }
 
 SkiaRenderer::OverlayLock& SkiaRenderer::OverlayLock::OverlayLock::operator=(
@@ -4389,6 +4400,10 @@ SkiaRenderer::OverlayLock& SkiaRenderer::OverlayLock::OverlayLock::operator=(
   render_pass_lock = std::move(other.render_pass_lock);
 #endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 
+#if BUILDFLAG(IS_OZONE)
+  solid_color_buffer = std::move(other.solid_color_buffer);
+#endif  // BUILDFLAG(IS_OZONE)
+
   return *this;
 }
 
@@ -4398,6 +4413,12 @@ SkiaRenderer::OverlayLock::OverlayLock(SkiaRenderer* renderer,
   render_pass_lock.emplace(renderer, mailbox);
 }
 #endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
+
+#if BUILDFLAG(IS_OZONE)
+SkiaRenderer::OverlayLock::OverlayLock(
+    const gpu::Mailbox& solid_color_buffer_mailbox)
+    : solid_color_buffer(solid_color_buffer_mailbox) {}
+#endif  // BUILDFLAG(IS_OZONE)
 
 #if BUILDFLAG(IS_APPLE)
 bool SkiaRenderer::OverlayLockComparator::operator()(

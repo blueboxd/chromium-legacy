@@ -15,9 +15,11 @@
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
+#include "third_party/blink/renderer/core/css/css_position_try_rule.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/css_unparsed_declaration_value.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
@@ -825,6 +827,10 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
         return ConsumeCounterStyleRule(stream);
       case CSSAtRuleID::kCSSAtRulePositionFallback:
         return ConsumePositionFallbackRule(stream);
+      case CSSAtRuleID::kCSSAtRuleFunction:
+        return ConsumeFunctionRule(stream);
+      case CSSAtRuleID::kCSSAtRulePositionTry:
+        return ConsumePositionTryRule(stream);
       case CSSAtRuleID::kCSSAtRuleInvalid:
       case CSSAtRuleID::kCSSAtRuleCharset:
       case CSSAtRuleID::kCSSAtRuleImport:
@@ -1979,6 +1985,52 @@ StyleRuleBase* CSSParserImpl::ConsumeLayerRule(
                                                    std::move(rules));
 }
 
+StyleRulePositionTry* CSSParserImpl::ConsumePositionTryRule(
+    CSSParserTokenStream& stream) {
+  wtf_size_t prelude_offset_start = stream.LookAheadOffset();
+  CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
+  wtf_size_t prelude_offset_end = stream.LookAheadOffset();
+  if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream)) {
+    return nullptr;
+  }
+  CSSParserTokenStream::BlockGuard guard(stream);
+
+  const CSSParserToken& name_token = prelude.ConsumeIncludingWhitespace();
+  if (!prelude.AtEnd()) {
+    return nullptr;
+  }
+
+  // <dashed-ident>, and -internal-* for UA sheets only.
+  String name;
+  if (name_token.GetType() == kIdentToken) {
+    name = name_token.Value().ToString();
+    if (!name.StartsWith("--") &&
+        !(context_->Mode() == kUASheetMode && name.StartsWith("-internal-"))) {
+      return nullptr;
+    }
+  } else {
+    return nullptr;
+  }
+
+  if (observer_) {
+    observer_->StartRuleHeader(StyleRule::kPositionTry, prelude_offset_start);
+    observer_->EndRuleHeader(prelude_offset_end);
+    observer_->StartRuleBody(stream.Offset());
+  }
+
+  ConsumeDeclarationList(stream, StyleRule::kPositionTry, CSSNestingType::kNone,
+                         /*parent_rule_for_nesting=*/nullptr,
+                         /*child_rules=*/nullptr);
+
+  if (observer_) {
+    observer_->EndRuleBody(stream.Offset());
+  }
+
+  return MakeGarbageCollected<StyleRulePositionTry>(
+      AtomicString(name),
+      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+}
+
 StyleRulePositionFallback* CSSParserImpl::ConsumePositionFallbackRule(
     CSSParserTokenStream& stream) {
   wtf_size_t prelude_offset_start = stream.LookAheadOffset();
@@ -2057,6 +2109,195 @@ StyleRuleTry* CSSParserImpl::ConsumeTryRule(CSSParserTokenStream& stream) {
                          /*child_rules=*/nullptr);
   return MakeGarbageCollected<StyleRuleTry>(
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+}
+
+// Parse a type for CSS Functions; e.g. length, color, etc..
+// These are being converted to the syntax used by registered custom properties.
+// The parameter is assumed to be a single ident token.
+static std::optional<StyleRuleFunction::Type> ParseFunctionType(
+    StringView type_name) {
+  std::optional<CSSSyntaxDefinition> syntax_def;
+  if (type_name == "any") {
+    syntax_def = CSSSyntaxStringParser("*").Parse();
+  } else {
+    syntax_def =
+        CSSSyntaxStringParser("<" + type_name.ToString() + ">").Parse();
+  }
+  if (!syntax_def) {
+    return {};
+  }
+
+  CHECK_EQ(syntax_def->Components().size(), 1u);
+  bool should_add_implicit_calc = false;
+  if (!syntax_def->IsUniversal()) {
+    // These are all the supported values in CSSSyntaxDefinition that are
+    // acceptable as inputs to calc(); see
+    // https://drafts.csswg.org/css-values/#math.
+    switch (syntax_def->Components()[0].GetType()) {
+      case CSSSyntaxType::kLength:
+        // kFrequency is missing.
+      case CSSSyntaxType::kAngle:
+      case CSSSyntaxType::kTime:
+        // kFlex is missing.
+      case CSSSyntaxType::kResolution:
+      case CSSSyntaxType::kPercentage:
+      case CSSSyntaxType::kNumber:
+      case CSSSyntaxType::kInteger:
+      case CSSSyntaxType::kLengthPercentage:
+        should_add_implicit_calc = true;
+        break;
+      case CSSSyntaxType::kTokenStream:
+      case CSSSyntaxType::kIdent:
+      case CSSSyntaxType::kColor:
+      case CSSSyntaxType::kImage:
+      case CSSSyntaxType::kUrl:
+      case CSSSyntaxType::kTransformFunction:
+      case CSSSyntaxType::kTransformList:
+      case CSSSyntaxType::kCustomIdent:
+        break;
+    }
+  }
+
+  return StyleRuleFunction::Type{std::move(*syntax_def),
+                                 should_add_implicit_calc};
+}
+
+StyleRuleFunction* CSSParserImpl::ConsumeFunctionRule(
+    CSSParserTokenStream& stream) {
+  if (!RuntimeEnabledFeatures::CSSFunctionsEnabled()) {
+    ConsumeErroneousAtRule(stream, CSSAtRuleID::kCSSAtRuleFunction);
+    return nullptr;
+  }
+  CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
+  if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream)) {
+    return nullptr;
+  }
+  CSSParserTokenStream::BlockGuard guard(stream);
+
+  // Parse the prelude; first a function token (the name), then parameters,
+  // then return type.
+  if (prelude.Peek().GetType() != kFunctionToken) {
+    return nullptr;  // Parse error.
+  }
+  CSSParserToken name =
+      prelude
+          .ConsumeIncludingWhitespace();  // Includes the opening parenthesis.
+
+  std::optional<Vector<StyleRuleFunction::Parameter>> parameters =
+      ConsumeFunctionParameters(prelude);
+  if (!parameters.has_value()) {
+    return nullptr;
+  }
+
+  // Parse the closing parenthesis.
+  DCHECK_EQ(prelude.Peek().GetType(), kRightParenthesisToken);
+  prelude.ConsumeIncludingWhitespace();
+
+  // Parse the return type.
+  if (prelude.Peek().GetType() != kColonToken) {
+    return nullptr;
+  }
+  prelude.ConsumeIncludingWhitespace();
+
+  if (prelude.Peek().GetType() != kIdentToken) {
+    return nullptr;
+  }
+  StringView return_type_name = prelude.ConsumeIncludingWhitespace().Value();
+  std::optional<StyleRuleFunction::Type> return_type =
+      ParseFunctionType(return_type_name);
+  if (!return_type) {
+    return nullptr;  // Invalid type name.
+  }
+
+  if (!prelude.AtEnd()) {
+    return nullptr;  // Junk after return type.
+  }
+
+  stream.ConsumeWhitespace();
+
+  // TODO: Parse local variables.
+
+  // Parse @return.
+  if (stream.Peek().GetType() != kAtKeywordToken) {
+    return nullptr;
+  }
+  const CSSParserToken return_token = stream.ConsumeIncludingWhitespace();
+  if (return_token.Value() != "return") {
+    return nullptr;
+  }
+
+  // Parse the actual returned value.
+  scoped_refptr<CSSVariableData> return_value;
+  {
+    CSSParserTokenStream::Boundary boundary(stream, kSemicolonToken);
+    CSSTokenizedValue tokenized_value =
+        ConsumeUnrestrictedPropertyValue(stream);
+    // TODO(sesse): Are these the right values for is_animation_tainted and
+    // needs_variable_resolution?
+    return_value =
+        CSSVariableData::Create(tokenized_value, /*is_animation_tainted=*/false,
+                                /*needs_variable_resolution=*/true);
+  }
+
+  while (!stream.AtEnd()) {
+    const CSSParserToken token = stream.ConsumeIncludingWhitespace();
+    StringBuilder sb;
+    token.Serialize(sb);
+  }
+
+  return MakeGarbageCollected<StyleRuleFunction>(
+      name.Value().ToAtomicString(), std::move(*parameters),
+      std::move(return_value), std::move(*return_type));
+}
+
+// Parse the parameters of a CSS function: Zero or more comma-separated
+// instances of [<name> <colon> <type>]. Returns the empty value
+// on parse error.
+std::optional<Vector<StyleRuleFunction::Parameter>>
+CSSParserImpl::ConsumeFunctionParameters(CSSParserTokenRange& stream) {
+  Vector<StyleRuleFunction::Parameter> parameters;
+  bool first_parameter = true;
+  for (;;) {
+    stream.ConsumeWhitespace();
+
+    if (first_parameter && stream.Peek().GetType() == kRightParenthesisToken) {
+      // No arguments.
+      break;
+    }
+    if (stream.Peek().GetType() != kIdentToken) {
+      return {};  // Parse error.
+    }
+    StringView parameter_name = stream.ConsumeIncludingWhitespace().Value();
+    if (!CSSVariableParser::IsValidVariableName(parameter_name)) {
+      return {};
+    }
+
+    if (stream.Peek().GetType() != kColonToken) {
+      return {};
+    }
+    stream.ConsumeIncludingWhitespace();
+
+    if (stream.Peek().GetType() != kIdentToken) {
+      return {};
+    }
+    StringView type_name = stream.ConsumeIncludingWhitespace().Value();
+    std::optional<StyleRuleFunction::Type> type = ParseFunctionType(type_name);
+    if (!type) {
+      return {};  // Invalid type name.
+    }
+    parameters.push_back(StyleRuleFunction::Parameter{parameter_name.ToString(),
+                                                      std::move(*type)});
+    if (stream.Peek().GetType() == kRightParenthesisToken) {
+      // No more arguments.
+      break;
+    }
+    if (stream.Peek().GetType() != kCommaToken) {
+      return {};  // Expected more parameters, or end of argument list.
+    }
+    stream.ConsumeIncludingWhitespace();
+    first_parameter = false;
+  }
+  return parameters;
 }
 
 StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
@@ -2269,7 +2510,8 @@ void CSSParserImpl::ConsumeDeclarationList(
       rule_type == StyleRule::kCounterStyle ||
       rule_type == StyleRule::kFontPaletteValues ||
       rule_type == StyleRule::kKeyframe || rule_type == StyleRule::kScope ||
-      rule_type == StyleRule::kViewTransition || rule_type == StyleRule::kTry;
+      rule_type == StyleRule::kViewTransition || rule_type == StyleRule::kTry ||
+      rule_type == StyleRule::kPositionTry;
   bool use_observer = observer_ && is_observer_rule_type;
   if (use_observer) {
     observer_->StartRuleBody(stream.Offset());
@@ -2638,7 +2880,8 @@ bool CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
             ConsumeRestrictedPropertyValue(stream);
         important = RemoveImportantAnnotationIfPresent(tokenized_value);
         if (important && (rule_type == StyleRule::kKeyframe ||
-                          rule_type == StyleRule::kTry)) {
+                          rule_type == StyleRule::kTry ||
+                          rule_type == StyleRule::kPositionTry)) {
           return false;
         }
         if (stream.AtEnd()) {
@@ -2652,6 +2895,7 @@ bool CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
   if (observer_ &&
       (rule_type == StyleRule::kStyle || rule_type == StyleRule::kKeyframe ||
        rule_type == StyleRule::kProperty || rule_type == StyleRule::kTry ||
+       rule_type == StyleRule::kPositionTry ||
        rule_type == StyleRule::kFontPaletteValues)) {
     if (!id) {
       // If we skipped the main call to ConsumeValue due to an invalid

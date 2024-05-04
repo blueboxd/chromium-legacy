@@ -19,7 +19,7 @@ import node
 import node_modules
 
 from path_mappings import GetDepToPathMappings
-from validate_tsconfig import validateTsconfigJson, validateJavaScriptAllowed, validateRootDir, isUnsupportedJsTarget, isInAshFolder, isDependencyAllowed, isMappingAllowed, getTargetPath
+from validate_tsconfig import validateTsconfigJson, validateJavaScriptAllowed, validateRootDir, isUnsupportedJsTarget, isInAshFolder, isDependencyAllowed, isMappingAllowed, getTargetPath, validateDefinitionDeps
 
 
 def _write_tsconfig_json(gen_dir, tsconfig, tsconfig_file):
@@ -187,7 +187,8 @@ def main(argv):
       mappings = dep_to_path_mappings[dep]
       for (url, dir) in mappings:
         path_mappings[url].append(os.path.join('./', dir))
-        path_mappings['chrome:' + url].append(os.path.join('./', dir))
+        if (url.startswith("//")):
+          path_mappings['chrome:' + url].append(os.path.join('./', dir))
 
   if args.path_mappings is not None:
     for m in args.path_mappings:
@@ -264,8 +265,24 @@ def main(argv):
       if os.path.exists(tsbuildinfo_path):
         os.remove(tsbuildinfo_path)
 
-  if args.in_files is not None:
+  # Invoke the TS compiler again, with the --listFilesOnly flag, to detect any
+  # files that are used by the build, but not properly declared as dependencies.
+  out = node.RunNode([
+      node_modules.PathToTypescript(),
+      '--project',
+      os.path.join(args.gen_dir, tsconfig_file),
+      '--listFilesOnly',
+  ])
+  files_list = out.split('\n')
+  definitions_files = list(filter(lambda f: f.endswith('.d.ts'), files_list))
+  definitions = args.definitions if args.definitions is not None else []
+  list_valid, error_msg = validateDefinitionDeps(definitions_files, target_path,
+                                                 args.gen_dir,
+                                                 args.root_gen_dir, definitions)
+  if not list_valid:
+    raise AssertionError(error_msg)
 
+  if args.in_files is not None:
     manifest_path = os.path.join(args.gen_dir,
                                  f'{args.output_suffix}_manifest.json')
     with open(manifest_path, 'w', encoding='utf-8') as manifest_file:

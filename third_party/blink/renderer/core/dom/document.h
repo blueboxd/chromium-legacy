@@ -266,6 +266,7 @@ struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
 struct PhysicalOffset;
+struct TextDiffRange;
 struct WebPrintPageDescription;
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;
@@ -569,6 +570,13 @@ class CORE_EXPORT Document : public ContainerNode,
   const ListedElement::List& UnassociatedListedElements() const;
   void MarkUnassociatedListedElementsDirty();
 
+  // Returns all `HTMLFormElement`s that have no shadow-including
+  // `HTMLFormElement` ancestor. Note that the form elements are returned in BFS
+  // order.
+  const HeapVector<Member<HTMLFormElement>>& GetTopLevelForms();
+  // Invalidates the cache for top level form elements.
+  void MarkTopLevelFormsDirty();
+
   // "defaultView" attribute defined in HTML spec.
   DOMWindow* defaultView() const;
 
@@ -764,9 +772,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // size and margins in pixels, assuming 96 pixels per inch. The size and
   // margins must be initialized to the default values that are used if auto is
   // specified. Updates layout as needed to get the description.
-  void GetPageDescription(uint32_t page_index, WebPrintPageDescription*);
-  void GetPageDescriptionNoLifecycleUpdate(const ComputedStyle&,
-                                           WebPrintPageDescription*);
+  WebPrintPageDescription GetPageDescription(uint32_t page_index);
+  WebPrintPageDescription GetPageDescriptionNoLifecycleUpdate(
+      const ComputedStyle&);
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
@@ -1022,9 +1030,9 @@ class CORE_EXPORT Document : public ContainerNode,
     return user_action_elements_;
   }
 
-  ExplicitlySetAttrElementsMap* GetExplicitlySetAttrElementsMap(Element*);
+  ExplicitlySetAttrElementsMap* GetExplicitlySetAttrElementsMap(const Element*);
   void MoveElementExplicitlySetAttrElementsMapToNewDocument(
-      Element*,
+      const Element*,
       Document& new_document);
 
   CachedAttrAssociatedElementsMap* GetCachedAttrAssociatedElementsMap(Element*);
@@ -1237,7 +1245,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Storage Access API methods to check for or request access to storage that
   // may otherwise be blocked.
-  ScriptPromise hasStorageAccess(ScriptState* script_state);
+  ScriptPromiseTyped<IDLBoolean> hasStorageAccess(ScriptState* script_state);
   ScriptPromise requestStorageAccess(ScriptState* script_state);
   ScriptPromise requestStorageAccessFor(ScriptState* script_state,
                                         const AtomicString& site);
@@ -1251,20 +1259,21 @@ class CORE_EXPORT Document : public ContainerNode,
   // with the top-level origin would exceed the top-level origin's limit on the
   // number of associated issuers) or on other internal errors (e.g. the network
   // service is unavailable).
-  ScriptPromise hasPrivateToken(ScriptState* script_state,
-                                const String& issuer,
-                                ExceptionState&);
+  ScriptPromiseTyped<IDLBoolean> hasPrivateToken(ScriptState* script_state,
+                                                 const String& issuer,
+                                                 ExceptionState&);
 
   // Sends a query via Mojo to ask whether the user has a redemption record.
   // This can reject on permissions errors (e.g. associating |issuer| with the
   // top-level origin would exceed the top-level origin's limit on the number of
   // associated issuers) or on other internal errors (e.g. the network service
   // is unavailable).
-  ScriptPromise hasRedemptionRecord(ScriptState* script_state,
-                                    const String& issuer,
-                                    ExceptionState&);
+  ScriptPromiseTyped<IDLBoolean> hasRedemptionRecord(ScriptState* script_state,
+                                                     const String& issuer,
+                                                     ExceptionState&);
 
-  void ariaNotify(const String announcement, const AriaNotificationOptions*);
+  void ariaNotify(const String& announcement,
+                  const AriaNotificationOptions* options);
 
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this
@@ -1749,7 +1758,8 @@ class CORE_EXPORT Document : public ContainerNode,
   ukm::SourceId UkmSourceID() const;
 
   // Tracks and reports UKM metrics of the number of attempted font family match
-  // attempts (both successful and not successful) by the page.
+  // attempts (both successful and not successful) by the page. This will return
+  // null if the document is stopped.
   FontMatchingMetrics* GetFontMatchingMetrics();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType);
@@ -1809,8 +1819,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncrementNumberOfCanvases();
   unsigned GetNumberOfCanvases() const { return num_canvases_; }
 
-  void ProcessJavaScriptUrl(const KURL&,
-                            scoped_refptr<const DOMWrapperWorld> world);
+  void ProcessJavaScriptUrl(const KURL&, const DOMWrapperWorld* world);
 
   DisplayLockDocumentState& GetDisplayLockDocumentState() const;
 
@@ -1912,9 +1921,7 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   void NotifyUpdateCharacterData(CharacterData* character_data,
-                                 unsigned offset,
-                                 unsigned old_length,
-                                 unsigned new_length);
+                                 const TextDiffRange&);
   void NotifyChangeChildren(const ContainerNode& container,
                             const ContainerNode::ChildrenChange& change);
   void NotifyAttributeChanged(const Element& element,
@@ -2053,6 +2060,11 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetLcpElementFoundInHtml(bool found);
   bool IsLcpElementFoundInHtml();
 
+  // Adds/removes an element to the set of elements that need shadow tree
+  // creation on the next layout.
+  void ScheduleShadowTreeCreation(HTMLInputElement& element);
+  void UnscheduleShadowTreeCreation(HTMLInputElement& element);
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2113,6 +2125,20 @@ class CORE_EXPORT Document : public ContainerNode,
     bool dirty_ = false;
   };
 
+  // Helper class to cache the top level <form> elements of a document.
+  class TopLevelFormsList {
+    DISALLOW_NEW();
+
+   public:
+    void MarkDirty();
+    const HeapVector<Member<HTMLFormElement>>& Get(Document& owner);
+    void Trace(Visitor*) const;
+
+   private:
+    HeapVector<Member<HTMLFormElement>> list_;
+    bool dirty_ = false;
+  };
+
   friend class AXContext;
   void AddAXContext(AXContext*);
   void RemoveAXContext(AXContext*);
@@ -2132,6 +2158,10 @@ class CORE_EXPORT Document : public ContainerNode,
   bool HasPendingVisualUpdate() const {
     return lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending;
   }
+
+  // Calls EnsureShadowSubtree() on all Elements added via
+  // ScheduleShadowTreeCreation().
+  void ProcessScheduledShadowTreeCreationsNow();
 
   bool ShouldScheduleLayoutTreeUpdate() const;
   void ScheduleLayoutTreeUpdate();
@@ -2378,18 +2408,19 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TaskHandle execute_scripts_waiting_for_resources_task_handle_;
   TaskHandle javascript_url_task_handle_;
-  struct PendingJavascriptUrl {
+  class PendingJavascriptUrl final
+      : public GarbageCollected<PendingJavascriptUrl> {
    public:
-    PendingJavascriptUrl(const KURL& input_url,
-                         scoped_refptr<const DOMWrapperWorld> world);
+    PendingJavascriptUrl(const KURL& input_url, const DOMWrapperWorld* world);
     ~PendingJavascriptUrl();
 
-    KURL url;
+    void Trace(Visitor* visitor) const;
 
+    KURL url;
     // The world in which the navigation to |url| initiated. Non-null.
-    scoped_refptr<const DOMWrapperWorld> world;
+    Member<const DOMWrapperWorld> world;
   };
-  Vector<PendingJavascriptUrl> pending_javascript_urls_;
+  HeapVector<Member<PendingJavascriptUrl>> pending_javascript_urls_;
 
   // https://html.spec.whatwg.org/C/#autofocus-processed-flag
   bool autofocus_processed_flag_ = false;
@@ -2650,6 +2681,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   UnassociatedListedElementsList unassociated_listed_elements_;
 
+  TopLevelFormsList top_level_forms_;
+
   // |ukm_recorder_| and |source_id_| will allow objects that are part of
   // the document to record UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
@@ -2715,7 +2748,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<FragmentDirective> fragment_directive_;
 
-  HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
+  HeapHashMap<WeakMember<const Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
   HeapHashMap<WeakMember<Element>, Member<CachedAttrAssociatedElementsMap>>
       element_cached_attr_associated_elements_map_;
@@ -2789,6 +2822,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // access-controlled media to not load when it is the top-level URL when
   // third-party cookie blocking is enabled.
   bool override_site_for_cookies_for_csp_media_ = false;
+
+  // See description in ScheduleShadowTreeCreation().
+  HeapHashSet<Member<HTMLInputElement>> elements_needing_shadow_tree_;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

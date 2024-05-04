@@ -4,7 +4,7 @@
 
 #include "ash/picker/model/picker_model.h"
 
-#include "ash/picker/model/picker_category.h"
+#include "ash/public/cpp/picker/picker_category.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +20,8 @@ TEST(PickerModel, AvailableCategories) {
       ElementsAre(PickerCategory::kEmojis, PickerCategory::kSymbols,
                   PickerCategory::kEmoticons, PickerCategory::kGifs,
                   PickerCategory::kOpenTabs, PickerCategory::kBrowsingHistory,
-                  PickerCategory::kBookmarks));
+                  PickerCategory::kBookmarks, PickerCategory::kDriveFiles,
+                  PickerCategory::kLocalFiles));
 }
 
 }  // namespace

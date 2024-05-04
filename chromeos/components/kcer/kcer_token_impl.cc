@@ -104,7 +104,7 @@ bool GetKeyType(const chaps::Attribute* attr, KeyType& key_type) {
 }
 
 bool GetOptionalString(const chaps::Attribute* attr,
-                       absl::optional<std::string>& result_string) {
+                       std::optional<std::string>& result_string) {
   if (!attr || !attr->has_value() || !attr->has_length()) {
     return false;
   }
@@ -428,7 +428,6 @@ void KcerTokenImpl::GenerateRsaKey(RsaModulusLength modulus_length_bits,
         &KcerTokenImpl::GenerateRsaKey, weak_factory_.GetWeakPtr(),
         modulus_length_bits, hardware_backed, std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -597,7 +596,6 @@ void KcerTokenImpl::GenerateEcKey(EllipticCurve curve,
         &KcerTokenImpl::GenerateEcKey, weak_factory_.GetWeakPtr(), curve,
         hardware_backed, std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -769,33 +767,35 @@ void KcerTokenImpl::ImportKey(Pkcs8PrivateKeyInfoDer pkcs8_private_key_info_der,
         &KcerTokenImpl::ImportKey, weak_factory_.GetWeakPtr(),
         std::move(pkcs8_private_key_info_der), std::move(callback)));
   }
+  // Block task queue, attach unblocking task to the callback.
+  auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
   const uint8_t* buffer = pkcs8_private_key_info_der->data();
   bssl::UniquePtr<PKCS8_PRIV_KEY_INFO> p8(d2i_PKCS8_PRIV_KEY_INFO(
       nullptr, &buffer, pkcs8_private_key_info_der->size()));
   if (!p8) {
-    return std::move(callback).Run(base::unexpected(Error::kFailedToParseKey));
+    return std::move(unblocking_callback)
+        .Run(base::unexpected(Error::kFailedToParseKey));
   }
 
   KeyData key_data;
   key_data.key = bssl::UniquePtr<EVP_PKEY>(EVP_PKCS82PKEY(p8.get()));
   if (!key_data.key) {
-    return std::move(callback).Run(base::unexpected(Error::kFailedToParseKey));
+    return std::move(unblocking_callback)
+        .Run(base::unexpected(Error::kFailedToParseKey));
   }
 
   Pkcs12Reader pkcs12_reader;
   Pkcs12ReaderStatusCode enrich_key_data_result =
       pkcs12_reader.EnrichKeyData(key_data);
   if (enrich_key_data_result != Pkcs12ReaderStatusCode::kSuccess) {
-    return std::move(callback).Run(
-        base::unexpected(Error::kFailedToGetPkcs11Id));
+    return std::move(unblocking_callback)
+        .Run(base::unexpected(Error::kFailedToGetPkcs11Id));
   }
 
-  // Block task queue, attach unblocking task to the callback.
-  auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
-
   kcer_utils_.ImportKey(KcerTokenUtils::ImportKeyTask(
-      std::move(key_data), std::move(unblocking_callback)));
+      std::move(key_data), /*in_hardware_backed=*/false,
+      /*in_mark_as_migrated=*/false, std::move(unblocking_callback)));
 }
 
 //==============================================================================
@@ -811,13 +811,11 @@ KcerTokenImpl::ImportCertFromBytesTask::~ImportCertFromBytesTask() = default;
 void KcerTokenImpl::ImportCertFromBytes(CertDer cert_der,
                                         Kcer::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   if (is_blocked_) {
     return task_queue_.push_back(base::BindOnce(
         &KcerTokenImpl::ImportCertFromBytes, weak_factory_.GetWeakPtr(),
         std::move(cert_der), std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -923,6 +921,8 @@ void KcerTokenImpl::ImportCertFromBytesWithKeyHandle(
                      weak_factory_.GetWeakPtr(), std::move(task));
   kcer_utils_.ImportCert(std::move(cert), std::move(pkcs11_id),
                          std::move(label), std::move(cert_der),
+                         /*is_hardware_backed=*/true,
+                         /*mark_as_migrated=*/false,
                          std::move(import_callback));
 }
 
@@ -950,6 +950,7 @@ void KcerTokenImpl::DidImportCertFromBytes(ImportCertFromBytesTask task,
 void KcerTokenImpl::ImportPkcs12Cert(Pkcs12Blob pkcs12_blob,
                                      std::string password,
                                      bool hardware_backed,
+                                     bool mark_as_migrated,
                                      Kcer::StatusCallback callback) {
   // TODO(244409232): Implement.
 }
@@ -980,7 +981,6 @@ void KcerTokenImpl::RemoveKeyAndCerts(PrivateKeyHandle key,
         &KcerTokenImpl::RemoveKeyAndCerts, weak_factory_.GetWeakPtr(),
         std::move(key), std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -1054,9 +1054,94 @@ void KcerTokenImpl::DidRemoveKeyAndCerts(RemoveKeyAndCertsTask task,
 
 //==============================================================================
 
+KcerTokenImpl::RemoveCertTask::RemoveCertTask(scoped_refptr<const Cert> in_cert,
+                                              Kcer::StatusCallback in_callback)
+    : cert(std::move(in_cert)), callback(std::move(in_callback)) {}
+KcerTokenImpl::RemoveCertTask::RemoveCertTask(RemoveCertTask&& other) = default;
+KcerTokenImpl::RemoveCertTask::~RemoveCertTask() = default;
+
 void KcerTokenImpl::RemoveCert(scoped_refptr<const Cert> cert,
                                Kcer::StatusCallback callback) {
-  // TODO(244409232): Implement.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (is_blocked_) {
+    return task_queue_.push_back(
+        base::BindOnce(&KcerTokenImpl::RemoveCert, weak_factory_.GetWeakPtr(),
+                       std::move(cert), std::move(callback)));
+  }
+  // Block task queue, attach unblocking task to the callback.
+  auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
+
+  RemoveCertImpl(
+      RemoveCertTask(std::move(cert), std::move(unblocking_callback)));
+}
+
+// Searches for objects in Chaps containing the provided cert.
+void KcerTokenImpl::RemoveCertImpl(RemoveCertTask task) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  task.attemps_left--;
+  if (task.attemps_left < 0) {
+    return std::move(task.callback)
+        .Run(base::unexpected(Error::kPkcs11SessionFailure));
+  }
+
+  if (!task.cert || !task.cert->GetX509Cert()) {
+    return std::move(task.callback)
+        .Run(base::unexpected(Error::kFailedToRemoveCertificate));
+  }
+
+  const CRYPTO_BUFFER* buffer = task.cert->GetX509Cert()->cert_buffer();
+  base::span<const uint8_t> cert_der =
+      base::make_span(CRYPTO_BUFFER_data(buffer), CRYPTO_BUFFER_len(buffer));
+
+  CK_OBJECT_CLASS cert_class = CKO_CERTIFICATE;
+  chaps::AttributeList attributes;
+  AddAttribute(attributes, chromeos::PKCS11_CKA_CLASS, MakeSpan(&cert_class));
+  AddAttribute(attributes, chromeos::PKCS11_CKA_VALUE, cert_der);
+
+  // Find all objects for the certificate. There should be at most one, but the
+  // code can handle multiple.
+  chaps_client_->FindObjects(
+      pkcs_11_slot_id_, std::move(attributes),
+      base::BindOnce(&KcerTokenImpl::RemoveCertWithHandles,
+                     weak_factory_.GetWeakPtr(), std::move(task)));
+}
+
+// Deletes all the found objects.
+void KcerTokenImpl::RemoveCertWithHandles(RemoveCertTask task,
+                                          std::vector<ObjectHandle> handles,
+                                          uint32_t result_code) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (SessionChapsClient::IsSessionError(result_code)) {
+    return RemoveCertImpl(std::move(task));
+  }
+  if (result_code != chromeos::PKCS11_CKR_OK) {
+    return std::move(task.callback)
+        .Run(base::unexpected(Error::kFailedToSearchForObjects));
+  }
+
+  chaps_client_->DestroyObjectsWithRetries(
+      pkcs_11_slot_id_, std::move(handles),
+      base::BindOnce(&KcerTokenImpl::DidRemoveCert, weak_factory_.GetWeakPtr(),
+                     std::move(task)));
+}
+
+void KcerTokenImpl::DidRemoveCert(RemoveCertTask task, uint32_t result_code) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::expected<void, Error> result;
+  if (SessionChapsClient::IsSessionError(result_code)) {
+    return RemoveCertImpl(std::move(task));
+  }
+  if (result_code != chromeos::PKCS11_CKR_OK) {
+    result = base::unexpected(Error::kFailedToRemoveObjects);
+  }
+  // Even if `DestroyObjectsWithRetries` fails, it might have removed the cert,
+  // so notify about possible changes.
+  NotifyCertsChanged(
+      base::BindOnce(std::move(task.callback), std::move(result)));
 }
 
 //==============================================================================
@@ -1074,7 +1159,6 @@ void KcerTokenImpl::ListKeys(TokenListKeysCallback callback) {
                                                 weak_factory_.GetWeakPtr(),
                                                 std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -1351,7 +1435,6 @@ void KcerTokenImpl::ListCerts(TokenListCertsCallback callback) {
                                                 weak_factory_.GetWeakPtr(),
                                                 std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -1484,7 +1567,6 @@ void KcerTokenImpl::DoesPrivateKeyExist(PrivateKeyHandle key,
         &KcerTokenImpl::DoesPrivateKeyExist, weak_factory_.GetWeakPtr(),
         std::move(key), std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -1562,7 +1644,6 @@ void KcerTokenImpl::Sign(PrivateKeyHandle key,
         &KcerTokenImpl::Sign, weak_factory_.GetWeakPtr(), std::move(key),
         signing_scheme, std::move(data), std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -1694,7 +1775,6 @@ void KcerTokenImpl::SignRsaPkcs1Raw(PrivateKeyHandle key,
         &KcerTokenImpl::SignRsaPkcs1Raw, weak_factory_.GetWeakPtr(),
         std::move(key), std::move(digest_with_prefix), std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -1775,7 +1855,13 @@ void KcerTokenImpl::DidSignRsaPkcs1Raw(SignRsaPkcs1RawTask task,
 void KcerTokenImpl::GetTokenInfo(Kcer::GetTokenInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Do not block the task queue, this method doesn't communicate with Chaps.
+  if (is_blocked_) {
+    return task_queue_.push_back(base::BindOnce(&KcerTokenImpl::GetTokenInfo,
+                                                weak_factory_.GetWeakPtr(),
+                                                std::move(callback)));
+  }
+  // Block task queue, attach unblocking task to the callback.
+  auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
   TokenInfo result;
   result.pkcs11_id = pkcs_11_slot_id_.value();
@@ -1791,7 +1877,8 @@ void KcerTokenImpl::GetTokenInfo(Kcer::GetTokenInfoCallback callback) {
   }
 
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
+      FROM_HERE,
+      base::BindOnce(std::move(unblocking_callback), std::move(result)));
 }
 
 //==============================================================================
@@ -1852,9 +1939,7 @@ void KcerTokenImpl::GetKeyInfo(PrivateKeyHandle key,
         base::BindOnce(&KcerTokenImpl::GetKeyInfo, weak_factory_.GetWeakPtr(),
                        std::move(key), std::move(callback)));
   }
-
-  // Block task queue, attach unblocking
-  // task to the callback.
+  // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
   if (!EnsurePkcs11IdIsSet(key)) {
@@ -1987,9 +2072,7 @@ void KcerTokenImpl::GetKeyPermissions(
         &KcerTokenImpl::GetKeyPermissions, weak_factory_.GetWeakPtr(),
         std::move(key), std::move(callback)));
   }
-
-  // Block task queue, attach unblocking
-  // task to the callback.
+  // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
   if (!EnsurePkcs11IdIsSet(key)) {
@@ -2079,9 +2162,7 @@ void KcerTokenImpl::GetCertProvisioningProfileId(
         &KcerTokenImpl::GetCertProvisioningProfileId,
         weak_factory_.GetWeakPtr(), std::move(key), std::move(callback)));
   }
-
-  // Block task queue, attach unblocking
-  // task to the callback.
+  // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
   if (!EnsurePkcs11IdIsSet(key)) {
@@ -2253,7 +2334,6 @@ void KcerTokenImpl::SetKeyNickname(PrivateKeyHandle key,
         &KcerTokenImpl::SetKeyNickname, weak_factory_.GetWeakPtr(),
         std::move(key), std::move(nickname), std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -2275,7 +2355,6 @@ void KcerTokenImpl::SetKeyPermissions(PrivateKeyHandle key,
         &KcerTokenImpl::SetKeyPermissions, weak_factory_.GetWeakPtr(),
         std::move(key), std::move(key_permissions), std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
@@ -2303,7 +2382,6 @@ void KcerTokenImpl::SetCertProvisioningProfileId(
                        weak_factory_.GetWeakPtr(), std::move(key),
                        std::move(profile_id), std::move(callback)));
   }
-
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 

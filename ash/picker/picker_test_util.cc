@@ -8,8 +8,18 @@
 
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace ash {
+
+std::u16string ReadTextFromClipboard(ui::Clipboard* clipboard) {
+  std::u16string data;
+
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, nullptr, &data);
+  return data;
+}
 
 std::u16string ReadHtmlFromClipboard(ui::Clipboard* clipboard) {
   std::u16string data;
@@ -19,6 +29,19 @@ std::u16string ReadHtmlFromClipboard(ui::Clipboard* clipboard) {
   clipboard->ReadHTML(ui::ClipboardBuffer::kCopyPaste, nullptr, &data, &url,
                       &fragment_start, &fragment_end);
   return data;
+}
+
+void LeftClickOn(views::View& view) {
+  ui::test::EventGenerator event_generator(GetRootWindow(view.GetWidget()));
+  event_generator.MoveMouseTo(view.GetBoundsInScreen().CenterPoint());
+  event_generator.ClickLeftButton();
+}
+
+void PressAndReleaseKey(views::Widget& widget,
+                        ui::KeyboardCode key_code,
+                        int flags) {
+  ui::test::EventGenerator event_generator(GetRootWindow(&widget));
+  event_generator.PressAndReleaseKey(key_code, flags);
 }
 
 }  // namespace ash

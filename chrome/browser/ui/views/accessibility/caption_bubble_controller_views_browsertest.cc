@@ -26,11 +26,12 @@
 #include "components/live_caption/views/caption_bubble_controller_views.h"
 #include "components/prefs/pref_service.h"
 #include "components/soda/soda_installer.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/scoped_accessibility_mode_override.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/base/buildflags.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -39,6 +40,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/test/widget_activation_waiter.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -1146,7 +1148,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 
   // When screen reader mode turns on on Windows, the label is focusable. It
   // remains unfocusable on other OS's.
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
 #if BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY() && !BUILDFLAG(IS_MAC)
   EXPECT_TRUE(GetLabel()->IsFocusable());
 #else
@@ -1199,9 +1201,8 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_TRUE(IsWidgetVisible());
 
   // Test that widget doesn't hide when focused.
-  views::test::WidgetActivationWaiter waiter(GetCaptionWidget(), true);
   GetCaptionWidget()->Activate();
-  waiter.Wait();
+  views::test::WaitForWidgetActive(GetCaptionWidget(), true);
   test_task_runner->FastForwardBy(base::Seconds(10));
   EXPECT_TRUE(IsWidgetVisible());
 
@@ -1473,6 +1474,17 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   OnSodaInstalled();
   ASSERT_TRUE(GetLabel()->GetVisible());
   ASSERT_FALSE(GetDownloadProgressLabel()->GetVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
+                       AutomaticLanguageDownload) {
+  OnLanguageIdentificationEvent("fr-FR");
+  OnSodaProgress(12);
+
+  EXPECT_TRUE(IsWidgetVisible());
+  ASSERT_TRUE(GetDownloadProgressLabel()->GetVisible());
+  ASSERT_EQ(u"Downloading French language pack\x2026 12%",
+            GetDownloadProgressLabel()->GetText());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

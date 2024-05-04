@@ -182,7 +182,14 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
   // FedCM is not yet supported on WebView.
   aw_feature_overrides.DisableFeature(::features::kFedCm);
 
-  // Storage Access permission prompts are not supported on WebView.
+  // Disable enhanced track-pad features until WebView's experiment
+  // is fully rolled out to stable.
+  aw_feature_overrides.DisableFeature(ui::kConvertTrackpadEventsToMouse);
   aw_feature_overrides.DisableFeature(
-      permissions::features::kPermissionStorageAccessAPI);
+      ::features::kMouseAndTrackpadDropdownMenu);
+
+  // Disable the MPA ViewTransition + BFCache fix on WebView. It's enabled on
+  // all other platforms but WebView requires a slower rollout.
+  aw_feature_overrides.DisableFeature(
+      ::features::kInvalidateLocalSurfaceIdPreCommit);
 }

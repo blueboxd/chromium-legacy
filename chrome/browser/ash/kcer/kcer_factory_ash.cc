@@ -44,11 +44,19 @@ const user_manager::User* GetUserByContext(content::BrowserContext* context) {
 void KcerFactoryAsh::EnsureFactoryBuilt() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!GetGlobalPointer()) {
-    GetGlobalPointer() = new KcerFactoryAsh();
+    KcerFactoryAsh* new_factory = new KcerFactoryAsh();
+    GetGlobalPointer() = new_factory;
+    // This assumes that CrosapiManager is created before the main message loop
+    // is running (i.e. before PostMainMessageLoopRun Chrome initialization
+    // stage) and postpones the initialization until after that. `new_factory`
+    // is never destroyed.
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&KcerFactoryAsh::Initialize,
+                                  base::Unretained(new_factory)));
   }
 }
 
-KcerFactoryAsh::KcerFactoryAsh() {
+void KcerFactoryAsh::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (UseKcerWithoutNss()) {
     StartInitializingDeviceKcerWithoutNss();
@@ -99,8 +107,8 @@ void KcerFactoryAsh::StartInitializingKcerWithoutNss(
   const user_manager::User* user = GetUserByContext(context);
   if (!user) {
     return KcerFactory::InitializeKcerInstanceWithoutNss(
-        kcer_service, /*user_token_id=*/absl::nullopt,
-        /*device_token_id=*/absl::nullopt);
+        kcer_service, /*user_token_id=*/std::nullopt,
+        /*device_token_id=*/std::nullopt);
   }
 
   if (user->IsAffiliated()) {
@@ -109,7 +117,7 @@ void KcerFactoryAsh::StartInitializingKcerWithoutNss(
 
   return GetUserTokenInfo(std::move(kcer_service), user->GetAccountId(),
                           /*scoped_device_token_info_getter=*/nullptr,
-                          /*device_token_info=*/absl::nullopt);
+                          /*device_token_info=*/std::nullopt);
 }
 
 void KcerFactoryAsh::GetDeviceTokenInfo(
@@ -140,7 +148,7 @@ void KcerFactoryAsh::GetUserTokenInfo(
     base::WeakPtr<internal::KcerImpl> kcer_service,
     AccountId account_id,
     std::unique_ptr<ash::TPMTokenInfoGetter> scoped_device_token_info_getter,
-    absl::optional<user_data_auth::TpmTokenInfo> device_token_info) {
+    std::optional<user_data_auth::TpmTokenInfo> device_token_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!kcer_service) {
     return;
@@ -164,20 +172,20 @@ void KcerFactoryAsh::GetUserTokenInfo(
 
 void KcerFactoryAsh::GotAllTokenInfos(
     base::WeakPtr<internal::KcerImpl> kcer_service,
-    absl::optional<user_data_auth::TpmTokenInfo> device_token_info,
+    std::optional<user_data_auth::TpmTokenInfo> device_token_info,
     std::unique_ptr<ash::TPMTokenInfoGetter> scoped_user_token_info_getter,
-    absl::optional<user_data_auth::TpmTokenInfo> user_token_info) {
+    std::optional<user_data_auth::TpmTokenInfo> user_token_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!kcer_service) {
     return;
   }
 
-  absl::optional<SessionChapsClient::SlotId> user_token_id;
+  std::optional<SessionChapsClient::SlotId> user_token_id;
   if (user_token_info) {
     user_token_id = SessionChapsClient::SlotId(
         static_cast<uint64_t>(user_token_info->slot()));
   }
-  absl::optional<SessionChapsClient::SlotId> device_token_id;
+  std::optional<SessionChapsClient::SlotId> device_token_id;
   if (device_token_info) {
     device_token_id = SessionChapsClient::SlotId(
         static_cast<uint64_t>(device_token_info->slot()));
@@ -241,10 +249,10 @@ void KcerFactoryAsh::StartInitializingDeviceKcerWithoutNss() {
 
 void KcerFactoryAsh::InitializeDeviceKcerWithoutNss(
     std::unique_ptr<ash::TPMTokenInfoGetter> scoped_device_token_info_getter,
-    absl::optional<user_data_auth::TpmTokenInfo> device_token_info) {
+    std::optional<user_data_auth::TpmTokenInfo> device_token_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  absl::optional<SessionChapsClient::SlotId> device_token_id;
+  std::optional<SessionChapsClient::SlotId> device_token_id;
   if (device_token_info) {
     device_token_id = SessionChapsClient::SlotId(
         static_cast<uint64_t>(device_token_info->slot()));
@@ -263,12 +271,17 @@ void KcerFactoryAsh::InitializeDeviceKcerWithoutNss(
 // This method can in theory fail, but this shouldn't happen. In Ash the mojo
 // interface is implemented by Ash itself, so it should always be present.
 bool KcerFactoryAsh::EnsureHighLevelChapsClientInitialized() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (did_shutdown_) {
+    return false;
+  }
   if (IsHighLevelChapsClientInitialized()) {
     return true;
   }
 
   crosapi::mojom::ChapsService* chaps_service = nullptr;
-  if (crosapi::CrosapiManager::Get() &&
+  if (crosapi::CrosapiManager::IsInitialized() &&
+      crosapi::CrosapiManager::Get() &&
       crosapi::CrosapiManager::Get()->crosapi_ash()) {
     chaps_service =
         crosapi::CrosapiManager::Get()->crosapi_ash()->chaps_service_ash();

@@ -29,25 +29,33 @@ SharedImageInterface::SharedImageInterface()
 SharedImageInterface::~SharedImageInterface() = default;
 
 scoped_refptr<ClientSharedImage> SharedImageInterface::CreateSharedImage(
+    const SharedImageInfo& si_info,
+    gpu::SurfaceHandle surface_handle,
+    gfx::BufferUsage buffer_usage) {
+  NOTREACHED();
+  return base::MakeRefCounted<ClientSharedImage>(
+      Mailbox(), si_info.meta, GenUnverifiedSyncToken(), holder_);
+}
+
+uint32_t SharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {
+  return 0u;
+}
+
+scoped_refptr<ClientSharedImage>
+SharedImageInterface::AddReferenceToSharedImage(
+    const SyncToken& sync_token,
+    const Mailbox& mailbox,
     viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
-    base::StringPiece debug_label,
-    gpu::SurfaceHandle surface_handle,
-    gfx::BufferUsage buffer_usage) {
-  NOTREACHED();
-  return base::MakeRefCounted<ClientSharedImage>(
-      Mailbox(),
-      ClientSharedImage::Metadata(format, size, color_space, surface_origin,
-                                  alpha_type, usage),
-      holder_);
-}
-
-uint32_t SharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {
-  return 0u;
+    uint32_t usage) {
+  return ImportSharedImage(ExportedSharedImage(
+      mailbox,
+      SharedImageMetadata{format, size, color_space, surface_origin, alpha_type,
+                          usage},
+      sync_token));
 }
 
 scoped_refptr<ClientSharedImage> SharedImageInterface::NotifyMailboxAdded(

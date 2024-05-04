@@ -7,7 +7,7 @@ import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
 import type {VolumeInfo} from '../../background/js/volume_info.js';
 import {FakeEntryImpl, GuestOsPlaceholder, VolumeEntry} from '../../common/js/files_app_entry_types.js';
-import {MockFileSystem} from '../../common/js/mock_entry.js';
+import type {MockFileSystem} from '../../common/js/mock_entry.js';
 import {waitUntil} from '../../common/js/test_error_reporting.js';
 import {RootType, VolumeType} from '../../common/js/volume_manager_types.js';
 import {type FileData, type State} from '../../state/state.js';
@@ -338,7 +338,7 @@ export async function testPlayFilesAddedDuringScanningMyFiles() {
   // Dispatch an action to read children of MyFiles. At this moment, the
   // UiChildren of MyFiles is empty so no `StaticReader` will be added to
   // MyFiles.
-  store.dispatch(readSubDirectories(myFilesEntryInStore));
+  store.dispatch(readSubDirectories(myFilesEntryInStore.toURL()));
 
   // Dispatch an action to add an ui entry at the same time.
   const playFilesUiEntry = new GuestOsPlaceholder(

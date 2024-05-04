@@ -132,7 +132,6 @@ class CORE_EXPORT HighlightPainter {
                    const PaintInfo& paint_info,
                    const InlineCursor& cursor,
                    const FragmentItem& fragment_item,
-                   const std::optional<AffineTransform> writing_mode_rotation,
                    const PhysicalOffset& box_origin,
                    const ComputedStyle& style,
                    const TextPaintStyle& text_style,
@@ -266,7 +265,6 @@ class CORE_EXPORT HighlightPainter {
   void PaintDecorationsExceptLineThrough(const HighlightOverlay::HighlightPart&,
                                          TextDecorationLine lines_to_paint);
   void PaintDecorationsOnlyLineThrough(const HighlightOverlay::HighlightPart&);
-  void PaintSpellingGrammarDecorations(const HighlightOverlay::HighlightPart&);
 
   // Paints text with a highlight color. For composition markers, omit the last
   // two arguments. For PseudoHighlightMarkers, include both the PseudoId and

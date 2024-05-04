@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.compositor.scene_layer;
 
-import android.content.Context;
 import android.graphics.Color;
 
 import androidx.annotation.ColorInt;
@@ -15,6 +14,7 @@ import org.jni_zero.NativeMethods;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
+import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutGroupTitle;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
@@ -32,8 +32,11 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
     private long mNativePtr;
     private final float mDpToPx;
 
-    public TabStripSceneLayer(Context context) {
-        mDpToPx = context.getResources().getDisplayMetrics().density;
+    /**
+     * @param density Density for Dp to Px conversion.
+     */
+    public TabStripSceneLayer(float density) {
+        mDpToPx = density;
     }
 
     public static void setTestFlag(boolean testFlag) {
@@ -79,11 +82,14 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
             LayerTitleCache layerTitleCache,
             ResourceManager resourceManager,
             StripLayoutTab[] stripLayoutTabsToRender,
+            StripLayoutGroupTitle[] stripLayoutGroupTitlesToRender,
             float yOffset,
             int selectedTabId,
             int hoveredTabId,
             int scrimColor,
-            float scrimOpacity) {
+            float scrimOpacity,
+            float leftPaddingDp,
+            float rightPaddingDp) {
         if (mNativePtr == 0) return;
         final boolean visible = yOffset > -layoutHelper.getHeight();
         // This will hide the tab strips if necessary.
@@ -92,7 +98,13 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
         // When strip tabs are completely off screen, we don't need to update it.
         if (visible) {
             pushButtonsAndBackground(
-                    layoutHelper, resourceManager, yOffset, scrimColor, scrimOpacity);
+                    layoutHelper,
+                    resourceManager,
+                    yOffset,
+                    scrimColor,
+                    scrimOpacity,
+                    leftPaddingDp,
+                    rightPaddingDp);
             pushStripTabs(
                     layoutHelper,
                     layerTitleCache,
@@ -100,6 +112,7 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                     stripLayoutTabsToRender,
                     selectedTabId,
                     hoveredTabId);
+            pushGroupTitles(stripLayoutGroupTitlesToRender);
         }
         TabStripSceneLayerJni.get().finishBuildingFrame(mNativePtr, TabStripSceneLayer.this);
     }
@@ -109,7 +122,9 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
             ResourceManager resourceManager,
             float yOffset,
             @ColorInt int scrimColor,
-            float scrimOpacity) {
+            float scrimOpacity,
+            float leftPaddingDp,
+            float rightPaddingDp) {
         final int width = Math.round(layoutHelper.getWidth() * mDpToPx);
         final int height = Math.round(layoutHelper.getHeight() * mDpToPx);
         TabStripSceneLayerJni.get()
@@ -121,7 +136,9 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                         yOffset * mDpToPx,
                         layoutHelper.getBackgroundColor(),
                         scrimColor,
-                        scrimOpacity);
+                        scrimOpacity,
+                        leftPaddingDp * mDpToPx,
+                        rightPaddingDp * mDpToPx);
 
         TintedCompositorButton newTabButton = layoutHelper.getNewTabButton();
         CompositorButton modelSelectorButton = layoutHelper.getModelSelectorButton();
@@ -168,7 +185,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                         layoutHelper.getLeftFadeDrawable(),
                         layoutHelper.getLeftFadeOpacity(),
                         resourceManager,
-                        layoutHelper.getBackgroundColor());
+                        layoutHelper.getBackgroundColor(),
+                        leftPaddingDp * mDpToPx);
 
         TabStripSceneLayerJni.get()
                 .updateTabStripRightFade(
@@ -177,7 +195,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                         layoutHelper.getRightFadeDrawable(),
                         layoutHelper.getRightFadeOpacity(),
                         resourceManager,
-                        layoutHelper.getBackgroundColor());
+                        layoutHelper.getBackgroundColor(),
+                        rightPaddingDp * mDpToPx);
     }
 
     private void pushStripTabs(
@@ -196,6 +215,7 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
             boolean isSelected = st.getId() == selectedTabId;
             boolean isHovered = st.getId() == hoveredTabId;
 
+            // TODO(b/326301060): Update tab outline placeholder color with color picker.
             TabStripSceneLayerJni.get()
                     .putStripTabLayer(
                             mNativePtr,
@@ -210,8 +230,9 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                             st.getCloseButton().getBackgroundTint(),
                             st.getDividerTint(),
                             st.getTint(isSelected, isHovered),
-                            Color.TRANSPARENT,
+                            Color.BLACK,
                             isSelected,
+                            layoutHelper.shouldShowTabOutline(st),
                             st.getClosePressed(),
                             layoutHelper.getWidth() * mDpToPx,
                             st.getDrawX() * mDpToPx,
@@ -232,6 +253,27 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                             st.getContainerOpacity(),
                             layerTitleCache,
                             resourceManager);
+        }
+    }
+
+    private void pushGroupTitles(StripLayoutGroupTitle[] groupTitles) {
+        final int titlesCount = groupTitles != null ? groupTitles.length : 0;
+
+        for (int i = 0; i < titlesCount; i++) {
+            final StripLayoutGroupTitle gt = groupTitles[i];
+
+            TabStripSceneLayerJni.get()
+                    .putGroupTitleLayer(
+                            mNativePtr,
+                            TabStripSceneLayer.this,
+                            gt.getTint(),
+                            gt.getDrawX() * mDpToPx,
+                            gt.getDrawY() * mDpToPx,
+                            gt.getWidth() * mDpToPx,
+                            gt.getHeight() * mDpToPx,
+                            gt.getDefaultMargin() * mDpToPx,
+                            gt.getTopMargin() * mDpToPx,
+                            gt.getCornerRadius() * mDpToPx);
         }
     }
 
@@ -258,7 +300,9 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 float yOffset,
                 @ColorInt int backgroundColor,
                 @ColorInt int scrimColor,
-                float scrimOpacity);
+                float scrimOpacity,
+                float leftPaddingPx,
+                float rightPaddingPx);
 
         void updateNewTabButton(
                 long nativeTabStripSceneLayer,
@@ -311,7 +355,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 int resourceId,
                 float opacity,
                 ResourceManager resourceManager,
-                @ColorInt int leftFadeColor);
+                @ColorInt int leftFadeColor,
+                float leftPaddingPx);
 
         void updateTabStripRightFade(
                 long nativeTabStripSceneLayer,
@@ -319,7 +364,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 int resourceId,
                 float opacity,
                 ResourceManager resourceManager,
-                @ColorInt int rightFadeColor);
+                @ColorInt int rightFadeColor,
+                float rightPaddingPx);
 
         void putStripTabLayer(
                 long nativeTabStripSceneLayer,
@@ -336,6 +382,7 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 int handleTint,
                 int handleOutlineTint,
                 boolean foreground,
+                boolean shouldShowTabOutline,
                 boolean closePressed,
                 float toolbarWidth,
                 float x,
@@ -356,6 +403,18 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 float opacity,
                 LayerTitleCache layerTitleCache,
                 ResourceManager resourceManager);
+
+        void putGroupTitleLayer(
+                long nativeTabStripSceneLayer,
+                TabStripSceneLayer caller,
+                int tint,
+                float x,
+                float y,
+                float width,
+                float height,
+                float defaultMargin,
+                float topMargin,
+                float cornerRadius);
 
         void setContentTree(
                 long nativeTabStripSceneLayer, TabStripSceneLayer caller, SceneLayer contentTree);

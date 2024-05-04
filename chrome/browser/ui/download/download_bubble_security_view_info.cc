@@ -35,7 +35,7 @@ DownloadBubbleSecurityViewInfo::SubpageButton::SubpageButton(
     DownloadCommands::Command command,
     std::u16string label,
     bool is_prominent,
-    absl::optional<ui::ColorId> text_color)
+    std::optional<ui::ColorId> text_color)
     : command(command),
       label(label),
       is_prominent(is_prominent),
@@ -179,6 +179,10 @@ void DownloadBubbleSecurityViewInfo::PopulateForInterrupted(
         warning_summary_ = l10n_util::GetStringUTF16(
             IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_BLOCK);
       }
+      return;
+    }
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_SCAN_FAILED: {
+      // TODO(b/327392327): Implement UX for this danger type.
       return;
     }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
@@ -476,6 +480,7 @@ void DownloadBubbleSecurityViewInfo::PopulateForInProgressOrComplete(
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
     case download::DOWNLOAD_DANGER_TYPE_ALLOWLISTED_BY_POLICY:
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_SCAN_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_MAX:
       return;
   }

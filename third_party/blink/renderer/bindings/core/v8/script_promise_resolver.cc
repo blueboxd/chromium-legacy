@@ -150,19 +150,24 @@ void ScriptPromiseResolver::Detach() {
   state_ = kDetached;
   resolver_.Clear();
   value_.Reset();
-  keep_alive_.Clear();
 }
 
-void ScriptPromiseResolver::KeepAliveWhilePending() {
-  // keepAliveWhilePending() will be called twice if the resolver
-  // is created in a suspended execution context and the resolver
-  // is then resolved/rejected while in that suspended state.
-  if (state_ == kDetached || keep_alive_)
+void ScriptPromiseResolver::NotifyResolveOrReject() {
+  if (GetExecutionContext()->IsContextPaused()) {
+    ScheduleResolveOrReject();
     return;
-
-  // Keep |this| around while the promise is Pending;
-  // see detach() for the dual operation.
-  keep_alive_ = this;
+  }
+  // TODO(esprehn): This is a hack, instead we should CHECK that
+  // script is allowed, and v8 should be running the entry hooks below and
+  // crashing if script is forbidden. We should then audit all users of
+  // ScriptPromiseResolver and the related specs and switch to an async
+  // resolve.
+  // See: http://crbug.com/663476
+  if (ScriptForbiddenScope::IsScriptForbidden()) {
+    ScheduleResolveOrReject();
+    return;
+  }
+  ResolveOrRejectImmediately();
 }
 
 void ScriptPromiseResolver::ResolveOrRejectImmediately() {

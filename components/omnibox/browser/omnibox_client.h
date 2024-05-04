@@ -16,6 +16,7 @@
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/url_formatter/spoof_checks/idna_metrics.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -31,7 +32,7 @@ struct AutocompleteMatch;
 struct OmniboxLog;
 
 namespace bookmarks {
-class BookmarkModel;
+class CoreBookmarkModel;
 }
 
 namespace gfx {
@@ -73,6 +74,9 @@ class OmniboxClient {
   // Returns the favicon of the current page.
   virtual gfx::Image GetFavicon() const;
 
+  // Returns the UKM source id for the top frame of the current page.
+  virtual ukm::SourceId GetUKMSourceId() const;
+
   // Returns whether the current page is loading.
   virtual bool IsLoading() const;
 
@@ -95,7 +99,7 @@ class OmniboxClient {
       omnibox::mojom::NavigationPredictor navigation_predictor) {}
 
   virtual PrefService* GetPrefs() = 0;
-  virtual bookmarks::BookmarkModel* GetBookmarkModel();
+  virtual bookmarks::CoreBookmarkModel* GetBookmarkModel();
   virtual AutocompleteControllerEmitter* GetAutocompleteControllerEmitter() = 0;
   virtual TemplateURLService* GetTemplateURLService();
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;

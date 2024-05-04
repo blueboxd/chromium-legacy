@@ -105,10 +105,6 @@ const constexpr char kIconsFixedOnReinstallMetricName[] =
 
 namespace {
 
-// Number of attempts to install a given version & locale of the SWAs before
-// bailing out.
-const int kInstallFailureAttempts = 3;
-
 SystemWebAppDelegateMap CreateSystemWebApps(Profile* profile) {
   std::vector<std::unique_ptr<SystemWebAppDelegate>> info_vec;
   // TODO(crbug.com/1051229): Currently unused, will be hooked up
@@ -401,8 +397,9 @@ void SystemWebAppManager::Shutdown() {
   shutting_down_ = true;
   StopBackgroundTasks();
 
-  // Icon check might be in progress, we need to cancel it.
-  icon_checker_->StopCheck();
+  // Icon check might be in progress, destroying the icon_checker_ ensures that
+  // any pending callbacks are dropped.
+  icon_checker_.reset();
 }
 
 void SystemWebAppManager::InstallSystemAppsForTesting() {
@@ -803,10 +800,9 @@ void SystemWebAppManager::UpdateLastAttemptedInfo() {
   const std::string& last_attempted_locale(
       pref_service_->GetString(prefs::kSystemWebAppLastAttemptedLocale));
 
-  const bool is_retry = (last_attempted_version.IsValid() &&
-                         last_attempted_version == CurrentVersion() &&
-                         last_attempted_locale == CurrentLocale()) ||
-                        PreviousSessionHadBrokenIcons();
+  const bool is_retry = last_attempted_version.IsValid() &&
+                        last_attempted_version == CurrentVersion() &&
+                        last_attempted_locale == CurrentLocale();
 
   if (!is_retry) {
     pref_service_->SetInteger(prefs::kSystemWebAppInstallFailureCount, 0);

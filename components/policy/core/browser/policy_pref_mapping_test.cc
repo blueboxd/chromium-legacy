@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -122,8 +123,9 @@ void CheckPrefHasMandatoryValue(const PrefService::Preference* pref,
 }
 
 // Contains the testing details for a single pref affected by one or multiple
-// policies. This is part of the data loaded from
-// components/policy/test/data/policy_test_cases.json.
+// policies. Each entry in `prefs` from
+// components/policy/test/data/pref_mapping/[PolicyName].json is represented by
+// one `PrefTestCase`.
 class PrefTestCase {
  public:
   PrefTestCase(const std::string& name, const base::Value::Dict& settings) {
@@ -145,6 +147,10 @@ class PrefTestCase {
       ADD_FAILURE()
           << "only one of |value| or |default_value| should be used for pref "
           << name;
+    }
+    if (!value && !default_value) {
+      ADD_FAILURE() << "either |value| or |default_value| must be set for pref "
+                    << name;
     }
   }
 
@@ -181,9 +187,10 @@ class PrefTestCase {
   base::Value default_value_;
 };
 
-// Contains the testing details for a single pref affected by a policy. This is
-// part of the data loaded from
-// components/policy/test/data/policy_test_cases.json.
+// Contains the testing details for a single policy to pref mapping. Each entry
+// under `policy_pref_mapping_tests` from
+// components/policy/test/data/pref_mapping/[PolicyName].json is represented by
+// one `PolicyPrefMappingTest`.
 class PolicyPrefMappingTest {
  public:
   explicit PolicyPrefMappingTest(const base::Value::Dict& mapping) {
@@ -236,9 +243,82 @@ class PolicyPrefMappingTest {
  private:
   base::Value::Dict policies_;
   base::Value::Dict policies_settings_;
-  const std::string pref_;
   std::vector<std::unique_ptr<PrefTestCase>> prefs_;
   std::vector<std::string> required_buildflags_;
+};
+
+class SimplePolicyPrefMappingTest {
+ public:
+  SimplePolicyPrefMappingTest(const std::string& policy_name,
+                              const base::Value::Dict& test) {
+    const std::string* pref_name = test.FindString("pref_name");
+    if (!pref_name) {
+      ADD_FAILURE() << "Simple test for " << policy_name
+                    << "is missing a 'pref_name'";
+      return;
+    }
+
+    const std::string* location = test.FindString("pref_location");
+    const base::Value::Dict* policy_settings = test.FindDict("policy_settings");
+
+    const base::Value* default_value = test.Find("default_value");
+    if (!default_value) {
+      ADD_FAILURE() << "Simple test for " << policy_name
+                    << "is missing a 'default_value'";
+      return;
+    }
+
+    const base::Value::List* values_to_test = test.FindList("values_to_test");
+    if (!values_to_test || values_to_test->empty()) {
+      ADD_FAILURE() << "Simple test for " << policy_name
+                    << "is missing a 'values_to_test' or is empty";
+      return;
+    }
+
+    // Build test case for default value.
+    base::Value::Dict default_value_test_dict;
+    base::Value::Dict default_value_prefs_dict;
+    base::Value::Dict default_value_pref_dict;
+    default_value_pref_dict.Set("default_value", default_value->Clone());
+    if (location) {
+      default_value_pref_dict.Set("location", *location);
+    }
+    default_value_prefs_dict.Set(*pref_name,
+                                 std::move(default_value_pref_dict));
+    default_value_test_dict.Set("prefs", std::move(default_value_prefs_dict));
+    policy_pref_mapping_test_dicts_.push_back(
+        std::move(default_value_test_dict));
+
+    // Build test case for each `value_to_test`.
+    for (const base::Value& value_to_test : *values_to_test) {
+      base::Value::Dict value_test_dict;
+      base::Value::Dict value_policies_dict;
+      base::Value::Dict value_prefs_dict;
+      base::Value::Dict value_pref_dict;
+      value_policies_dict.Set(policy_name, value_to_test.Clone());
+      value_test_dict.Set("policies", std::move(value_policies_dict));
+      if (policy_settings) {
+        base::Value::Dict value_policy_settings_dict;
+        value_policy_settings_dict.Set(policy_name, policy_settings->Clone());
+        value_test_dict.Set("policy_settings",
+                            std::move(value_policy_settings_dict));
+      }
+      value_pref_dict.Set("value", value_to_test.Clone());
+      if (location) {
+        value_pref_dict.Set("location", *location);
+      }
+      value_prefs_dict.Set(*pref_name, std::move(value_pref_dict));
+      value_test_dict.Set("prefs", std::move(value_prefs_dict));
+      policy_pref_mapping_test_dicts_.push_back(std::move(value_test_dict));
+    }
+  }
+
+  const std::vector<base::Value::Dict>& policy_pref_mapping_test_dicts() const {
+    return policy_pref_mapping_test_dicts_;
+  }
+
+ private:
+  std::vector<base::Value::Dict> policy_pref_mapping_test_dicts_;
 };
 
 // Populates buildflags as strings that policy pref mapping test cases
@@ -262,8 +342,11 @@ bool CheckRequiredBuildFlagsSupported(const PolicyPrefMappingTest* test) {
   return true;
 }
 
-// Contains the testing details for a single policy. This is part of the data
-// loaded from components/policy/test/data/policy_test_cases.json.
+// Each file like components/policy/test/data/pref_mapping/[PolicyName].json
+// contains one or more `PolicyTestCase` with each of them defining the platform
+// they run on. Typically, if a policy has different mappings per platform, it
+// would have multiple `PolicyTestCase`s. If the mapping is the same across
+// platforms, it would only have one `PolicyTestCase`.
 class PolicyTestCase {
  public:
   PolicyTestCase(const std::string& policy_name,
@@ -278,19 +361,31 @@ class PolicyTestCase {
     const base::Value::List* os_list = test_case.FindList("os");
     if (os_list) {
       for (const auto& os : *os_list) {
-        if (os.is_string())
+        if (os.is_string()) {
           supported_os_.push_back(os.GetString());
+        }
       }
     }
 
-    const base::Value::List* policy_pref_mapping_tests =
+    const base::Value::List* policy_pref_mapping_test_list =
         test_case.FindList("policy_pref_mapping_tests");
-    if (policy_pref_mapping_tests) {
-      for (const auto& mapping : *policy_pref_mapping_tests) {
-        if (mapping.is_dict()) {
-          policy_pref_mapping_tests_.push_back(
-              std::make_unique<PolicyPrefMappingTest>(mapping.GetDict()));
+    if (policy_pref_mapping_test_list) {
+      for (const auto& policy_pref_mapping_test_dict :
+           *policy_pref_mapping_test_list) {
+        if (policy_pref_mapping_test_dict.is_dict()) {
+          AddPolicyPrefMappingTest(policy_pref_mapping_test_dict.GetDict());
         }
+      }
+    }
+
+    const base::Value::Dict* simple_policy_pref_mapping_test_dict =
+        test_case.FindDict("simple_policy_pref_mapping_test");
+    if (simple_policy_pref_mapping_test_dict) {
+      const SimplePolicyPrefMappingTest simple_policy_pref_mapping_test(
+          policy_name, *simple_policy_pref_mapping_test_dict);
+      for (const base::Value::Dict& policy_pref_mapping_test_dict :
+           simple_policy_pref_mapping_test.policy_pref_mapping_test_dicts()) {
+        AddPolicyPrefMappingTest(policy_pref_mapping_test_dict);
       }
     }
   }
@@ -364,9 +459,15 @@ class PolicyTestCase {
   std::vector<std::string> supported_os_;
   std::vector<std::unique_ptr<PolicyPrefMappingTest>>
       policy_pref_mapping_tests_;
+
+  void AddPolicyPrefMappingTest(const base::Value::Dict& mapping) {
+    policy_pref_mapping_tests_.push_back(
+        std::make_unique<PolicyPrefMappingTest>(mapping));
+  }
 };
 
-// Parses all policy test cases and makes them available in a map.
+// Parses all policy test cases in components/policy/test/data/pref_mapping/ and
+// makes them available in a map.
 class PolicyTestCases {
  public:
   typedef std::vector<std::unique_ptr<PolicyTestCase>> PolicyTestCaseVector;
@@ -396,7 +497,7 @@ class PolicyTestCases {
         return;
       }
       if (!parsed_json->is_list()) {
-        ADD_FAILURE() << "Error parsing policy_test_cases.json: Expected list.";
+        ADD_FAILURE() << "Error parsing " << path << ": Expected list.";
         return;
       }
       std::string policy_name =
@@ -512,15 +613,15 @@ std::optional<base::flat_set<std::string>> GetTestFilter() {
 
 }  // namespace
 
-void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_path) {
-  // Verifies that all known policies have a test case in the JSON file.
+void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_dir) {
+  // Verifies that all known policies have a pref mapping test case.
   // This test fails when a policy is added to
-  // components/policy/resources/policy_templates.json but a test case is not
-  // added to components/policy/test/data/policy_test_cases.json.
+  // components/policy/resources/templates/policy_definitions/ but a test case
+  // is not added to components/policy/test/data/pref_mapping/.
   Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
   ASSERT_TRUE(chrome_schema.valid());
 
-  PolicyTestCases policy_test_cases(test_case_path);
+  PolicyTestCases policy_test_cases(test_case_dir);
   for (Schema::Iterator it = chrome_schema.GetPropertiesIterator();
        !it.IsAtEnd(); it.Advance()) {
     auto policy = policy_test_cases.map().find(it.key());
@@ -554,7 +655,7 @@ void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_path) {
 
 // Verifies that policies make their corresponding preferences become managed,
 // and that the user can't override that setting.
-void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
+void VerifyPolicyToPrefMappings(const base::FilePath& test_case_dir,
                                 PrefService* local_state,
                                 PrefService* user_prefs,
                                 PrefService* signin_profile_prefs,
@@ -563,7 +664,7 @@ void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
   Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
   ASSERT_TRUE(chrome_schema.valid());
 
-  const PolicyTestCases test_cases(test_case_path);
+  const PolicyTestCases test_cases(test_case_dir);
 
   auto test_filter = GetTestFilter();
 
@@ -657,12 +758,6 @@ void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
           if (!expected_value && pref_case->default_value()) {
             expected_value = pref_case->default_value();
             expect_value_to_be_default = true;
-          }
-          if (!expected_value && policies.size() == 1) {
-            // If no value/default value is specified, fall back to the policy
-            // value (if only one policy is set).
-            expected_value = &policies.begin()->second;
-            expect_value_to_be_default = false;
           }
           ASSERT_TRUE(expected_value);
 

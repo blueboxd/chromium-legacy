@@ -9,12 +9,12 @@ class TabStripLayout: UICollectionViewFlowLayout {
   /// Wether the flow layout needs to be updated.
   public var needsUpdate: Bool = true
 
-  /// IndexPath of the selected item.
-  public var selectedIndexPath: IndexPath?
-
   /// Static decoration views that border the collection view.
   public var leftStaticSeparator: TabStripDecorationView?
   public var rightStaticSeparator: TabStripDecorationView?
+
+  /// The tab strip new tab button.
+  public var newTabButton: UIView?
 
   /// Wether the selected cell is animated, used only on iOS 16.
   /// On iOS 16, the scroll animation after opening a new tab is delayed, the
@@ -28,6 +28,9 @@ class TabStripLayout: UICollectionViewFlowLayout {
   /// Index paths of animated items.
   private var indexPathsOfDeletingItems: [IndexPath] = []
   private var indexPathsOfInsertingItems: [IndexPath] = []
+
+  //// Leading constraint of the `newTabButton`.
+  private var newTabButtonLeadingConstraint: NSLayoutConstraint?
 
   /// The DataSource for this collection view.
   weak var dataSource:
@@ -46,6 +49,50 @@ class TabStripLayout: UICollectionViewFlowLayout {
 
   required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
+  }
+
+  override var collectionViewContentSize: CGSize {
+    let contentSize = super.collectionViewContentSize
+
+    if !TabStripFeaturesUtils.isModernTabStripNewTabButtonDynamic() { return contentSize }
+    guard
+      let collectionView = collectionView,
+      let newTabButton = newTabButton,
+      let newTabButtonSuperView = newTabButton.superview
+    else { return contentSize }
+
+    let updatedConstant = min(
+      contentSize.width, collectionView.bounds.width)
+
+    if newTabButtonLeadingConstraint == nil {
+      newTabButtonLeadingConstraint = newTabButton.leadingAnchor.constraint(
+        equalTo: newTabButtonSuperView.leadingAnchor,
+        constant: updatedConstant)
+      newTabButtonLeadingConstraint?.priority = .defaultLow
+      newTabButtonLeadingConstraint?.isActive = true
+      return contentSize
+    }
+
+    if updatedConstant != newTabButtonLeadingConstraint?.constant {
+      newTabButtonLeadingConstraint?.constant = updatedConstant
+      weak var weakSelf = self
+      UIView.animate(
+        withDuration: TabStripConstants.NewTabButton.constraintUpdateAnimationDuration, delay: 0.0,
+        options: .curveEaseOut,
+        animations: {
+          weakSelf?.newTabButtonConstraintUpdateAnimationBlock()
+        })
+    }
+
+    return contentSize
+  }
+
+  // MARK: - Properties
+
+  // Returns the selected item index path.
+  private var selectedIndexPath: IndexPath? {
+    guard let collectionView = collectionView else { return nil }
+    return collectionView.indexPathsForSelectedItems?.first
   }
 
   // MARK: - UICollectionViewLayout
@@ -147,7 +194,7 @@ class TabStripLayout: UICollectionViewFlowLayout {
     }
 
     guard
-      let cell = collectionView.cellForItem(at: indexPath) as? TabStripCell
+      let cell = collectionView.cellForItem(at: indexPath) as? TabStripTabCell
     else { return layoutAttributes }
 
     let contentOffset = collectionView.contentOffset
@@ -298,6 +345,11 @@ class TabStripLayout: UICollectionViewFlowLayout {
 
   // MARK: - Private
 
+  /// Animation block executed when `newTabButtonLeadingConstraint` is updated.
+  private func newTabButtonConstraintUpdateAnimationBlock() {
+    newTabButton?.superview?.layoutIfNeeded()
+  }
+
   /// Updates and returns the given `layoutAttributes` if the cell is selected.
   /// Inserted items are considered as selected.
   private func layoutAttributesForSelectedCell(layoutAttributes: UICollectionViewLayoutAttributes)
@@ -316,7 +368,7 @@ class TabStripLayout: UICollectionViewFlowLayout {
 
     /// `cellAnimatediOS16` is always `false` above iOS 16.
     var cellAnimated = cellAnimatediOS16
-    let cell = collectionView.cellForItem(at: indexPath) as? TabStripCell
+    let cell = collectionView.cellForItem(at: indexPath) as? TabStripTabCell
     if let animationKeys = cell?.layer.animationKeys() {
       cellAnimated = !animationKeys.isEmpty || cellAnimatediOS16
     }

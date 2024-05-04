@@ -173,6 +173,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   void DismissAccountsDialogForDevtools(bool should_embargo);
   void AcceptConfirmIdpLoginDialogForDevtools();
   void DismissConfirmIdpLoginDialogForDevtools();
+  bool UseAnotherAccountForDevtools(const IdentityProviderData& provider);
   bool HasMoreDetailsButtonForDevtools();
   void ClickErrorDialogGotItForDevtools();
   void ClickErrorDialogMoreDetailsForDevtools();
@@ -377,6 +378,9 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
                   const GURL& idp_config_url,
                   GURL login_url);
 
+  void MaybeShowButtonModeModalDialog(const GURL& idp_config_url,
+                                      const GURL& idp_login_url);
+
   void CompleteDisconnectRequest(DisconnectCallback callback,
                                  blink::mojom::DisconnectStatus status);
 
@@ -387,6 +391,10 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
           error_dialog_type,
       std::optional<IdpNetworkRequestManager::FedCmErrorUrlType>
           error_url_type);
+
+  void MaybeCreateFedCmMetrics(const GURL& provider_config_url);
+
+  RpMode GetRpMode() const { return rp_mode_; }
 
   std::unique_ptr<IdpNetworkRequestManager> network_manager_;
   std::unique_ptr<IdentityRequestDialogController> request_dialog_controller_;
@@ -508,6 +516,14 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   // Requests made when there is a pending FedCM request or for the purpose of
   // Wallets or multi-IDP are not counted.
   int num_requests_{0};
+
+  // The button flow requires user activation to be kicked off. We'd also need
+  // this information along the way. e.g. showing pop-up window when accounts
+  // fetch is failed. However, the function `HasTransientUserActivation` may
+  // return false at that time because the network requests may be very slow
+  // such that the previous user gesture is expired. Therefore we store the
+  // information to use it during the entire the button flow.
+  bool had_transient_user_activation_{false};
 
   base::WeakPtrFactory<FederatedAuthRequestImpl> weak_ptr_factory_{this};
 };

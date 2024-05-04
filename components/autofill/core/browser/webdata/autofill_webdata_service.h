@@ -162,9 +162,9 @@ class AutofillWebDataService : public WebDataServiceBase {
 
   // Toggles the record for a server credit card between masked (only last 4
   // digits) and full (all digits).
+  // TODO(crbug.com/1497734): Remove this method.
   void UnmaskServerCreditCard(const CreditCard& card,
                               const std::u16string& full_number);
-  void MaskServerCreditCard(const std::string& id);
 
   // Initiates the request for Payments customer data.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
@@ -200,6 +200,16 @@ class AutofillWebDataService : public WebDataServiceBase {
   // The consumer owns the data.
   WebDataServiceBase::Handle GetCreditCardBenefits(
       WebDataServiceConsumer* consumer);
+
+  // Initiates the request for masked bank accounts. The method
+  // OnWebDataServiceRequestDone() of `consumer` gets called when the request is
+  // finished, with the masked bank accounts included in the argument `result`.
+  // The consumer owns the data.
+  WebDataServiceBase::Handle GetMaskedBankAccounts(
+      WebDataServiceConsumer* consumer);
+
+  // Clears all the credit card benefits from the database.
+  void ClearAllCreditCardBenefits();
 
   void ClearAllServerData();
   void ClearAllLocalData();

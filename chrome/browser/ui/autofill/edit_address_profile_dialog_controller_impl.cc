@@ -8,7 +8,6 @@
 #include "base/types/optional_util.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_base.h"
 #include "chrome/browser/ui/autofill/edit_address_profile_view.h"
-#include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -40,8 +39,7 @@ void EditAddressProfileDialogControllerImpl::OfferEdit(
   // Don't show the editor if it's already visible, and inform the backend.
   if (dialog_view_) {
     std::move(on_user_decision_callback)
-        .Run(AutofillClient::SaveAddressProfileOfferUserDecision::kAutoDeclined,
-             profile);
+        .Run(AutofillClient::AddressPromptUserDecision::kAutoDeclined, profile);
     return;
   }
   address_profile_to_edit_ = profile;
@@ -91,7 +89,7 @@ bool EditAddressProfileDialogControllerImpl::GetIsValidatable() const {
 }
 
 void EditAddressProfileDialogControllerImpl::OnDialogClosed(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision,
+    AutofillClient::AddressPromptUserDecision decision,
     base::optional_ref<const AutofillProfile> profile_with_edits) {
   std::move(on_user_decision_callback_).Run(decision, profile_with_edits);
   dialog_view_ = nullptr;

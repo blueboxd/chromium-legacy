@@ -16,13 +16,14 @@ specific_include_rules = {
   'device_section\.cc': [
     '+ash/shell.h',
   ],
-  'device_settings_base_test\.(cc|h)': [
-    '+ash/shell.h',
-    '+device/udev_linux/fake_udev_loader.h',
-  ],
   'display_settings_provider\.cc': [
     '+ash/shell.h',
     "+ash/display/display_prefs.h",
+    "+ash/display/display_performance_mode_controller.h",
+  ],
+  'display_settings_provider_unittest\.cc': [
+    '+ash/shell.h',
+    "+ash/display/display_performance_mode_controller.h",
   ],
   'fast_pair_.*': [
     "+ash/quick_pair",

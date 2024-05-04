@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #import "build/build_config.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -154,7 +155,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 }
 
-- (void)addFolderWithName:(NSString*)name {
+- (void)addFolderWithName:(NSString*)name inModel:(BookmarkModelType)model {
   // Wait for folder picker to appear.
   [[EarlGrey
       selectElementWithMatcher:
@@ -162,9 +163,11 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on "Create New Folder."
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityID(
-                     kBookmarkCreateNewLocalOrSyncableFolderCellIdentifier)]
+  NSString* accessibilityId =
+      (model == BookmarkModelType::kLocalOrSyncable)
+          ? kBookmarkCreateNewLocalOrSyncableFolderCellIdentifier
+          : kBookmarkCreateNewAccountFolderCellIdentifier;
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(accessibilityId)]
       performAction:grey_tap()];
 
   // Verify the folder creator is displayed.
@@ -200,7 +203,11 @@ id<GREYMatcher> SearchIconButton() {
              @"Waiting for bookmark to go away");
 }
 
-- (void)waitForUndoToastToGoAway {
+- (void)closeUndoSnackbarAndWait {
+  id<GREYMatcher> snackbar_matcher =
+      grey_accessibilityID(@"MDCSnackbarMessageTitleAutomationIdentifier");
+  [[EarlGrey selectElementWithMatcher:snackbar_matcher]
+      performAction:grey_tap()];
   // Wait until it's gone.
   ConditionBlock condition = ^{
     NSError* error = nil;
@@ -509,7 +516,8 @@ id<GREYMatcher> SearchIconButton() {
 - (void)tapOnContextMenuButton:(int)menuButtonId
                     openEditor:(NSString*)editorId
              setParentFolderTo:(NSString*)destinationFolder
-                          from:(NSString*)sourceFolder {
+                          from:(NSString*)sourceFolder
+              onlyOnThisDevice:(BOOL)onlyOnThisDevice {
   // Tap context menu.
   [[EarlGrey
       selectElementWithMatcher:ContextBarCenterButtonWithLabel(
@@ -525,10 +533,15 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify current parent folder for is correct.
+  NSString* sourceLabel =
+      (onlyOnThisDevice)
+          ? [NSString
+                stringWithFormat:@"%@. Only on this device.", sourceFolder]
+          : sourceFolder;
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(sourceFolder), nil)]
+                                   grey_accessibilityLabel(sourceLabel), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on Folder to open folder picker.
@@ -557,10 +570,15 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notVisible()];
 
   // Verify parent folder has been changed in edit page.
+  NSString* destinationLabel =
+      (onlyOnThisDevice)
+          ? [NSString
+                stringWithFormat:@"%@. Only on this device.", destinationFolder]
+          : destinationFolder;
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(destinationFolder),
+                                   grey_accessibilityLabel(destinationLabel),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -577,8 +595,7 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(editorId)]
       assertWithMatcher:grey_notVisible()];
 
-  // Wait for Undo toast to go away from screen.
-  [BookmarkEarlGreyUI waitForUndoToastToGoAway];
+  [BookmarkEarlGreyUI closeUndoSnackbarAndWait];
 }
 
 - (void)tapOnLongPressContextMenuButton:(id<GREYMatcher>)actionMatcher

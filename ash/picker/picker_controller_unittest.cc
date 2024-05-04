@@ -6,33 +6,27 @@
 
 #include <string>
 
-#include "ash/picker/model/picker_search_results.h"
+#include "ash/picker/model/picker_search_results_section.h"
+#include "ash/picker/picker_test_util.h"
 #include "ash/public/cpp/picker/picker_client.h"
 #include "ash/public/cpp/system/toast_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_ash_web_view_factory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/fake_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/models/image_model.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/test/widget_test.h"
 
 namespace ash {
 namespace {
-
-std::u16string ReadHtmlFromClipboard(ui::Clipboard* clipboard) {
-  std::u16string data;
-  std::string url;
-  uint32_t fragment_start, fragment_end;
-
-  clipboard->ReadHTML(ui::ClipboardBuffer::kCopyPaste, nullptr, &data, &url,
-                      &fragment_start, &fragment_end);
-  return data;
-}
 
 class PickerControllerTest : public AshTestBase {
  public:
@@ -56,11 +50,16 @@ class TestPickerClient : public PickerClient {
     return web_view_factory_.Create(params);
   }
 
-  void DownloadGifToString(const ValidGifUrl& url,
-                           DownloadGifToStringCallback callback) override {}
+  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory()
+      override {
+    return base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
+  }
+
   void FetchGifSearch(const std::string& query,
                       FetchGifsCallback callback) override {}
+  void StopGifSearch() override {}
   void StartCrosSearch(const std::u16string& query,
+                       std::optional<PickerCategory> category,
                        CrosSearchResultsCallback callback) override {}
   void StopCrosQuery() override {}
 
@@ -164,16 +163,36 @@ TEST_F(PickerControllerTest, InsertTextResultInsertsIntoInputFieldAfterFocus) {
   EXPECT_EQ(input_field.text(), u"abc");
 }
 
-TEST_F(PickerControllerTest, InsertImageResultInsertsIntoInputFieldAfterFocus) {
+TEST_F(PickerControllerTest, InsertPngResultInsertsIntoInputFieldAfterFocus) {
   PickerController controller;
   TestPickerClient client(&controller);
   controller.ToggleWidget();
   auto* input_method =
       Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod();
 
-  controller.InsertResultOnNextFocus(
-      PickerSearchResult::Gif(GURL("http://foo.com/fake.gif"), gfx::Size(),
-                              /*content_description=*/u""));
+  controller.InsertResultOnNextFocus(PickerSearchResult::Png({1, 2, 3}));
+  controller.widget_for_testing()->CloseNow();
+  ui::FakeTextInputClient input_field(
+      input_method,
+      {.type = ui::TEXT_INPUT_TYPE_TEXT, .can_insert_image = true});
+  input_method->SetFocusedTextInputClient(&input_field);
+
+  EXPECT_EQ(input_field.last_inserted_image_url(),
+            GURL("data:image/png;base64,AQID"));
+}
+
+TEST_F(PickerControllerTest, InsertGifResultInsertsIntoInputFieldAfterFocus) {
+  PickerController controller;
+  TestPickerClient client(&controller);
+  controller.ToggleWidget();
+  auto* input_method =
+      Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod();
+
+  controller.InsertResultOnNextFocus(PickerSearchResult::Gif(
+      GURL("http://foo.com/fake_preview.gif"),
+      GURL("http://foo.com/fake_preview_image.png"), gfx::Size(),
+      GURL("http://foo.com/fake.gif"), gfx::Size(),
+      /*content_description=*/u""));
   controller.widget_for_testing()->CloseNow();
   ui::FakeTextInputClient input_field(
       input_method,
@@ -184,25 +203,29 @@ TEST_F(PickerControllerTest, InsertImageResultInsertsIntoInputFieldAfterFocus) {
             GURL("http://foo.com/fake.gif"));
 }
 
-TEST_F(PickerControllerTest, InsertUnsupportedImageResultCopiesToClipboard) {
+TEST_F(PickerControllerTest,
+       InsertUnsupportedImageResultTimeoutCopiesToClipboard) {
   PickerController controller;
   TestPickerClient client(&controller);
   controller.ToggleWidget();
   auto* input_method =
       Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod();
 
-  controller.InsertResultOnNextFocus(
-      PickerSearchResult::Gif(GURL("http://foo.com"), gfx::Size(),
-                              /*content_description=*/u"a gif"));
+  controller.InsertResultOnNextFocus(PickerSearchResult::Gif(
+      /*preview_url=*/GURL("http://foo.com/preview"),
+      /*preview_image_url=*/GURL(), gfx::Size(30, 20),
+      /*full_url=*/GURL("http://foo.com"), gfx::Size(60, 40),
+      /*content_description=*/u"a gif"));
   controller.widget_for_testing()->CloseNow();
   ui::FakeTextInputClient input_field(
       input_method,
       {.type = ui::TEXT_INPUT_TYPE_TEXT, .can_insert_image = false});
   input_method->SetFocusedTextInputClient(&input_field);
+  task_environment()->FastForwardBy(PickerController::kInsertMediaTimeout);
 
   EXPECT_EQ(
       ReadHtmlFromClipboard(ui::Clipboard::GetForCurrentThread()),
-      uR"html(<img src="http://foo.com/" referrerpolicy="no-referrer" alt="a gif"/>)html");
+      uR"html(<img src="http://foo.com/" referrerpolicy="no-referrer" alt="a gif" width="60" height="40"/>)html");
   EXPECT_TRUE(
       ash::ToastManager::Get()->IsToastShown("picker_copy_to_clipboard"));
 }

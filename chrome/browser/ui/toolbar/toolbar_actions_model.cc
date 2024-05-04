@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_base.h"
@@ -234,8 +234,16 @@ bool ToolbarActionsModel::IsRestrictedUrl(const GURL& url) const {
   // saying "No extensions can run..." is inaccurate). Other extensions
   // will still be properly attributed in UI.
   return base::ranges::all_of(action_ids(), [this, url](ActionId id) {
-    return GetExtensionById(id)->permissions_data()->IsRestrictedUrl(
-        url, /*error=*/nullptr);
+    // action_ids() could include disabled extensions that haven't been removed
+    // yet from the set due to race conditions. Thus, we don't consider them in
+    // the restricted url computation.
+    auto* extension = GetExtensionById(id);
+    if (!extension) {
+      return true;
+    }
+
+    return extension->permissions_data()->IsRestrictedUrl(url,
+                                                          /*error=*/nullptr);
   });
 }
 
@@ -472,7 +480,7 @@ void ToolbarActionsModel::SetActionVisibility(const ActionId& action_id,
   if (is_now_visible) {
     stored_pinned_action_ids.push_back(action_id);
   } else {
-    base::Erase(stored_pinned_action_ids, action_id);
+    std::erase(stored_pinned_action_ids, action_id);
   }
   extension_prefs_->SetPinnedExtensions(stored_pinned_action_ids);
   // The |pinned_action_ids_| should be updated as a result of updating the

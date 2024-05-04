@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_IMPL_H_
 
 #include <memory>
+#include <optional>
 
 #include "css_at_rule_id.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -46,6 +47,7 @@ class StyleRuleMedia;
 class StyleRuleNamespace;
 class StyleRulePage;
 class StyleRulePositionFallback;
+class StyleRulePositionTry;
 class StyleRuleProperty;
 class StyleRuleSupports;
 class StyleRuleTry;
@@ -252,6 +254,11 @@ class CORE_EXPORT CSSParserImpl {
                                   StyleRule* parent_rule_for_nesting);
   StyleRulePositionFallback* ConsumePositionFallbackRule(CSSParserTokenStream&);
   StyleRuleTry* ConsumeTryRule(CSSParserTokenStream&);
+  StyleRulePositionTry* ConsumePositionTryRule(CSSParserTokenStream&);
+
+  StyleRuleFunction* ConsumeFunctionRule(CSSParserTokenStream& stream);
+  std::optional<Vector<StyleRuleFunction::Parameter>> ConsumeFunctionParameters(
+      CSSParserTokenRange& stream);
 
   StyleRuleKeyframe* ConsumeKeyframeStyleRule(CSSParserTokenRange prelude,
                                               const RangeOffset& prelude_offset,

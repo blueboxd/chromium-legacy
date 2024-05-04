@@ -945,13 +945,6 @@ bool ScrollableArea::HasLayerForScrollCorner() const {
   return LayerForScrollCorner();
 }
 
-void ScrollableArea::MainThreadScrollingDidChange() {
-  if (auto* programmatic_scroll_animator = ExistingProgrammaticScrollAnimator())
-    programmatic_scroll_animator->MainThreadScrollingDidChange();
-  if (auto* scroll_animator = ExistingScrollAnimator())
-    scroll_animator->MainThreadScrollingDidChange();
-}
-
 void ScrollableArea::ServiceScrollAnimations(double monotonic_time) {
   bool requires_animation_service = false;
   if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator()) {
@@ -1040,7 +1033,8 @@ void ScrollableArea::FadeOverlayScrollbarsTimerFired(TimerBase*) {
   // ShowNonMacOverlayScrollbars to be fired.
   if (RuntimeEnabledFeatures::
           InterruptComposedScrollbarDisappearanceEnabled() &&
-      UsesCompositedScrolling()) {
+      (RuntimeEnabledFeatures::RasterInducingScrollEnabled() ||
+       UsesCompositedScrolling())) {
     return;
   }
   SetScrollbarsHiddenIfOverlay(true);
@@ -1056,8 +1050,10 @@ void ScrollableArea::ShowNonMacOverlayScrollbars() {
   // TODO(crbug.com/1229864): We may want to always composite overlay
   // scrollbars to avoid the bug and the duplicated code for composited and
   // non-composited overlay scrollbars.
-  if (UsesCompositedScrolling())
+  if (RuntimeEnabledFeatures::RasterInducingScrollEnabled() ||
+      UsesCompositedScrolling()) {
     return;
+  }
 
   SetScrollbarsHiddenIfOverlay(false);
 

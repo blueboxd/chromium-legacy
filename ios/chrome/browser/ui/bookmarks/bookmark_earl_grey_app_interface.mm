@@ -9,18 +9,21 @@
 #import "base/format_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/browser/bookmark_node.h"
+#import "components/bookmarks/browser/bookmark_utils.h"
 #import "components/bookmarks/browser/titled_url_match.h"
 #import "components/bookmarks/common/bookmark_metrics.h"
-#import "components/bookmarks/common/storage_type.h"
 #import "components/prefs/pref_service.h"
 #import "components/query_parser/query_parser.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -33,9 +36,9 @@
 #pragma mark - Public Interface
 
 + (NSError*)clearBookmarks {
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
+  LegacyBookmarkModel* localOrSyncableBookmarkModel =
       [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
-  bookmarks::BookmarkModel* accountBookmarkModel =
+  LegacyBookmarkModel* accountBookmarkModel =
       [BookmarkEarlGreyAppInterface accountBookmarkModel];
   ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
@@ -71,14 +74,13 @@
                                       secondURL:(NSString*)secondURL
                                        thirdURL:(NSString*)thirdURL
                                       fourthURL:(NSString*)fourthURL
-                                      inStorage:
-                                          (bookmarks::StorageType)storageType {
+                                      inStorage:(BookmarkModelType)storageType {
   NSError* bookmarkModelsLoadedError =
       [BookmarkEarlGreyAppInterface waitForBookmarkModelsLoaded];
   if (bookmarkModelsLoadedError) {
     return bookmarkModelsLoadedError;
   }
-  bookmarks::BookmarkModel* bookmarkModel =
+  LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
   NSString* firstTitle = @"First URL";
@@ -119,15 +121,14 @@
 }
 
 + (NSError*)setupBookmarksWhichExceedsScreenHeightUsingURL:(NSString*)URL
-                                                 inStorage:
-                                                     (bookmarks::StorageType)
-                                                         storageType {
+                                                 inStorage:(BookmarkModelType)
+                                                               storageType {
   NSError* waitForBookmarkModelsLoadedError =
       [BookmarkEarlGreyAppInterface waitForBookmarkModelsLoaded];
   if (waitForBookmarkModelsLoadedError) {
     return waitForBookmarkModelsLoadedError;
   }
-  bookmarks::BookmarkModel* bookmarkModel =
+  LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
   const GURL dummyURL = GURL(base::SysNSStringToUTF8(URL));
@@ -158,7 +159,7 @@
 }
 
 + (NSError*)waitForBookmarkModelsLoaded {
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
+  LegacyBookmarkModel* localOrSyncableBookmarkModel =
       [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
 
   BOOL localOrSyncableModelSuccess =
@@ -170,7 +171,7 @@
     return testing::NSErrorWithLocalizedDescription(
         @"Local/Syncable bookmark model did not load");
   }
-  bookmarks::BookmarkModel* accountBookmarkModel =
+  LegacyBookmarkModel* accountBookmarkModel =
       [BookmarkEarlGreyAppInterface accountBookmarkModel];
 
   if (!accountBookmarkModel) {
@@ -188,31 +189,59 @@
 }
 
 + (void)commitPendingWrite {
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
+  LegacyBookmarkModel* localOrSyncableBookmarkModel =
       [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
   localOrSyncableBookmarkModel->CommitPendingWriteForTest();
-  bookmarks::BookmarkModel* accountBookmarkModel =
+  LegacyBookmarkModel* accountBookmarkModel =
       [BookmarkEarlGreyAppInterface accountBookmarkModel];
   if (accountBookmarkModel) {
     accountBookmarkModel->CommitPendingWriteForTest();
   }
 }
 
++ (void)setLastUsedBookmarkFolderToMobileBookmarksInStorageType:
+    (BookmarkModelType)storageType {
+  const bookmarks::BookmarkNode* folder =
+      [self bookmarkModelOfStorage:storageType]->mobile_node();
+  SetLastUsedBookmarkFolder(
+      chrome_test_util::GetOriginalBrowserState()->GetPrefs(), folder,
+      storageType);
+}
+
++ (const bookmarks::BookmarkNode*)lastUsedBookmarkFolder {
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  return GetDefaultBookmarkFolder(
+      browserState->GetPrefs(),
+      bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(
+          SyncServiceFactory::GetForBrowserState(browserState)),
+      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel],
+      [BookmarkEarlGreyAppInterface accountBookmarkModel]);
+}
+
++ (BookmarkModelType)lastUsedBookmarkFolderStorageType {
+  return static_cast<BookmarkModelType>(
+      chrome_test_util::GetOriginalBrowserState()->GetPrefs()->GetInteger(
+          prefs::kIosBookmarkLastUsedStorageReceivingBookmarks));
+}
+
 + (NSError*)verifyBookmarksWithTitle:(NSString*)title
                        expectedCount:(NSUInteger)expectedCount
-                           inStorage:(bookmarks::StorageType)storageType {
+                           inStorage:(BookmarkModelType)storageType {
   // Get BookmarkModel and wait for it to be loaded.
-  bookmarks::BookmarkModel* bookmarkModel =
+  LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
-  // Verify the correct number of bookmarks exist.
-  std::u16string matchString = base::SysNSStringToUTF16(title);
   int const kMaxCountOfBookmarks = 50;
-  std::vector<bookmarks::TitledUrlMatch> matches =
-      bookmarkModel->GetBookmarksMatching(
-          matchString, kMaxCountOfBookmarks,
-          query_parser::MatchingAlgorithm::DEFAULT);
-  if (matches.size() != expectedCount) {
+  bookmarks::QueryFields query;
+  query.title =
+      std::make_unique<std::u16string>(base::SysNSStringToUTF16(title));
+
+  // Verify the correct number of bookmarks exist.
+  std::vector<const bookmarks::BookmarkNode*> nodes;
+  bookmarkModel->GetBookmarksMatchingProperties(query, kMaxCountOfBookmarks,
+                                                &nodes);
+  if (nodes.size() != expectedCount) {
     return testing::NSErrorWithLocalizedDescription(
         @"Unexpected number of bookmarks");
   }
@@ -222,7 +251,7 @@
 
 + (NSError*)addBookmarkWithTitle:(NSString*)title
                              URL:(NSString*)url
-                       inStorage:(bookmarks::StorageType)storageType {
+                       inStorage:(BookmarkModelType)storageType {
   NSError* waitForBookmarkModelsLoadedError =
       [BookmarkEarlGreyAppInterface waitForBookmarkModelsLoaded];
   if (waitForBookmarkModelsLoadedError) {
@@ -230,7 +259,7 @@
   }
 
   GURL bookmarkURL = GURL(base::SysNSStringToUTF8(url));
-  bookmarks::BookmarkModel* bookmarkModel =
+  LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
   bookmarkModel->AddNewURL(bookmarkModel->mobile_node(), 0,
                            base::SysNSStringToUTF16(title), bookmarkURL);
@@ -239,9 +268,9 @@
 }
 
 + (NSError*)removeBookmarkWithTitle:(NSString*)title
-                          inStorage:(bookmarks::StorageType)storageType {
+                          inStorage:(BookmarkModelType)storageType {
   std::u16string name16(base::SysNSStringToUTF16(title));
-  bookmarks::BookmarkModel* bookmarkModel =
+  LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
       bookmarkModel->root_node());
@@ -259,9 +288,9 @@
 
 + (NSError*)moveBookmarkWithTitle:(NSString*)bookmarkTitle
                 toFolderWithTitle:(NSString*)newFolder
-                        inStorage:(bookmarks::StorageType)storageType {
+                        inStorage:(BookmarkModelType)storageType {
   std::u16string name16(base::SysNSStringToUTF16(bookmarkTitle));
-  bookmarks::BookmarkModel* bookmarkModel =
+  LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
       bookmarkModel->root_node());
@@ -284,7 +313,7 @@
     folder = iteratorFolder.Next();
   }
   std::vector<const bookmarks::BookmarkNode*> toMove{bookmark};
-  bookmarks::BookmarkModel* accountBookmarkModel =
+  LegacyBookmarkModel* accountBookmarkModel =
       [BookmarkEarlGreyAppInterface accountBookmarkModel];
   if (!bookmark_utils_ios::MoveBookmarks(toMove, bookmarkModel,
                                          accountBookmarkModel, folder)) {
@@ -298,9 +327,9 @@
 
 + (NSError*)verifyChildCount:(size_t)count
             inFolderWithName:(NSString*)name
-                   inStorage:(bookmarks::StorageType)storageType {
+                   inStorage:(BookmarkModelType)storageType {
   std::u16string name16(base::SysNSStringToUTF16(name));
-  bookmarks::BookmarkModel* bookmarkModel =
+  LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
@@ -332,8 +361,7 @@
 
 + (NSError*)verifyExistenceOfBookmarkWithURL:(NSString*)URL
                                         name:(NSString*)name
-                                   inStorage:
-                                       (bookmarks::StorageType)storageType {
+                                   inStorage:(BookmarkModelType)storageType {
   const bookmarks::BookmarkNode* bookmark =
       [self bookmarkModelOfStorage:storageType]
           ->GetMostRecentlyAddedUserNodeForURL(
@@ -349,7 +377,7 @@
 }
 
 + (NSError*)verifyAbsenceOfBookmarkWithURL:(NSString*)URL
-                                 inStorage:(bookmarks::StorageType)storageType {
+                                 inStorage:(BookmarkModelType)storageType {
   const bookmarks::BookmarkNode* bookmark =
       [self bookmarkModelOfStorage:storageType]
           ->GetMostRecentlyAddedUserNodeForURL(
@@ -363,8 +391,7 @@
 }
 
 + (NSError*)verifyExistenceOfFolderWithTitle:(NSString*)title
-                                   inStorage:
-                                       (bookmarks::StorageType)storageType {
+                                   inStorage:(BookmarkModelType)storageType {
   std::u16string folderTitle16(base::SysNSStringToUTF16(title));
 
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
@@ -420,22 +447,21 @@
 }
 #pragma mark - Helpers
 
-+ (bookmarks::BookmarkModel*)localOrSyncableBookmarkModel {
++ (LegacyBookmarkModel*)localOrSyncableBookmarkModel {
   return ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState());
 }
 
-+ (bookmarks::BookmarkModel*)accountBookmarkModel {
++ (LegacyBookmarkModel*)accountBookmarkModel {
   return ios::AccountBookmarkModelFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState());
 }
 
-+ (bookmarks::BookmarkModel*)bookmarkModelOfStorage:
-    (bookmarks::StorageType)storageType {
++ (LegacyBookmarkModel*)bookmarkModelOfStorage:(BookmarkModelType)storageType {
   switch (storageType) {
-    case bookmarks::StorageType::kLocalOrSyncable:
+    case BookmarkModelType::kLocalOrSyncable:
       return [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
-    case bookmarks::StorageType::kAccount:
+    case BookmarkModelType::kAccount:
       return [BookmarkEarlGreyAppInterface accountBookmarkModel];
   }
 }

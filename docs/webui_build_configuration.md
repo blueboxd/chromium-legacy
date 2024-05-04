@@ -111,6 +111,8 @@ out_manifest: Specifies a file where the list of output files and their
               preprocessed files are instead passed to ts_library in WebUIs
               that have been migrated to TypeScript, this is only used by
               WebUIs that have not been migrated to TypeScript yet.
+defines: Optional parameter. Specifies additional variables that can be used in
+         conditional expressions.
 ```
 #### **Example:**
 ```
@@ -130,6 +132,7 @@ preprocess_if_expr("preprocess_generated") {
     "my_web_component.html.ts",
   ]
   out_folder = "$target_gen_dir/$preprocess_folder"
+  defines = [ "foo_enabled=false" ]
 }
 
 # Preprocess "my_web_component.ts" and "my_webui.ts" in the src dir into
@@ -141,6 +144,7 @@ preprocess_if_expr("preprocess_src") {
     "my_webui.ts",
   ]
   out_folder = "$target_gen_dir/$preprocess_folder"
+  defines = [ "foo_enabled=true" ]
 }
 ```
 
@@ -195,10 +199,17 @@ path_mappings: Additional non-default path mappings for absolute imports. The
                adding "//ui/webui/resources/cr_elements:build_ts" in deps will
                automatically add the mapping for imports from that library
                (e.g. 'chrome://resources/cr_elements/cr_button/cr_button.js').
-               Important: Don't add path_mappings without also adding the
-               ts_library() target(s) responsible for the files being mapped to
-               deps! path_mappings without corresponding deps can result in
-               flaky build errors.
+               Important: Adding path_mappings *does not* add the files mapped
+               in |inputs| or the targets generating files to |deps|. To prevent
+               flaky build errors, *always* do one of the following when adding
+               a path_mapping:
+               - Add the ts_library() target responsible for compiling .ts files
+                 into the mapped generated directory to |deps|.
+               - Add the ts_definitions(), copy(), preprocess_if_expr(), or
+                 other target responsible for generating definitions files in
+                 the mapped generated directory to |extra_deps|
+               - Add all source .d.ts files your target uses from the mapped
+                 source directory to |definitions|.
 manifest_excludes: List of input files to exclude from the output
                    the manifest file.
 enable_source_maps: Defaults to the value of the enable_webui_inline_sourcemaps
@@ -574,6 +585,7 @@ extra_grdp_deps: List of external generate_grd() targets that generate .grdp
                  resources.grd file. Optional parameter.
 extra_grdp_files: Output .grdp files of external generate_grd() targets. Must be
                   defined if |extra_grdp_deps| is defined.
+preprocessor_defines: Optional parameter. See |defines| in preprocess_if_expr().
 grit_output_dir: See |output_dir| in grit(). Optional parameter, defaults to
                  "$root_gen_dir/chrome"
 enable_source_maps: Defaults to "false". Incompatible with |optimize=true|.
@@ -626,6 +638,8 @@ build_webui("build") {
     "//ui/webui/resources/cr_elements:build_ts",
     "//ui/webui/resources/js:build_ts",
   ]
+
+  preprocessor_defines = [ "foo_enabled=false" ]
 }
 
 ```

@@ -62,8 +62,9 @@ void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
   // execution, which updates layout before entering doApply().
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
-  if (!RootEditableElementOf(EndingSelection().Base()))
+  if (!RootEditableElementOf(EndingSelection().Anchor())) {
     return;
+  }
 
   VisiblePosition visible_end = EndingVisibleSelection().VisibleEnd();
   VisiblePosition visible_start = EndingVisibleSelection().VisibleStart();
@@ -317,13 +318,17 @@ void ApplyBlockElementCommand::RangeForParagraphSplittingTextNodesIfNeeded(
     if (end_style->ShouldPreserveBreaks() && start == end &&
         end.OffsetInContainerNode() <
             static_cast<int>(To<Text>(end.ComputeContainerNode())->length())) {
-      int end_offset = end.OffsetInContainerNode();
-      // TODO(yosin) We should use |PositionMoveType::CodePoint| for
-      // |previousPositionOf()|.
-      if (!IsNewLineAtPosition(
-              PreviousPositionOf(end, PositionMoveType::kCodeUnit)) &&
-          IsNewLineAtPosition(end))
-        end = Position(end.ComputeContainerNode(), end_offset + 1);
+      if (!RuntimeEnabledFeatures::
+              NoIncreasingEndOffsetOnSplittingTextNodesEnabled()) {
+        int end_offset = end.OffsetInContainerNode();
+        // TODO(yosin) We should use |PositionMoveType::CodePoint| for
+        // |previousPositionOf()|.
+        if (!IsNewLineAtPosition(
+                PreviousPositionOf(end, PositionMoveType::kCodeUnit)) &&
+            IsNewLineAtPosition(end)) {
+          end = Position(end.ComputeContainerNode(), end_offset + 1);
+        }
+      }
       if (is_end_and_end_of_last_paragraph_on_same_node &&
           end.OffsetInContainerNode() >=
               end_of_last_paragraph.OffsetInContainerNode())

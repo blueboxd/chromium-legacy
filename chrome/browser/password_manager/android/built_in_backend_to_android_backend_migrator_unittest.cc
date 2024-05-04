@@ -24,6 +24,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores;
+using password_manager::prefs::UseUpmLocalAndSeparateStoresState;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
@@ -87,6 +89,8 @@ class BuiltInBackendToAndroidBackendMigratorTest : public testing::Test {
         prefs::kPasswordsUseUPMLocalAndSeparateStores,
         static_cast<int>(
             password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
+    prefs_.registry()->RegisterBooleanPref(
+        prefs::kShouldShowPostPasswordMigrationSheetAtStartup, false);
     CreateMigrator(&built_in_backend_, &android_backend_, &prefs_);
   }
 
@@ -135,7 +139,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   Init();
   InitSyncService(/*is_password_sync_enabled=*/true);
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -152,7 +156,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
 
   InitSyncService(/*is_password_sync_enabled=*/false);
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -163,7 +167,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
 }
 
 TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
-       AllPrefsAreUpdatedWhenMigrationIsNeeded_SyncOff) {
+       AllPrefsAreUpdatedAfterLocalPasswordsMigration) {
   Init();
 
   prefs()->SetInteger(
@@ -174,15 +178,16 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
 
   InitSyncService(/*is_password_sync_enabled=*/false);
 
-  migrator()->StartMigrationIfNecessary(
-      /*should_attempt_upm_reenrollment=*/false);
+  migrator()->StartMigrationOfLocalPasswords();
   RunUntilIdle();
 
-  EXPECT_EQ(1, prefs()->GetInteger(
-                   prefs::kCurrentMigrationVersionToGoogleMobileServices));
+  EXPECT_EQ(static_cast<int>(UseUpmLocalAndSeparateStoresState::kOn),
+            prefs()->GetInteger(kPasswordsUseUPMLocalAndSeparateStores));
   EXPECT_EQ(
       base::Time::Now().InSecondsFSinceUnixEpoch(),
       prefs()->GetDouble(password_manager::prefs::kTimeOfLastMigrationAttempt));
+  EXPECT_TRUE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
 }
 
 TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
@@ -193,7 +198,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
       password_manager::prefs::kTimeOfLastMigrationAttempt,
       (base::Time::Now() - base::Hours(2)).InSecondsFSinceUnixEpoch());
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -208,7 +213,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
        LastAttemptUnchangedWhenRollingMigrationDisabled) {
   Init(/*current_migration_version=*/1);
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -254,7 +259,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   form_with_local_data.skip_zero_click = true;
   built_in_backend().AddLoginAsync(form_with_local_data, base::DoNothing());
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -264,6 +269,9 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
       Run(VariantWith<LoginsResult>(ElementsAre(form_with_local_data))));
   android_backend().GetAllLoginsAsync(mock_reply.Get());
   RunUntilIdle();
+
+  EXPECT_FALSE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
 }
 
 TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
@@ -283,7 +291,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   form_with_local_data.skip_zero_click = true;
   android_backend().AddLoginAsync(form_with_local_data, base::DoNothing());
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -293,6 +301,9 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
       Run(VariantWith<LoginsResult>(ElementsAre(form_with_local_data))));
   android_backend().GetAllLoginsAsync(mock_reply.Get());
   RunUntilIdle();
+
+  EXPECT_FALSE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
 }
 
 // Tests that migration removes blocklisted entries with non-empty username or
@@ -314,7 +325,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   form_1.password_value.clear();
   built_in_backend().AddLoginAsync(form_2, base::DoNothing());
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -324,6 +335,9 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   android_backend().GetAllLoginsAsync(mock_reply.Get());
   built_in_backend().GetAllLoginsAsync(mock_reply.Get());
   RunUntilIdle();
+
+  EXPECT_FALSE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
 }
 
 // Tests that migration does not affect username and password for
@@ -345,7 +359,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   android_backend().AddLoginAsync(form_1, base::DoNothing());
   RunUntilIdle();
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -357,6 +371,9 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   android_backend().GetAllLoginsAsync(mock_reply.Get());
   built_in_backend().GetAllLoginsAsync(mock_reply.Get());
   RunUntilIdle();
+
+  EXPECT_FALSE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
 }
 
 TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
@@ -380,7 +397,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   form_with_local_data.skip_zero_click = true;
   built_in_backend().AddLoginAsync(form_with_local_data, base::DoNothing());
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/true);
   RunUntilIdle();
 
@@ -400,6 +417,9 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   EXPECT_EQ(prefs()->GetInteger(
                 prefs::kTimesAttemptedToReenrollToGoogleMobileServices),
             0);
+
+  EXPECT_FALSE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
 }
 
 // Holds the built in and android backend's logins and the expected result after
@@ -408,19 +428,29 @@ struct MigrationParam {
   struct Entry {
     Entry(int index,
           std::string password = "",
-          base::TimeDelta date_created = base::TimeDelta())
-        : index(index), password(password), date_created(date_created) {}
+          base::TimeDelta date_created = base::TimeDelta(),
+          base::TimeDelta date_last_used = base::TimeDelta(),
+          base::TimeDelta date_password_modified = base::TimeDelta())
+        : index(index),
+          password(password),
+          date_created(date_created),
+          date_last_used(date_last_used),
+          date_password_modified(date_password_modified) {}
 
     PasswordForm ToPasswordForm() const {
       PasswordForm form = CreateTestPasswordForm(index);
       form.password_value = base::ASCIIToUTF16(password);
       form.date_created = base::Time() + date_created;
+      form.date_last_used = base::Time() + date_last_used;
+      form.date_password_modified = base::Time() + date_password_modified;
       return form;
     }
 
     int index;
     std::string password;
     base::TimeDelta date_created;
+    base::TimeDelta date_last_used;
+    base::TimeDelta date_password_modified;
   };
 
   std::vector<PasswordForm> GetBuiltInLogins() const {
@@ -435,8 +465,8 @@ struct MigrationParam {
     return EntriesToPasswordForms(merged_logins);
   }
 
-  std::vector<PasswordForm> GetUpdatedAndroidLogins() const {
-    return EntriesToPasswordForms(updated_android_logins);
+  std::vector<PasswordForm> GetAndroidLoginsAfterInitialSyncMigration() const {
+    return EntriesToPasswordForms(initial_sync_migration_android_logins);
   }
 
   std::vector<PasswordForm> EntriesToPasswordForms(
@@ -450,7 +480,21 @@ struct MigrationParam {
   std::vector<Entry> built_in_logins;
   std::vector<Entry> android_logins;
   std::vector<Entry> merged_logins;
-  std::vector<Entry> updated_android_logins;
+
+  // The initial sync migration updates built-in backend logins in
+  // the android backend, since the data is assumed to be the same apart
+  // from non-syncable data. However, this means that no merge logic is
+  // applies so these might differ from `merged_logins`.
+  std::vector<Entry> initial_sync_migration_android_logins;
+
+  int updated_in_android_backend_credentials_count = 0;
+
+  // The local passwords migration uses a merge algorithm for credentials
+  // with the same primary key in both backends,but different passwords.
+  // The conflicts are resolved in favor or the most recently created/mdoified
+  // entry. The conflict is won by the android backend when the most
+  // recent credential is stored there.
+  int conflicts_won_by_android = 0;
 };
 
 // Tests that initial and rolling migration actually works by comparing
@@ -476,7 +520,7 @@ TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
   }
   RunUntilIdle();
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -489,15 +533,20 @@ TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
 
   // The android logins are updated. Existing logins are retained.
   base::MockCallback<LoginsOrErrorReply> android_reply;
-  EXPECT_CALL(android_reply, Run(VariantWith<LoginsResult>(ElementsAreArray(
-                                 p.GetUpdatedAndroidLogins()))));
+  EXPECT_CALL(android_reply,
+              Run(VariantWith<LoginsResult>(ElementsAreArray(
+                  p.GetAndroidLoginsAfterInitialSyncMigration()))));
   android_backend().GetAllLoginsAsync(android_reply.Get());
   RunUntilIdle();
+
+  EXPECT_FALSE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
 }
 
 // Tests the initial migration result.
 TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
        LocalPwdMigrationAfterEnrollingIntoTheExperiment) {
+  base::HistogramTester histogram_tester;
   // Set current_migration_version to 0 to imitate a user enrolling into the
   // experiment.
   BuiltInBackendToAndroidBackendMigratorTest::Init(
@@ -521,18 +570,28 @@ TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
   }
   RunUntilIdle();
 
-  migrator()->StartMigrationIfNecessary(
-      /*should_attempt_upm_reenrollment=*/false);
+  migrator()->StartMigrationOfLocalPasswords();
   RunUntilIdle();
 
-  for (auto* const backend : {&android_backend(), &built_in_backend()}) {
-    base::MockCallback<LoginsOrErrorReply> mock_reply;
-    EXPECT_CALL(
-        mock_reply,
-        Run(VariantWith<LoginsResult>(ElementsAreArray(p.GetMergedLogins()))));
-    backend->GetAllLoginsAsync(mock_reply.Get());
-    RunUntilIdle();
-  }
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
+  EXPECT_CALL(
+      mock_reply,
+      Run(VariantWith<LoginsResult>(ElementsAreArray(p.GetMergedLogins()))));
+  android_backend().GetAllLoginsAsync(mock_reply.Get());
+  RunUntilIdle();
+
+  // After local passwords migration, the credentials in the built in backend
+  // should stay unchanged.
+  EXPECT_CALL(
+      mock_reply,
+      Run(VariantWith<LoginsResult>(ElementsAreArray(p.GetBuiltInLogins()))));
+  built_in_backend().GetAllLoginsAsync(mock_reply.Get());
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UnifiedPasswordManager.MigrationForLocalUsers."
+      "MergeWhereAndroidHasMostRecent",
+      GetParam().conflicts_won_by_android, 1);
 }
 
 TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
@@ -558,7 +617,7 @@ TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
   }
   RunUntilIdle();
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -574,6 +633,9 @@ TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
       Run(VariantWith<LoginsResult>(ElementsAreArray(p.GetBuiltInLogins()))));
   built_in_backend().GetAllLoginsAsync(mock_reply.Get());
   RunUntilIdle();
+
+  EXPECT_FALSE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
 }
 
 TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
@@ -599,7 +661,7 @@ TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
   }
   RunUntilIdle();
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -615,6 +677,51 @@ TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
       Run(VariantWith<LoginsResult>(ElementsAreArray(p.GetBuiltInLogins()))));
   built_in_backend().GetAllLoginsAsync(mock_reply.Get());
   RunUntilIdle();
+
+  EXPECT_FALSE(prefs()->GetBoolean(
+      prefs::kShouldShowPostPasswordMigrationSheetAtStartup));
+}
+
+TEST_P(BuiltInBackendToAndroidBackendMigratorTestWithMigrationParams,
+       LocalPasswordsMigrationMetrics) {
+  base::HistogramTester histogram_tester;
+  BuiltInBackendToAndroidBackendMigratorTest::Init(
+      /*current_migration_version=*/0);
+
+  prefs()->SetInteger(
+      password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(
+          password_manager::prefs::UseUpmLocalAndSeparateStoresState::
+              kOffAndMigrationPending));
+
+  const MigrationParam& p = GetParam();
+  for (const auto& login : p.GetBuiltInLogins()) {
+    built_in_backend().AddLoginAsync(login, base::DoNothing());
+  }
+  for (const auto& login : p.GetAndroidLogins()) {
+    android_backend().AddLoginAsync(login, base::DoNothing());
+  }
+  RunUntilIdle();
+
+  migrator()->StartMigrationOfLocalPasswords();
+  RunUntilIdle();
+
+  int added_to_anroid_backend_count =
+      p.GetMergedLogins().size() - p.GetAndroidLogins().size();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UnifiedPasswordManager.MigrationForLocalUsers."
+      "AddLoginCount",
+      added_to_anroid_backend_count, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UnifiedPasswordManager.MigrationForLocalUsers."
+      "UpdateLoginCount",
+      p.updated_in_android_backend_credentials_count, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UnifiedPasswordManager.MigrationForLocalUsers."
+      "MigratedLoginsTotalCount",
+      p.updated_in_android_backend_credentials_count +
+          added_to_anroid_backend_count,
+      1);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -624,37 +731,76 @@ INSTANTIATE_TEST_SUITE_P(
         MigrationParam{.built_in_logins = {},
                        .android_logins = {},
                        .merged_logins = {},
-                       .updated_android_logins = {}},
+                       .initial_sync_migration_android_logins = {},
+                       .conflicts_won_by_android = 0},
         MigrationParam{.built_in_logins = {{1}, {2}},
                        .android_logins = {},
                        .merged_logins = {{1}, {2}},
-                       .updated_android_logins = {{1}, {2}}},
+                       .initial_sync_migration_android_logins = {{1}, {2}},
+                       .updated_in_android_backend_credentials_count = 0,
+                       .conflicts_won_by_android = 0},
         MigrationParam{.built_in_logins = {},
                        .android_logins = {{1}, {2}},
                        .merged_logins = {{1}, {2}},
-                       .updated_android_logins = {{1}, {2}}},
+                       .initial_sync_migration_android_logins = {{1}, {2}},
+                       .conflicts_won_by_android = 0},
         MigrationParam{.built_in_logins = {{1}, {2}},
                        .android_logins = {{3}},
                        .merged_logins = {{1}, {2}, {3}},
-                       .updated_android_logins = {{1}, {2}, {3}}},
+                       .initial_sync_migration_android_logins = {{1}, {2}, {3}},
+                       .conflicts_won_by_android = 0},
         MigrationParam{.built_in_logins = {{1}, {2}, {3}},
                        .android_logins = {{1}, {2}, {3}},
                        .merged_logins = {{1}, {2}, {3}},
-                       .updated_android_logins = {{1}, {2}, {3}}},
+                       .initial_sync_migration_android_logins = {{1}, {2}, {3}},
+                       .conflicts_won_by_android = 0},
         MigrationParam{
             .built_in_logins = {{1, "old_password", base::Days(1)}, {2}},
             .android_logins = {{1, "new_password", base::Days(2)}, {3}},
             .merged_logins = {{1, "new_password", base::Days(2)}, {2}, {3}},
-            .updated_android_logins = {{1, "old_password", base::Days(1)},
-                                       {2},
-                                       {3}}},
+            .initial_sync_migration_android_logins =
+                {{1, "old_password", base::Days(1)}, {2}, {3}},
+            .conflicts_won_by_android = 1},
         MigrationParam{
             .built_in_logins = {{1, "new_password", base::Days(2)}, {2}},
             .android_logins = {{1, "old_password", base::Days(1)}, {3}},
             .merged_logins = {{1, "new_password", base::Days(2)}, {2}, {3}},
-            .updated_android_logins = {{1, "new_password", base::Days(2)},
-                                       {2},
-                                       {3}}}));
+            .initial_sync_migration_android_logins =
+                {{1, "new_password", base::Days(2)}, {2}, {3}},
+            .updated_in_android_backend_credentials_count = 1,
+            .conflicts_won_by_android = 0},
+        MigrationParam{.built_in_logins = {{1, "new_password",
+                                            /*date_created=*/base::Days(1),
+                                            /*date_last_used=*/base::Days(2)}},
+                       .android_logins = {{1, "old_password",
+                                           /*date_created=*/base::Days(1)}},
+                       .merged_logins = {{1, "new_password", base::Days(1),
+                                          /*date_last_used=*/base::Days(2)}},
+                       .initial_sync_migration_android_logins =
+                           {{1, "new_password", base::Days(1),
+                             /*date_last_used=*/base::Days(2)}},
+                       .updated_in_android_backend_credentials_count = 1,
+                       .conflicts_won_by_android = 0},
+
+        MigrationParam{
+            .built_in_logins = {{1, "old_password",
+                                 /*date_created=*/base::Days(1),
+                                 /*date_last_used=*/base::Days(2),
+                                 /*date_password_modified=*/base::Days(2)}},
+            .android_logins = {{1, "new_password",
+                                /*date_created=*/base::Days(1),
+                                /*date_last_used=*/base::Days(2),
+                                /*date_password_modified=*/base::Days(3)}},
+            .merged_logins = {{1, "new_password",
+                               /*date_created=*/base::Days(1),
+                               /*date_last_used=*/base::Days(2),
+                               /*date_password_modified=*/base::Days(3)}},
+            .initial_sync_migration_android_logins =
+                {{1, "old_password",
+                  /*date_created=*/base::Days(1),
+                  /*date_last_used=*/base::Days(2),
+                  /*date_password_modified=*/base::Days(2)}},
+            .conflicts_won_by_android = 1}));
 
 struct MigrationParamForMetrics {
   // Whether migration has already happened.
@@ -694,6 +840,8 @@ class BuiltInBackendToAndroidBackendMigratorTestMetrics
         prefs::kPasswordsUseUPMLocalAndSeparateStores,
         static_cast<int>(
             password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
+    prefs()->registry()->RegisterBooleanPref(
+        prefs::kShouldShowPostPasswordMigrationSheetAtStartup, false);
 
     if (GetParam().migration_ran_before) {
       // Setup the pref to indicate that the initial migration has happened
@@ -752,8 +900,8 @@ TEST_P(BuiltInBackendToAndroidBackendMigratorTestMetrics,
         .WillOnce(WithArg<1>(Invoke(test_migration_callback)));
   }
 
-  migrator()->StartMigrationIfNecessary(GetParam().expected_migration_type ==
-                                        "ReenrollmentAttemptMigration");
+  migrator()->StartAccountMigrationIfNecessary(
+      GetParam().expected_migration_type == "ReenrollmentAttemptMigration");
   FastForwardBy(kLatencyDelta);
 
   histogram_tester.ExpectTotalCount(latency_metric_, 1);
@@ -877,7 +1025,7 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorWithMockAndroidBackendTest,
   // executed. Check that exactly one UpdateLoginAsync() is called.
   EXPECT_CALL(android_backend_, UpdateLoginAsync).Times(1);
 
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
 
   // Migration version is still 0 since migration didn't complete.
@@ -923,12 +1071,14 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorWithMockAndroidBackendTest,
   // executed. Check that exactly one AddLoginAsync() is called.
   EXPECT_CALL(android_backend_, AddLoginAsync).Times(1);
 
-  migrator()->StartMigrationIfNecessary(
-      /*should_attempt_upm_reenrollment=*/false);
+  migrator()->StartMigrationOfLocalPasswords();
 
-  // Migration version is still 0 since migration didn't complete.
-  EXPECT_EQ(0, prefs()->GetInteger(
-                   prefs::kCurrentMigrationVersionToGoogleMobileServices));
+  // Local migration should still be pending since it didn' t complete
+  // successfully.
+  EXPECT_EQ(static_cast<int>(
+                UseUpmLocalAndSeparateStoresState::kOffAndMigrationPending),
+            prefs()->GetInteger(kPasswordsUseUPMLocalAndSeparateStores));
+
   RunUntilIdle();
 }
 
@@ -940,8 +1090,8 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorWithMockAndroidBackendTest,
   PasswordForm form = CreateTestPasswordForm();
   built_in_backend().AddLoginAsync(form, base::DoNothing());
 
-  // Call StartMigrationIfNecessary for the first time.
-  migrator()->StartMigrationIfNecessary(
+  // Call StartAccountMigrationIfNecessary for the first time.
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/false);
   RunUntilIdle();
 
@@ -952,9 +1102,9 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorWithMockAndroidBackendTest,
   // Simulate some time passing before the second migration is triggered.
   FastForwardBy(base::Milliseconds(123u));
 
-  // Call StartMigrationIfNecessary for the second time before the first
+  // Call StartAccountMigrationIfNecessary for the second time before the first
   // migration finishes in an attempt to reenroll.
-  migrator()->StartMigrationIfNecessary(
+  migrator()->StartAccountMigrationIfNecessary(
       /*should_attempt_upm_reenrollment=*/true);
   RunUntilIdle();
 
@@ -963,6 +1113,63 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorWithMockAndroidBackendTest,
   // triggered.
   EXPECT_EQ(0, prefs()->GetDouble(
                    password_manager::prefs::kTimeOfLastMigrationAttempt));
+}
+
+TEST_F(BuiltInBackendToAndroidBackendMigratorWithMockAndroidBackendTest,
+       LocalPasswordsMigrationMetricsWithErrorDuringMigration) {
+  // Sets up the backends mocks in the way:
+  // - built in backend has 2 passwords;
+  // - android backend has no passwords;
+  // - android backend will return an error when trying to add a second built in
+  // password;
+  std::vector<PasswordForm> built_in_passwords = {CreateTestPasswordForm(0),
+                                                  CreateTestPasswordForm(1)};
+  for (PasswordForm& form : built_in_passwords) {
+    built_in_backend().AddLoginAsync(form, base::DoNothing());
+  }
+  RunUntilIdle();
+  ON_CALL(android_backend_, GetAllLoginsAsync)
+      .WillByDefault(WithArg<0>(Invoke([&](LoginsOrErrorReply reply) -> void {
+        base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE,
+            base::BindOnce(std::move(reply), std::vector<PasswordForm>()));
+      })));
+  ON_CALL(android_backend_, AddLoginAsync(built_in_passwords[1], testing::_))
+      .WillByDefault(
+          WithArg<1>(Invoke([&](PasswordChangesOrErrorReply reply) -> void {
+            base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                FROM_HERE,
+                base::BindOnce(std::move(reply), PasswordChangesOrError()));
+          })));
+  ON_CALL(android_backend_, AddLoginAsync(built_in_passwords[0], testing::_))
+      .WillByDefault(
+          WithArg<1>(Invoke([&](PasswordChangesOrErrorReply reply) -> void {
+            base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                FROM_HERE, base::BindOnce(std::move(reply), kBackendError));
+          })));
+
+  prefs()->SetInteger(
+      password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(
+          password_manager::prefs::UseUpmLocalAndSeparateStoresState::
+              kOffAndMigrationPending));
+
+  base::HistogramTester histogram_tester;
+  migrator()->StartMigrationOfLocalPasswords();
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UnifiedPasswordManager.MigrationForLocalUsers."
+      "AddLoginCount",
+      1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UnifiedPasswordManager.MigrationForLocalUsers."
+      "UpdateLoginCount",
+      0, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UnifiedPasswordManager.MigrationForLocalUsers."
+      "MigratedLoginsTotalCount",
+      1, 1);
 }
 
 }  // namespace password_manager

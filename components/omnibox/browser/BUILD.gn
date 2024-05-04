@@ -89,6 +89,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "secure_page_info_chrome_refresh.icon",
     "share.icon",
     "share_chrome_refresh.icon",
+    "spark.icon",
     "star.icon",
     "star_active.icon",
     "star_active_chrome_refresh.icon",
@@ -355,6 +356,8 @@ static_library("browser") {
     "//components/variations/net",
     "//extensions/buildflags",
     "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//skia",
@@ -404,7 +407,6 @@ static_library("browser") {
     deps += [
       "//components/history_clusters/core",
       "//components/keyed_service/content",
-      "//components/optimization_guide/core:entities",
       "//content/public/browser",
     ]
   }
@@ -876,10 +878,12 @@ source_set("unit_tests") {
     "//components/signin/public/identity_manager:test_support",
     "//components/strings",
     "//components/sync_preferences:test_support",
+    "//components/ukm:test_support",
     "//components/url_formatter",
     "//components/variations",
     "//components/variations:test_support",
     "//components/variations/net:net",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/network:test_support",
     "//sql",
     "//sql:test_support",

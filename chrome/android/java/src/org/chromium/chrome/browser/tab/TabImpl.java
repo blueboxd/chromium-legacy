@@ -10,9 +10,12 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
+import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.autofill.AutofillValue;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +29,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.Token;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UserDataHost;
@@ -47,12 +51,14 @@ import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
+import org.chromium.chrome.browser.pdf.PdfUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.tab.Tab.LoadUrlResult;
 import org.chromium.chrome.browser.tab.TabUtils.UseDesktopUserAgentCaller;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.components.autofill.AutofillFeatures;
+import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -114,6 +120,8 @@ class TabImpl implements Tab {
     /** The view provided by {@link TabViewManager} to be shown on top of Content view. */
     private View mCustomView;
 
+    AutofillProvider mAutofillProvider;
+
     /**
      * The {@link TabViewManager} associated with this Tab that is responsible for managing custom
      * views.
@@ -126,9 +134,6 @@ class TabImpl implements Tab {
 
     // Content layer Delegates
     private TabWebContentsDelegateAndroidImpl mWebContentsDelegate;
-
-    /** Tab id to be used as a source tab in SyncedTabDelegate. */
-    private int mSourceTabId = INVALID_TAB_ID;
 
     private boolean mIsClosing;
     private boolean mIsShowingErrorPage;
@@ -155,6 +160,9 @@ class TabImpl implements Tab {
 
     /** Whether or not the Tab is currently visible to the user. */
     private boolean mIsHidden = true;
+
+    /** Whether or not a navigation in primary main frame is in progress. */
+    private boolean mNavigationInPrimaryMainFrameInProgress;
 
     /**
      * Importance of the WebContents currently attached to this tab. Note the key difference from
@@ -194,7 +202,6 @@ class TabImpl implements Tab {
 
     private boolean mIsDestroyed;
 
-    private final TabThemeColorHelper mThemeColorHelper;
     private int mThemeColor;
     private boolean mIsWebContentObscured;
     private long mTimestampMillis;
@@ -279,7 +286,7 @@ class TabImpl implements Tab {
                     }
                 };
         mTabViewManager = new TabViewManagerImpl(this);
-        mThemeColorHelper = new TabThemeColorHelper(this, this::updateThemeColor);
+        new TabThemeColorHelper(this, this::updateThemeColor);
         mThemeColor = TabState.UNSPECIFIED_THEME_COLOR;
     }
 
@@ -338,7 +345,14 @@ class TabImpl implements Tab {
 
             // Reload the NativePage (if any), since the old NativePage has a reference to the old
             // activity.
-            if (isNativePage()) maybeShowNativePage(getUrl().getSpec(), true);
+            if (isNativePage()) {
+                // TODO(shuyng): Remove the null check of getNativePage() after fix
+                //  TabUnitTest#testFreezeDetachedNativePage.
+                maybeShowNativePage(
+                        getUrl().getSpec(),
+                        true,
+                        getNativePage() != null && getNativePage().isPdf());
+            }
         } else {
             updateIsDetached(window);
         }
@@ -564,7 +578,8 @@ class TabImpl implements Tab {
             // TODO(tedchoc): When showing the android NTP, delay the call to
             // TabImplJni.get().loadUrl until the android view has entirely rendered.
             if (!mIsNativePageCommitPending) {
-                mIsNativePageCommitPending = maybeShowNativePage(params.getUrl(), false);
+                boolean isPdf = PdfUtils.isPdfNavigation(params.getUrl(), params);
+                mIsNativePageCommitPending = maybeShowNativePage(params.getUrl(), false, isPdf);
             }
 
             if ("chrome://java-crash/".equals(params.getUrl())) {
@@ -712,6 +727,11 @@ class TabImpl implements Tab {
     }
 
     @Override
+    public boolean isNavigationInPrimaryMainFrameInProgress() {
+        return mNavigationInPrimaryMainFrameInProgress;
+    }
+
+    @Override
     public boolean isBeingRestored() {
         return mIsBeingRestored;
     }
@@ -771,9 +791,9 @@ class TabImpl implements Tab {
             // receive a timestamp. When presenting a Phone UI
             // TabGridViewBinder.bindClosableTabProperties is called by Android.View.performClick,
             // and does not receive the event timestamp. This currently triggers an animation in
-            // TabSwitcherAndStartSurfaceLayout.startHidingImpl which lasts around 300ms.
-            // TabSwitcherAndStartSurfaceLayout.doneHiding runs after the animation, actually
-            // triggering this tab change.
+            // TabSwitcherLayout.startHidingImpl which lasts around 300ms.
+            // TabSwitcherLayout.doneHiding runs after the animation, actually triggering this tab
+            // change.
             //
             // We should also consider merging the TabImpl and WebContents onShow into a single Jni
             // call.
@@ -785,7 +805,7 @@ class TabImpl implements Tab {
             // recreate the NativePage now.
             NativePage nativePage = getNativePage();
             if (nativePage != null && nativePage.isFrozen()) {
-                maybeShowNativePage(nativePage.getUrl(), true);
+                maybeShowNativePage(nativePage.getUrl(), true, nativePage.isPdf());
             }
             NativePageAssassin.getInstance().tabShown(this);
             TabImportanceManager.tabShown(this);
@@ -845,6 +865,7 @@ class TabImpl implements Tab {
 
     @Override
     public void destroy() {
+        ThreadUtils.assertOnUiThread();
         // Set at the start since destroying the WebContents can lead to calling back into
         // this class.
         mIsDestroyed = true;
@@ -949,8 +970,6 @@ class TabImpl implements Tab {
                             : initializeRenderer;
             if (parent != null) {
                 mParentId = parent.getId();
-                mSourceTabId =
-                        parent.isIncognito() == isIncognito() ? parent.getId() : INVALID_TAB_ID;
             }
 
             mTabLaunchTypeAtCreation = mLaunchType;
@@ -1093,6 +1112,46 @@ class TabImpl implements Tab {
         return mWebContentsDelegate;
     }
 
+    // Forwarded from TabViewAndroidDelegate.
+
+    /**
+     * Implementation of the {@link View#onProvideAutofillVirtualStructure(ViewStructure, int)}
+     * method for this tab. Noop if {@link AutofillProvider} isn't used on this tab.
+     *
+     * @see View#onProvideAutofillVirtualStructure(ViewStructure structure, int flags)
+     * @see ViewAndroidDelegate#onProvideAutofillVirtualStructure(ViewStructure structure, int
+     *     flags)
+     */
+    void onProvideAutofillVirtualStructure(ViewStructure structure, int flags) {
+        if (mAutofillProvider != null) {
+            mAutofillProvider.onProvideAutoFillVirtualStructure(structure, flags);
+        }
+    }
+
+    /**
+     * Implementation of the {@link View#autofill(SparseArray))} method for this tab. Noop if {@link
+     * AutofillProvider} isn't used on this tab.
+     *
+     * @see View#autofill(SparseArray)
+     * @see ViewAndroidDelegate#autofill(SparseArray)
+     */
+    void autofill(final SparseArray<AutofillValue> values) {
+        if (mAutofillProvider != null) {
+            mAutofillProvider.autofill(values);
+        }
+    }
+
+    /**
+     * Check whether the platform can request a ViewStructure.
+     *
+     * @return iff the AutofillProvider should provide a ViewStructure when prompted.
+     */
+    boolean providesAutofillStructure() {
+        // TODO(b/326231439): Check pref and AutofillService!
+        return ChromeFeatureList.isEnabled(
+                AutofillFeatures.AUTOFILL_VIRTUAL_VIEW_STRUCTURE_ANDROID);
+    }
+
     // Forwarded from TabWebContentsDelegateAndroid.
 
     /**
@@ -1156,18 +1215,31 @@ class TabImpl implements Tab {
         mIsBeingRestored = false;
     }
 
+    /** Update internal Tab state when a navigation in primary main frame has started. */
+    void handleDidStartNavigationInPrimaryMainFrame() {
+        assert !mNavigationInPrimaryMainFrameInProgress;
+        mNavigationInPrimaryMainFrameInProgress = true;
+    }
+
     /**
      * Update internal Tab state when provisional load gets committed.
+     *
      * @param url The URL that was loaded.
      * @param transitionType The transition type to the current URL.
+     * @param committed Whether the navigation has been committed.
      */
-    void handleDidFinishNavigation(GURL url, int transitionType) {
+    void handleDidFinishNavigationInPrimaryMainFrame(
+            GURL url, int transitionType, boolean committed) {
+        mNavigationInPrimaryMainFrameInProgress = false;
+        if (!committed) return;
         mIsNativePageCommitPending = false;
+
         boolean isReload = (transitionType & PageTransition.CORE_MASK) == PageTransition.RELOAD;
-        if (!maybeShowNativePage(url.getSpec(), isReload)) {
+        // TODO: set isPdf based on NavigationHandle for http/https
+        boolean isPdf = PdfUtils.isPdfNavigation(url.getSpec(), null);
+        if (!maybeShowNativePage(url.getSpec(), isReload, isPdf)) {
             showRenderedPage();
         }
-
         setLastNavigationCommittedTimestampMillis(System.currentTimeMillis());
     }
 
@@ -1227,12 +1299,14 @@ class TabImpl implements Tab {
 
     /**
      * Shows a native page for url if it's a valid chrome-native URL. Otherwise, does nothing.
+     *
      * @param url The url of the current navigation.
      * @param forceReload If true, the current native page (if any) will not be reused, even if it
-     *                    matches the URL.
+     *     matches the URL.
+     * @param isPdf Whether the content of the URL is pdf.
      * @return True, if a native page was displayed for url.
      */
-    boolean maybeShowNativePage(String url, boolean forceReload) {
+    boolean maybeShowNativePage(String url, boolean forceReload, boolean isPdf) {
         // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
         // so we can't create the native page. The native page will be created once reparenting is
         // completed.
@@ -1255,7 +1329,8 @@ class TabImpl implements Tab {
         mPendingNativePageHost = nativePageHost;
         mIsAlreadyCreatingNativePage = true;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
-        NativePage nativePage = mDelegateFactory.createNativePage(url, candidateForReuse, this);
+        NativePage nativePage =
+                mDelegateFactory.createNativePage(url, candidateForReuse, this, isPdf);
         mIsAlreadyCreatingNativePage = false;
         mPendingNativePageHost = null;
 
@@ -1280,7 +1355,9 @@ class TabImpl implements Tab {
         while (observers.hasNext()) observers.next().onDidChangeThemeColor(this, themeColor);
     }
 
-    void updateTitle() {
+    /** Update the title for the current page if changed. */
+    @Override
+    public void updateTitle() {
         if (isFrozen()) return;
 
         // When restoring the tabs, the title will no longer be populated, so request it from the
@@ -1385,6 +1462,8 @@ class TabImpl implements Tab {
             // Simulate the PAGE_LOAD_FINISHED notification that we did not get.
             if (didFinishLoad) didFinishPageLoad(getUrl());
         }
+
+        mNavigationInPrimaryMainFrameInProgress = false;
 
         for (TabObserver observer : mObservers) {
             observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
@@ -1519,6 +1598,10 @@ class TabImpl implements Tab {
                                     this));
 
             mWebContents.notifyRendererPreferenceUpdate();
+            mContentView.setImportantForAutofill(
+                    prepareAutofillProvider(webContents)
+                            ? View.IMPORTANT_FOR_AUTOFILL_YES
+                            : View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
             TabHelpers.initWebContentsHelpers(this);
             notifyContentChanged();
         } finally {
@@ -1703,6 +1786,33 @@ class TabImpl implements Tab {
         return restored;
     }
 
+    /**
+     * Initializes the {@link AutofillProvider} so that it can provide a ViewStructure for the given
+     * WebContents. If the provider existed already, it's only assigned the new WebContents.
+     *
+     * @param newWebContents The webcontents to prepare the provider for.
+     * @return true if the the provider is available for the given WebContents.
+     */
+    private boolean prepareAutofillProvider(WebContents newWebContents) {
+        if (!providesAutofillStructure()) {
+            mAutofillProvider = null;
+            return false; // Autofill provider can't be prepared.
+        }
+        if (mAutofillProvider != null) {
+            mAutofillProvider.setWebContents(newWebContents);
+            return true; // Provider already existed. Swapping contents suffices.
+        }
+        // TODO(b/326233923): Call selectionController.setNonSelectionActionModeCallback?
+        mAutofillProvider =
+                new AutofillProvider(
+                        getContext(),
+                        mContentView,
+                        newWebContents,
+                        getContext().getString(R.string.app_name));
+        TabImplJni.get().initializeAutofillIfNecessary(mNativeTabAndroid);
+        return true;
+    }
+
     @CalledByNative
     @Override
     public boolean isCustomTab() {
@@ -1781,6 +1891,11 @@ class TabImpl implements Tab {
     }
 
     @VisibleForTesting
+    void setAutofillProvider(AutofillProvider autofillProvider) {
+        mAutofillProvider = autofillProvider;
+    }
+
+    @VisibleForTesting
     protected void setTitle(String title) {
         mTitle = title;
     }
@@ -1846,6 +1961,11 @@ class TabImpl implements Tab {
      */
     private final void destroyWebContents(boolean deleteNativeWebContents) {
         if (mWebContents == null) return;
+
+        if (mAutofillProvider != null) {
+            mAutofillProvider.destroy();
+            mAutofillProvider = null;
+        }
 
         mContentView.removeOnAttachStateChangeListener(mAttachStateChangeListener);
         mContentView = null;
@@ -1970,6 +2090,8 @@ class TabImpl implements Tab {
                 WebContents webContents,
                 TabWebContentsDelegateAndroidImpl delegate,
                 ContextMenuPopulatorFactory contextMenuPopulatorFactory);
+
+        void initializeAutofillIfNecessary(long nativeTabAndroid);
 
         void updateDelegates(
                 long nativeTabAndroid,

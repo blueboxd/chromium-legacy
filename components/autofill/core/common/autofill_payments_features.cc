@@ -50,6 +50,24 @@ BASE_FEATURE(kAutofillEnableCardBenefits,
              "AutofillEnableCardBenefits",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, card benefits offered by American Express will be shown in
+// Payments Autofill UI.
+BASE_FEATURE(kAutofillEnableCardBenefitsForAmericanExpress,
+             "AutofillEnableCardBenefitsForAmericanExpress",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, card benefits offered by Capital One will be shown in Payments
+// Autofill UI.
+BASE_FEATURE(kAutofillEnableCardBenefitsForCapitalOne,
+             "AutofillEnableCardBenefitsForCapitalOne",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, card benefits offered by issuers will be synced from the
+// Payments server.
+BASE_FEATURE(kAutofillEnableCardBenefitsSync,
+             "AutofillEnableCardBenefitsSync",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, card product name (instead of issuer network) will be shown in
 // Payments Autofill UI.
 BASE_FEATURE(kAutofillEnableCardProductName,
@@ -93,11 +111,6 @@ BASE_FEATURE(kAutofillEnableIbanAndroidBottomSheet,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// When enabled, enable manual falling component for virtual cards on Android.
-BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
-             "AutofillEnableManualFallbackForVirtualCards",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, the merchant_domain field is included in requests to unmask a
 // card.
 BASE_FEATURE(kAutofillEnableMerchantDomainInUnmaskCardRequest,
@@ -109,7 +122,7 @@ BASE_FEATURE(kAutofillEnableMerchantDomainInUnmaskCardRequest,
 // context about which account the card is being saved to.
 BASE_FEATURE(kAutofillEnableUserAvatarInSaveCardFooter,
              "AutofillEnableUserAvatarInSaveCardFooter",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the GPay logo will be moved to the right side in payments
 // autofill dialogs and bubbles on desktop.
@@ -122,12 +135,6 @@ BASE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnDesktop,
 BASE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnClank,
              "AutofillEnableMovingGPayLogoToTheRightOnClank",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the user will see a new banner logo and text in the bubble
-// offering to Upstream their cards onto Google Pay.
-BASE_FEATURE(kAutofillEnableNewSaveCardBubbleUi,
-             "AutofillEnableNewSaveCardBubbleUi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, offers will be displayed in the Clank keyboard accessory during
 // downstream.
@@ -198,18 +205,6 @@ BASE_FEATURE(kAutofillEnableSyncingOfPixBankAccounts,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-// When enabled, the user will have the ability to update the virtual card
-// enrollment of a credit card through their chrome browser after certain
-// autofill flows (for example, downstream and upstream), and from the settings
-// page.
-BASE_FEATURE(kAutofillEnableUpdateVirtualCardEnrollment,
-             "AutofillEnableUpdateVirtualCardEnrollment",
-#if BUILDFLAG(IS_IOS)
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
 // When enabled, Chrome will trigger 3DS authentication during a virtual card
 // retrieval if a challenge is required, 3DS authentication is available for
 // the card, and FIDO is not.
@@ -222,6 +217,12 @@ BASE_FEATURE(kAutofillEnableVcn3dsAuthentication,
 // result when completed.
 BASE_FEATURE(kAutofillEnableVcnEnrollLoadingAndConfirmation,
              "AutofillEnableVcnEnrollLoadingAndConfirmation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Chrome will display grayed out virtual card suggestions on
+// merchant websites where the merchant has opted-out of virtual cards.
+BASE_FEATURE(kAutofillEnableVcnGrayOutForMerchantOptOut,
+             "AutofillEnableVcnGrayOutForMerchantOptOut",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, uses the refactored VirtualCardEnrollMetricsLogger in

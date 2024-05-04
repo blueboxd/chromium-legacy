@@ -10,7 +10,7 @@ load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
 load("//lib/structs.star", "structs")
-load("//lib/builder_health_indicators.star", "health_spec")
+load("//lib/builder_health_indicators.star", "blank_low_value_thresholds", "health_spec", "modified_default")
 load("//lib/xcode.star", "xcode")
 
 ci.defaults.set(
@@ -155,113 +155,6 @@ ci.builder(
     notifies = ["Site Isolation Android"],
 )
 
-# TODO(b/299215988): Move to chromium.chromiumos.star.
-ci.builder(
-    name = "chromeos-jacuzzi-rel-skylab",
-    description_html = """\
-This builder builds public image and runs tests on DUTs in the lab.
-""",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chromeos",
-                "checkout_lacros_sdk",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.ARM,
-            target_bits = 32,
-            target_platform = builder_config.target_platform.CHROMEOS,
-            target_cros_boards = [
-                "jacuzzi",
-                "arm64-generic",
-            ],
-        ),
-        skylab_upload_location = builder_config.skylab_upload_location(
-            # Both CI and try use the same `chromium-skylab-try` bucket.
-            gs_bucket = "chromium-skylab-try",
-            gs_extra = "ash",
-        ),
-    ),
-    gn_args = gn_args.config(
-        configs = [
-            "chromeos_device",
-            "ozone_headless",
-            "dcheck_off",
-            "reclient",
-            "jacuzzi",
-            "include_unwind_tables",
-            "also_build_lacros_chrome_for_architecture_arm64",
-            "is_skylab",
-        ],
-    ),
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "ash",
-        short_name = "jcz",
-    ),
-    contact_team_email = "chromeos-velocity@google.com",
-)
-
-# TODO(b/299215988): Move to chromium.chromiumos.star.
-ci.builder(
-    name = "chromeos-octopus-rel-skylab",
-    description_html = """\
-This builder builds public image and runs tests on octopus DUTs in the lab.
-""",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chromeos",
-                "checkout_lacros_sdk",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.INTEL,
-            target_bits = 32,
-            target_platform = builder_config.target_platform.CHROMEOS,
-            target_cros_boards = [
-                "octopus",
-                "amd64-generic",
-            ],
-        ),
-        skylab_upload_location = builder_config.skylab_upload_location(
-            # Both CI and try use the same `chromium-skylab-try` bucket.
-            gs_bucket = "chromium-skylab-try",
-            gs_extra = "ash",
-        ),
-    ),
-    gn_args = gn_args.config(
-        configs = [
-            "also_build_lacros_chrome_for_architecture_amd64",
-            "chromeos_device",
-            "include_unwind_tables",
-            "is_skylab",
-            "octopus",
-            "ozone_headless",
-            "reclient",
-        ],
-    ),
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "ash",
-        short_name = "oct",
-    ),
-    contact_team_email = "chromeos-velocity@google.com",
-)
-
 ci.builder(
     name = "linux-annotator-rel",
     builder_spec = builder_config.builder_spec(
@@ -288,6 +181,43 @@ ci.builder(
     ),
     notifies = ["annotator-rel"],
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+)
+
+ci.builder(
+    name = "linux-chromeos-dbg-oslogin",
+    description_html = "This builder is used to debug spefically oslogin issues related " +
+                       "to linux-chromeos-dbg-oslogin",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.CHROMEOS,
+        ),
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "chromeos_with_codecs",
+            "debug_builder",
+            "reclient",
+            "use_cups",
+        ],
+    ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+    ),
+    contact_team_email = "chrome-dev-infra-team@google.com",
 )
 
 ci.builder(
@@ -583,7 +513,8 @@ fyi_ios_builder(
             "xctest",
         ],
     ),
-    builderless = False,
+    builderless = True,
+    cpu = cpu.ARM64,
     console_view_entry = consoles.console_view_entry(
         category = "mac",
     ),
@@ -1058,6 +989,9 @@ ci.builder(
     name = "win10-rel-no-external-ip",
     builder_spec = builder_config.copy_from(
         "ci/Win x64 Builder",
+    ),
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
     ),
     gn_args = gn_args.config(
         configs = [
@@ -2034,6 +1968,9 @@ ci.builder(
         category = "celab",
     ),
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
+    health_spec = modified_default({
+        "Low Value": blank_low_value_thresholds,
+    }),
     properties = {
         "exclude": "chrome_only",
         "pool_name": "celab-chromium-ci",
@@ -2068,7 +2005,7 @@ fyi_ios_builder(
             "xctest",
         ],
     ),
-    os = os.MAC_DEFAULT,
+    os = os.MAC_BETA,
     cpu = cpu.ARM64,
     console_view_entry = consoles.console_view_entry(
         category = "iOS|iOSM1",
@@ -2114,6 +2051,7 @@ fyi_ios_builder(
         short_name = "ios-blk",
     ),
     execution_timeout = 3 * time.hour,
+    xcode = xcode.x15betabots,
 )
 
 fyi_ios_builder(

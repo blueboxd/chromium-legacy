@@ -14,7 +14,6 @@
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/values.h"
-#include "content/browser/webui/url_data_manager.h"
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/url_data_source.h"
@@ -48,8 +47,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
                             should_handle_request_callback,
                         const WebUIDataSource::HandleRequestCallback&
                             handle_request_callback) override;
-  void DisableReplaceExistingSource() override;
-  void DisableContentSecurityPolicy() override;
   void OverrideContentSecurityPolicy(network::mojom::CSPDirectiveName directive,
                                      const std::string& value) override;
   void OverrideCrossOriginOpenerPolicy(const std::string& value) override;
@@ -120,15 +117,12 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   WebUIDataSource::HandleRequestCallback filter_callback_;
   WebUIDataSource::ShouldHandleRequestCallback should_handle_request_callback_;
 
-  bool add_csp_ = true;
-
   base::flat_map<network::mojom::CSPDirectiveName, std::string> csp_overrides_;
   std::string coop_value_;
   std::string coep_value_;
   std::string corp_value_;
   bool deny_xframe_options_ = true;
   bool add_load_time_data_defaults_ = true;
-  bool replace_existing_source_ = true;
   bool should_replace_i18n_in_js_ = false;
   std::set<GURL> frame_ancestors_;
 

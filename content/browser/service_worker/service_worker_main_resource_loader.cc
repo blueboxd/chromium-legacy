@@ -312,21 +312,23 @@ void ServiceWorkerMainResourceLoader::StartRequest(
     active_worker->CountFeature(
         blink::mojom::WebFeature::kServiceWorkerStaticRouter_Evaluate);
     if (eval_result) {  // matched the rule.
+      const auto& sources = eval_result->sources;
+      auto source_type = sources[0].type;
+      set_used_router_source_type(source_type);
+
       // Set router information of matched rule for DevTools.
       // TODO(crbug.com/1502443): Prepare the router info in ResponseHead even
       // when the response is not set by `DidDispatchFetchEvent()`.
       network::mojom::ServiceWorkerRouterInfoPtr router_info =
           network::mojom::ServiceWorkerRouterInfo::New();
       router_info->rule_id_matched = eval_result->id;
+      router_info->matched_source_type = source_type;
       response_head_->service_worker_router_info = std::move(router_info);
 
-      const auto& sources = eval_result->sources;
-      auto source_type = sources[0].type;
-      set_used_router_source_type(source_type);
       // TODO(crbug.com/1371756): support other sources in the full form.
       // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
       switch (source_type) {
-        case blink::ServiceWorkerRouterSource::Type::kNetwork:
+        case network::mojom::ServiceWorkerRouterSourceType::kNetwork:
           // Network fallback is requested.
           // URLLoader in |fallback_callback_|, in other words |url_loader_|
           // which is referred in
@@ -350,8 +352,7 @@ void ServiceWorkerMainResourceLoader::StartRequest(
                     ResponseHeadUpdateParams head_update_params;
                     head_update_params.router_info = std::move(router_info);
                     std::move(fallback_callback)
-                        .Run(false /* reset_subresource_loader_params */,
-                             std::move(head_update_params));
+                        .Run(std::move(head_update_params));
                     if (active_worker->running_status() !=
                             blink::EmbeddedWorkerStatus::kRunning &&
                         base::FeatureList::IsEnabled(
@@ -365,13 +366,13 @@ void ServiceWorkerMainResourceLoader::StartRequest(
                   std::move(fallback_callback_), active_worker,
                   std::move(response_head_->service_worker_router_info)));
           return;
-        case blink::ServiceWorkerRouterSource::Type::kRace:
+        case network::mojom::ServiceWorkerRouterSourceType::kRace:
           race_network_request_mode = RaceNetworkRequestMode::kForced;
           break;
-        case blink::ServiceWorkerRouterSource::Type::kFetchEvent:
+        case network::mojom::ServiceWorkerRouterSourceType::kFetchEvent:
           race_network_request_mode = RaceNetworkRequestMode::kSkipped;
           break;
-        case blink::ServiceWorkerRouterSource::Type::kCache:
+        case network::mojom::ServiceWorkerRouterSourceType::kCache:
           cache_matcher_ = std::make_unique<ServiceWorkerCacheStorageMatcher>(
               sources[0].cache_source->cache_name,
               blink::mojom::FetchAPIRequest::From(resource_request_),
@@ -893,11 +894,12 @@ void ServiceWorkerMainResourceLoader::DidDispatchFetchEvent(
     // It'd be more correct and simpler to remove this path and show an error
     // page, but the risk is that the user will be stuck if there's a persistent
     // failure.
+    // The `SubresourceLoaderParams` previously returned by `loader_callback`
+    // will be reset by `NavigationURLLoaderImpl` by detecting the controller
+    // lost.
     container_host_->NotifyControllerLost();
     if (fallback_callback_) {
-      std::move(fallback_callback_)
-          .Run(true /* reset_subresource_loader_params */,
-               ResponseHeadUpdateParams());
+      std::move(fallback_callback_).Run(ResponseHeadUpdateParams());
     }
     return;
   }
@@ -927,9 +929,7 @@ void ServiceWorkerMainResourceLoader::DidDispatchFetchEvent(
     if (fallback_callback_) {
       ResponseHeadUpdateParams head_update_params;
       head_update_params.load_timing_info = response_head_->load_timing;
-      std::move(fallback_callback_)
-          .Run(false /* reset_subresource_loader_params */,
-               std::move(head_update_params));
+      std::move(fallback_callback_).Run(std::move(head_update_params));
     }
     return;
   }

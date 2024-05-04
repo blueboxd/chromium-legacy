@@ -183,9 +183,7 @@ int RunTestSuite(RunTestSuiteCallback run_test_suite,
   }
 
   // ICU must be initialized before any attempts to format times, e.g. for logs.
-  if (!base::i18n::InitializeICU()) {
-    return false;
-  }
+  CHECK(base::i18n::InitializeICU());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHelpFlag)) {
     PrintUsage();
@@ -388,6 +386,15 @@ CommandLine DefaultUnitTestPlatformDelegate::GetCommandLineForChildGTestProcess(
   CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
 
   CHECK(base::PathExists(flag_file));
+
+  // Any `--gtest_filter` flag specified on the original command line is
+  // no longer needed; the test launcher has already determined the list
+  // of actual tests to run in each child process. Since the test launcher
+  // internally uses `--gtest_filter` via a flagfile to pass this info to
+  // the child process, remove any original `--gtest_filter` flags on the
+  // command line, as GoogleTest provides no guarantee about whether the
+  // command line or the flagfile takes precedence.
+  new_cmd_line.RemoveSwitch(kGTestFilterFlag);
 
   std::string long_flags(
       StrCat({"--", kGTestFilterFlag, "=", JoinString(test_names, ":")}));

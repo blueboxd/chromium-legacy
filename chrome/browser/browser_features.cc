@@ -66,7 +66,7 @@ BASE_FEATURE(kDevToolsTabTarget,
 // impressions and interactions.
 BASE_FEATURE(kDevToolsVeLogging,
              "DevToolsVeLogging",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Let the DevTools front-end query an AIDA endpoint for explanations and
 // insights regarding console (error) messages.
@@ -81,6 +81,11 @@ const base::FeatureParam<std::string> kDevToolsConsoleInsightsModelId{
     &kDevToolsConsoleInsights, "aida_model_id", /*default*/ ""};
 const base::FeatureParam<double> kDevToolsConsoleInsightsTemperature{
     &kDevToolsConsoleInsights, "aida_temperature", /*default*/ 0.2};
+
+// Whether an infobar is shown when the process is shared.
+BASE_FEATURE(kDevToolsSharedProcessInfobar,
+             "DevToolsSharedProcessInfobar",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
 // Enables AES keys support in the chrome.enterprise.platformKeys and
@@ -323,7 +328,7 @@ BASE_FEATURE(kBookmarkTriggerForPrerender2,
 // Enables New Tab Page trigger prerendering.
 BASE_FEATURE(kNewTabPageTriggerForPrerender2,
              "NewTabPageTriggerForPrerender2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
              "SupportSearchSuggestionForPrerender2",

@@ -592,24 +592,22 @@ LogicalRect InkOverflow::ComputeDecorationOverflow(
         container_offset, ink_overflow, inline_context);
     accumulated_bound.Unite(custom_bound);
   }
-  if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
-    DocumentMarkerVector spelling_markers = controller.MarkersFor(
-        *text_node, DocumentMarker::MarkerTypes::Spelling());
-    if (!spelling_markers.empty()) {
-      LogicalRect spelling_bound = ComputeMarkerOverflow(
-          spelling_markers, DocumentMarker::kSpelling, fragment_item, text_node,
-          style, scaled_font, container_offset, ink_overflow, inline_context);
-      accumulated_bound.Unite(spelling_bound);
-    }
+  DocumentMarkerVector spelling_markers = controller.MarkersFor(
+      *text_node, DocumentMarker::MarkerTypes::Spelling());
+  if (!spelling_markers.empty()) {
+    LogicalRect spelling_bound = ComputeMarkerOverflow(
+        spelling_markers, DocumentMarker::kSpelling, fragment_item, text_node,
+        style, scaled_font, container_offset, ink_overflow, inline_context);
+    accumulated_bound.Unite(spelling_bound);
+  }
 
-    DocumentMarkerVector grammar_markers = controller.MarkersFor(
-        *text_node, DocumentMarker::MarkerTypes::Grammar());
-    if (!grammar_markers.empty()) {
-      LogicalRect grammar_bound = ComputeMarkerOverflow(
-          grammar_markers, DocumentMarker::kGrammar, fragment_item, text_node,
-          style, scaled_font, container_offset, ink_overflow, inline_context);
-      accumulated_bound.Unite(grammar_bound);
-    }
+  DocumentMarkerVector grammar_markers =
+      controller.MarkersFor(*text_node, DocumentMarker::MarkerTypes::Grammar());
+  if (!grammar_markers.empty()) {
+    LogicalRect grammar_bound = ComputeMarkerOverflow(
+        grammar_markers, DocumentMarker::kGrammar, fragment_item, text_node,
+        style, scaled_font, container_offset, ink_overflow, inline_context);
+    accumulated_bound.Unite(grammar_bound);
   }
   return accumulated_bound;
 }
@@ -628,8 +626,8 @@ LogicalRect InkOverflow::ComputeAppliedDecorationOverflow(
   TextDecorationInfo decoration_info(
       LineRelativeOffset::CreateFromBoxOrigin(offset_in_container),
       ink_overflow.size.inline_size, style, inline_context,
-      /* selection_text_decoration */ std::nullopt, decoration_override,
-      &scaled_font, kMinimumThicknessIsOne);
+      TextDecorationLine::kNone, Color(), decoration_override, &scaled_font,
+      kMinimumThicknessIsOne);
   TextDecorationOffset decoration_offset(style);
   gfx::RectF accumulated_bound;
   for (wtf_size_t i = 0; i < decoration_info.AppliedDecorationCount(); i++) {

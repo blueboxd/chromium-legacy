@@ -108,7 +108,7 @@ BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    WebAXPlatformTreeManagerDelegate* delegate) {
+    ui::AXPlatformTreeManagerDelegate* delegate) {
   BrowserAccessibilityManager* manager =
       new BrowserAccessibilityManager(delegate);
   manager->Initialize(initial_tree);
@@ -117,7 +117,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    WebAXPlatformTreeManagerDelegate* delegate) {
+    ui::AXPlatformTreeManagerDelegate* delegate) {
   BrowserAccessibilityManager* manager =
       new BrowserAccessibilityManager(delegate);
   manager->Initialize(BrowserAccessibilityManager::GetEmptyDocument());
@@ -141,7 +141,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
-    WebAXPlatformTreeManagerDelegate* delegate)
+    ui::AXPlatformTreeManagerDelegate* delegate)
     : AXPlatformTreeManager(std::make_unique<ui::AXSerializableTree>()),
       delegate_(delegate),
       user_is_navigating_away_(false),
@@ -161,7 +161,7 @@ bool BrowserAccessibilityManager::is_fail_fast_mode_ = false;
 // static
 ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
   ui::AXNodeData empty_document;
-  empty_document.id = 1;
+  empty_document.id = ui::kInitialEmptyDocumentRootNodeID;
   empty_document.role = ax::mojom::Role::kRootWebArea;
   ui::AXTreeUpdate update;
   update.root_id = empty_document.id;
@@ -221,16 +221,14 @@ bool BrowserAccessibilityManager::CanFireEvents() const {
   // Rationale for the back/forward cache behavior:
   // https://docs.google.com/document/d/1_jaEAXurfcvriwcNU-5u0h8GGioh0LelagUIIGFfiuU/
   return !delegate_ ||  // Can be null in unit tests.
-         !delegate_->AccessibilityRenderFrameHost() ||
-         !delegate_->AccessibilityRenderFrameHost()->IsInBackForwardCache();
+         delegate_->CanFireAccessibilityEvents();
 }
 
 void BrowserAccessibilityManager::FireGeneratedEvent(
     ui::AXEventGenerator::Event event_type,
     const ui::AXNode* node) {
   if (!generated_event_callback_for_testing_.is_null()) {
-    generated_event_callback_for_testing_.Run(
-        delegate()->AccessibilityRenderFrameHost(), event_type, node->id());
+    generated_event_callback_for_testing_.Run(this, event_type, node->id());
   }
 }
 
@@ -760,7 +758,7 @@ std::vector<BrowserAccessibility*> BrowserAccessibilityManager::GetAriaControls(
 }
 
 bool BrowserAccessibilityManager::NativeViewHasFocus() {
-  WebAXPlatformTreeManagerDelegate* delegate = GetDelegateFromRootManager();
+  ui::AXPlatformTreeManagerDelegate* delegate = GetDelegateFromRootManager();
   return delegate && delegate->AccessibilityViewHasFocus();
 }
 
@@ -1150,7 +1148,7 @@ void BrowserAccessibilityManager::HitTest(const gfx::Point& frame_point,
 
 gfx::Rect BrowserAccessibilityManager::GetViewBoundsInScreenCoordinates()
     const {
-  WebAXPlatformTreeManagerDelegate* delegate = GetDelegateFromRootManager();
+  ui::AXPlatformTreeManagerDelegate* delegate = GetDelegateFromRootManager();
   if (delegate) {
     gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
 
@@ -1635,37 +1633,10 @@ ui::AXTreeManager* BrowserAccessibilityManager::GetParentManager() const {
 
   DCHECK(!IsRootFrameManager());
 
-#if DCHECK_IS_ON()
-  // There is a chance that the parent manager is not a
-  // `BrowserAccessibilityManager` since the parent of the
-  // manager that is on the root frame will be a
-  // `ViewsAXTreeManager`. The manager could also ownn an `AXTree` with
-  // generated content, which is currently not a platform tree manager. In those
-  // case, we should return nullptr since doing the cast will fail and result in
-  // undefined behavior.
-  if (IsRootFrameManager() || !IsPlatformTreeManager()) {
-    return parent;
-  }
-  BrowserAccessibilityManager* browser_accessibility_manager_parent =
-      static_cast<BrowserAccessibilityManager*>(parent);
-  DCHECK(browser_accessibility_manager_parent ||
-         !connected_to_parent_tree_node_);
-  // delegate_ is null during unit tests.
-  if (parent && delegate_ && delegate_->AccessibilityRenderFrameHost()) {
-    DCHECK(
-        delegate_->AccessibilityRenderFrameHost()
-            ->GetParentOrOuterDocumentOrEmbedderExcludingProspectiveOwners() ==
-        browser_accessibility_manager_parent->delegate()
-            ->AccessibilityRenderFrameHost())
-        << "RenderFrameHost parent should match "
-           "BrowserAccessibilityManager's "
-           "parent's RenderFrameHost.";
-  }
-#endif
   return parent;
 }
 
-WebAXPlatformTreeManagerDelegate*
+ui::AXPlatformTreeManagerDelegate*
 BrowserAccessibilityManager::GetDelegateFromRootManager() const {
   BrowserAccessibilityManager* root_manager = GetManagerForRootFrame();
   if (root_manager)
@@ -1901,7 +1872,7 @@ bool BrowserAccessibilityManager::ShouldFireEventForNode(
   // If the root delegate isn't the main-frame, this may be a new frame that
   // hasn't yet been swapped in or added to the frame tree. Suppress firing
   // events until then.
-  WebAXPlatformTreeManagerDelegate* root_delegate =
+  ui::AXPlatformTreeManagerDelegate* root_delegate =
       GetDelegateFromRootManager();
   if (!root_delegate)
     return false;

@@ -83,7 +83,6 @@
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_branded_strings.h"
@@ -105,6 +104,7 @@
 #include "net/base/url_util.h"
 #include "net/net_buildflags.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/screen_ai/buildflags/buildflags.h"
 #include "third_party/blink/public/common/features_generated.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -348,14 +348,11 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  html_source->AddString(
-      "managementPage",
+  html_source->AddString("managementPage",
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-      base::FeatureList::IsEnabled(supervised_user::kEnableManagedByParentUi)
-          ? chrome::GetDeviceManagedUiHelpLabel(profile)
-          : ManagementUI::GetManagementPageSubtitle(profile)
+                         chrome::GetDeviceManagedUiHelpLabel(profile)
 #else
-      ManagementUI::GetManagementPageSubtitle(profile)
+                         ManagementUI::GetManagementPageSubtitle(profile)
 #endif
   );
   html_source->AddString(
@@ -413,7 +410,11 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
       {"systemMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_SYSTEM_LABEL},
       {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
       {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
+      {"hoverCardTitle", IDS_SETTINGS_HOVER_CARD_TITLE},
       {"showHoverCardImages", IDS_SETTINGS_SHOW_HOVER_CARD_IMAGES},
+      {"showHoverCardMemoryUsage", IDS_SETTINGS_SHOW_HOVER_CARD_MEMORY_USAGE},
+      {"showHoverCardMemoryUsageStandalone",
+       IDS_SETTINGS_SHOW_HOVER_CARD_MEMORY_USAGE_STANDALONE},
       {"sidePanel", IDS_SETTINGS_SIDE_PANEL},
       {"homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP},
       {"changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE},
@@ -1166,6 +1167,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_AUTOFILL_SETTINGS_PAGE_BENEFITS_AVAILABLE_TAG_FOR_CREDIT_CARD_LIST_ENTRY},
       {"benefitsTermsTagForCreditCardListEntry",
        IDS_AUTOFILL_SETTINGS_PAGE_BENEFITS_TERMS_TAG_FOR_CREDIT_CARD_LIST_ENTRY},
+      {"cardBenefitsToggleLabel",
+       IDS_AUTOFILL_SETTINGS_PAGE_CARD_BENEFITS_TOGGLE_LABEL},
+      {"cardBenefitsToggleSublabel",
+       IDS_AUTOFILL_SETTINGS_PAGE_CARD_BENEFITS_TOGGLE_SUBLABEL_WITH_LEARN_LINK},
       {"aiPageTitle", IDS_SETTINGS_AI_PAGE_TITLE},
       {"aiPageMainLabel", IDS_SETTINGS_AI_PAGE_MAIN_LABEL},
       {"aiPageMainSublabel", IDS_SETTINGS_AI_PAGE_MAIN_SUBLABEL},
@@ -1233,9 +1238,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean("cvcStorageAvailable", CheckCvcStorageAvailability());
 
-  html_source->AddBoolean("autofillCardBenefitsAvailable",
-                          base::FeatureList::IsEnabled(
-                              autofill::features::kAutofillEnableCardBenefits));
+  html_source->AddBoolean(
+      "autofillCardBenefitsAvailable",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableCardBenefitsForAmericanExpress) ||
+          base::FeatureList::IsEnabled(
+              autofill::features::kAutofillEnableCardBenefitsForCapitalOne));
 
   html_source->AddBoolean(
       "autofillEnablePaymentsMandatoryReauth",
@@ -1266,8 +1274,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(
           syncer::kSyncEnableContactInfoDataTypeInTransportMode));
 
-  html_source->AddString("plusAddressManagementUrl",
-                         plus_addresses::kPlusAddressManagementUrl.Get());
+  html_source->AddString(
+      "plusAddressManagementUrl",
+      plus_addresses::features::kPlusAddressManagementUrl.Get());
 
   html_source->AddBoolean("syncDecoupleAddressPaymentSettings",
                           base::FeatureList::IsEnabled(
@@ -1442,6 +1451,9 @@ void AddBrowserSyncPageStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "activityControlsUrlInPrivacyGuide",
       chrome::kGoogleAccountActivityControlsURLInPrivacyGuide);
+
+  html_source->AddString("linkedServicesUrl",
+                         chrome::kGoogleAccountLinkedServicesURL);
 
   html_source->AddLocalizedString(
       "passwordsCheckboxLabel",
@@ -1768,11 +1780,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"networkPredictionEnabledDesc",
        IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC},
       {"preloadingPageTitle", IDS_SETTINGS_PRELOAD_PAGES_TITLE},
-      {"preloadingPageSummary", IDS_SETTINGS_PRELOAD_PAGES_SUMMARY},
-      {"preloadingPageNoPreloadingTitle",
-       IDS_SETTINGS_PRELOAD_PAGES_NO_PRELOADING_TITLE},
-      {"preloadingPageNoPreloadingSummary",
-       IDS_SETTINGS_PRELOAD_PAGES_NO_PRELOADING_SUMMARY},
       {"preloadingPageStandardPreloadingTitle",
        IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_TITLE},
       {"preloadingPageStandardPreloadingSummary",
@@ -1868,14 +1875,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
 #endif
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-  html_source->AddBoolean("showChromeRootStoreCertificates",
-#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-                          SystemNetworkContextManager::IsUsingChromeRootStore()
-#else
-                          true
-#endif
-  );
-
   html_source->AddString("chromeRootStoreHelpCenterURL",
                          chrome::kChromeRootStoreSettingsHelpCenterURL);
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
@@ -2126,13 +2125,6 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
           l10n_util::GetStringUTF16(
               IDS_SETTINGS_MANAGE_TOPICS_PAGE_DESCRIPTION_LEARN_MORE_ARIA_LABEL),
           l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
-  html_source->AddString(
-      "topicsPageDisclaimer",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_TOPICS_PAGE_DISCLAIMER,
-          base::ASCIIToUTF16(
-              chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL),
-          l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
   // Topics and fledge both link to the cookies setting page and cross-link
   // each other in the footers.
   html_source->AddString(
@@ -2296,16 +2288,6 @@ void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
       {"privacyGuideSafeBrowsingCardStandardProtectionPrivacyDescription1Proxy",
        IDS_SETTINGS_PRIVACY_GUIDE_SAFE_BROWSING_CARD_STANDARD_PROTECTION_PRIVACY_DESCRIPTION1_PROXY},
 #endif
-      {"privacyGuideSearchSuggestionsCardHeader",
-       IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_CARD_HEADER},
-      {"privacyGuideSearchSuggestionsFeatureDescription1",
-       IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_FEATURE_DESCRIPTION1},
-      {"privacyGuideSearchSuggestionsPrivacyDescription1",
-       IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION1},
-      {"privacyGuideSearchSuggestionsPrivacyDescription2",
-       IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION2},
-      {"privacyGuideSearchSuggestionsPrivacyDescription3",
-       IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION3},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -2679,6 +2661,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TRACKING_PROTECTION_SITES_ALLOWED_COOKIES_TITLE},
       {"trackingProtectionSitesAllowedCookiesDescription",
        IDS_SETTINGS_TRACKING_PROTECTION_SITES_ALLOWED_COOKIES_DESCRIPTION},
+      {"siteSettingsCategoryAutomaticFullscreen",
+       IDS_SITE_SETTINGS_TYPE_AUTOMATIC_FULLSCREEN},
       {"siteSettingsCategoryFederatedIdentityApi",
        IDS_SITE_SETTINGS_TYPE_FEDERATED_IDENTITY_API},
       {"siteSettingsCategoryHandlers", IDS_SITE_SETTINGS_TYPE_HANDLERS},
@@ -3031,6 +3015,18 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOADS_ALLOWED_EXCEPTIONS},
       {"siteSettingsAutomaticDownloadsBlockedExceptions",
        IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOADS_BLOCKED_EXCEPTIONS},
+      {"siteSettingsAutomaticFullscreen",
+       IDS_SITE_SETTINGS_TYPE_AUTOMATIC_FULLSCREEN},
+      {"siteSettingsAutomaticFullscreenMidSentence",
+       IDS_SITE_SETTINGS_TYPE_AUTOMATIC_FULLSCREEN_MID_SENTENCE},
+      {"siteSettingsAutomaticFullscreenDescription",
+       IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_FULLSCREEN_DESCRIPTION},
+      {"siteSettingsAutomaticFullscreenBlock",
+       IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_FULLSCREEN_BLOCK},
+      {"siteSettingsAutomaticFullscreenAllowedExceptions",
+       IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_FULLSCREEN_ALLOWED_EXCEPTIONS},
+      {"siteSettingsAutomaticFullscreenBlockedExceptions",
+       IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_FULLSCREEN_BLOCKED_EXCEPTIONS},
       {"siteSettingsAutoPictureInPictureDescription",
        IDS_SETTINGS_SITE_SETTINGS_AUTO_PICTURE_IN_PICTURE_DESCRIPTION},
       {"siteSettingsAutoPictureInPictureAllowed",
@@ -3213,8 +3209,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SITE_SETTINGS_MOTION_SENSORS_ALLOWED_EXCEPTIONS},
       {"siteSettingsMotionSensorsBlockedExceptions",
        IDS_SETTINGS_SITE_SETTINGS_MOTION_SENSORS_BLOCKED_EXCEPTIONS},
-      {"siteSettingsNotificationsDescription",
-       IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_DESCRIPTION},
       {"siteSettingsNotificationsAllowed",
        IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_ALLOWED},
       {"siteSettingsNotificationsPartial",

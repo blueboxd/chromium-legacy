@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -31,6 +32,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/common/bookmark_metrics.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/client_tag_hash.h"
@@ -1701,7 +1703,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   ExcludeDataTypesFromCheckForDataTypeFailures({syncer::BOOKMARKS});
 }
 
-// Android doesn't currently support PRE_ tests, see crbug.com/1117345.
+// Android doesn't currently support PRE_ tests, see crbug.com/40200835 or
+// crbug.com/40145099.
 #if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(
     SingleClientBookmarksSyncTestWithDisabledReuploadBookmarks,
@@ -2461,6 +2464,79 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksWithAccountStorageSyncTest,
   ASSERT_THAT(model->account_bookmark_bar_node(), NotNull());
   EXPECT_THAT(model->account_bookmark_bar_node()->children(),
               ElementsAre(IsFolderWithTitle(kInitiallyAccountTitle)));
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+// Android doesn't currently support PRE_ tests, see crbug.com/40200835 or
+// crbug.com/40145099.
+#if !BUILDFLAG(IS_ANDROID)
+class SingleClientBookmarksSyncTestWithEnabledMigrateSyncingUserToSignedIn
+    : public SingleClientBookmarksWithAccountStorageSyncTest {
+ protected:
+  SingleClientBookmarksSyncTestWithEnabledMigrateSyncingUserToSignedIn() {
+    if (content::IsPreTest()) {
+      features_override_.InitAndDisableFeature(
+          switches::kMigrateSyncingUserToSignedIn);
+    } else {
+      features_override_.InitWithFeatures(
+          /*enabled_features=*/{syncer::kReplaceSyncPromosWithSignInPromos,
+                                switches::kMigrateSyncingUserToSignedIn},
+          /*disabled_features=*/{});
+    }
+  }
+
+  const std::string kTestTitle = "Test Title";
+
+ private:
+  base::test::ScopedFeatureList features_override_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientBookmarksSyncTestWithEnabledMigrateSyncingUserToSignedIn,
+    PRE_SyncToSigninMigration) {
+  ASSERT_TRUE(SetupClients());
+  AddFolder(kSingleProfileIndex, kTestTitle);
+
+  // Setup sync, wait for its completion, and make sure changes were synced.
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(BookmarkModelMatchesFakeServerChecker(
+                  kSingleProfileIndex, GetSyncService(kSingleProfileIndex),
+                  GetFakeServer())
+                  .Wait());
+
+  BookmarkModel* model = GetBookmarkModel(kSingleProfileIndex);
+
+  ASSERT_THAT(model->bookmark_bar_node()->children(),
+              ElementsAre(IsFolderWithTitle(kTestTitle)));
+
+  // Sync-the-feature is on, so account bookmarks should not exist.
+  ASSERT_THAT(model->account_bookmark_bar_node(), IsNull());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientBookmarksSyncTestWithEnabledMigrateSyncingUserToSignedIn,
+    SyncToSigninMigration) {
+  // Mimic the user being offline to verify that account bookmarks are loaded
+  // from disk instead of being redownloaded.
+  fake_server::FakeServerHttpPostProvider::DisableNetwork();
+
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetClient(kSingleProfileIndex)->AwaitEngineInitialization());
+  ASSERT_FALSE(GetSyncService(kSingleProfileIndex)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(kSingleProfileIndex)
+                  ->GetUserSettings()
+                  ->GetSelectedTypes()
+                  .Has(syncer::UserSelectableType::kBookmarks));
+
+  BookmarkModel* model = GetBookmarkModel(kSingleProfileIndex);
+
+  // Local bookmarks should be empty.
+  ASSERT_THAT(model->bookmark_bar_node()->children(), IsEmpty());
+
+  // Account bookmarks should continue existing even while offline.
+  ASSERT_THAT(model->account_bookmark_bar_node(), NotNull());
+  EXPECT_THAT(model->account_bookmark_bar_node()->children(),
+              ElementsAre(IsFolderWithTitle(kTestTitle)));
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

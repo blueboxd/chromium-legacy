@@ -16,7 +16,6 @@
 #include "media/base/media_log.h"
 #include "media/base/media_track.h"
 #include "media/base/pipeline_status.h"
-#include "media/filters/hls_codec_detector.h"
 #include "media/filters/hls_data_source_provider.h"
 #include "media/filters/hls_demuxer_status.h"
 #include "media/filters/hls_rendition.h"
@@ -64,15 +63,12 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
   void UpdateNetworkSpeed(uint64_t bps) override;
   void UpdateRenditionManifestUri(std::string role,
                                   GURL uri,
-                                  base::OnceClosure cb) override;
+                                  base::OnceCallback<void(bool)> cb) override;
+  void SetEndOfStream(bool ended) override;
 
   // Test helpers.
   void AddRenditionForTesting(std::string role,
                               std::unique_ptr<HlsRendition> test_rendition);
-  void InitializeWithMockCodecDetectorForTesting(
-      ManifestDemuxerEngineHost* host,
-      PipelineStatusCallback cb,
-      std::unique_ptr<HlsCodecDetector> codec_detector);
 
  private:
   struct PlaylistParseInfo {
@@ -97,22 +93,89 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
     bool allow_multivariant_playlist;
   };
 
-  // Allows continuing any pending seeks after important network requests have
-  // completed.
-  void FinishInitialization(PipelineStatusCallback cb, PipelineStatus status);
-  void OnAdaptationComplete(PipelineStatus status);
+  // Adds an asynchronous action to the action queue, based on both a bound
+  // response callback and an action callback.
+  // ProcessAsyncAction<T> is specialized for the T which represents the type
+  // of argument passed back in the response callback. The first arg, `cb`,
+  // which is of type OnceCallback<PipelineStatus> would be added to the queue
+  // using ProcessAsyncCallback<PipelineStatus>(cb, ...).
+  // The second arg, `thunk`, is the actual action callback. This callback
+  // should only take a OnceCallback<T> as a single unbound argument.
+  template <typename Response,
+            typename CB = base::OnceCallback<void(Response)>,
+            typename Thunk = base::OnceCallback<void(CB)>>
+  void ProcessAsyncAction(CB cb, Thunk thunk) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
+    // Capture both `thunk` and `cb` in a closure, which can be added to the
+    // queue. This allows effectively erasing the `Response` type and storing
+    // multiple different types of bound actions.
+    base::OnceCallback<void(base::OnceClosure)> action = base::BindOnce(
+        [](Thunk thunk, CB cb, base::OnceClosure finished) {
+          // When this action is processed, we call the action callback `thunk`
+          // and pass it a new bound callback with the same type as `cb` that
+          // can also advance the queue after `cb` has been executed.
+          std::move(thunk).Run(base::BindOnce(
+              [](CB cb, base::OnceClosure finished, Response value) {
+                std::move(cb).Run(value);
+                std::move(finished).Run();
+              },
+              std::move(cb), std::move(finished)));
+        },
+        std::move(thunk), std::move(cb));
 
-  // Helper for OnTimeUpdate/CheckState which helps record tracing macros.
+    pending_action_queue_.push(std::move(action));
+    ProcessActionQueue();
+  }
+
+  // Pops the next action off the stack if its not empty and if another action
+  // is not already running.
+  void ProcessActionQueue();
+
+  // When an action is complete, check its runtime and call ProcessActionQueue
+  // again.
+  void OnActionComplete();
+
+  // Actions:
+
+  // Posted by `::Seek()`
+  void SeekAction(base::TimeDelta time, ManifestDemuxer::SeekCallback cb);
+  void ContinueSeekInternal(base::TimeDelta time,
+                            ManifestDemuxer::SeekCallback cb);
+
+  // Posted by `::Initialize()`
+  void InitAction(PipelineStatusCallback status_cb);
+  void FinishInitialization(PipelineStatusCallback cb, PipelineStatus status);
+
+  // Posted by `::OnTimeUpdate()`
+  void OnTimeUpdateAction(base::TimeDelta time,
+                          double playback_rate,
+                          ManifestDemuxer::DelayCallback cb);
   void FinishTimeUpdate(ManifestDemuxer::DelayCallback cb,
                         base::TimeDelta delay_time);
-
-  // Calls Rendition::CheckState and binds OnStateChecked to it's closure arg,
-  // and records the timetick when the state checking happened.
   void CheckState(base::TimeDelta time,
                   double playback_rate,
                   std::string role,
                   ManifestDemuxer::DelayCallback cb,
                   base::TimeDelta delay_time);
+
+  // Posted by `::UpdateRenditionManifestUri`
+  void UpdateRenditionManifestUriAction(std::string role,
+                                        GURL uri,
+                                        base::OnceCallback<void(bool)> cb);
+  void UpdateMediaPlaylistForRole(
+      std::string role,
+      GURL uri,
+      base::OnceCallback<void(bool)> cb,
+      HlsDataSourceProvider::ReadResult maybe_stream);
+
+  // Posted by `::OnRenditionsReselected()`
+  void AdaptationAction(const hls::VariantStream* variant,
+                        const hls::AudioRendition* audio_override_rendition,
+                        PipelineStatusCallback status_cb);
+
+  // Allows continuing any pending seeks after important network requests have
+  // completed.
+  void OnAdaptationComplete(PipelineStatus status);
 
   // The `prior_delay` arg represents the time that was previously calculated
   // for delay by another rendition. If it is kNoTimestamp, then the other
@@ -134,6 +197,7 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
                       base::TimeDelta new_delay);
 
   // Helpers to call |PlayerImplDemuxer::OnDemuxerError|.
+  void OnStatus(PipelineStatus status);
   void Abort(HlsDemuxerStatus status);
   void Abort(hls::ParseStatus status);
   void Abort(HlsDataSourceProvider::ReadStatus status);
@@ -164,34 +228,22 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
   void OnMediaPlaylist(PipelineStatusCallback parse_complete_cb,
                        PlaylistParseInfo parse_info,
                        scoped_refptr<hls::MediaPlaylist> playlist);
-  void DetermineStreamContainerAndCodecs(
+  void DetermineStreamContainer(
       hls::MediaPlaylist* playlist,
-      HlsDemuxerStatusCb<HlsCodecDetector::ContainerAndCodecs> container_cb);
-  void OnPlaylistContainerDetermined(
+      HlsDemuxerStatusCb<RelaxedParserSupportedType> container_cb);
+  void OnStreamContainerDetermined(
       PipelineStatusCallback parse_complete_cb,
       PlaylistParseInfo parse_info,
       scoped_refptr<hls::MediaPlaylist> playlist,
-      HlsDemuxerStatus::Or<HlsCodecDetector::ContainerAndCodecs> maybe_info);
-  void PeekFirstSegment(
-      HlsDemuxerStatusCb<HlsCodecDetector::ContainerAndCodecs> cb,
+      HlsDemuxerStatus::Or<RelaxedParserSupportedType> maybe_info);
+  void DetermineBitstreamContainer(
+      HlsDemuxerStatusCb<RelaxedParserSupportedType> cb,
       HlsDataSourceProvider::ReadResult maybe_stream);
 
   void OnChunkDemuxerParseWarning(std::string role,
                                   SourceBufferParseWarning warning);
   void OnChunkDemuxerTracksChanged(std::string role,
                                    std::unique_ptr<MediaTracks> tracks);
-  void ContinueSeekInternal(base::TimeDelta time,
-                            ManifestDemuxer::SeekCallback cb);
-
-  void InitializeWithCodecDetector(
-      ManifestDemuxerEngineHost* host,
-      PipelineStatusCallback status_cb,
-      std::unique_ptr<HlsCodecDetector> codec_detector);
-  void UpdateMediaPlaylistForRole(
-      std::string role,
-      GURL uri,
-      base::OnceClosure cb,
-      HlsDataSourceProvider::ReadResult maybe_stream);
 
   // Parses a playlist using the multivariant playlist, if it's being used.
   hls::ParseStatus::Or<scoped_refptr<hls::MediaPlaylist>>
@@ -209,11 +261,6 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
   raw_ptr<ManifestDemuxerEngineHost> host_
       GUARDED_BY_CONTEXT(media_sequence_checker_) = nullptr;
 
-  // The codec detector is a reusable way for determining codecs in a media
-  // stream.
-  std::unique_ptr<HlsCodecDetector> codec_detector_
-      GUARDED_BY_CONTEXT(media_sequence_checker_);
-
   // If the root playlist is multivariant, we need to store it for parsing the
   // dependant media playlists.
   scoped_refptr<hls::MultivariantPlaylist> multivariant_root_
@@ -227,19 +274,19 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
   base::flat_map<std::string, std::unique_ptr<HlsRendition>> renditions_
       GUARDED_BY_CONTEXT(media_sequence_checker_);
 
-  size_t pending_playlist_network_requests_
-      GUARDED_BY_CONTEXT(media_sequence_checker_) = 0;
-
-  // This captures a pending seek and prevents it from interrupting manifest
-  // updates. When the last manifest update completes, the seek closure can
-  // continue.
-  base::OnceClosure pending_seek_closure_
+  // Events like time update, resolution change, manifest updating, etc, all
+  // add an action to this queue, and then try to process it. When the queue is
+  // empty, `pending_time_check_response_cb_` is posted if it is set.
+  base::queue<base::OnceCallback<void(base::OnceClosure)>> pending_action_queue_
       GUARDED_BY_CONTEXT(media_sequence_checker_);
 
-  // Disallow seeking until all renditions are parsed.
-  bool pending_initialization_ GUARDED_BY_CONTEXT(media_sequence_checker_) =
-      false;
-  bool pending_adaptation_ GUARDED_BY_CONTEXT(media_sequence_checker_) = false;
+  // The count of ended streams. When this count reaches the length of
+  // `renditions_`, all streams are ended. When this count drops to one below
+  // the length, then the playback is considered un-ended.
+  size_t ended_stream_count_ GUARDED_BY_CONTEXT(media_sequence_checker_) = 0;
+
+  // Is an action currently running?
+  bool action_in_progress_ GUARDED_BY_CONTEXT(media_sequence_checker_) = false;
 
   // When renditions are added, this ensures that they are all of the same
   // liveness, and allows access to the liveness check later.

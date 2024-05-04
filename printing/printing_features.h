@@ -18,7 +18,8 @@ namespace features {
 // documented with descriptions of their behaviors in the .cc file.
 
 #if BUILDFLAG(IS_CHROMEOS)
-COMPONENT_EXPORT(PRINTING_BASE) BASE_DECLARE_FEATURE(kEnableBorderlessPrinting);
+COMPONENT_EXPORT(PRINTING_BASE)
+BASE_DECLARE_FEATURE(kAddPrinterViaPrintscanmgr);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_MAC)

@@ -84,6 +84,9 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
         /** Called to notify when the privacy disclaimer visibility has changed. */
         void onPrivacyDisclaimerHasChanged();
 
+        /** Called after a user clicks the open full Chrome history button. */
+        void onOpenFullChromeHistoryClicked();
+
         /** Called to notify when the user's sign in or pref state has changed. */
         void onUserAccountStateChanged();
 
@@ -116,6 +119,7 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
     private LargeIconBridge mLargeIconBridge;
     private SelectionDelegate<HistoryItem> mSelectionDelegate;
     private boolean mShouldShowPrivacyDisclaimers;
+    private boolean mAppSpecificHistory;
     private PrefChangeRegistrar mPrefChangeRegistrar;
     private String mAppId;
 
@@ -139,6 +143,7 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
      * @param historyProvider Provider of methods for querying and managing browsing history.
      * @param appId The ID of the application from which the history activity is launched, passed as
      *     the client package name.
+     * @param appSpecificHistory Whether app specific history features should be utilized.
      */
     public HistoryContentManager(
             @NonNull Activity activity,
@@ -151,7 +156,8 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
             @Nullable SelectionDelegate<HistoryItem> selectionDelegate,
             @Nullable Supplier<Tab> tabSupplier,
             HistoryProvider historyProvider,
-            String appId) {
+            String appId,
+            boolean appSpecificHistory) {
         mActivity = activity;
         mObserver = observer;
         mIsSeparateActivity = isSeparateActivity;
@@ -164,6 +170,7 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
                 ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                         || UiUtils.isHardwareKeyboardAttached();
         mAppId = appId;
+        mAppSpecificHistory = appSpecificHistory;
         mSelectionDelegate =
                 selectionDelegate != null
                         ? selectionDelegate
@@ -369,6 +376,13 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
                 && UserPrefs.get(mProfile).getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY);
     }
 
+    /**
+     * @return True if the open full chrome history button should be shown.
+     */
+    boolean getShouldShowOpenInChrome() {
+        return ChromeFeatureList.sAppSpecificHistory.isEnabled() && mAppSpecificHistory;
+    }
+
     /** Opens the url of each of the visits in the provided list in a new tab. */
     public void openItemsInNewTab(List<HistoryItem> items, boolean isIncognito) {
         if (mIsSeparateActivity && items.size() > 1) {
@@ -397,9 +411,7 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
      */
     public void openUrl(GURL url, Boolean isIncognito, boolean createNewTab) {
         if (mIsSeparateActivity) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.APP_SPECIFIC_HISTORY)
-                    && IntentUtils.safeGetBooleanExtra(
-                            mActivity.getIntent(), Intent.EXTRA_RETURN_RESULT, false)) {
+            if (getShouldShowOpenInChrome()) {
                 Intent intent = new Intent(ACTION_VIEW, Uri.parse(url.getSpec()));
                 intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PAGE_TRANSITION_TYPE);
                 mActivity.setResult(Activity.RESULT_OK, intent);
@@ -510,6 +522,11 @@ public class HistoryContentManager implements SignInStateObserver, PrefObserver 
     /** Called after a user clicks the clear data button. */
     void onClearBrowsingDataClicked() {
         mObserver.onClearBrowsingDataClicked();
+    }
+
+    /** Called after a user clicks the open full Chrome history button. */
+    void onOpenFullChromeHistoryClicked() {
+        mObserver.onOpenFullChromeHistoryClicked();
     }
 
     /** Removes the list header. */

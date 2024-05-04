@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/structured/event.h"
-#include "components/metrics/structured/event_storage.h"
+#include "components/metrics/structured/lib/event_storage.h"
 #include "components/metrics/structured/lib/key_data.h"
 #include "components/metrics/structured/lib/key_data_provider.h"
 #include "components/metrics/structured/project_validator.h"
@@ -95,7 +95,6 @@ class StructuredMetricsRecorder : public Recorder::RecorderImpl,
   friend class StructuredMetricsMixin;
 
   // Recorder::RecorderImpl:
-  void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnEventRecord(const Event& event) override;
 
   // Different initialization states for the recorder.
@@ -103,8 +102,6 @@ class StructuredMetricsRecorder : public Recorder::RecorderImpl,
     kUninitialized,
     // Set once OnKeyReady has been called once.
     kKeyDataInitialized,
-    // Set once OnProfileAdded has been called once.
-    kProfileAdded,
     // Set once the profile key data has been initialized.
     kProfileKeyDataInitialized,
     kMaxValue = kProfileKeyDataInitialized,
@@ -157,12 +154,6 @@ class StructuredMetricsRecorder : public Recorder::RecorderImpl,
                                    const ProjectValidator& project_validator,
                                    const KeyData& key_data) {}
 
-  // Populates system profile needed for Structured Metrics.
-  // Independent metric uploads will rely on a SystemProfileProvider
-  // to supply the system profile since ChromeOSMetricsProvider will
-  // not be called to populate the SystemProfile.
-  void ProvideSystemProfile(SystemProfileProto* system_profile);
-
   // Hashes events and persists the events to disk. Should be called once |this|
   // has been initialized.
   void HashUnhashedEventsAndPersist();
@@ -206,9 +197,9 @@ class StructuredMetricsRecorder : public Recorder::RecorderImpl,
   // Adds a project to the diallowed list for testing.
   void AddDisallowedProjectForTest(uint64_t project_name_hash);
 
+ protected:
   void NotifyEventRecorded(const StructuredEventProto& event);
 
- protected:
   // Key data provider that provides device and profile keys.
   std::unique_ptr<KeyDataProvider> key_data_provider_;
 

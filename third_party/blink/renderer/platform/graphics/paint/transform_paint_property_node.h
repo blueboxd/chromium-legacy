@@ -37,8 +37,8 @@ using CompositorStickyConstraint = cc::StickyPositionConstraint;
 class TransformPaintPropertyNode;
 
 class PLATFORM_EXPORT TransformPaintPropertyNodeOrAlias
-    : public PaintPropertyNode<TransformPaintPropertyNodeOrAlias,
-                               TransformPaintPropertyNode> {
+    : public PaintPropertyNodeBase<TransformPaintPropertyNodeOrAlias,
+                                   TransformPaintPropertyNode> {
  public:
   // If |relative_to_node| is an ancestor of |this|, returns true if any node is
   // marked changed, at least significance of |change|, along the path from
@@ -47,7 +47,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNodeOrAlias
   bool Changed(PaintPropertyChangeType change,
                const TransformPaintPropertyNodeOrAlias& relative_to_node) const;
 
-  void AddChanged(PaintPropertyChangeType changed) {
+  void AddChanged(PaintPropertyChangeType changed) final {
     DCHECK_NE(PaintPropertyChangeType::kUnchanged, changed);
     GeometryMapperTransformCache::ClearCache();
     GeometryMapperClipCache::ClearCache();
@@ -55,10 +55,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNodeOrAlias
   }
 
  protected:
-  using PaintPropertyNode::PaintPropertyNode;
+  using PaintPropertyNodeBase::PaintPropertyNodeBase;
 };
 
-class TransformPaintPropertyNodeAlias
+class TransformPaintPropertyNodeAlias final
     : public TransformPaintPropertyNodeOrAlias {
  public:
   static scoped_refptr<TransformPaintPropertyNodeAlias> Create(
@@ -72,7 +72,7 @@ class TransformPaintPropertyNodeAlias
       : TransformPaintPropertyNodeOrAlias(parent, kParentAlias) {}
 };
 
-class PLATFORM_EXPORT TransformPaintPropertyNode
+class PLATFORM_EXPORT TransformPaintPropertyNode final
     : public TransformPaintPropertyNodeOrAlias {
  public:
   enum class BackfaceVisibility : unsigned char {
@@ -118,8 +118,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
-    std::unique_ptr<cc::AnchorPositionScrollersData>
-        anchor_position_scrollers_data;
+    std::unique_ptr<cc::AnchorPositionScrollData> anchor_position_scroll_data;
     // If a visible frame is rooted at this node, this represents the element
     // ID of the containing document.
     CompositorElementId visible_frame_element_id;
@@ -224,9 +223,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.sticky_constraint.get();
   }
 
-  const cc::AnchorPositionScrollersData* GetAnchorPositionScrollersData()
-      const {
-    return state_.anchor_position_scrollers_data.get();
+  const cc::AnchorPositionScrollData* GetAnchorPositionScrollData() const {
+    return state_.anchor_position_scroll_data.get();
   }
 
   // If this is a scroll offset translation (i.e., has an associated scroll
@@ -375,12 +373,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   bool IsForSVGChild() const { return state_.is_for_svg_child; }
 
-  std::unique_ptr<JSONObject> ToJSON() const;
+  std::unique_ptr<JSONObject> ToJSON() const final;
 
  private:
-  friend class PaintPropertyNode<TransformPaintPropertyNodeOrAlias,
-                                 TransformPaintPropertyNode>;
-
   TransformPaintPropertyNode(const TransformPaintPropertyNodeOrAlias* parent,
                              State&& state)
       : TransformPaintPropertyNodeOrAlias(parent), state_(std::move(state)) {

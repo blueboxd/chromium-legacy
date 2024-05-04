@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/uuid.h"
@@ -30,6 +31,7 @@
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
+#include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
@@ -424,8 +426,15 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
     personal_data->UpdateCreditCard(credit_card);
     base::RecordAction(base::UserMetricsAction("AutofillCreditCardsEdited"));
   } else {
+    int current_card_count = personal_data->GetCreditCards().size();
     personal_data->AddCreditCard(credit_card);
+
     base::RecordAction(base::UserMetricsAction("AutofillCreditCardsAdded"));
+    base::UmaHistogramCounts100(
+        "Autofill.PaymentMethods.SettingsPage."
+        "StoredCreditCardCountBeforeCardAdded",
+        current_card_count);
+
     if (credit_card.HasNonEmptyValidNickname()) {
       base::RecordAction(
           base::UserMetricsAction("AutofillCreditCardsAddedWithNickname"));
@@ -457,7 +466,7 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
-  if (personal_data->GetIbanByGUID(parameters->guid)) {
+  if (personal_data->payments_data_manager().GetIbanByGUID(parameters->guid)) {
     base::RecordAction(base::UserMetricsAction("AutofillIbanDeleted"));
   } else if (autofill::CreditCard* credit_card =
                  personal_data->GetCreditCardByGUID(parameters->guid)) {
@@ -495,7 +504,7 @@ ExtensionFunction::ResponseAction AutofillPrivateMaskCreditCardFunction::Run() {
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
-  personal_data->ResetFullServerCard(parameters->guid);
+  // TODO(crbug.com/1497734): Remove this method entirely.
 
   return RespondNow(NoArguments());
 }
@@ -665,7 +674,8 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
   // The IBAN guid is specified if the user tries to update an existing IBAN via
   // the Chrome payment settings page.
   if (iban_entry->guid.has_value() && !iban_entry->guid->empty()) {
-    existing_iban = personal_data->GetIbanByGUID(*iban_entry->guid);
+    existing_iban =
+        personal_data->payments_data_manager().GetIbanByGUID(*iban_entry->guid);
     CHECK(existing_iban);
   }
 
@@ -1050,7 +1060,7 @@ AutofillPrivateSetAutofillSyncToggleEnabledFunction::Run() {
     return RespondNow(Error(kErrorDataUnavailable));
   }
 
-  absl::optional<api::autofill_private::SetAutofillSyncToggleEnabled::Params>
+  std::optional<api::autofill_private::SetAutofillSyncToggleEnabled::Params>
       parameters =
           api::autofill_private::SetAutofillSyncToggleEnabled::Params::Create(
               args());

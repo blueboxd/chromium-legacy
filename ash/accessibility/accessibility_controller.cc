@@ -247,6 +247,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityLargeCursorEnabled,
     prefs::kAccessibilityFaceGazeEnabled,
     prefs::kAccessibilityMonoAudioEnabled,
+    prefs::kAccessibilityReducedAnimationsEnabled,
     prefs::kAccessibilityScreenMagnifierEnabled,
     prefs::kAccessibilityScreenMagnifierFocusFollowingEnabled,
     prefs::kAccessibilityScreenMagnifierMouseFollowingMode,
@@ -1061,6 +1062,11 @@ void AccessibilityController::RegisterProfilePrefs(
     registry->RegisterBooleanPref(
         prefs::kAccessibilityColorCorrectionHasBeenSetup, false);
 
+    if (::features::IsAccessibilityReducedAnimationsEnabled()) {
+      registry->RegisterBooleanPref(
+          prefs::kAccessibilityReducedAnimationsEnabled, false);
+    }
+
   // TODO(b/266816160): Make ChromeVox prefs are syncable, to so that ChromeOS
   // backs up users' ChromeVox settings and reflects across their devices.
   registry->RegisterBooleanPref(prefs::kAccessibilityChromeVoxAutoRead, false);
@@ -1272,6 +1278,9 @@ void AccessibilityController::RegisterProfilePrefs(
     registry->RegisterBooleanPref(
         prefs::kAccessibilityFaceGazeCursorUseAcceleration,
         kDefaultFaceGazeCursorUseAcceleration,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+    registry->RegisterDictionaryPref(
+        prefs::kAccessibilityFaceGazeGesturesToMacros,
         user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   }
 }
@@ -1931,16 +1940,6 @@ void AccessibilityController::ShowDictationLanguageUpgradedNudge(
 void AccessibilityController::SilenceSpokenFeedback() {
   if (client_)
     client_->SilenceSpokenFeedback();
-}
-
-void AccessibilityController::OnTwoFingerTouchStart() {
-  if (client_)
-    client_->OnTwoFingerTouchStart();
-}
-
-void AccessibilityController::OnTwoFingerTouchStop() {
-  if (client_)
-    client_->OnTwoFingerTouchStop();
 }
 
 bool AccessibilityController::ShouldToggleSpokenFeedbackViaTouch() const {

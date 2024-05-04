@@ -61,6 +61,7 @@ _CONFIG = [
             'absl::in_place',
             'absl::in_place_type',
             'absl::int128',
+            'absl::monostate',
             'absl::uint128',
             'absl::variant',
             'absl::visit',
@@ -456,6 +457,7 @@ _CONFIG = [
             'cc::SurfaceLayer',
 
             # cc::Layer helper data structs.
+            'cc::AnchorPositionScrollData',
             'cc::BrowserControlsParams',
             'cc::ElementId',
             'cc::LayerPositionConstraint',
@@ -531,10 +533,11 @@ _CONFIG = [
             'cc::TargetSnapAreaElementIds',
             'ui::ScrollGranularity',
 
-            # Document transitions
-            'cc::ViewTransitionRequest',
+            # View transitions
             'cc::ViewTransitionContentLayer',
-            'viz::NavigationID'
+            'cc::ViewTransitionRequest',
+            'viz::NavigationId',
+            'viz::TransitionId',
             'viz::ViewTransitionElementResourceId',
 
             # base/types/strong_alias.h
@@ -706,6 +709,9 @@ _CONFIG = [
             'ui::AXTreeUpdate',
             'ui::AXTreeID',
             'ui::AXTreeIDUnknown',
+            'ui::kInvalidAXNodeID',
+            'ui::kFirstGeneratedRendererNodeID',
+            'ui::kLastGeneratedRendererNodeID',
             'ui::kAXModeBasic',
             'ui::kAXModeComplete',
             'ui::ToString',
@@ -1474,6 +1480,7 @@ _CONFIG = [
             'viz::RasterContextProvider',
             'viz::ReleaseCallback',
             'media::.+',
+            'libgav1::.+',
             'libyuv::.+',
         ]
     },
@@ -1827,16 +1834,11 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/core/view_transition/view_transition_style_tracker.h'
-        ],
-        'allowed': ['viz::ViewTransitionElementResourceId'],
-    },
-    {
-        'paths': [
             'third_party/blink/renderer/core/view_transition/',
         ],
         'allowed': [
             'base::flat_map',
+            'cc::ScopedPauseRendering'
         ],
     },
     {

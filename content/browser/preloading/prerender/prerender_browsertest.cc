@@ -86,6 +86,7 @@
 #include "content/public/test/mojo_capability_control_test_interfaces.mojom.h"
 #include "content/public/test/mojo_capability_control_test_util.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/preloading_test_util.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/scoped_accessibility_mode_override.h"
@@ -205,6 +206,8 @@ using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
 using ukm::builders::Preloading_Attempt;
 using ukm::builders::Preloading_Attempt_PreviousPrimaryPage;
 using ukm::builders::Preloading_Prediction;
+using ukm::builders::Preloading_Prediction_PreviousPrimaryPage;
+
 static const auto kMockElapsedTime =
     base::ScopedMockElapsedTimersForTest::kMockElapsedTime;
 
@@ -257,6 +260,32 @@ class PreloadingAttemptPreviousPrimaryPageUkmEntryBuilder {
       metrics.insert({Preloading_Attempt::kSpeculationEagernessName,
                       static_cast<int64_t>(eagerness.value())});
     }
+    return UkmEntry{source_id, std::move(metrics)};
+  }
+
+ private:
+  PreloadingPredictor predictor_;
+};
+
+// Utility class to make building expected
+// TestUkmRecorder::HumanReadableUkmEntry for EXPECT_EQ for
+// PreloadingPredictionPreviousPrimaryPage.
+class PreloadingPredictionPreviousPrimaryPageUkmEntryBuilder {
+ public:
+  explicit PreloadingPredictionPreviousPrimaryPageUkmEntryBuilder(
+      PreloadingPredictor predictor)
+      : predictor_(predictor) {}
+
+  // Unlike PreloadingPredictionUkmEntryBuilder, this method assumes a
+  // navigation has not occurred thus `TimeToNextNavigation` is not set.
+  ukm::TestUkmRecorder::HumanReadableUkmEntry
+  BuildEntry(ukm::SourceId source_id, int confidence, bool accurate) const {
+    std::map<std::string, int64_t> metrics = {
+        {Preloading_Prediction::kConfidenceName,
+         static_cast<int64_t>(confidence)},
+        {Preloading_Attempt::kPreloadingPredictorName,
+         static_cast<int64_t>(predictor_.ukm_value())},
+        {Preloading_Prediction::kAccuratePredictionName, accurate ? 1 : 0}};
     return UkmEntry{source_id, std::move(metrics)};
   }
 
@@ -335,6 +364,9 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     prediction_ukm_entry_builder_ =
         std::make_unique<test::PreloadingPredictionUkmEntryBuilder>(
             PredictorToExpectInUkm());
+    prediction_previous_ukm_entry_builder_ = std::make_unique<
+        PreloadingPredictionPreviousPrimaryPageUkmEntryBuilder>(
+        PredictorToExpectInUkm());
     ssl_server_.AddDefaultHandlers(GetTestDataFilePath());
     ssl_server_.SetSSLConfig(
         net::test_server::EmbeddedTestServer::CERT_TEST_NAMES);
@@ -541,6 +573,11 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     return *prediction_ukm_entry_builder_;
   }
 
+  const PreloadingPredictionPreviousPrimaryPageUkmEntryBuilder&
+  prediction_previous_ukm_entry_builder() {
+    return *prediction_previous_ukm_entry_builder_;
+  }
+
   void ExpectPreloadingAttemptUkm(
       const std::vector<UkmEntry>& expected_attempt_entries) {
     test::ExpectPreloadingAttemptUkm(*test_ukm_recorder(),
@@ -562,6 +599,17 @@ class PrerenderBrowserTest : public ContentBrowserTest,
       const std::vector<UkmEntry>& expected_prediction_entries) {
     test::ExpectPreloadingPredictionUkm(*test_ukm_recorder(),
                                         expected_prediction_entries);
+  }
+
+  void ExpectPreloadingPredictioPreviousPrimaryPageUkm(
+      const UkmEntry& expected_prediction_entry) {
+    auto prediction_entries = test_ukm_recorder()->GetEntries(
+        Preloading_Prediction_PreviousPrimaryPage::kEntryName,
+        test::kPreloadingPredictionUkmMetrics);
+    ASSERT_EQ(prediction_entries.size(), 1u);
+    EXPECT_EQ(prediction_entries[0], expected_prediction_entry)
+        << test::ActualVsExpectedUkmEntryToString(prediction_entries[0],
+                                                  expected_prediction_entry);
   }
 
   void TestHostPrerenderingState(const GURL& prerender_url) {
@@ -768,6 +816,8 @@ class PrerenderBrowserTest : public ContentBrowserTest,
       attempt_previous_ukm_entry_builder_;
   std::unique_ptr<test::PreloadingPredictionUkmEntryBuilder>
       prediction_ukm_entry_builder_;
+  std::unique_ptr<PreloadingPredictionPreviousPrimaryPageUkmEntryBuilder>
+      prediction_previous_ukm_entry_builder_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<base::ScopedMockElapsedTimersForTest> scoped_test_timer_;
   // Disable sampling of UKM preloading logs.
@@ -1436,6 +1486,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       /*ready_time=*/kMockElapsedTime,
       blink::mojom::SpeculationEagerness::kEager)});
 
+  ExpectPreloadingPredictionUkm({prediction_ukm_entry_builder().BuildEntry(
+      ukm_source_id,
+      /*confidence=*/100,
+      /*accurate_prediction=*/true)});
+
   // The navigation occurred in a new WebContents, so the original WebContents
   // should still be showing the initial trigger page.
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
@@ -1528,6 +1583,11 @@ IN_PROC_BROWSER_TEST_F(
       /*accurate=*/true,
       /*ready_time=*/kMockElapsedTime,
       blink::mojom::SpeculationEagerness::kEager)});
+
+  ExpectPreloadingPredictionUkm({prediction_ukm_entry_builder().BuildEntry(
+      ukm_source_id,
+      /*confidence=*/100,
+      /*accurate_prediction=*/true)});
 
   // The navigation occurred in a new WebContents, so the original WebContents
   // should still be showing the initial trigger page.
@@ -1648,6 +1708,11 @@ IN_PROC_BROWSER_TEST_F(
           /*accurate=*/false,
           /*ready_time=*/kMockElapsedTime,
           blink::mojom::SpeculationEagerness::kEager));
+  ExpectPreloadingPredictioPreviousPrimaryPageUkm(
+      {prediction_previous_ukm_entry_builder().BuildEntry(
+          triggering_primary_page_source_id,
+          /*confidence=*/100,
+          /*accurate=*/false)});
 }
 
 // Tests that window.open() annotated with "_blank" and "noopener" can activate
@@ -7931,6 +7996,88 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       EvalJs(current_frame_host(), "getSessionStorageKeys()").ExtractString());
 }
 
+// Tests that prerender whose target_hint is "_blank" is using the same session
+// storage across prerender navigations, and the initiator doesn't share the
+// same storage.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       SessionStorage_TargetBlank_WithTargetHintBlank) {
+  const GURL kInitialUrl = GetUrl("/prerender/session_storage.html");
+  const GURL kPrerenderingUrl =
+      GetUrl("/prerender/session_storage.html?prerendering=");
+
+  // Navigate to an initial page which has a link to `kPrerenderingUrl`.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start prerendering `kPrerenderingUrl`.
+  int host_id = prerender_helper()->AddPrerender(
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, "_blank");
+  auto* prerender_web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromFrameTreeNodeId(host_id));
+  ExpectWebContentsIsForNewTabPrerendering(*prerender_web_contents);
+  auto* initiator_web_contents = web_contents_impl();
+  ASSERT_NE(prerender_web_contents, initiator_web_contents);
+
+  std::string prerender_session_storage_id_before_activation =
+      FrameTreeNode::GloballyFindByID(host_id)
+          ->frame_tree()
+          .controller()
+          .GetSessionStorageNamespace(prerender_web_contents->GetSiteInstance()
+                                          ->GetStoragePartitionConfig())
+          ->id();
+  EXPECT_EQ(
+      "prerendering",
+      EvalJs(content::test::PrerenderTestHelper::GetPrerenderedMainFrameHost(
+                 *prerender_web_contents, host_id),
+             "getSessionStorageKeys()")
+          .ExtractString());
+
+  // Click the link annotated with "target=_blank". This should activate the
+  // prerendered page.
+  TestNavigationObserver activation_observer(kPrerenderingUrl);
+  activation_observer.WatchExistingWebContents();
+  test::PrerenderHostObserver prerender_observer(*prerender_web_contents,
+                                                 host_id);
+  const std::string kLinkClickScript = R"(
+      clickSameSiteNewWindowLink();
+  )";
+  EXPECT_TRUE(ExecJs(web_contents(), kLinkClickScript));
+  activation_observer.WaitForNavigationFinished();
+  EXPECT_EQ(prerender_web_contents->GetLastCommittedURL(), kPrerenderingUrl);
+  EXPECT_EQ(activation_observer.last_navigation_url(), kPrerenderingUrl);
+  EXPECT_TRUE(prerender_observer.was_activated());
+  EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
+
+  // The initiator's session storage is expected to be different from the
+  // prerender's.
+  EXPECT_EQ("initial", EvalJs(initiator_web_contents->GetPrimaryMainFrame(),
+                              "getSessionStorageKeys()")
+                           .ExtractString());
+  EXPECT_EQ("activated", EvalJs(prerender_web_contents->GetPrimaryMainFrame(),
+                                "getSessionStorageKeys()")
+                             .ExtractString());
+
+  // The prerender session storage is expected to be the same across prerender
+  // activation.
+  EXPECT_EQ(
+      prerender_session_storage_id_before_activation,
+      prerender_web_contents->GetPrimaryFrameTree()
+          .controller()
+          .GetSessionStorageNamespace(prerender_web_contents->GetSiteInstance()
+                                          ->GetStoragePartitionConfig())
+          ->id());
+  EXPECT_NE(
+      prerender_session_storage_id_before_activation,
+      initiator_web_contents->GetPrimaryFrameTree()
+          .controller()
+          .GetSessionStorageNamespace(prerender_web_contents->GetSiteInstance()
+                                          ->GetStoragePartitionConfig())
+          ->id());
+
+  // The navigation occurred in a new WebContents, so the original WebContents
+  // should still be showing the initial trigger page.
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
+}
+
 // Test if the host is abandoned when the renderer page crashes.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AbandonIfRendererProcessCrashes) {
   const GURL kInitialUrl = GetUrl("/empty.html");
@@ -11014,16 +11161,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                   ->has_received_user_gesture_before_nav());
 }
 
-// TODO(https://crbug.com/1408911): This test is flaky on Mac bots.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_CancelPrerenderWhenIsOverridingUserAgentDiffers \
-  DISABLED_CancelPrerenderWhenIsOverridingUserAgentDiffers
-#else
-#define MAYBE_CancelPrerenderWhenIsOverridingUserAgentDiffers \
-  CancelPrerenderWhenIsOverridingUserAgentDiffers
-#endif
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_CancelPrerenderWhenIsOverridingUserAgentDiffers) {
+                       CancelPrerenderWhenIsOverridingUserAgentDiffers) {
   const std::string user_agent_override = "foo";
 
   // Navigate to an initial page.

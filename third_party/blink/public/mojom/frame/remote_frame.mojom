@@ -79,6 +79,11 @@ struct CreateRemoteChildParams {
   array<CreateRemoteChildParams> child_params;
 };
 
+// Simple interface backing the NavigationStateKeepAlive object via the mojo
+// disconnect handler mechanism.
+interface NavigationStateKeepAliveHandle {
+};
+
 // This struct holds parameters included in the OpenURL method sent by the
 // renderer to the browser, |is_history_navigation_in_new_child_frame| is true
 // in the case that the browser process should look for an existing history item
@@ -128,13 +133,13 @@ struct OpenURLParams {
   // SourceLocation's URL is empty.
   network.mojom.SourceLocation source_location;
 
-  // Passing the |initiator_policy_container_keep_alive_handle| is just a mean
-  // to ensure that the PolicyContainerHost of the initiator RenderFrameHost is
-  // kept alive, even if the RenderFrameHost itself has already been deleted in
-  // the meantime. If this can be ensured in other ways, it is safe to pass a
+  // Passing the |initiator_navigation_state_keep_alive_handle| is a means to
+  // ensure that the NavigationStateKeepAlive of the initiator RenderFrameHost
+  // is kept alive, even if the RenderFrameHost itself has already been deleted
+  // in the meantime. If this can be ensured in other ways, it is safe to pass a
   // mojo::NullRemote here.
-  pending_remote<blink.mojom.PolicyContainerHostKeepAliveHandle>?
-      initiator_policy_container_keep_alive_handle;
+  pending_remote<blink.mojom.NavigationStateKeepAliveHandle>?
+      initiator_navigation_state_keep_alive_handle;
 
   // The navigation initiator's user activation and ad status.
   blink.mojom.NavigationInitiatorActivationAndAdStatus
@@ -447,6 +452,15 @@ interface RemoteFrame {
   //
   // `params`: An array of the root's immediate children.
   CreateRemoteChildren(array<CreateRemoteChildParams> params);
+
+  // Propagates a censored version of the event from a fenced frame to its
+  // embedder that omits privacy-sensitive information like mouse coordinates or
+  // timestamps. Fires events named `event_type` targeting the frame owner.
+  // Only intended to be called on remote content frames owned by an
+  // `HTMLFencedFrameElement`. Specifically, this method is only called by the
+  // browser process on RemoteFrames that are the outer delegate of a fenced
+  // frame root.
+  ForwardFencedFrameEventToEmbedder(string event_type);
 };
 
 // Implemented in Blink, this interface defines remote main-frame-specific

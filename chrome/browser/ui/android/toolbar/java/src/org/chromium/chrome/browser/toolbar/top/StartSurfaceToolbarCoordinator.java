@@ -19,7 +19,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.logo.LogoUtils;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.toolbar.TabSwitcherButtonView;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -82,7 +81,6 @@ public class StartSurfaceToolbarCoordinator {
             boolean isTabToGtsAnimationEnabled,
             BooleanSupplier isIncognitoModeEnabledSupplier,
             Callback<LoadUrlParams> logoClickedCallback,
-            boolean isRefactorEnabled,
             boolean shouldCreateLogoInToolbar,
             Callback<Boolean> finishedTransitionCallback,
             ToolbarColorObserverManager toolbarColorObserverManager) {
@@ -133,7 +131,6 @@ public class StartSurfaceToolbarCoordinator {
                         isTabToGtsAnimationEnabled,
                         isIncognitoModeEnabledSupplier,
                         logoClickedCallback,
-                        isRefactorEnabled,
                         StartSurfaceConfiguration.IS_DOODLE_SUPPORTED.getValue(),
                         shouldCreateLogoInToolbar,
                         finishedTransitionCallback,
@@ -225,18 +222,14 @@ public class StartSurfaceToolbarCoordinator {
 
     /**
      * Called when start surface state is changed.
-     * @param newState The new {@link StartSurfaceState}. Should be removed after refactor is
-     *         enabled.
+     *
      * @param shouldShowStartSurfaceToolbar Whether or not should show start surface toolbar.
-     * @param newLayoutType The new {@link LayoutType}. Only used when refactor is enabled.
+     * @param newLayoutType The new {@link LayoutType}.
      */
     void onStartSurfaceStateChanged(
-            @Nullable @StartSurfaceState Integer newState,
-            boolean shouldShowStartSurfaceToolbar,
-            @Nullable @LayoutType Integer newLayoutType) {
+            boolean shouldShowStartSurfaceToolbar, @Nullable @LayoutType Integer newLayoutType) {
         if (shouldShowStartSurfaceToolbar && !isInflated()) inflate();
         mToolbarMediator.onStartSurfaceStateChanged(
-                newState == null ? StartSurfaceState.NOT_SHOWN : newState,
                 shouldShowStartSurfaceToolbar,
                 newLayoutType == null ? LayoutType.NONE : newLayoutType);
     }
@@ -262,7 +255,7 @@ public class StartSurfaceToolbarCoordinator {
                 !mShouldCreateLogoInToolbar
                         && mIsNativeInitialized
                         && TemplateUrlServiceFactory.getForProfile(
-                                        Profile.getLastUsedRegularProfile())
+                                        ProfileManager.getLastUsedRegularProfile())
                                 .doesDefaultSearchEngineHaveLogo();
         int fakeSearchBoxMarginToScreenTop;
         if (mIsSurfacePolishEnabled) {

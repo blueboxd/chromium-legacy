@@ -16,11 +16,14 @@
 
 namespace blink {
 
-TextCombinePainter::TextCombinePainter(GraphicsContext& context,
-                                       const gfx::Rect& visual_rect,
-                                       const ComputedStyle& style,
-                                       const LineRelativeOffset& text_origin)
+TextCombinePainter::TextCombinePainter(
+    GraphicsContext& context,
+    const SvgContextPaints* svg_context_paints,
+    const gfx::Rect& visual_rect,
+    const ComputedStyle& style,
+    const LineRelativeOffset& text_origin)
     : TextPainter(context,
+                  svg_context_paints,
                   style.GetFont(),
                   visual_rect,
                   text_origin,
@@ -68,6 +71,7 @@ void TextCombinePainter::Paint(const PaintInfo& paint_info,
           style.GetWritingMode()));
 
   TextCombinePainter text_painter(paint_info.context,
+                                  paint_info.GetSvgContextPaints(),
                                   text_combine.VisualRectForPaint(paint_offset),
                                   style, text_frame_rect.offset);
   const TextPaintStyle text_style = TextPainterBase::TextPaintingStyle(
@@ -77,9 +81,9 @@ void TextCombinePainter::Paint(const PaintInfo& paint_info,
   std::optional<TextDecorationInfo> decoration_info;
   std::optional<TextDecorationPainter> decoration_painter;
   if (has_text_decoration) {
-    decoration_info.emplace(text_frame_rect.offset,
-                            text_frame_rect.InlineSize(), style,
-                            /* inline_context */ nullptr, std::nullopt);
+    decoration_info.emplace(
+        text_frame_rect.offset, text_frame_rect.InlineSize(), style,
+        /* inline_context */ nullptr, TextDecorationLine::kNone, Color());
     decoration_painter.emplace(text_painter, /* inline_context */ nullptr,
                                paint_info, style, text_style, text_frame_rect,
                                nullptr);

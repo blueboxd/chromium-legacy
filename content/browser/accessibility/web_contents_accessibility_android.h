@@ -20,6 +20,7 @@
 
 namespace ui {
 class MotionEventAndroid;
+struct AXTreeUpdate;
 }
 
 namespace content {
@@ -65,6 +66,11 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       jlong ax_tree_update_ptr,
       const base::android::JavaParamRef<jobject>&
           jaccessibility_node_info_builder);
+  WebContentsAccessibilityAndroid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jassist_data_builder,
+      WebContents* web_contents);
 
   WebContentsAccessibilityAndroid(const WebContentsAccessibilityAndroid&) =
       delete;
@@ -325,6 +331,29 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
     return common_string_cache_[str];
   }
 
+  void RequestAccessibilityTreeSnapshot(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& view_structure_root,
+      const base::android::JavaParamRef<jobject>& on_done_callback);
+
+  void ProcessCompletedAccessibilityTreeSnapshot(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& view_structure_root,
+      const ui::AXTreeUpdate& result);
+
+  void RecursivelyPopulateViewStructureTree(
+      JNIEnv* env,
+      base::android::ScopedJavaLocalRef<jobject> obj,
+      const BrowserAccessibilityAndroid* node,
+      const base::android::JavaRef<jobject>& java_side_assist_data_object,
+      bool is_root);
+
+  void PopulateViewStructureNode(
+      JNIEnv* env,
+      base::android::ScopedJavaLocalRef<jobject> obj,
+      const BrowserAccessibilityAndroid* node,
+      const base::android::JavaRef<jobject>& java_side_assist_data_object);
+
   // --------------------------------------------------------------------------
   // Methods called from the BrowserAccessibilityManager
   // --------------------------------------------------------------------------
@@ -377,7 +406,14 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   JavaObjectWeakGlobalRef java_ref_;
   JavaObjectWeakGlobalRef java_anib_ref_;
 
+  // A weak reference to the AssistData tree builder which will only be
+  // instantiated after a request from the Android framework.
+  JavaObjectWeakGlobalRef java_adb_ref_;
+
   raw_ptr<WebContentsImpl> web_contents_;
+
+  // Used by the accessibility tree snapshotter when snapshot is completed.
+  base::android::ScopedJavaGlobalRef<jobject> on_done_callback_;
 
   bool frame_info_initialized_;
 

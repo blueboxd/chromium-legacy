@@ -272,6 +272,11 @@ public interface Tab extends TabLifecycle {
     boolean isLoading();
 
     /**
+     * @return true iff a navigation in primary main frame is in progress.
+     */
+    boolean isNavigationInPrimaryMainFrameInProgress();
+
+    /**
      * @return true iff the tab is performing a restore page load.
      */
     boolean isBeingRestored();
@@ -371,4 +376,7 @@ public interface Tab extends TabLifecycle {
 
     /** Sets the TabLaunchType for tabs launched with an unset launch type. */
     void setTabLaunchType(@TabLaunchType int launchType);
+
+    /** Update the title for the current page if changed. */
+    void updateTitle();
 }

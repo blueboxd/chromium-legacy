@@ -36,24 +36,6 @@ namespace {
 constexpr char kAllowlistScheme[] = "foo";
 constexpr char kEndUrl[] = ":something";
 
-constexpr char kScriptHtml[] = R"HTML(
-  <html>
-  <head>
-    <script src='data:foo'></script>
-  </head>
-  <body></body>
-  </html>;
-)HTML";
-
-constexpr char kScriptWithSrcHtml[] = R"HTML(
-  <html>
-  <head>
-    <script src='http://www.example.com/script.js'></script>
-  </head>
-  <body></body>
-  </html>
-)HTML";
-
 class MockContentSettingsManagerImpl : public mojom::ContentSettingsManager {
  public:
   struct Log {
@@ -86,7 +68,7 @@ class MockContentSettingsManagerImpl : public mojom::ContentSettingsManager {
   }
 
  private:
-  raw_ptr<Log, ExperimentalRenderer> log_;
+  raw_ptr<Log> log_;
 };
 
 class MockContentSettingsAgentDelegate
@@ -353,126 +335,6 @@ TEST_P(ContentSettingsAgentImplBrowserTest, AllowStorageAccess) {
       base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.allow_storage_access_count());
-}
-
-TEST_P(ContentSettingsAgentImplBrowserTest, ImagesBlockedByDefault) {
-  MockContentSettingsAgentImpl mock_agent(GetMainRenderFrame());
-
-  // Load some HTML.
-  LoadHTML("<html>Foo</html>");
-
-  // Set the default image blocking setting.
-  RendererContentSettingRules content_setting_rules;
-  ContentSettingsForOneType& image_setting_rules =
-      content_setting_rules.image_rules;
-  image_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
-      std::string(), false));
-
-  ContentSettingsAgentImpl* agent =
-      ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
-  EXPECT_FALSE(agent->AllowImage(true, mock_agent.image_url()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, mock_agent.on_content_blocked_count());
-  EXPECT_EQ(ContentSettingsType::IMAGES, mock_agent.on_content_blocked_type());
-
-  // Create an exception which allows the image.
-  image_setting_rules.insert(
-      image_setting_rules.begin(),
-      ContentSettingPatternSource(
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsPattern::FromString(mock_agent.image_origin()),
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
-          std::string(), false));
-  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
-
-  EXPECT_TRUE(agent->AllowImage(true, mock_agent.image_url()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, mock_agent.on_content_blocked_count());
-}
-
-TEST_P(ContentSettingsAgentImplBrowserTest, ImagesAllowedByDefault) {
-  MockContentSettingsAgentImpl mock_agent(GetMainRenderFrame());
-
-  // Load some HTML.
-  LoadHTML("<html>Foo</html>");
-
-  // Set the default image blocking setting.
-  RendererContentSettingRules content_setting_rules;
-  ContentSettingsForOneType& image_setting_rules =
-      content_setting_rules.image_rules;
-  image_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
-      std::string(), false));
-
-  ContentSettingsAgentImpl* agent =
-      ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
-  EXPECT_TRUE(agent->AllowImage(true, mock_agent.image_url()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, mock_agent.on_content_blocked_count());
-
-  // Create an exception which blocks the image.
-  image_setting_rules.insert(
-      image_setting_rules.begin(),
-      ContentSettingPatternSource(
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsPattern::FromString(mock_agent.image_origin()),
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
-          std::string(), false));
-  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
-  EXPECT_FALSE(agent->AllowImage(true, mock_agent.image_url()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, mock_agent.on_content_blocked_count());
-  EXPECT_EQ(ContentSettingsType::IMAGES, mock_agent.on_content_blocked_type());
-}
-
-TEST_P(ContentSettingsAgentImplBrowserTest, ContentSettingsBlockScripts) {
-  MockContentSettingsAgentImpl mock_agent(GetMainRenderFrame());
-  // Set the content settings for scripts.
-  RendererContentSettingRules content_setting_rules;
-  ContentSettingsForOneType& script_setting_rules =
-      content_setting_rules.script_rules;
-  script_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
-      std::string(), false));
-
-  ContentSettingsAgentImpl* agent =
-      ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
-
-  // Load a page which contains a script.
-  LoadHTML(kScriptHtml);
-
-  // Verify that the script was blocked.
-  EXPECT_EQ(1, mock_agent.on_content_blocked_count());
-}
-
-TEST_P(ContentSettingsAgentImplBrowserTest,
-       ContentSettingsAllowScriptsWithSrc) {
-  MockContentSettingsAgentImpl mock_agent(GetMainRenderFrame());
-  // Set the content settings for scripts.
-  RendererContentSettingRules content_setting_rules;
-  ContentSettingsForOneType& script_setting_rules =
-      content_setting_rules.script_rules;
-  script_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
-      std::string(), false));
-
-  ContentSettingsAgentImpl* agent =
-      ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
-
-  // Load a page which contains a script.
-  LoadHTML(kScriptWithSrcHtml);
-
-  // Verify that the script was not blocked.
-  EXPECT_EQ(0, mock_agent.on_content_blocked_count());
 }
 
 TEST_P(ContentSettingsAgentImplBrowserTest, MixedAutoupgradesDisabledByRules) {

@@ -92,8 +92,8 @@ export class FakePageHandler implements PageHandlerInterface {
       resizeLocked: false,
       hideResizeLocked: true,
       supportedLinks: [],
-      runOnOsLogin: undefined,
-      fileHandlingState: undefined,
+      runOnOsLogin: null,
+      fileHandlingState: null,
       installSource: InstallSource.kUnknown,
       appSize: '',
       dataSize: '',
@@ -101,6 +101,8 @@ export class FakePageHandler implements PageHandlerInterface {
       formattedOrigin: '',
       scopeExtensions: [],
       supportedLocales: [],
+      selectedLocale: null,
+      showSystemNotificationsSettingsLink: false,
     };
 
     if (optConfig) {
@@ -293,6 +295,8 @@ export class FakePageHandler implements PageHandlerInterface {
   }
 
   openStorePage(_appId: string): void {}
+
+  openSystemNotificationSettings(_appId: string): void {}
 
   async addApp(optId?: string, optConfig?: AppConfig): Promise<App> {
     optId = optId || String(this.guid++);

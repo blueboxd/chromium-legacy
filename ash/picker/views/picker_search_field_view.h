@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/picker/metrics/picker_session_metrics.h"
-#include "ash/picker/picker_search_debouncer.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
@@ -22,6 +22,8 @@ class Textfield;
 }
 
 namespace ash {
+
+class PickerKeyEventHandler;
 
 // View for the Picker search field.
 class ASH_EXPORT PickerSearchFieldView : public views::View,
@@ -35,12 +37,12 @@ class ASH_EXPORT PickerSearchFieldView : public views::View,
 
   // `search_callback` is called asynchronously whenever the contents of the
   // search field changes (with debouncing logic to avoid unnecessary calls).
-  // `session_metrics` must live as long as this class.
+  // `key_event_handler` and `session_metrics` must live as long as this class.
   // `delay` is the time to wait before calling `search_callback` for
   // debouncing.
   explicit PickerSearchFieldView(SearchCallback search_callback,
-                                 PickerSessionMetrics* session_metrics,
-                                 base::TimeDelta delay);
+                                 PickerKeyEventHandler* key_event_handler,
+                                 PickerSessionMetrics* session_metrics);
   PickerSearchFieldView(const PickerSearchFieldView&) = delete;
   PickerSearchFieldView& operator=(const PickerSearchFieldView&) = delete;
   ~PickerSearchFieldView() override;
@@ -53,6 +55,8 @@ class ASH_EXPORT PickerSearchFieldView : public views::View,
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
                        const std::u16string& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
   // views::FocusChangeListener:
   void OnWillChangeFocus(View* focused_before, View* focused_now) override;
@@ -64,8 +68,8 @@ class ASH_EXPORT PickerSearchFieldView : public views::View,
   const views::Textfield& textfield_for_testing() const { return *textfield_; }
 
  private:
-  PickerSearchDebouncer search_debouncer_;
   SearchCallback search_callback_;
+  raw_ptr<PickerKeyEventHandler> key_event_handler_ = nullptr;
   raw_ptr<PickerSessionMetrics> session_metrics_ = nullptr;
   raw_ptr<views::Textfield> textfield_ = nullptr;
 };

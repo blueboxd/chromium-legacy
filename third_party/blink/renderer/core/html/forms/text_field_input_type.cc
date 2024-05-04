@@ -319,6 +319,13 @@ ControlPart TextFieldInputType::AutoAppearance() const {
   return kTextFieldPart;
 }
 
+bool TextFieldInputType::IsInnerEditorValueEmpty() const {
+  if (!HasCreatedShadowSubtree()) {
+    return VisibleValue().empty();
+  }
+  return GetElement().InnerEditorValue().empty();
+}
+
 void TextFieldInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
   ShadowRoot* shadow_root = GetElement().UserAgentShadowRoot();
@@ -542,15 +549,21 @@ bool TextFieldInputType::ShouldRespectListAttribute() {
   return true;
 }
 
-void TextFieldInputType::UpdatePlaceholderText(bool is_suggested_value) {
-  if (!SupportsPlaceholder())
-    return;
+HTMLElement* TextFieldInputType::UpdatePlaceholderText(
+    bool is_suggested_value) {
+  if (!HasCreatedShadowSubtree() &&
+      RuntimeEnabledFeatures::CreateInputShadowTreeDuringLayoutEnabled()) {
+    return nullptr;
+  }
+  if (!SupportsPlaceholder()) {
+    return nullptr;
+  }
   HTMLElement* placeholder = GetElement().PlaceholderElement();
   if (!is_suggested_value &&
       !GetElement().FastHasAttribute(html_names::kPlaceholderAttr)) {
     if (placeholder)
       placeholder->remove(ASSERT_NO_EXCEPTION);
-    return;
+    return nullptr;
   }
   if (!placeholder) {
     GetElement().EnsureShadowSubtree();
@@ -578,6 +591,7 @@ void TextFieldInputType::UpdatePlaceholderText(bool is_suggested_value) {
     placeholder->RemoveInlineStyleProperty(CSSPropertyID::kUserSelect);
   }
   placeholder->setTextContent(GetElement().GetPlaceholderValue());
+  return placeholder;
 }
 
 String TextFieldInputType::ConvertFromVisibleValue(

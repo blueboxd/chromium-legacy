@@ -10,7 +10,7 @@
 #include <compare>
 #include <map>
 #include <optional>
-#include <tuple>
+#include <utility>
 #include <vector>
 
 #include "content/common/content_export.h"
@@ -59,6 +59,8 @@ class CONTENT_EXPORT RandomizedResponseData {
   double channel_capacity() const { return channel_capacity_; }
 
   const RandomizedResponse& response() const { return response_; }
+
+  RandomizedResponse&& ResponseForTesting() && { return std::move(response_); }
 
   friend bool operator==(const RandomizedResponseData&,
                          const RandomizedResponseData&) = default;
@@ -161,7 +163,7 @@ CONTENT_EXPORT std::vector<FakeEventLevelReport> GetFakeReportsForSequenceIndex(
 //
 // Takes a `StateMap`, to optimize with the cache from previous calls that
 // pre-compute the number of states (`GetNumStatesRecursive()`).
-using ConfigForCache = std::tuple<uint8_t, uint8_t, uint8_t, uint8_t>;
+using ConfigForCache = uint32_t;
 using StateMap = std::map<ConfigForCache, absl::uint128>;
 CONTENT_EXPORT std::vector<FakeEventLevelReport> GetFakeReportsForSequenceIndex(
     const attribution_reporting::TriggerSpecs& specs,

@@ -18,6 +18,9 @@
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
 namespace {
+// A "-1" resource ID is used to indicate that the fallback dialog will not
+// display a "fallback reason" message.
+const int kNoReasonMessageResourceId = -1;
 
 // Width of the Fallback dialog as found with the inspector tool.
 const int kWidth = 512;
@@ -29,6 +32,8 @@ const int kDisableDrivePreferenceSetHeight = 268;
 const int kDriveUnavailableHeight = 268;
 const int kDriveDisabledForAccountType = 268;
 const int kMeteredHeight = 268;
+const int kWaitingForUploadHeight = 228;
+const int kAndroidOneDriveUnsupportedLocationHeight = 244;
 
 // Height of a line of text as found with the inspector tool.
 const int kLineHeight = 20;
@@ -63,6 +68,8 @@ void GetDialogTextIdsAndSize(
     int& reason_message_id,
     bool& include_task_in_reason_message,
     int& instructions_message_id,
+    bool& enable_retry_option,
+    bool& enable_quick_office_option,
     int& width,
     int& height) {
   width = kWidth;
@@ -72,29 +79,37 @@ void GetDialogTextIdsAndSize(
     case ash::office_fallback::FallbackReason::kDriveAuthenticationNotReady:
       title_id = IDS_OFFICE_FALLBACK_TITLE_OFFLINE;
       reason_message_id = IDS_OFFICE_FALLBACK_REASON_OFFLINE;
+      include_task_in_reason_message = true;
       instructions_message_id = IDS_OFFICE_FALLBACK_INSTRUCTIONS_OFFLINE;
+      enable_retry_option = true;
+      enable_quick_office_option = true;
       height = kOfflineHeight;
       break;
     case ash::office_fallback::FallbackReason::kDisableDrivePreferenceSet:
       title_id = IDS_OFFICE_FALLBACK_TITLE_DRIVE_UNAVAILABLE;
       reason_message_id = IDS_OFFICE_FALLBACK_REASON_DRIVE_UNAVAILABLE;
+      include_task_in_reason_message = true;
       instructions_message_id =
           IDS_OFFICE_FALLBACK_INSTRUCTIONS_DISABLE_DRIVE_PREFERENCE;
+      enable_retry_option = true;
+      enable_quick_office_option = true;
       height = kDisableDrivePreferenceSetHeight;
       break;
     case ash::office_fallback::FallbackReason::kDriveDisabledForAccountType:
       title_id = IDS_OFFICE_FALLBACK_TITLE_DRIVE_UNAVAILABLE;
       reason_message_id = IDS_OFFICE_FALLBACK_REASON_DRIVE_DISABLED_FOR_ACCOUNT;
-      include_task_in_reason_message = true;
       instructions_message_id =
           IDS_OFFICE_FALLBACK_INSTRUCTIONS_DRIVE_DISABLED_FOR_ACCOUNT;
+      enable_retry_option = true;
+      enable_quick_office_option = true;
       height = kDriveDisabledForAccountType;
       break;
     case ash::office_fallback::FallbackReason::kMeteredConnection:
       title_id = IDS_OFFICE_FALLBACK_TITLE_METERED;
       reason_message_id = IDS_OFFICE_FALLBACK_REASON_METERED;
-      include_task_in_reason_message = true;
       instructions_message_id = IDS_OFFICE_FALLBACK_INSTRUCTIONS_METERED;
+      enable_retry_option = true;
+      enable_quick_office_option = true;
       height = kMeteredHeight;
       break;
     case ash::office_fallback::FallbackReason::kDriveDisabled:
@@ -102,8 +117,31 @@ void GetDialogTextIdsAndSize(
     case ash::office_fallback::FallbackReason::kDriveFsInterfaceError:
       title_id = IDS_OFFICE_FALLBACK_TITLE_DRIVE_UNAVAILABLE;
       reason_message_id = IDS_OFFICE_FALLBACK_REASON_DRIVE_UNAVAILABLE;
+      include_task_in_reason_message = true;
       instructions_message_id = IDS_OFFICE_FALLBACK_INSTRUCTIONS;
+      enable_retry_option = true;
+      enable_quick_office_option = true;
       height = kDriveUnavailableHeight;
+      break;
+    case ash::office_fallback::FallbackReason::kWaitingForUpload:
+      title_id = IDS_OFFICE_FALLBACK_TITLE_WAITING_FOR_UPLOAD;
+      reason_message_id = IDS_OFFICE_FALLBACK_REASON_WAITING_FOR_UPLOAD;
+      instructions_message_id =
+          IDS_OFFICE_FALLBACK_INSTRUCTIONS_WAITING_FOR_UPLOAD;
+      enable_retry_option = false;
+      enable_quick_office_option = false;
+      height = kWaitingForUploadHeight;
+      break;
+    case ash::office_fallback::FallbackReason::
+        kAndroidOneDriveUnsupportedLocation:
+      title_id =
+          IDS_OFFICE_FALLBACK_TITLE_ANDROID_ONE_DRIVE_LOCATION_NOT_SUPPORTED;
+      reason_message_id = kNoReasonMessageResourceId;
+      instructions_message_id =
+          IDS_OFFICE_FALLBACK_INSTRUCTIONS_ANDROID_ONE_DRIVE_LOCATION_NOT_SUPPORTED;
+      enable_retry_option = false;
+      enable_quick_office_option = true;
+      height = kAndroidOneDriveUnsupportedLocationHeight;
       break;
   }
   // Add extra height to account for translations.
@@ -157,26 +195,33 @@ bool OfficeFallbackDialog::Show(
   int reason_message_id;
   bool include_task_in_reason_message;
   int instructions_message_id;
+  bool enable_retry_option;
+  bool enable_quick_office_option;
   int width;
   int height;
   GetDialogTextIdsAndSize(fallback_reason, title_id, reason_message_id,
                           include_task_in_reason_message,
-                          instructions_message_id, width, height);
+                          instructions_message_id, enable_retry_option,
+                          enable_quick_office_option, width, height);
   // TODO(cassycc): Figure out how to add the web_drive to the placeholder in
   // IDS_OFFICE_FALLBACK_TITLE_WEB_DRIVE_UNAVAILABLE.
   const std::string title_text = l10n_util::GetStringFUTF8(title_id, file_name);
-  const std::string reason_message =
-      include_task_in_reason_message
-          ? l10n_util::GetStringUTF8(reason_message_id)
-          : l10n_util::GetStringFUTF8(reason_message_id, task_title);
+  std::string reason_message = "";
+  if (reason_message_id != kNoReasonMessageResourceId) {
+    reason_message =
+        include_task_in_reason_message
+            ? l10n_util::GetStringFUTF8(reason_message_id, task_title)
+            : l10n_util::GetStringUTF8(reason_message_id);
+  }
   const std::string instructions_message =
       l10n_util::GetStringUTF8(instructions_message_id);
 
   // The pointer is managed by an instance of `views::WebDialogView` and removed
   // in `SystemWebDialogDelegate::OnDialogClosed`.
   OfficeFallbackDialog* dialog = new OfficeFallbackDialog(
-      file_urls, title_text, reason_message, instructions_message, width,
-      height, std::move(callback));
+      file_urls, title_text, reason_message, instructions_message,
+      enable_retry_option, enable_quick_office_option, width, height,
+      std::move(callback));
 
   dialog->ShowSystemDialog();
   return true;
@@ -198,6 +243,8 @@ OfficeFallbackDialog::OfficeFallbackDialog(
     const std::string& title_text,
     const std::string& reason_message,
     const std::string& instructions_message,
+    const bool& enable_retry_option,
+    const bool& enable_quick_office_option,
     const int& width,
     const int& height,
     DialogChoiceCallback callback)
@@ -207,6 +254,8 @@ OfficeFallbackDialog::OfficeFallbackDialog(
       title_text_(title_text),
       reason_message_(reason_message),
       instructions_message_(instructions_message),
+      enable_retry_option_(enable_retry_option),
+      enable_quick_office_option_(enable_quick_office_option),
       width_(width),
       height_(height),
       callback_(std::move(callback)) {}
@@ -218,6 +267,8 @@ std::string OfficeFallbackDialog::GetDialogArgs() const {
   args.Set("titleText", title_text_);
   args.Set("reasonMessage", reason_message_);
   args.Set("instructionsMessage", instructions_message_);
+  args.Set("enableRetryOption", enable_retry_option_);
+  args.Set("enableQuickOfficeOption", enable_quick_office_option_);
   std::string json;
   base::JSONWriter::Write(args, &json);
   return json;

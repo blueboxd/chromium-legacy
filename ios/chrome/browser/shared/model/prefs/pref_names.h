@@ -15,6 +15,11 @@ inline constexpr char kAddressBarSettingsNewBadgeShownCount[] =
 // The application locale.
 inline constexpr char kApplicationLocale[] = "intl.app_locale";
 
+// A dictionary mapping push notification enabled features to their permission
+// to send notifications to the user. This is stored in LocalState prefs.
+inline constexpr char kAppLevelPushNotificationPermissions[] =
+    "push_notifications.app_level_permissions";
+
 // Boolean that is true when the AppStoreRatingEnabled policy is enabled.
 inline constexpr char kAppStoreRatingPolicyEnabled[] =
     "ios.app_store_rating_enabled";
@@ -41,9 +46,12 @@ inline constexpr char kBrowserLockdownModeEnabled[] =
 inline constexpr char kBrowserStateInfoCache[] = "profile.info_cache";
 
 // Directory of the browser state profile used.
+// TODO(crbug.com/325921947): Remove use of this key, kBrowserStatesLastActive
+// should be used.
 inline constexpr char kBrowserStateLastUsed[] = "profile.last_used";
 
 // List of directories of the browser states last active.
+// TODO(crbug.com/325923177): Update this key with active BrowserStates.
 inline constexpr char kBrowserStatesLastActive[] =
     "profile.last_active_profiles";
 
@@ -90,7 +98,7 @@ inline constexpr char kFirstFollowUpdateUIShownCount[] =
     "follow.first_follow_update_ui_modal_count";
 
 // A dictionary mapping push notification enabled features to their permission
-// to send notifications to the user.
+// to send notifications to the user. This is stored in BrowserState prefs.
 inline constexpr char kFeaturePushNotificationPermissions[] =
     "push_notifications.feature_permissions";
 
@@ -118,6 +126,11 @@ inline constexpr char kIosCredentialProviderPromoSource[] =
 inline constexpr char kIosBookmarkCachedFolderId[] =
     "ios.bookmark.cached_folder_id";
 
+// Caches the folder’s model of user's position in the bookmark hierarchy
+// navigator.
+inline constexpr char kIosBookmarkCachedFolderModel[] =
+    "ios.bookmark.cached_folder_model";
+
 // Caches the scroll position of Bookmarks.
 inline constexpr char kIosBookmarkCachedTopMostRow[] =
     "ios.bookmark.cached_top_most_row";
@@ -135,7 +148,7 @@ inline constexpr char kIosBookmarkLastUsedFolderReceivingBookmarks[] =
 
 // Preference that keep information about the storage type for
 // kIosBookmarkLastUsedFolderReceivingBookmarks. The value is based on
-// bookmarks::StorageType enum. This value should be ignored if the value of
+// BookmarkModelType enum. This value should be ignored if the value of
 // `kIosBookmarkLastUsedFolderReceivingBookmarks` preference is
 // `kLastUsedBookmarkFolderNone`. Related to
 // `kIosBookmarkLastUsedFolderReceivingBookmarks`.
@@ -266,10 +279,6 @@ inline constexpr char kIosPromosManagerActivePromos[] =
 inline constexpr char kIosPromosManagerSingleDisplayPendingPromos[] =
     "ios.promos_manager.pending_promos";
 
-// List preference containing the promo impression history.
-inline constexpr char kIosPromosManagerImpressions[] =
-    "ios.promos_manager.impressions";
-
 // List preference maintaining the list of single-display, active promo
 // campaigns.
 inline constexpr char kIosPromosManagerSingleDisplayActivePromos[] =
@@ -293,6 +302,16 @@ inline constexpr char kIosSafetyCheckManagerUpdateCheckResult[] =
 // recent Safety Check run (using the new Safety Check Manager).
 inline constexpr char kIosSafetyCheckManagerSafeBrowsingCheckResult[] =
     "ios.safety_check_manager.safe_browsing_check_result";
+
+// String preference containing the default account to use for saving files to
+// Google Drive.
+inline constexpr char kIosSaveToDriveDefaultGaiaId[] =
+    "ios.save_to_drive.default_gaia_id";
+
+// Integer preference indicating whether Save to Drive is enabled by enterprise
+// policy.
+inline constexpr char kIosSaveToDriveDownloadManagerPolicySettings[] =
+    "ios.save_to_drive.download_manager_policy";
 
 // String preference containing the default account to use for saving images to
 // Google Photos.

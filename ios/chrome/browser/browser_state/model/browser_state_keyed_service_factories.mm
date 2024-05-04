@@ -5,12 +5,14 @@
 #import "ios/chrome/browser/browser_state/model/browser_state_keyed_service_factories.h"
 
 #import "base/feature_list.h"
+#import "ios/chrome/browser/affiliations/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/autocomplete/model/autocomplete_classifier_factory.h"
 #import "ios/chrome/browser/autocomplete/model/in_memory_url_index_factory.h"
 #import "ios/chrome/browser/autocomplete/model/shortcuts_backend_factory.h"
 #import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_sync_service_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_undo_service_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
@@ -20,6 +22,7 @@
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/consent_auditor/model/consent_auditor_factory.h"
 #import "ios/chrome/browser/content_settings/model/cookie_settings_factory.h"
+#import "ios/chrome/browser/contextual_panel/model/contextual_panel_model_service_factory.h"
 #import "ios/chrome/browser/crash_report/model/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/credential_provider/model/credential_provider_buildflags.h"
 #import "ios/chrome/browser/device_sharing/model/device_sharing_manager_factory.h"
@@ -57,7 +60,6 @@
 #import "ios/chrome/browser/plus_addresses/model/plus_address_service_factory.h"
 #import "ios/chrome/browser/policy/model/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy_url_blocking/model/policy_url_blocking_service.h"
-#import "ios/chrome/browser/promos_manager/model/promos_manager_event_exporter_factory.h"
 #import "ios/chrome/browser/promos_manager/model/promos_manager_factory.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_browser_state_service_factory.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
@@ -121,7 +123,8 @@
 // TODO(erg): This needs to be something else. I don't think putting every
 // FooServiceFactory here will scale or is desirable long term.
 void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
-  AboutThisSiteServiceFactory::GetInstance();
+  // Keep this list alphabetized -- namespaced factories first, followed by
+  // non-namespaced factories.
   autofill::PersonalDataManagerFactory::GetInstance();
   commerce::ShoppingServiceFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
@@ -134,6 +137,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::AutocompleteClassifierFactory::GetInstance();
   ios::LocalOrSyncableBookmarkModelFactory::GetInstance();
   ios::AccountBookmarkModelFactory::GetInstance();
+  ios::BookmarkModelFactory::GetInstance();
   ios::BookmarkUndoServiceFactory::GetInstance();
   ios::CookieSettingsFactory::GetInstance();
   ios::FaviconServiceFactory::GetInstance();
@@ -148,14 +152,19 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::WebDataServiceFactory::GetInstance();
   ios::WebHistoryServiceFactory::GetInstance();
   translate::TranslateRankerFactory::GetInstance();
+  AboutThisSiteServiceFactory::GetInstance();
+  AcceptLanguagesServiceFactory::GetInstance();
   AuthenticationServiceFactory::GetInstance();
   BreadcrumbManagerKeyedServiceFactory::GetInstance();
+  BringAndroidTabsToIOSServiceFactory::GetInstance();
   BrowserDownloadServiceFactory::GetInstance();
   BrowserListFactory::GetInstance();
   BrowsingDataRemoverFactory::GetInstance();
+  ChildAccountServiceFactory::GetInstance();
   ChromeAccountManagerServiceFactory::GetInstance();
   ChromePasswordProtectionServiceFactory::GetInstance();
   ConsentAuditorFactory::GetInstance();
+  ContextualPanelModelServiceFactory::GetInstance();
   DeviceSharingManagerFactory::GetInstance();
   DiscoverFeedServiceFactory::GetInstance();
   DomainDiversityReporterFactory::GetInstance();
@@ -165,6 +174,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   GoogleLogoServiceFactory::GetInstance();
   IdentityManagerFactory::GetInstance();
   IOSChromeAccountPasswordStoreFactory::GetInstance();
+  IOSChromeAffiliationServiceFactory::GetInstance();
   IOSChromeFaviconLoaderFactory::GetInstance();
   IOSChromeGCMProfileServiceFactory::GetInstance();
   IOSChromeLargeIconCacheFactory::GetInstance();
@@ -177,18 +187,17 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   IOSTrustedVaultServiceFactory::GetInstance();
   IOSUserEventServiceFactory::GetInstance();
   LanguageModelManagerFactory::GetInstance();
+  ListFamilyMembersServiceFactory::GetInstance();
   MailtoHandlerServiceFactory::GetInstance();
   ManagedBookmarkServiceFactory::GetInstance();
   ModelTypeStoreServiceFactory::GetInstance();
   OptimizationGuideServiceFactory::GetInstance();
-  policy::UserPolicySigninServiceFactory::GetInstance();
   PhotosServiceFactory::GetInstance();
-  if (base::FeatureList::IsEnabled(kIOSSaveToDrive)) {
-    drive::DriveServiceFactory::GetInstance();
-  }
-  TabsSearchServiceFactory::GetInstance();
+  PlusAddressServiceFactory::GetInstance();
+  policy::UserPolicySigninServiceFactory::GetInstance();
+  PolicyBlocklistServiceFactory::GetInstance();
+  PromosManagerFactory::GetInstance();
   PushNotificationBrowserStateServiceFactory::GetInstance();
-  SyncServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
   RealTimeUrlLookupServiceFactory::GetInstance();
   SafeBrowsingClientFactory::GetInstance();
@@ -198,24 +207,24 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   SigninBrowserStateInfoUpdaterFactory::GetInstance();
   SigninClientFactory::GetInstance();
   SupervisedUserMetricsServiceFactory::GetInstance();
-  SupervisedUserSettingsServiceFactory::GetInstance();
   SupervisedUserServiceFactory::GetInstance();
-  ChildAccountServiceFactory::GetInstance();
-  ListFamilyMembersServiceFactory::GetInstance();
+  SupervisedUserSettingsServiceFactory::GetInstance();
+  SyncServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
+  TabsSearchServiceFactory::GetInstance();
+  TextClassifierModelServiceFactory::GetInstance();
   TextToSpeechPlaybackControllerFactory::GetInstance();
-  AcceptLanguagesServiceFactory::GetInstance();
+  TrustedVaultClientBackendFactory::GetInstance();
   UnifiedConsentServiceFactory::GetInstance();
+  UnitConversionServiceFactory::GetInstance();
   UrlLanguageHistogramFactory::GetInstance();
   VerdictCacheManagerFactory::GetInstance();
-  PolicyBlocklistServiceFactory::GetInstance();
-  TrustedVaultClientBackendFactory::GetInstance();
-  TextClassifierModelServiceFactory::GetInstance();
-  PromosManagerFactory::GetInstance();
-  BringAndroidTabsToIOSServiceFactory::GetInstance();
-  PromosManagerEventExporterFactory::GetInstance();
-  PlusAddressServiceFactory::GetInstance();
-  UnitConversionServiceFactory::GetInstance();
+  // Keep the above list alphabetized! Don't just add new entries at the end.
+
+  // All factories that are only conditionally added go below here.
+  if (base::FeatureList::IsEnabled(kIOSSaveToDrive)) {
+    drive::DriveServiceFactory::GetInstance();
+  }
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
   CredentialProviderServiceFactory::GetInstance();

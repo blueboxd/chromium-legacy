@@ -222,6 +222,36 @@ bool HasClipPathPaintWorklet(Node* node) {
          ElementAnimations::CompositedPaintStatus::kComposited;
 }
 
+// If there's a composited clip path animation, and it doesn't have a cached
+// value for CompositedClipPathStatus, that means we need to regenerate the
+// paint properties, as the composited clip path status is calculated then. See
+// HasCompositeClipPathAnimation in clip_path_clipper.cc
+bool ShouldRefreshPaintPropertiesForClipPath(Node* node,
+                                             const ComputedStyle* style) {
+  if (!RuntimeEnabledFeatures::CompositeClipPathAnimationEnabled()) {
+    return false;
+  }
+
+  // We don't care what the composited clip path status is if there's no
+  // composited clip path animation.
+  if (!style->HasCurrentClipPathAnimation()) {
+    return false;
+  }
+
+  Element* element = DynamicTo<Element>(node);
+  if (!element) {
+    return false;
+  }
+
+  ElementAnimations* element_animations = element->GetElementAnimations();
+  if (!element_animations) {
+    return false;
+  }
+
+  return element_animations->CompositedClipPathStatus() ==
+         ElementAnimations::CompositedPaintStatus::kNeedsRepaintOrNoAnimation;
+}
+
 StyleDifference AdjustForCompositableAnimationPaint(
     const ComputedStyle* old_style,
     const ComputedStyle* new_style,
@@ -357,7 +387,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     } else {
       image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
     }
-    image->SetStyleInternal(nullptr);
+    image->ResetStyle();
     return image;
   } else if (element->GetPseudoId() == kPseudoIdMarker) {
     const Element* parent = element->parentElement();
@@ -419,13 +449,16 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kBlockMath:
       return MakeGarbageCollected<LayoutMathMLBlock>(element);
     case EDisplay::kRuby:
-      DCHECK(RuntimeEnabledFeatures::CssDisplayRubyEnabled());
+      if (RuntimeEnabledFeatures::RubyLineBreakableEnabled()) {
+        return MakeGarbageCollected<LayoutInline>(element);
+      }
       return MakeGarbageCollected<LayoutRuby>(element);
     case EDisplay::kBlockRuby:
-      DCHECK(RuntimeEnabledFeatures::CssDisplayRubyEnabled());
       return MakeGarbageCollected<LayoutRubyAsBlock>(element);
     case EDisplay::kRubyText:
-      DCHECK(RuntimeEnabledFeatures::CssDisplayRubyEnabled());
+      if (RuntimeEnabledFeatures::RubyLineBreakableEnabled()) {
+        return MakeGarbageCollected<LayoutInline>(element);
+      }
       return MakeGarbageCollected<LayoutRubyText>(element);
     case EDisplay::kLayoutCustom:
     case EDisplay::kInlineLayoutCustom:
@@ -498,6 +531,18 @@ bool LayoutObject::IsDescendantOf(const LayoutObject* obj) const {
       return true;
   }
   return false;
+}
+
+bool LayoutObject::IsInlineRuby() const {
+  NOT_DESTROYED();
+  return RuntimeEnabledFeatures::RubyLineBreakableEnabled() &&
+         IsLayoutInline() && StyleRef().Display() == EDisplay::kRuby;
+}
+
+bool LayoutObject::IsInlineRubyText() const {
+  NOT_DESTROYED();
+  return RuntimeEnabledFeatures::RubyLineBreakableEnabled() &&
+         IsLayoutInline() && StyleRef().Display() == EDisplay::kRubyText;
 }
 
 bool LayoutObject::IsHR() const {
@@ -1352,7 +1397,7 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   // height will allow the object to grow and shrink based on the content
   // inside. The same goes for for logical width, if this objects is inside a
   // shrink-to-fit container, for instance.
-  if (!style->UsedWidth().IsFixed() || !style->UsedHeight().IsFixed()) {
+  if (!style->Width().IsFixed() || !style->Height().IsFixed()) {
     return false;
   }
 
@@ -1584,6 +1629,8 @@ void LayoutObject::SetIntrinsicLogicalWidthsDirty(
   bitfields_.SetIntrinsicLogicalWidthsChildDependsOnBlockConstraints(true);
   bitfields_.SetIndefiniteIntrinsicLogicalWidthsDirty(true);
   bitfields_.SetDefiniteIntrinsicLogicalWidthsDirty(true);
+  bitfields_.SetIsSubgridMinMaxSizesCacheDirty(true);
+
   if (mark_parents == kMarkContainerChain &&
       (IsText() || !StyleRef().HasOutOfFlowPosition()))
     InvalidateContainerIntrinsicLogicalWidths();
@@ -1679,6 +1726,8 @@ inline void LayoutObject::InvalidateContainerIntrinsicLogicalWidths() {
       break;
 
     o->bitfields_.SetIntrinsicLogicalWidthsDirty(true);
+    o->bitfields_.SetIsSubgridMinMaxSizesCacheDirty(true);
+
     // A positioned object has no effect on the min/max width of its containing
     // block ever. We can optimize this case and not go up any further.
     if (o->StyleRef().HasOutOfFlowPosition())
@@ -2334,6 +2383,11 @@ HitTestResult LayoutObject::HitTestForOcclusion(
                                                           this, true);
 }
 
+HitTestResult LayoutObject::HitTestForOcclusion() const {
+  NOT_DESTROYED();
+  return HitTestForOcclusion(VisualRectInDocument());
+}
+
 std::ostream& operator<<(std::ostream& out, const LayoutObject& object) {
   String info;
 #if DCHECK_IS_ON()
@@ -2760,10 +2814,9 @@ void LayoutObject::SetStyle(const ComputedStyle* style,
 
   // Clip Path animations need a property update when they're composited, as it
   // changes between mask based and path based clip.
-  if (diff.NeedsNormalPaintInvalidation() && old_style &&
-      (!old_style->ClipPathDataEquivalent(*style_) ||
-       (old_style->HasCurrentClipPathAnimation() &&
-        !style_->HasCurrentClipPathAnimation()))) {
+  if ((diff.NeedsNormalPaintInvalidation() && old_style &&
+       !old_style->ClipPathDataEquivalent(*style_)) ||
+      ShouldRefreshPaintPropertiesForClipPath(GetNode(), style_)) {
     SetNeedsPaintPropertyUpdate();
     PaintingLayer()->SetNeedsCompositingInputsUpdate();
   }
@@ -4181,11 +4234,6 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
         if (const ComputedStyle* cached =
                 first_line_block->GetCachedPseudoElementStyle(
                     kPseudoIdFirstLine)) {
-          // TODO(crbug.com/1501719): See
-          // LayoutObject::BehavesLikeBlockContainer().
-          if (IsRubyText() && IsA<HTMLRTElement>(GetNode())) {
-            UseCounter::Count(GetDocument(), WebFeature::kPseudoFirstLineOnRt);
-          }
           return cached;
         }
         continue;
@@ -5102,10 +5150,11 @@ void LayoutObject::SetSVGSelfOrDescendantHasViewportDependency() {
   } while (object && !object->IsSVGRoot());
 }
 
-void LayoutObject::InvalidateSubtreePositionFallback(bool mark_style_dirty) {
+void LayoutObject::InvalidateSubtreePositionTry(bool mark_style_dirty) {
   NOT_DESTROYED();
 
-  bool invalidate = StyleRef().PositionFallback() != nullptr;
+  bool invalidate = StyleRef().PositionFallback() != nullptr ||
+                    StyleRef().GetPositionTryOptions() != nullptr;
   if (invalidate) {
     // Invalidate layout as @position-fallback styles are applied during layout.
     SetNeedsLayout(layout_invalidation_reason::kStyleChange);
@@ -5129,7 +5178,7 @@ void LayoutObject::InvalidateSubtreePositionFallback(bool mark_style_dirty) {
 
   for (LayoutObject* child = SlowFirstChild(); child;
        child = child->NextSibling()) {
-    child->InvalidateSubtreePositionFallback(mark_style_dirty);
+    child->InvalidateSubtreePositionTry(mark_style_dirty);
   }
 }
 

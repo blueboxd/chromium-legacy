@@ -756,7 +756,9 @@ interface ImageData
     method constructor
 interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
+    method addRoutes
     method constructor
+    method registerRouter
 interface Lock
     attribute @@toStringTag
     getter mode
@@ -1147,12 +1149,14 @@ interface ReadableByteStreamController
 interface ReadableStream
     attribute @@toStringTag
     getter locked
+    method @@asyncIterator
     method cancel
     method constructor
     method getReader
     method pipeThrough
     method pipeTo
     method tee
+    method values
 interface ReadableStreamBYOBReader
     attribute @@toStringTag
     getter closed
@@ -1203,6 +1207,7 @@ interface Request
     getter referrer
     getter referrerPolicy
     getter signal
+    getter targetAddressSpace
     getter url
     method arrayBuffer
     method blob
@@ -2816,6 +2821,18 @@ interface WebSocket : EventTarget
     setter onerror
     setter onmessage
     setter onopen
+interface WebSocketError : DOMException
+    attribute @@toStringTag
+    getter closeCode
+    getter reason
+    method constructor
+interface WebSocketStream
+    attribute @@toStringTag
+    getter closed
+    getter opened
+    getter url
+    method close
+    method constructor
 interface WebTransport
     attribute @@toStringTag
     getter closed

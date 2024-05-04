@@ -165,6 +165,10 @@ bool ModelExecutionFeaturesController::ShouldFeatureBeCurrentlyEnabledForUser(
     proto::ModelExecutionFeature feature) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  if (!ShouldCheckSettingForFeature(feature)) {
+    return false;
+  }
+
   ScopedFeatureCurrentlyEnabledHistogramRecorder metrics_recorder;
   bool is_enabled = GetPrefState(feature) == prefs::FeatureOptInState::kEnabled;
   metrics_recorder.SetResult(
@@ -190,7 +194,6 @@ prefs::FeatureOptInState ModelExecutionFeaturesController::GetPrefState(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!ShouldCheckSettingForFeature(feature)) {
-    NOTREACHED();
     return prefs::FeatureOptInState::kNotInitialized;
   }
 
@@ -461,23 +464,14 @@ void ModelExecutionFeaturesController::OnMainToggleSettingStatePrefChanged() {
     if (!ShouldCheckSettingForFeature(feature)) {
       continue;
     }
-
-    // If the main toggle has been switched from on to off, disable all the
-    // features.
-    if (feature_optin_state == prefs::FeatureOptInState::kDisabled) {
-      browser_context_profile_service_->SetInteger(
-          prefs::GetSettingEnabledPrefName(feature),
-          static_cast<int>(feature_optin_state));
+    // Do not change the pref for invisible features.
+    if (!IsSettingVisible(feature)) {
       continue;
     }
-    // If the main toggle has been switched from off to on, then turn on
-    // only the features that are actually visible to the user.
-    if (IsSettingVisible(feature)) {
-      browser_context_profile_service_->SetInteger(
-          prefs::GetSettingEnabledPrefName(feature),
-          static_cast<int>(feature_optin_state));
-      continue;
-    }
+    // Set the feature pref the same state as the main toggle.
+    browser_context_profile_service_->SetInteger(
+        prefs::GetSettingEnabledPrefName(feature),
+        static_cast<int>(feature_optin_state));
   }
 }
 

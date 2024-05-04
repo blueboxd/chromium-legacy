@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/media/web_app_system_media_controls.h"
+
 #include <optional>
 
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread_win.h"
@@ -12,10 +15,10 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/media_keys_listener_manager_impl.h"
 #include "content/browser/media/session/media_session_impl.h"
-#include "content/browser/media/web_app_system_media_controls.h"
 #include "content/browser/media/web_app_system_media_controls_manager.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/media_start_stop_observer.h"
@@ -213,6 +216,9 @@ IN_PROC_BROWSER_TEST_F(WebAppSystemMediaControlsBrowserTest,
   StartPlaybackAndWait(shell(), "long-video-loop");
   // Check video is playing.
   EXPECT_TRUE(IsPlaying(shell(), "long-video-loop"));
+
+  bool is_for_pwa = WaitForStartWatchingMediaKey();
+  EXPECT_FALSE(is_for_pwa);
 
   // Hit pause via simulating SMTC pause.
   MediaKeysListenerManagerImpl* media_keys_listener_manager_impl =

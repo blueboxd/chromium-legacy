@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -60,6 +61,7 @@
 #include "components/safe_browsing/core/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/unified_consent/pref_names.h"
@@ -99,6 +101,9 @@ using content::BrowserThread;
 namespace safe_browsing {
 
 namespace {
+
+// The number of user gestures to trace back for the referrer chain.
+const int kReferrerChainUserGestureLimit = 2;
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 void PopulateDownloadWarningActions(download::DownloadItem* download,
@@ -143,6 +148,16 @@ base::FilePath SafeBrowsingService::GetBaseFilename() {
   bool result = base::PathService::Get(chrome::DIR_USER_DATA, &path);
   DCHECK(result);
   return path.Append(safe_browsing::kSafeBrowsingBaseFilename);
+}
+
+// static
+bool SafeBrowsingService::IsUserEligibleForESBPromo(Profile* profile) {
+  if (IsSafeBrowsingPolicyManaged(*profile->GetPrefs()) ||
+      profile->IsOffTheRecord()) {
+    return false;
+  }
+  return GetSafeBrowsingState(*profile->GetPrefs()) ==
+         SafeBrowsingState::STANDARD_PROTECTION;
 }
 
 SafeBrowsingService::SafeBrowsingService()
@@ -332,64 +347,22 @@ void SafeBrowsingService::SetDatabaseManagerForTest(
   services_delegate_->SetDatabaseManagerForTest(database_manager);
 }
 
-void SafeBrowsingService::StartOnIOThread(
-    std::unique_ptr<network::PendingSharedURLLoaderFactory>
-        browser_url_loader_factory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (enabled_) {
-    return;
-  }
-
-  enabled_ = true;
-
-  V4ProtocolConfig v4_config = GetV4ProtocolConfig();
-
-  services_delegate_->StartOnSBThread(
-      network::SharedURLLoaderFactory::Create(
-          std::move(browser_url_loader_factory)),
-      v4_config);
-}
-
-void SafeBrowsingService::StopOnIOThread(bool shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  services_delegate_->StopOnSBThread(shutdown);
-
-  enabled_ = false;
-}
-
 void SafeBrowsingService::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (base::FeatureList::IsEnabled(kSafeBrowsingOnUIThread)) {
-    if (!enabled_) {
-      enabled_ = true;
-      services_delegate_->StartOnSBThread(
-          g_browser_process->shared_url_loader_factory(),
-          GetV4ProtocolConfig());
-    }
-  } else {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &SafeBrowsingService::StartOnIOThread, this,
-            std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
-                g_browser_process->shared_url_loader_factory())));
+  if (!enabled_) {
+    enabled_ = true;
+    services_delegate_->StartOnSBThread(
+        g_browser_process->shared_url_loader_factory(), GetV4ProtocolConfig());
   }
 }
 
 void SafeBrowsingService::Stop(bool shutdown) {
   ui_manager_->Stop(shutdown);
 
-  if (base::FeatureList::IsEnabled(kSafeBrowsingOnUIThread)) {
-    services_delegate_->StopOnSBThread(shutdown);
+  services_delegate_->StopOnSBThread(shutdown);
 
-    enabled_ = false;
-  } else {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SafeBrowsingService::StopOnIOThread, this, shutdown));
-  }
+  enabled_ = false;
 }
 
 void SafeBrowsingService::OnProfileAdded(Profile* profile) {
@@ -584,6 +557,43 @@ bool SafeBrowsingService::SendPhishyInteractionsReport(
 }
 #endif
 
+bool SafeBrowsingService::MaybeSendNotificationsAcceptedReport(
+    content::RenderFrameHost* render_frame_host,
+    Profile* profile,
+    const GURL& url,
+    const GURL& page_url,
+    const GURL& permission_prompt_origin,
+    base::TimeDelta permission_prompt_display_duration_sec) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!profile || !IsExtendedReportingEnabled(*profile->GetPrefs()) ||
+      !base::FeatureList::IsEnabled(
+          kCreateNotificationsAcceptedClientSafeBrowsingReports)) {
+    return false;
+  }
+  // Only send report if the UnsafeResource was allowlisted, due to the user
+  // bypassing an interstitial. Note that we want to check the
+  // permission_prompt_origin URL because if an interstitial was shown, then it
+  // was warning the user about the URL where the permission request originated.
+  if (!IsURLAllowlisted(permission_prompt_origin, render_frame_host)) {
+    return false;
+  }
+
+  auto report = std::make_unique<ClientSafeBrowsingReportRequest>();
+  report->set_type(
+      ClientSafeBrowsingReportRequest::NOTIFICATION_PERMISSION_ACCEPTED);
+  report->set_url(url.spec());
+  report->set_page_url(page_url.spec());
+  report->mutable_permission_prompt_info()->set_origin(
+      permission_prompt_origin.spec());
+  report->mutable_permission_prompt_info()->set_display_duration_sec(
+      permission_prompt_display_duration_sec.InSeconds());
+  FillReferrerChain(profile, render_frame_host,
+                    report->mutable_referrer_chain());
+  return ChromePingManagerFactory::GetForBrowserContext(profile)
+             ->ReportThreatDetails(std::move(report)) ==
+         PingManager::ReportThreatDetailsResult::SUCCESS;
+}
+
 void SafeBrowsingService::CreateTriggerManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   trigger_manager_ = std::make_unique<TriggerManager>(
@@ -626,6 +636,39 @@ void SafeBrowsingService::RecordStartupCookieMetrics(Profile* profile) {
   (*cookie_manager_raw)
       ->GetAllCookies(
           base::BindOnce(&OnGotCookies, std::move(cookie_manager_remote)));
+}
+
+void SafeBrowsingService::FillReferrerChain(
+    Profile* profile,
+    content::RenderFrameHost* render_frame_host,
+    google::protobuf::RepeatedPtrField<ReferrerChainEntry>*
+        out_referrer_chain) {
+  ReferrerChainProvider* provider =
+      GetReferrerChainProviderFromBrowserContext(profile);
+  if (!provider) {
+    return;
+  }
+  provider->IdentifyReferrerChainByRenderFrameHost(
+      render_frame_host, kReferrerChainUserGestureLimit, out_referrer_chain);
+}
+
+bool SafeBrowsingService::IsURLAllowlisted(
+    const GURL& url,
+    content::RenderFrameHost* primary_main_frame) {
+  if (url_is_allowlisted_for_testing_) {
+    return true;
+  }
+
+  security_interstitials::UnsafeResource resource;
+  resource.url = url;
+  resource.original_url = url;
+  resource.is_subresource = false;
+  resource.threat_type = SB_THREAT_TYPE_URL_PHISHING;
+  const content::GlobalRenderFrameHostId primary_main_frame_id =
+      primary_main_frame->GetGlobalId();
+  resource.render_process_id = primary_main_frame_id.child_id;
+  resource.render_frame_token = primary_main_frame->GetFrameToken().value();
+  return ui_manager_->IsAllowlisted(resource);
 }
 
 // The default SafeBrowsingServiceFactory.  Global, made a singleton so we

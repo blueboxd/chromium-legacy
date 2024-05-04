@@ -1021,6 +1021,12 @@ void AuthenticatorRequestDialogModel::OnSheetModelDidChange() {
   }
 }
 
+void AuthenticatorRequestDialogModel::OnButtonsStateChange() {
+  for (auto& observer : observers_) {
+    observer.OnButtonsStateChanged();
+  }
+}
+
 void AuthenticatorRequestDialogModel::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -1255,6 +1261,26 @@ void AuthenticatorRequestDialogModel::OnGPMOnboardingAccepted() {
 void AuthenticatorRequestDialogModel::OnTrustThisComputer() {
   DCHECK_EQ(current_step(), Step::kTrustThisComputer);
   SetCurrentStep(Step::kRecoverSecurityDomain);
+}
+
+void AuthenticatorRequestDialogModel::OnCreateGPMPin() {
+  SetCurrentStep(Step::kGPMCreatePin);
+}
+
+std::string&& AuthenticatorRequestDialogModel::TakeGPMPin() {
+  return std::move(gpm_pin_);
+}
+
+void AuthenticatorRequestDialogModel::OnGPMPinEntered(
+    const std::u16string& pin) {
+  DCHECK(current_step() == Step::kGPMCreatePin ||
+         current_step() == Step::kGPMEnterPin);
+  gpm_pin_ = base::UTF16ToUTF8(pin);
+  if (current_step_ == Step::kGPMCreatePin) {
+    SetCurrentStep(Step::kWaitingForEnclave);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 void AuthenticatorRequestDialogModel::AddAuthenticator(
@@ -1833,7 +1859,34 @@ void AuthenticatorRequestDialogModel::StartICloudKeychain() {
 }
 
 void AuthenticatorRequestDialogModel::StartEnclave() {
-  SetCurrentStep(Step::kWaitingForEnclave);
+  switch (account_state_) {
+    case AccountState::kReady:
+      SetCurrentStep(Step::kWaitingForEnclave);
+      break;
+
+    case AccountState::kRecoverable:
+      SetCurrentStep(Step::kRecoverSecurityDomain);
+      break;
+
+    case AccountState::kLoading:
+    case AccountState::kChecking:
+      // TODO(enclave): need to disable the UI elements.
+      NOTIMPLEMENTED();
+      break;
+
+    case AccountState::kNone:
+      NOTREACHED();
+      break;
+
+    case AccountState::kIrrecoverable:
+      // TODO(enclave): show the reset flow.
+      NOTIMPLEMENTED();
+      break;
+
+    case AccountState::kEmpty:
+      SetCurrentStep(Step::kGPMCreatePin);
+      break;
+  }
 }
 
 void AuthenticatorRequestDialogModel::ContactPhone(const std::string& name) {
@@ -2175,7 +2228,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
   }
 
   if (base::FeatureList::IsEnabled(device::kWebAuthnEnclaveAuthenticator) &&
-      account_state_ == AccountState::kReady && !is_get_assertion) {
+      account_state_ != AccountState::kNone && !is_get_assertion) {
     const std::u16string name = u"Google Password Manager (UNTRANSLATED)";
     mechanisms_.emplace_back(
         Mechanism::Enclave(), name, name, kIcloudKeychainIcon,

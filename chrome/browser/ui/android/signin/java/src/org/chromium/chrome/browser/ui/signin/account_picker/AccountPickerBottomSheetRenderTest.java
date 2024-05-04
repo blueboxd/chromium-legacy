@@ -12,7 +12,6 @@ import static org.hamcrest.core.AllOf.allOf;
 
 import android.view.View;
 
-import androidx.annotation.Nullable;
 import androidx.test.filters.MediumTest;
 
 import org.junit.AfterClass;
@@ -32,6 +31,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
@@ -42,9 +42,8 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.signin.SigninFeatures;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.signin.base.GoogleServiceAuthError;
-import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DeviceRestriction;
 import org.chromium.ui.test.util.NightModeTestUtils;
@@ -66,35 +65,52 @@ public class AccountPickerBottomSheetRenderTest {
     private static final String TEST_EMAIL2 = "test.account2@gmail.com";
 
     private static final class CustomAccountPickerDelegate implements AccountPickerDelegate {
-        private @Nullable GoogleServiceAuthError mError;
         private @EntryPoint int mEntryPoint = EntryPoint.WEB_SIGNIN;
+        private boolean mSwitchToTryAgainView;
+        private boolean mSwitchToAuthErrorView;
+        private boolean mIsAccountManaged;
 
-        CustomAccountPickerDelegate() {
-            mError = null;
-        }
-
-        void setError(@State int state) {
-            mError = new GoogleServiceAuthError(state);
-        }
-
-        void clearError() {
-            mError = null;
-        }
+        CustomAccountPickerDelegate() {}
 
         void setSendTabToSelfEntryPoint() {
             mEntryPoint = EntryPoint.SEND_TAB_TO_SELF;
         }
 
-        @Override
-        public void destroy() {}
+        void setSwitchToTryAgainView(boolean tryAgain) {
+            mSwitchToTryAgainView = tryAgain;
+        }
+
+        void setSwitchToAuthErrorView(boolean authError) {
+            mSwitchToAuthErrorView = authError;
+        }
+
+        void setAccountManaged(boolean managed) {
+            mIsAccountManaged = managed;
+        }
 
         @Override
-        public void signIn(
-                CoreAccountInfo accountInfo,
-                Callback<GoogleServiceAuthError> onSignInErrorCallback) {
-            if (mError != null) {
-                onSignInErrorCallback.onResult(mError);
+        public void onAccountPickerDestroy() {}
+
+        @Override
+        public void signIn(CoreAccountInfo accountInfo, AccountPickerBottomSheetMediator mediator) {
+            if (mSwitchToTryAgainView) {
+                mediator.switchToTryAgainView();
+            } else if (mSwitchToAuthErrorView) {
+                mediator.switchToAuthErrorView();
             }
+        }
+
+        @Override
+        public void isAccountManaged(CoreAccountInfo accountInfo, Callback<Boolean> callback) {
+            callback.onResult(mIsAccountManaged);
+        }
+
+        @Override
+        public void setUserAcceptedAccountManagement(boolean confirmed) {}
+
+        @Override
+        public String extractDomainName(String accountEmail) {
+            return accountEmail;
         }
 
         @Override
@@ -224,11 +240,10 @@ public class AccountPickerBottomSheetRenderTest {
     public void testTryAgainButtonOnSignInGeneralErrorSheet(boolean nightModeEnabled)
             throws IOException {
         mAccountManagerTestRule.addAccount(TEST_EMAIL1);
-        mAccountPickerDelegate.setError(State.CONNECTION_FAILED);
+        mAccountPickerDelegate.setSwitchToTryAgainView(true);
         buildAndShowCollapsedBottomSheet();
         clickContinueButtonAndWaitForErrorView();
-        // Clear the error so that the sign-in could continue normally.
-        mAccountPickerDelegate.clearError();
+        mAccountPickerDelegate.setSwitchToTryAgainView(false);
         clickContinueButtonAndCheckSigninInProgressView();
     }
 
@@ -238,29 +253,9 @@ public class AccountPickerBottomSheetRenderTest {
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testSigninGeneralErrorView(boolean nightModeEnabled) throws IOException {
         mAccountManagerTestRule.addAccount(TEST_EMAIL1);
-        mAccountPickerDelegate.setError(State.CONNECTION_FAILED);
+        mAccountPickerDelegate.setSwitchToTryAgainView(true);
         buildAndShowCollapsedBottomSheet();
         clickContinueButtonAndWaitForErrorView();
-        mRenderTestRule.render(
-                mCoordinator.getBottomSheetViewForTesting(), "signin_general_error_sheet");
-    }
-
-    @Test
-    @MediumTest
-    @Feature("RenderTest")
-    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
-    public void testSetTryAgainBottomSheetView(boolean nightModeEnabled) throws IOException {
-        mAccountManagerTestRule.addAccount(TEST_EMAIL1);
-        mAccountPickerDelegate.setError(State.CONNECTION_FAILED);
-        buildAndShowCollapsedBottomSheet();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
-                    bottomSheetView
-                            .findViewById(R.id.account_picker_continue_as_button)
-                            .performClick();
-                    mCoordinator.setTryAgainBottomSheetView();
-                });
         mRenderTestRule.render(
                 mCoordinator.getBottomSheetViewForTesting(), "signin_general_error_sheet");
     }
@@ -271,11 +266,35 @@ public class AccountPickerBottomSheetRenderTest {
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testSigninAuthErrorView(boolean nightModeEnabled) throws IOException {
         mAccountManagerTestRule.addAccount(TEST_EMAIL1);
-        mAccountPickerDelegate.setError(State.INVALID_GAIA_CREDENTIALS);
+        mAccountPickerDelegate.setSwitchToAuthErrorView(true);
         buildAndShowCollapsedBottomSheet();
         clickContinueButtonAndWaitForErrorView();
         mRenderTestRule.render(
                 mCoordinator.getBottomSheetViewForTesting(), "signin_auth_error_sheet");
+    }
+
+    @Test
+    @MediumTest
+    @Feature("RenderTest")
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    @EnableFeatures(SigninFeatures.ENTERPRISE_POLICY_ON_SIGNIN)
+    public void testConfirmManagementView(boolean nightModeEnabled) throws IOException {
+        mAccountManagerTestRule.addAccount(TEST_EMAIL1);
+        mAccountPickerDelegate.setAccountManaged(true);
+        buildAndShowCollapsedBottomSheet();
+
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    bottomSheetView
+                            .findViewById(R.id.account_picker_continue_as_button)
+                            .performClick();
+                });
+        CriteriaHelper.pollUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_confirm_management_description)
+                        ::isShown);
+        mRenderTestRule.render(
+                mCoordinator.getBottomSheetViewForTesting(), "confirm_management_sheet");
     }
 
     private void clickContinueButtonAndWaitForErrorView() {
@@ -341,7 +360,8 @@ public class AccountPickerBottomSheetRenderTest {
                                     getBottomSheetController(),
                                     mAccountPickerDelegate,
                                     accountPickerBottomSheetStrings,
-                                    null);
+                                    null,
+                                    AccountPickerLaunchMode.DEFAULT);
                 });
         ViewUtils.onViewWaiting(allOf(withId(R.id.account_picker_selected_account), isDisplayed()));
     }

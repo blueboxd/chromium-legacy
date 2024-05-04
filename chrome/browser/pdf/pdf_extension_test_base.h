@@ -57,6 +57,12 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
   // Same as LoadPDF(), but loads into a new tab.
   testing::AssertionResult LoadPdfInNewTab(const GURL& url);
 
+  // Same as `LoadPdf()` but loads URLs where the first child of the primary
+  // main frame should be the embedder. This is a common case where an HTML page
+  // only embeds a single PDF. For GuestView PDF viewer, the embedder must be an
+  // embed element.
+  testing::AssertionResult LoadPdfInFirstChild(const GURL& url);
+
   // Same as LoadPdf(), but also returns a pointer to the `MimeHandlerViewGuest`
   // for the loaded PDF. Returns nullptr if the load fails.
   extensions::MimeHandlerViewGuest* LoadPdfGetMimeHandlerView(const GURL& url);
@@ -64,6 +70,20 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
   // Same as LoadPdf(), but also returns a pointer to the `MimeHandlerViewGuest`
   // for the loaded PDF in a new tab. Returns nullptr if the load fails.
   extensions::MimeHandlerViewGuest* LoadPdfInNewTabGetMimeHandlerView(
+      const GURL& url);
+
+  // Same as `LoadPdf()`, but also returns a pointer to the extension host for
+  // the loaded PDF. Returns nullptr if the load fails or getting the extension
+  // host fails. The test will fail if the load fails.
+  content::RenderFrameHost* LoadPdfGetExtensionHost(const GURL& url);
+
+  // Same as `LoadPdfGetExtensionHost()`, but loads the PDF into a new tab.
+  content::RenderFrameHost* LoadPdfInNewTabGetExtensionHost(const GURL& url);
+
+  // Same as `LoadPdfInFirstChild()`, but also returns a pointer to the
+  // extension host for the loaded PDF. Returns nullptr if the load fails or
+  // getting the extension host fails. The test will fail if the load fails.
+  content::RenderFrameHost* LoadPdfInFirstChildGetExtensionHost(
       const GURL& url);
 
   void TestGetSelectedTextReply(const GURL& url, bool expect_success);
@@ -84,10 +104,19 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
 
   void CreateTestPdfViewerStreamManager();
 
-  content::RenderFrameHost* GetPluginFrame(
-      extensions::MimeHandlerViewGuest* guest) const;
+  content::RenderFrameHost* GetOnlyPdfExtensionHostEnsureValid();
 
   int CountPDFProcesses();
+
+  // Checks if the full page PDF loaded. The test will fail if it does not meet
+  // the requirements of `ValidateFrameTree()`.
+  testing::AssertionResult EnsureFullPagePDFHasLoadedWithValidFrameTree(
+      content::WebContents* contents);
+
+  // Check if the PDF loaded in the first child frame of `contents`. The test
+  // will fail if it does not meet the requirements of `ValidateFrameTree()`.
+  testing::AssertionResult EnsurePDFHasLoadedInFirstChildWithValidFrameTree(
+      content::WebContents* contents);
 
   // TODO(crbug.com/1445746): Remove this once there are no more existing use
   // cases.
@@ -112,10 +141,10 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
   virtual std::vector<base::test::FeatureRef> GetDisabledFeatures() const;
 
  private:
-  // Check if the PDF loaded. The test will fail if the frame tree does not have
-  // exactly one PDF extension host and one PDF content host. For GuestView PDF
-  // viewer, the test will also fail if there is not exactly one GuestView.
-  testing::AssertionResult EnsurePDFHasLoadedWithValidFrameTree();
+  // The test will fail if the frame tree does not have exactly one PDF
+  // extension host and one PDF content host. For GuestView PDF viewer, the test
+  // will also fail if there is not exactly one GuestView.
+  void ValidateFrameTree(content::WebContents* contents);
 
   base::test::ScopedFeatureList feature_list_;
   absl::variant<absl::monostate,

@@ -344,6 +344,11 @@ void RecordPaintCanvas::drawPicture(PaintRecord record) {
   push<DrawRecordOp>(std::move(record));
 }
 
+void RecordPaintCanvas::drawPicture(PaintRecord record, bool local_ctm) {
+  // TODO(enne): If this is small, maybe flatten it?
+  push<DrawRecordOp>(std::move(record), local_ctm);
+}
+
 void RecordPaintCanvas::Annotate(AnnotationType type,
                                  const SkRect& rect,
                                  sk_sp<SkData> data) {
@@ -361,6 +366,13 @@ void RecordPaintCanvas::setNodeId(int node_id) {
 InspectableRecordPaintCanvas::InspectableRecordPaintCanvas(
     const gfx::Size& size)
     : canvas_(size.width(), size.height()) {}
+
+InspectableRecordPaintCanvas::InspectableRecordPaintCanvas(
+    CreateChildCanvasTag,
+    const InspectableRecordPaintCanvas& parent)
+    : canvas_(SkIRect::MakeSize(parent.imageInfo().dimensions())) {
+  canvas_.setMatrix(parent.canvas_.getLocalToDevice());
+}
 
 InspectableRecordPaintCanvas::~InspectableRecordPaintCanvas() = default;
 

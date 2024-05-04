@@ -38,6 +38,10 @@ message SecurityDomain {
   SecurityDomainDetails security_domain_details = 3;
 }
 
+message GooglePasswordManagerPinMetadata {
+  bytes encrypted_pin_hash = 2;
+}
+
 message SecurityDomainMember {
   string name = 1;
   bytes public_key = 2;
@@ -53,12 +57,16 @@ message SecurityDomainMember {
   enum MemberType {
     MEMBER_TYPE_UNSPECIFIED = 0;
     MEMBER_TYPE_PHYSICAL_DEVICE = 1;
+    MEMBER_TYPE_GOOGLE_PASSWORD_MANAGER_PIN = 5;
   }
 
   MemberType member_type = 4;
 
   message MemberMetadata {
     bool usable_for_retrieval = 1;
+    oneof member_metadata_variant {
+      GooglePasswordManagerPinMetadata google_password_manager_pin_metadata = 5;
+    }
   }
   MemberMetadata member_metadata = 6;
 }
@@ -83,8 +91,8 @@ message ListSecurityDomainMembersResponse {
   string next_page_token = 2;
 }
 
-// TODO(crbug.com/1234719): figure out how to link google.protobuf.Any and use
-// it instead.
+// There is no way to google.protobuf.Any directly in this codebase, so this
+// proto just replicates it.
 message Proto3Any {
   string type_url = 1;
   bytes value = 2;

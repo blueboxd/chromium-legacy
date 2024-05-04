@@ -69,7 +69,7 @@ bool ShouldRequestUnbufferedDispatch() {
   static bool should_request_unbuffered_dispatch =
       base::android::BuildInfo::GetInstance()->sdk_int() >=
           base::android::SDK_VERSION_LOLLIPOP &&
-      !content::GetContentClient()->UsingSynchronousCompositing();
+      !GetContentClient()->UsingSynchronousCompositing();
   return should_request_unbuffered_dispatch;
 }
 
@@ -286,13 +286,6 @@ void WebContentsViewAndroid::RenderViewHostChanged(RenderViewHost* old_host,
     if (rwhv && rwhv->GetNativeView()) {
       static_cast<RenderWidgetHostViewAndroid*>(rwhv)->UpdateNativeViewTree(
           /*parent_native_view=*/nullptr, /*parent_layer=*/nullptr);
-    }
-
-    // Notify `manager` that it should listen to new frame submission
-    // notifications.
-    if (back_forward_animation_manager_) {
-      back_forward_animation_manager_->OnRenderWidgetHostViewSwapped(old_host->GetWidget(),
-                                             new_host->GetWidget());
     }
   }
 

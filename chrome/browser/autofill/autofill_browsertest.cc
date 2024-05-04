@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_data_service_factory.h"
+#include "chrome/browser/webdata_services/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -37,6 +37,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -47,7 +48,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -56,6 +56,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/prerender_test_util.h"
+#include "content/public/test/scoped_accessibility_mode_override.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -66,13 +67,23 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToASCII;
 using testing::_;
+using testing::MockFunction;
+using testing::Sequence;
+using testing::UnorderedElementsAre;
+using testing::UnorderedElementsAreArray;
 
 namespace autofill {
+namespace {
+
+ACTION_P(InvokeClosure, closure) {
+  closure.Run();
+}
 
 // Default JavaScript code used to submit the forms.
 const char kDocumentClickHandlerSubmitJS[] =
@@ -411,13 +422,14 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
         profile->GetInfo(PHONE_HOME_WHOLE_NUMBER, "en-US"));
   }
   // Two valid phone numbers are imported, two invalid ones are removed.
-  EXPECT_THAT(actual_phone_numbers,
-              testing::UnorderedElementsAreArray(
-                  {u"4088714567", u"+4940808179000", u"", u""}));
+  EXPECT_THAT(
+      actual_phone_numbers,
+      UnorderedElementsAreArray({u"4088714567", u"+4940808179000", u"", u""}));
 }
 
-// Prepend country codes when formatting phone numbers if it was provided in the
-// first place.
+// Prepend country codes when formatting phone numbers if:
+// - It was provided in the first place.
+// - `AutofillInferCountryCallingCode` is enabled.
 IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
   FormMap data = {{"NAME_FIRST", "Bob"},
                   {"NAME_LAST", "Smith"},
@@ -440,8 +452,16 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
         profile->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   }
 
-  EXPECT_THAT(actual_phone_numbers, testing::UnorderedElementsAre(
-                                        u"+49 8450 777777", u"08450 777777"));
+  // With `AutofillInferCountryCallingCode` enabled, the country code of the
+  // second phone number is derived from the profile (Germany).
+  std::vector<std::u16string> expected_phone_numbers = {
+      u"+49 8450 777777",
+      base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+          ? u"+49 8450 777777"
+          : u"08450 777777"};
+
+  EXPECT_THAT(actual_phone_numbers,
+              UnorderedElementsAreArray(expected_phone_numbers));
 }
 
 // Test that Autofill uses '+' sign for international numbers.
@@ -624,7 +644,7 @@ class AutofillAccessibilityTest : public AutofillTest {
 // Test is flaky: https://crbug.com/1239099
 IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest,
                        DISABLED_TestAutofillSuggestionAvailability) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
 
   // Navigate to url and wait for accessibility notification.
   GURL url =
@@ -696,7 +716,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest,
 // Test is flaky: http://crbug.com/1239099
 IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest,
                        DISABLED_TestAutocompleteState) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
   // Navigate to url and wait for accessibility notification
   GURL url =
       embedded_test_server()->GetURL("/autofill/duplicate_profiles_test.html");
@@ -830,14 +850,7 @@ class AutofillTestPrerendering : public InProcessBrowserTest {
 // activation and that it does alert the browser after activation. Also ensures
 // that programmatic input on the prerendered page does not result in unexpected
 // messages prior to activation and that things work correctly post-activation.
-//
-// Flaky on Mac. See https://crbug.com/1484862
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_DeferWhilePrerendering DISABLED_DeferWhilePrerendering
-#else
-#define MAYBE_DeferWhilePrerendering DeferWhilePrerendering
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillTestPrerendering, MAYBE_DeferWhilePrerendering) {
+IN_PROC_BROWSER_TEST_F(AutofillTestPrerendering, DeferWhilePrerendering) {
   GURL prerender_url =
       embedded_test_server()->GetURL("/autofill/prerendered.html");
   GURL initial_url = embedded_test_server()->GetURL("/empty.html");
@@ -845,28 +858,46 @@ IN_PROC_BROWSER_TEST_F(AutofillTestPrerendering, MAYBE_DeferWhilePrerendering) {
 
   int host_id = prerender_helper().AddPrerender(prerender_url);
   auto* rfh = prerender_helper().GetPrerenderedMainFrameHost(host_id);
+  MockAutofillManager* mock = autofill_manager(rfh);
+
+  struct {
+    Sequence seq;
+    MockFunction<void()> check_point;
+    base::RunLoop run_loop;
+  } on_forms_seen;
+  EXPECT_CALL(*mock, OnFormsSeen).Times(0).InSequence(on_forms_seen.seq);
+  EXPECT_CALL(on_forms_seen.check_point, Call).InSequence(on_forms_seen.seq);
+  EXPECT_CALL(*mock, OnFormsSeen)
+      .InSequence(on_forms_seen.seq)
+      .WillOnce(InvokeClosure(on_forms_seen.run_loop.QuitClosure()));
+
+  struct {
+    Sequence seq;
+    MockFunction<void()> check_point;
+    base::RunLoop run_loop;
+  } on_focus_on_form_field_impl;
+  EXPECT_CALL(*mock, OnFocusOnFormFieldImpl)
+      .Times(0)
+      .InSequence(on_focus_on_form_field_impl.seq);
+  EXPECT_CALL(on_focus_on_form_field_impl.check_point, Call)
+      .InSequence(on_focus_on_form_field_impl.seq);
+  EXPECT_CALL(*mock, OnFocusOnFormFieldImpl)
+      .InSequence(on_focus_on_form_field_impl.seq)
+      .WillOnce(
+          InvokeClosure(on_focus_on_form_field_impl.run_loop.QuitClosure()));
+
+  // During prerendering, no events should be fired by AutofillAgent.
   ASSERT_TRUE(content::ExecJs(rfh,
                               "document.querySelector('#NAME_FIRST').focus();",
                               content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-
-  // Since the initial prerender page load has finished at this point and we
-  // have issued our programmatic focus, we need to check that the expectations
-  // we set up during render frame creation have been met (i.e., that we did not
-  // issue a calls to the driver for either the forms being seen nor the focus
-  // update).
-  MockAutofillManager* mock = autofill_manager(rfh);
-  testing::Mock::VerifyAndClearExpectations(mock);
-  // Next, we ensure that once we activate, we issue the deferred calls.
-  base::RunLoop run_loop;
-  EXPECT_CALL(*mock, OnFocusOnFormFieldImpl(_, _, _)).Times(1);
-  EXPECT_CALL(*mock, OnFormsSeen(_, _))
-      .Times(1)
-      .WillRepeatedly(
-          testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-
+  on_forms_seen.check_point.Call();
+  on_focus_on_form_field_impl.check_point.Call();
+  // Once the prerendered frame becomes active, the enqueued events should be
+  // fired by AutofillAgent.
   prerender_helper().NavigatePrimaryPage(prerender_url);
   EXPECT_EQ(prerender_helper().GetRequestCount(prerender_url), 1);
-  run_loop.Run();
+  on_forms_seen.run_loop.Run();
+  on_focus_on_form_field_impl.run_loop.Run();
 }
 
 // Test fixture for testing that that appropriate form submission events are
@@ -976,9 +1007,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTestFormSubmission, Submission) {
   EXPECT_CALL(
       *autofill_manager(),
       OnFormSubmittedImpl(_, _, mojom::SubmissionSource::FORM_SUBMISSION))
-      .Times(1)
-      .WillRepeatedly(
-          testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+      .WillRepeatedly(InvokeClosure(run_loop.QuitClosure()));
   ExecuteScript(
       "document.getElementById('name').value = 'Sarah';"
       "document.getElementById('name').select();"
@@ -993,9 +1022,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTestFormSubmission, ProbableSubmission) {
   EXPECT_CALL(*autofill_manager(),
               OnFormSubmittedImpl(
                   _, _, mojom::SubmissionSource::PROBABLY_FORM_SUBMITTED))
-      .Times(1)
-      .WillRepeatedly(
-          testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+      .WillRepeatedly(InvokeClosure(run_loop.QuitClosure()));
   // Add a delay before navigating away to avoid race conditions. This is
   // appropriate since we're faking user interaction here.
   ExecuteScript(
@@ -1010,4 +1037,5 @@ IN_PROC_BROWSER_TEST_F(AutofillTestFormSubmission, ProbableSubmission) {
   run_loop.Run();
 }
 
+}  // namespace
 }  // namespace autofill

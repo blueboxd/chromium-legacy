@@ -833,6 +833,7 @@ static_library("extensions") {
     "//chrome/common/safe_browsing:proto",
     "//chrome/services/file_util/public/mojom:mojom",
     "//chrome/services/removable_storage_writer/public/mojom",
+    "//components/affiliations/core/browser:affiliations",
     "//components/app_constants",
     "//components/autofill/content/browser",
     "//components/back_forward_cache",
@@ -877,7 +878,6 @@ static_library("extensions") {
     "//components/page_load_metrics/browser:browser",
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
-    "//components/password_manager/core/browser/affiliation",
     "//components/password_manager/core/browser/export",
     "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/browser/import:importer",
@@ -1341,7 +1341,6 @@ static_library("extensions") {
       "system_display/display_info_provider_win.h",
     ]
     deps += [
-      "//components/app_launch_prefetch",
       "//components/device_signals/core/common/win",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
@@ -1384,7 +1383,7 @@ static_library("extensions") {
     ]
   }
 
-  if (enable_pdf) {
+  if (enable_pdf && enable_screen_ai_service) {
     sources += [
       "api/pdf_viewer_private/pdf_viewer_private_event_router.cc",
       "api/pdf_viewer_private/pdf_viewer_private_event_router.h",

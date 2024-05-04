@@ -170,14 +170,14 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
     return false;
   }
 
-  const OverlayCandidateFactory::OverlayContext context = {
-      .is_delegated_context = true,
-      .supports_clip_rect = supports_clip_rect_,
-      .supports_out_of_window_clip_rect = supports_out_of_window_clip_rect_,
-      .supports_arbitrary_transform = supports_affine_transform_,
-      .supports_mask_filter = true,
-      .transform_and_clip_rpdq = has_transformation_fix_,
-  };
+  OverlayCandidateFactory::OverlayContext context;
+  context.is_delegated_context = true;
+  context.supports_clip_rect = supports_clip_rect_;
+  context.supports_out_of_window_clip_rect = supports_out_of_window_clip_rect_;
+  context.supports_arbitrary_transform = supports_affine_transform_;
+  context.supports_mask_filter = true;
+  context.transform_and_clip_rpdq = has_transformation_fix_;
+  context.supports_flip_rotate_transform = SupportsFlipRotateTransform();
 
   OverlayCandidateFactory candidate_factory = OverlayCandidateFactory(
       render_pass, resource_provider, surface_damage_rect_list,
@@ -404,7 +404,7 @@ bool OverlayProcessorDelegated::BlockForCopyRequests(
     const AggregatedRenderPassList* render_pass_list) {
   bool has_copy = false;
   for (auto& pass : *render_pass_list) {
-    if (!pass->copy_requests.empty()) {
+    if (pass->HasCapture()) {
       has_copy = true;
       break;
     }

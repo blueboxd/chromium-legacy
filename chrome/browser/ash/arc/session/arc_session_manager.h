@@ -205,9 +205,32 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // SetArcPlayStoreEnabledForProfile().
   void RequestEnable();
 
+  enum class AllowActivationReason {
+    // Activated when ARCVM is ready to be launched.
+    kImmediateActivation,
+
+    // TODO(b/326065955): Add an entry for user session start task completion
+    // when the feature is implemented.
+
+    // AlwaysStart option is set, so forced to launch ARC.
+    kAlwaysStartIsEnabled,
+
+    // Policy enforces to start ARC.
+    kForcedByPolicy,
+
+    // User has taken an action to launch ARC app.
+    kUserLaunchAction,
+
+    // User flipped the flag to enable ARC in the system.
+    kUserEnableAction,
+
+    // ARC app is being restored.
+    kRestoreApps,
+  };
+
   // Allows changing the state from READY to ACTIVE. If the state is already
   // READY, calling this method changes the state to ACTIVE.
-  void AllowActivation();
+  void AllowActivation(AllowActivationReason reason);
 
   // Requests to disable ARC session. This stops ARC instance, or quits Terms
   // Of Service negotiation if it is the middle of the process (e.g. closing
@@ -478,7 +501,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Internal state machine. See also State enum class.
   State state_ = State::NOT_INITIALIZED;
 
-  base::ObserverList<ArcSessionManagerObserver>::Unchecked observer_list_;
+  base::ObserverList<ArcSessionManagerObserver>::UncheckedAndDanglingUntriaged
+      observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   bool reenable_arc_ = false;
   bool provisioning_reported_ = false;

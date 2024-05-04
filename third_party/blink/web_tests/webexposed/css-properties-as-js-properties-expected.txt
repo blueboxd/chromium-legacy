@@ -357,12 +357,14 @@ popoverShowDelay
 position
 positionFallback
 positionFallbackBounds
+positionTry
 positionTryOptions
 positionTryOrder
 prefix
 quotes
 r
 range
+readingOrderItems
 removeProperty
 resize
 right
@@ -444,6 +446,7 @@ textAlign
 textAlignLast
 textAnchor
 textAutospace
+textBoxEdge
 textBoxTrim
 textCombineUpright
 textDecoration

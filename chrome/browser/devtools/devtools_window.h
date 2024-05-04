@@ -13,6 +13,7 @@
 #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -58,9 +59,11 @@ enum class DevToolsOpenedByAction {
   kTargetReload = 8,
   // Open Node DevTools button in a regular app
   kOpenForNodeFromAnotherTarget = 9,
+  // User-pinned button in the toolbar
+  kPinnedToolbarButton = 10,
   // Add values above this line with a corresponding label in
-  // tools/metrics/histograms/enums.xml
-  kMaxValue = kOpenForNodeFromAnotherTarget,
+  // tools/metrics/histograms/metadata/dev/enums.xml
+  kMaxValue = kPinnedToolbarButton,
 };
 
 enum class DevToolsClosedByAction {
@@ -72,11 +75,14 @@ enum class DevToolsClosedByAction {
   kToggleShortcut = 2,
   kCloseButton = 3,
   kTargetDetach = 4,
-  kMaxValue = kTargetDetach,
+  kPinnedToolbarButton = 5,
+  kMaxValue = kPinnedToolbarButton,
 };
 
 class DevToolsWindow : public DevToolsUIBindings::Delegate,
-                       public content::WebContentsDelegate {
+                       public content::WebContentsDelegate,
+                       public content::WebContentsObserver,
+                       public infobars::InfoBarManager::Observer {
  public:
   static const char kDevToolsApp[];
 
@@ -277,6 +283,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   content::WebContents* GetInspectedWebContents();
 
+  // content::DevToolsUIBindings::Delegate overrides
+  void ActivateWindow() override;
+
  private:
   friend class DevToolsWindowTesting;
   friend class DevToolsWindowCreationObserver;
@@ -413,13 +422,13 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void Close(DevToolsClosedByAction closed_by);
 
   // content::DevToolsUIBindings::Delegate overrides
-  void ActivateWindow() override;
   void CloseWindow() override;
   void Inspect(scoped_refptr<content::DevToolsAgentHost> host) override;
   void SetInspectedPageBounds(const gfx::Rect& rect) override;
   void InspectElementCompleted() override;
   void SetIsDocked(bool is_docked) override;
   void OpenInNewTab(const std::string& url) override;
+  void OpenSearchResultsInNewTab(const std::string& url) override;
   void SetWhitelistedShortcuts(const std::string& message) override;
   void SetEyeDropperActive(bool active) override;
   void OpenNodeFrontend() override;
@@ -435,7 +444,15 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   int GetOpenedByForLogging() override;
   int GetClosedByForLogging() override;
 
+  void OpenInNewTab(const GURL& url);
   void ColorPickedInEyeDropper(int r, int g, int b, int a);
+
+  // content::WebContentsObserver
+  using content::WebContentsObserver::BeforeUnloadFired;
+  void PrimaryPageChanged(content::Page& page) override;
+
+  // infobars::InfoBarManager::Observer
+  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
 
   // This method creates a new Browser object (if possible), and passes
   // ownership of owned_main_web_contents_ to the tab strip of the Browser.
@@ -463,7 +480,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void OnLocaleChanged();
   void OverrideAndSyncDevToolsRendererPrefs();
 
-  base::WeakPtr<content::WebContents> inspected_web_contents_;
+  void MaybeShowSharedProcessInfobar();
 
   FrontendType frontend_type_;
   Profile* profile_;
@@ -512,6 +529,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   class Throttle;
   Throttle* throttle_ = nullptr;
   bool open_new_window_for_popups_ = false;
+  infobars::InfoBar* sharing_infobar_ = nullptr;
+  int checked_sharing_process_id_ = content::ChildProcessHost::kInvalidUniqueID;
 
   base::OnceCallback<void()> reattach_complete_callback_;
 

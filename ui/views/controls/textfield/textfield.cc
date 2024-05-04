@@ -236,7 +236,7 @@ Textfield::Textfield()
   GetViewAccessibility().set_needs_ax_tree_manager(true);
   auto cursor_view = std::make_unique<View>();
   cursor_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  cursor_view->GetViewAccessibility().OverrideIsIgnored(true);
+  cursor_view->GetViewAccessibility().SetIsIgnored(true);
   cursor_view_ = AddChildView(std::move(cursor_view));
   GetRenderText()->SetFontList(GetDefaultFontList());
   UpdateDefaultBorder();
@@ -286,6 +286,10 @@ Textfield::Textfield()
 }
 
 Textfield::~Textfield() {
+  if (HasObserver(this)) {
+    RemoveObserver(this);
+  }
+
   if (GetInputMethod()) {
     // The textfield should have been blurred before destroy.
     DCHECK(this != GetInputMethod()->GetTextInputClient());
@@ -433,6 +437,14 @@ void Textfield::SetBackgroundColor(SkColor color) {
   background_color_ = color;
   if (GetWidget())
     UpdateBackgroundColor();
+}
+
+bool Textfield::GetBackgroundEnabled() const {
+  return is_background_enabled_;
+}
+
+void Textfield::SetBackgroundEnabled(bool enabled) {
+  is_background_enabled_ = enabled;
 }
 
 SkColor Textfield::GetSelectionTextColor() const {
@@ -1083,12 +1095,12 @@ void Textfield::RefreshAccessibleTextOffsets() {
     return;
   }
 
-  GetViewAccessibility().OverrideCharacterOffsets(
+  GetViewAccessibility().SetCharacterOffsets(
       ComputeTextOffsets(GetRenderText()));
 
   WordBoundaries boundaries = ComputeWordBoundaries(GetText());
-  GetViewAccessibility().OverrideWordStarts(boundaries.starts);
-  GetViewAccessibility().OverrideWordEnds(boundaries.ends);
+  GetViewAccessibility().SetWordStarts(boundaries.starts);
+  GetViewAccessibility().SetWordEnds(boundaries.ends);
 }
 #endif  // BUILDFLAG(SUPPORTS_AX_TEXT_OFFSETS)
 
@@ -1137,6 +1149,8 @@ void Textfield::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Textfield::OnFocus() {
+  is_processing_focus_ = true;
+
   // Set focus reason if focused was gained without mouse or touch input.
   if (focus_reason_ == ui::TextInputClient::FOCUS_REASON_NONE)
     focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
@@ -1152,6 +1166,8 @@ void Textfield::OnFocus() {
     GetInputMethod()->SetFocusedTextInputClient(this);
   UpdateAfterChange(TextChangeType::kNone, true);
   View::OnFocus();
+
+  is_processing_focus_ = false;
 }
 
 void Textfield::OnBlur() {
@@ -2048,6 +2064,14 @@ void Textfield::SetActiveCompositionForAccessibility(
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+// Textfield, views::ViewObserver overrides:
+void Textfield::OnViewFocused(views::View* observed_view) {
+  observed_view->RemoveObserver(this);
+  observed_view->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged, true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Textfield, protected:
 
 void Textfield::DoInsertChar(char16_t ch) {
@@ -2587,6 +2611,16 @@ void Textfield::UpdateSelectionClipboard() {
 }
 
 void Textfield::UpdateBackgroundColor() {
+  if (!is_background_enabled_) {
+    if (GetBackground()) {
+      SetBackground(nullptr);
+      // If the parent for this textfield creates a non-opaque background they
+      // are responsible for disabling subpixel rendering.
+      GetRenderText()->set_subpixel_rendering_suppressed(false);
+    }
+    return;
+  }
+
   const SkColor color = GetBackgroundColor();
   SetBackground(CreateBackgroundFromPainter(
       Painter::CreateSolidRoundRectPainter(color, GetCornerRadius())));
@@ -2754,8 +2788,21 @@ void Textfield::OnCaretBoundsChanged() {
     touch_selection_controller_->SelectionChanged();
 
   // Screen reader users don't expect notifications about unfocused textfields.
-  if (HasFocus())
-    NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
+  if (HasFocus()) {
+    // If this control is in the process of receiving focus, even though it
+    // 'HasFocus', the accessibility event to announce that it has focus has not
+    // been fired yet. The kTextSelectionChanged event needs to be fired *after*
+    // the focus event, so we attach our observer which will fire the event
+    // after we finish receiving focus (which includes the accessibility focus
+    // event being fired).
+    if (is_processing_focus_) {
+      if (!HasObserver(this)) {
+        AddObserver(this);
+      }
+    } else {
+      NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
+    }
+  }
 
   UpdateCursorViewPosition();
 }
@@ -3158,6 +3205,7 @@ ADD_PROPERTY_METADATA(SkColor,
                       SelectionTextColor,
                       ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(SkColor, BackgroundColor, ui::metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(bool, BackgroundEnabled)
 ADD_PROPERTY_METADATA(SkColor,
                       SelectionBackgroundColor,
                       ui::metadata::SkColorConverter)

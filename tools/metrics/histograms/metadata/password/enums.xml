@@ -111,6 +111,11 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="Android version not supported"/>
 </enum>
 
+<enum name="BooleanCalled">
+  <int value="0" label="Not called"/>
+  <int value="1" label="Called"/>
+</enum>
+
 <enum name="BooleanFormManager">
   <int value="0" label="Has Form Manager"/>
   <int value="1" label="Lacks Form Manager"/>
@@ -309,6 +314,17 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="Only values from JavaScript, and no user focus"/>
   <int value="1" label="Only values from JavaScript, and user focus"/>
   <int value="2" label="User typed or autofilled values"/>
+</enum>
+
+<enum name="LocalUpmActivationError">
+  <int value="0"
+      label="None (activated / migration scheduled / previously activated)"/>
+  <int value="1" label="Unenrolled from UPM"/>
+  <int value="2" label="Initial UPM migration missing"/>
+  <int value="3" label="Login DB file move failed"/>
+  <int value="4" label="Outdated GmsCore"/>
+  <int value="5" label="Flag disabled"/>
+  <int value="6" label="Migration warning unacknowledged"/>
 </enum>
 
 <enum name="LoginDatabaseEncryptionStatus">
@@ -908,6 +924,7 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Add shortcut promo"/>
   <int value="3" label="Access on any device promo"/>
   <int value="4" label="Relaunch Chrome"/>
+  <int value="5" label="Move passwords"/>
 </enum>
 
 <enum name="PasswordManagerShortcutMetric">
@@ -1262,6 +1279,11 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Somewhat guessable password"/>
   <int value="3" label="Safely unguessable password"/>
   <int value="4" label="Very unguessable password"/>
+</enum>
+
+<enum name="PostPasswordMigrationSheetOutcome">
+  <int value="0" label="The sheet was acknowledged"/>
+  <int value="1" label="The sheet was dismissed"/>
 </enum>
 
 <enum name="PrefilledUsernameFillOutcome">

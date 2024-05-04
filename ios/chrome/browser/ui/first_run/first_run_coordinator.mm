@@ -12,6 +12,7 @@
 #import "base/notreached.h"
 #import "base/time/time.h"
 #import "components/signin/public/base/signin_metrics.h"
+#import "ios/chrome/browser/docking_promo/coordinator/docking_promo_coordinator.h"
 #import "ios/chrome/browser/first_run/model/first_run_metrics.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -33,9 +34,6 @@
 @property(nonatomic, strong) ScreenProvider* screenProvider;
 @property(nonatomic, strong) ChromeCoordinator* childCoordinator;
 @property(nonatomic, strong) UINavigationController* navigationController;
-
-// YES if First Run was completed.
-@property(nonatomic, assign) BOOL completed;
 
 @end
 
@@ -69,17 +67,6 @@
 }
 
 - (void)stop {
-  void (^completion)(void) = ^{
-  };
-  if (self.completed) {
-    __weak __typeof(self) weakSelf = self;
-    completion = ^{
-      base::UmaHistogramEnumeration(first_run::kFirstRunStageHistogram,
-                                    first_run::kComplete);
-      WriteFirstRunSentinel();
-      [weakSelf.delegate didFinishPresentingScreens];
-    };
-  }
   if (self.childCoordinator) {
     // If the child coordinator is not nil, then the FRE is stopped because
     // Chrome is being shutdown.
@@ -88,12 +75,11 @@
             self.childCoordinator);
     [interruptibleChildCoordinator
         interruptWithAction:SigninCoordinatorInterrupt::UIShutdownNoDismiss
-                 completion:completion];
+                 completion:nil];
     [self.childCoordinator stop];
     self.childCoordinator = nil;
   }
-  [self.baseViewController dismissViewControllerAnimated:YES
-                                              completion:completion];
+  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
   _navigationController = nil;
   [super stop];
 }
@@ -113,7 +99,11 @@
   // If no more screen need to be present, call delegate to stop presenting
   // screens.
   if (type == kStepsCompleted) {
-    [self willFinishPresentingScreens];
+    // The user went through all screens of the FRE.
+    base::UmaHistogramEnumeration(first_run::kFirstRunStageHistogram,
+                                  first_run::kComplete);
+    WriteFirstRunSentinel();
+    [self.delegate didFinishFirstRun];
     return;
   }
   self.childCoordinator = [self createChildCoordinatorWithScreenType:type];
@@ -163,16 +153,16 @@
           initWithBaseNavigationController:self.navigationController
                                    browser:self.browser
                                   delegate:self];
+    case kDockingPromo:
+      return [[DockingPromoCoordinator alloc]
+          initWithBaseNavigationController:self.navigationController
+                                   browser:self.browser
+                                  delegate:self];
     case kStepsCompleted:
       NOTREACHED() << "Reaches kStepsCompleted unexpectedly.";
       break;
   }
   return nil;
-}
-
-- (void)willFinishPresentingScreens {
-  self.completed = YES;
-  [self.delegate willFinishPresentingScreens];
 }
 
 #pragma mark - HistorySyncCoordinatorDelegate

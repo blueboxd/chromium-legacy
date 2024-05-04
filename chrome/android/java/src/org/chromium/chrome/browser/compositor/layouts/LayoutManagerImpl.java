@@ -796,22 +796,21 @@ public class LayoutManagerImpl
             float previousWidth = getActiveLayout().getWidth();
             float previousHeight = getActiveLayout().getHeight();
 
-            float oldViewportTop = mCachedWindowViewport.top;
+            float oldWindowViewportTop = mCachedWindowViewport.top;
+            float oldVisibleViewportTop = mCachedVisibleViewport.top;
             mHost.getWindowViewport(mCachedWindowViewport);
             mHost.getVisibleViewport(mCachedVisibleViewport);
-            getActiveLayout()
-                    .sizeChanged(
-                            mCachedVisibleViewport,
-                            mCachedWindowViewport,
-                            mHost.getTopControlsHeightPixels(),
-                            mHost.getBottomControlsHeightPixels(),
-                            getOrientation());
+            getActiveLayout().sizeChanged(mCachedWindowViewport, getOrientation());
 
             float width = mCachedWindowViewport.width() * mPxToDp;
             float height = mCachedWindowViewport.height() * mPxToDp;
             if (width != previousWidth
                     || height != previousHeight
-                    || oldViewportTop != mCachedVisibleViewport.top) {
+                    // TODO (crbug.com/325501037) - Clean up this odd check comparing the window
+                    // and visible viewport values after fixing the contextual search menu's
+                    // reliance on it.
+                    || oldWindowViewportTop != mCachedVisibleViewport.top
+                    || oldVisibleViewportTop != mCachedVisibleViewport.top) {
                 for (int i = 0; i < mSceneOverlays.size(); i++) {
                     mSceneOverlays
                             .get(i)

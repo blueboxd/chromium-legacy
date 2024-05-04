@@ -11,9 +11,9 @@
 #include <dawn/wire/WireServer.h>
 
 #include <memory>
+#include <optional>
 #include <vector>
 
-#include <optional>
 #include "base/auto_reset.h"
 #include "base/bits.h"
 #include "base/containers/contains.h"
@@ -66,6 +66,10 @@
 #include <dawn/native/D3D12Backend.h>
 #include "ui/gl/gl_angle_util_win.h"
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "gpu/command_buffer/service/abstract_texture.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace gpu {
 namespace webgpu {
@@ -1086,8 +1090,9 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
   if (gpu_preferences.enable_unsafe_webgpu) {
     safety_level_ = webgpu::SafetyLevel::kUnsafe;
   }
-  dawn_instance_ = DawnInstance::Create(dawn_platform_.get(), gpu_preferences,
-                                        safety_level_);
+  dawn_instance_ = DawnInstance::Create(
+      dawn_platform_.get(), gpu_preferences, safety_level_,
+      /*logging_callback=*/nullptr, /*logging_callback_userdata=*/nullptr);
 
   use_webgpu_adapter_ = gpu_preferences.use_webgpu_adapter;
   use_webgpu_power_preference_ = gpu_preferences.use_webgpu_power_preference;
@@ -1123,7 +1128,7 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
   wire_server_ = DawnWireServer::Create(
       this, wire_serializer_.get(), memory_transfer_service_.get(), wire_procs);
 
-  wire_server_->InjectInstance(dawn_instance_->Get(), 1, 0);
+  wire_server_->InjectInstance(dawn_instance_->Get(), {1, 0});
 
   // If there is no isolation key provider we don't want to wait for an
   // isolation key to come when processing device requests. Therefore, we can
@@ -1361,6 +1366,18 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
         wgpu::FeatureName::SharedTextureMemoryIOSurface);
     required_features.push_back(wgpu::FeatureName::SharedFenceMTLSharedEvent);
   }
+
+#if BUILDFLAG(IS_ANDROID)
+  if (adapter_obj.HasFeature(
+          wgpu::FeatureName::SharedTextureMemoryAHardwareBuffer)) {
+    required_features.push_back(
+        wgpu::FeatureName::SharedTextureMemoryAHardwareBuffer);
+  }
+  if (adapter_obj.HasFeature(wgpu::FeatureName::SharedFenceVkSemaphoreSyncFD)) {
+    required_features.push_back(
+        wgpu::FeatureName::SharedFenceVkSemaphoreSyncFD);
+  }
+#endif
 
 #if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
   // On Desktop GL via ANGLE, require GL texture sharing.
@@ -1702,6 +1719,9 @@ wgpu::Adapter WebGPUDecoderImpl::CreatePreferredAdapter(
     // NOTE: These platforms should be switched to the corresponding
     // SharedTextureMemory feature check as they are converted to using
     // SharedTextureMemory.
+    // TODO(crbug.com/327111284): Change this to check for
+    // SharedTextureMemoryAHardwareBuffer on Android-Vulkan once we've made the
+    // switch there.
     supports_external_textures = adapter.SupportsExternalImages();
 #endif
     if (!(supports_external_textures || is_swiftshader)) {
@@ -2035,8 +2055,8 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   // Inject the texture in the dawn::wire::Server and remember which shared
   // image it is associated with.
   if (!wire_server_->InjectTexture(representation_and_access->texture().Get(),
-                                   id, generation, device_id,
-                                   device_generation)) {
+                                   {id, generation},
+                                   {device_id, device_generation})) {
     DLOG(ERROR) << "AssociateMailbox: Invalid texture ID";
     return error::kInvalidArguments;
   }

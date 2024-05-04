@@ -180,6 +180,7 @@ chromium-metrics-reviews@google.com.
   <int value="126" label="WindowMinimize"/>
   <int value="127" label="MinimizeTopWindowOnBack"/>
   <int value="128" label="VolumeMuteToggle"/>
+  <int value="129" label="TogglePicker"/>
   <int value="9000" label="DebugClearUseKMeansPref"/>
   <int value="9001" label="DebugKeyboardBacklightToggle"/>
   <int value="9002" label="DebugMicrophoneMuteToggle"/>
@@ -885,11 +886,35 @@ chromium-metrics-reviews@google.com.
 
 <enum name="FirmwareUpdateInstallResult">
   <int value="0" label="Success"/>
-  <int value="1" label="InstallFailed"/>
+  <int value="1" label="DEPRECATED: InstallFailed"/>
   <int value="2" label="FailedToCreateUpdateDirectory"/>
-  <int value="3" label="InvalidDestinationFile"/>
+  <int value="3" label="DEPRECATED: InvalidDestinationFile"/>
   <int value="4" label="InvalidFileDescriptor"/>
   <int value="5" label="FailedToDownloadToFile"/>
+  <int value="6" label="FailedToCreatePatchFile"/>
+  <int value="7" label="EmptyPatchFile"/>
+  <int value="8" label="InvalidPatchFileUri"/>
+  <int value="9" label="InvalidPatchFile"/>
+  <int value="10" label="InstallFailedTimeout"/>
+  <int value="100" label="InternalError"/>
+  <int value="101" label="InstalledNewerFirmwareVersion"/>
+  <int value="102" label="InstalledSameFirmwareVersion"/>
+  <int value="103" label="AlreadySetToBeInstalledOffline"/>
+  <int value="104" label="FailedToGetAuthentication"/>
+  <int value="105" label="FailedToReadFromDevice"/>
+  <int value="106" label="FailedToWriteToTheDevice"/>
+  <int value="107" label="InvalidFileFormat"/>
+  <int value="108" label="NoMatchingDeviceExists"/>
+  <int value="109" label="NothingToDo"/>
+  <int value="110" label="ActionWasNotPossible"/>
+  <int value="111" label="SignatureWasInvalid"/>
+  <int value="112" label="ACPowerWasRequired"/>
+  <int value="113" label="PermissionWasDenied"/>
+  <int value="114" label="UserHasConfiguredTheirSystemInABrokenWay"/>
+  <int value="115" label="TheSystemBatteryLevelIsTooLow"/>
+  <int value="116" label="UserNeedsToDoAnActionToCompleteTheUpdate"/>
+  <int value="117" label="FailedToGetAuthAsCredentialsHaveExpired"/>
+  <int value="118" label="UnknownError"/>
 </enum>
 
 <enum name="GeolocationAccessLevel">
@@ -986,6 +1011,52 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="ARC app selected and preferred"/>
   <int value="7" label="PWA selected"/>
   <int value="8" label="PWA selected and preferred"/>
+</enum>
+
+<enum name="KeyboardTopRowActionKeys">
+  <summary>
+    List of possible keyboard top-row action keys. This is defined in
+    ui/events/ash/keyboard_capability.h (enum TopRowActionKey).
+  </summary>
+  <int value="0" label="None"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Back"/>
+  <int value="3" label="Forward"/>
+  <int value="4" label="Refresh"/>
+  <int value="5" label="Fullscreen"/>
+  <int value="6" label="Overview"/>
+  <int value="7" label="Screenshot"/>
+  <int value="8" label="ScreenBrightnessDown"/>
+  <int value="9" label="ScreenBrightnessUp"/>
+  <int value="10" label="MicrophoneMute"/>
+  <int value="11" label="VolumeMute"/>
+  <int value="12" label="VolumeDown"/>
+  <int value="13" label="VolumeUp"/>
+  <int value="14" label="KeyboardBacklightToggle"/>
+  <int value="15" label="KeyboardBacklightDown"/>
+  <int value="16" label="KeyboardBacklightUp"/>
+  <int value="17" label="NextTrack"/>
+  <int value="18" label="PreviousTrack"/>
+  <int value="19" label="PlayPause"/>
+  <int value="20" label="AllApplications"/>
+  <int value="21" label="EmojiPicker"/>
+  <int value="22" label="Dictation"/>
+  <int value="23" label="PrivacyScreenToggle"/>
+</enum>
+
+<enum name="KeyboardTopRowLayoutWithExtraSublayout">
+  <summary>
+    List of possible top-row layouts for keyboards, including an additional
+    sub-layout. This is defined in ui/events/ash/keyboard_info_metrics.h (enum
+    KeyboardTopRowLayoutForMetric).
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Layout1"/>
+  <int value="2" label="Layout2"/>
+  <int value="3" label="Layout2WithAssistant"/>
+  <int value="4" label="Layout3"/>
+  <int value="5" label="Layout4"/>
+  <int value="6" label="LayoutCustom1"/>
 </enum>
 
 <enum name="KeyPermissionsManagerMigrationStatus">
@@ -1565,6 +1636,13 @@ https://chromium.googlesource.com/chromiumos/platform2/+/main/secagentd/proto/se
   <int value="0" label="None"/>
   <int value="1" label="Alt"/>
   <int value="2" label="Search"/>
+</enum>
+
+<enum name="UmaInitParamsResult">
+  <int value="0" label="Client ID and entropy sources were found"/>
+  <int value="1" label="Only the client ID was found"/>
+  <int value="2" label="Only entropy sources were found"/>
+  <int value="3" label="Neither the client ID nor entropy sources were found"/>
 </enum>
 
 <enum name="WebApkInstallResultChromeOS">

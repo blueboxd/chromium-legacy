@@ -2346,7 +2346,7 @@ TEST_P(WaylandWindowTest, ConvertEventToTarget) {
 
   // Now translate the event located at (0, 0) in the parent window into the
   // coordinate system of the menu.  Its coordinates must be equal to:
-  //     -(offset of parent geometry + offset of the menu).
+  //     -(offset of the menu).
   constexpr gfx::PointF kParentPoint{0, 0};
   ui::MouseEvent event(ui::EventType::ET_MOUSE_MOVED, kParentPoint,
                        kParentPoint, {}, ui::EF_NONE, ui::EF_NONE);
@@ -2355,10 +2355,8 @@ TEST_P(WaylandWindowTest, ConvertEventToTarget) {
   dispatcher_api.set_target(window_.get());
 
   ui::WaylandEventSource::ConvertEventToTarget(menu_window.get(), &event);
-  EXPECT_EQ(event.AsLocatedEvent()->x(),
-            -(kMenuBounds.x() + kMainWindowInsets.left()));
-  EXPECT_EQ(event.AsLocatedEvent()->y(),
-            -(kMenuBounds.y() + kMainWindowInsets.top()));
+  EXPECT_EQ(event.AsLocatedEvent()->x(), -kMenuBounds.x());
+  EXPECT_EQ(event.AsLocatedEvent()->y(), -kMenuBounds.y());
 }
 
 // Tests that the event grabber gets the events processed by its toplevel parent
@@ -3937,16 +3935,9 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   });
 }
 
-// TODO(https://crbug.com/1448391): Reenable for Lacros when adjusted for screen
-// coordinates.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_SetsPropertiesOnShow DISABLED_SetsPropertiesOnShow
-#else
-#define MAYBE_SetsPropertiesOnShow SetsPropertiesOnShow
-#endif
 // Tests that if the window gets hidden and shown again, the title, app id and
 // size constraints remain the same.
-TEST_P(WaylandWindowTest, MAYBE_SetsPropertiesOnShow) {
+TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
   constexpr char kAppId[] = "wayland_test";
   const std::u16string kTitle(u"WaylandWindowTest");
 

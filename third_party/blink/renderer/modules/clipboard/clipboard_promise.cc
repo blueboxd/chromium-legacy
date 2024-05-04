@@ -129,17 +129,18 @@ ScriptPromiseTyped<IDLSequence<ClipboardItem>> ClipboardPromise::CreateForRead(
 }
 
 // static
-ScriptPromise ClipboardPromise::CreateForReadText(
+ScriptPromiseTyped<IDLString> ClipboardPromise::CreateForReadText(
     ExecutionContext* context,
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLString>();
   }
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLString>>(
+      script_state, exception_state.GetContext());
   ClipboardPromise* clipboard_promise = MakeGarbageCollected<ClipboardPromise>(
-      context, script_state, exception_state);
-  ScriptPromise promise =
-      clipboard_promise->script_promise_resolver_->Promise();
+      context, resolver, exception_state);
+  auto promise = resolver->Promise();
   clipboard_promise->HandleReadText();
   return promise;
 }
@@ -383,9 +384,8 @@ void ClipboardPromise::ResolveRead() {
   items.ReserveInitialCapacity(clipboard_item_data_.size());
 
   for (const auto& item : clipboard_item_data_) {
-    ScriptPromise promise = ScriptPromise::Cast(
-        script_state,
-        ToV8Traits<IDLNullable<Blob>>::ToV8(script_state, item.second));
+    ScriptPromise promise =
+        ToResolvedPromise<IDLNullable<Blob>>(script_state, item.second);
     items.emplace_back(item.first, promise);
   }
   HeapVector<Member<ClipboardItem>> clipboard_items = {
@@ -450,7 +450,7 @@ void ClipboardPromise::HandleReadTextWithPermission(
 
   String text = GetLocalFrame()->GetSystemClipboard()->ReadPlainText(
       mojom::blink::ClipboardBuffer::kStandard);
-  script_promise_resolver_->Resolve(text);
+  script_promise_resolver_->DowncastTo<IDLString>()->Resolve(text);
 }
 
 void ClipboardPromise::HandlePromiseBlobsWrite(

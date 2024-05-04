@@ -119,6 +119,10 @@ export class AppElement extends AppElementBase {
         CustomizeChromeApiProxy.getInstance()
             .callbackRouter.scrollToSection.addListener(
                 (section: CustomizeChromeSection) => {
+                  if (section === CustomizeChromeSection.kWallpaperSearch) {
+                    this.onWallpaperSearchSelect_();
+                    return;
+                  }
                   const selector = SECTION_TO_SELECTOR[section];
                   const element = this.shadowRoot!.querySelector(selector);
                   if (!element) {
@@ -198,6 +202,10 @@ export class AppElement extends AppElementBase {
   private onProductivityButtonClick_() {
     this.pageHandler_.openChromeWebStoreCategoryPage(
         ChromeWebStoreCategory.kWorkflowPlanning);
+  }
+
+  private onChromeWebStoreLinkClick_() {
+    this.pageHandler_.openChromeWebStoreHomePage();
   }
 }
 

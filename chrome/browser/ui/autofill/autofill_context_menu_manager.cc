@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/autofill/autofill_context_menu_manager.h"
 
+#include <optional>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -24,9 +27,13 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/fallback_autocomplete_unrecognized_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/plus_addresses/features.h"
+#include "components/plus_addresses/plus_address_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/variations/service/variations_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -137,15 +144,38 @@ bool IsLikelyDogfoodClient() {
   return variations_service->IsLikelyDogfoodClient();
 }
 
+bool ShouldAddPlusAddressManualFallbackItem(ContentAutofillDriver& driver) {
+  auto* web_contents =
+      content::WebContents::FromRenderFrameHost(driver.render_frame_host());
+  const plus_addresses::PlusAddressService* plus_address_service =
+      PlusAddressServiceFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  // For determining whether to show a fallback, we act as if we are not in
+  // incognito mode because once there are affiliations, we will not be able to
+  // determine synchronously whether there is an existing plus address. There is
+  // a separate check when creating suggestions for whether to show a "create
+  // new plus address" suggestion.
+  return plus_address_service &&
+         plus_address_service->SupportsPlusAddresses(
+             driver.GetAutofillManager()
+                 .client()
+                 .GetLastCommittedPrimaryMainFrameOrigin(),
+             /*is_off_the_record=*/false) &&
+         base::FeatureList::IsEnabled(
+             plus_addresses::features::kPlusAddressFallbackFromContextMenu);
+}
+
 }  // namespace
 
 // static
 bool AutofillContextMenuManager::IsAutofillCustomCommandId(
     CommandId command_id) {
-  const int id = command_id.value();
-  return id == IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK ||
-         id == IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS ||
-         id == IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS;
+  static constexpr auto kAutofillCommands = base::MakeFixedFlatSet<int>(
+      {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS,
+       IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS,
+       IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PLUS_ADDRESS,
+       IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK});
+  return kAutofillCommands.contains(command_id.value());
 }
 
 AutofillContextMenuManager::AutofillContextMenuManager(
@@ -172,14 +202,6 @@ void AutofillContextMenuManager::AppendItems() {
   // filled by the driver. See crbug.com/1367547.
   if (!driver || !driver->CanShowAutofillUi())
     return;
-
-  if (ShouldShowAutofillContextMenu(params_)) {
-    const LocalFrameToken frame_token = driver->GetFrameToken();
-    // Formless fields have default form renderer id.
-    driver->OnContextMenuShownInField(
-        {frame_token, FormRendererId(params_.form_renderer_id)},
-        {frame_token, FieldRendererId(params_.field_renderer_id)});
-  }
 
   // Includes the option of submitting feedback on Autofill.
   if (personal_data_manager_->IsAutofillEnabled() && IsLikelyDogfoodClient()) {
@@ -228,6 +250,11 @@ void AutofillContextMenuManager::ExecuteCommand(int command_id) {
 
   if (command_id == IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS) {
     ExecuteFallbackForPaymentsCommand(manager);
+    return;
+  }
+
+  if (command_id == IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PLUS_ADDRESS) {
+    ExecuteFallbackForPlusAddressesCommand(*driver);
     return;
   }
 }
@@ -285,24 +312,41 @@ void AutofillContextMenuManager::ExecuteFallbackForPaymentsCommand(
       FillingProduct::kCreditCard);
 }
 
+void AutofillContextMenuManager::ExecuteFallbackForPlusAddressesCommand(
+    AutofillDriver& driver) {
+  driver.RendererShouldTriggerSuggestions(
+      /*field_id=*/{driver.GetFrameToken(),
+                    FieldRendererId(params_.field_renderer_id)},
+      AutofillSuggestionTriggerSource::kManualFallbackPlusAddresses);
+  // TODO(b/327566698): Add metrics.
+}
+
 void AutofillContextMenuManager::MaybeAddAutofillManualFallbackItems(
     ContentAutofillDriver& driver) {
   if (!ShouldShowAutofillContextMenu(params_)) {
     // Autofill entries are only available in input or text area fields
     return;
   }
+  const bool add_plus_address_fallback =
+      ShouldAddPlusAddressManualFallbackItem(driver);
   const bool add_address_fallback = ShouldAddAddressManualFallbackItem(driver);
   const bool add_payments_fallback =
       !personal_data_manager_->GetCreditCardsToSuggest().empty() &&
       base::FeatureList::IsEnabled(
           features::kAutofillForUnclassifiedFieldsAvailable);
 
-  if (!add_address_fallback && !add_payments_fallback) {
+  if (!add_plus_address_fallback && !add_address_fallback &&
+      !add_payments_fallback) {
     return;
   }
   menu_model_->AddTitle(
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_TITLE));
 
+  if (add_plus_address_fallback) {
+    menu_model_->AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PLUS_ADDRESS,
+        IDS_PLUS_ADDRESS_FALLBACK_LABEL_CONTEXT_MENU);
+  }
   if (add_address_fallback) {
     menu_model_->AddItemWithStringId(
         IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS,
@@ -313,6 +357,7 @@ void AutofillContextMenuManager::MaybeAddAutofillManualFallbackItems(
         IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS,
         IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS);
   }
+  // TODO(b/327566698): Log metrics for plus address fallbacks, too.
   LogManualFallbackContextMenuEntryShown(driver, add_address_fallback,
                                          add_payments_fallback);
   menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
@@ -320,59 +365,67 @@ void AutofillContextMenuManager::MaybeAddAutofillManualFallbackItems(
 
 bool AutofillContextMenuManager::ShouldAddAddressManualFallbackItem(
     ContentAutofillDriver& driver) {
-  if (personal_data_manager_->GetProfilesToSuggest().empty()) {
-    return false;
-  }
-
-  return ShouldAddAddressManualFallbackForAutocompleteUnrecognized(driver) ||
-         base::FeatureList::IsEnabled(
-             features::kAutofillForUnclassifiedFieldsAvailable);
-}
-
-bool AutofillContextMenuManager::
-    ShouldAddAddressManualFallbackForAutocompleteUnrecognized(
-        ContentAutofillDriver& driver) {
+  // If the field is of address type and there is information in the profile to
+  // fill it, we always show the fallback option.
+  // TODO(crbug.com/1493361): Remove the following code block once feature is
+  // cleaned up. At that point, we can only check whether a profile exists or if
+  // the user is not in incognito mode. Whether the field can be filled will be
+  // irrelevant.
   AutofillField* field =
       GetAutofillField(driver.GetAutofillManager(), driver.GetFrameToken());
-
-  if (!field || FieldTypeGroupToFormType(field->Type().group()) !=
-                    FormType::kAddressForm) {
-    return false;
+  if (field && FieldTypeGroupToFormType(field->Type().group()) ==
+                   FormType::kAddressForm) {
+    // Show the context menu entry for address fields, which can be filled
+    // with at least one of the user's profiles.
+    CHECK(personal_data_manager_);
+    if (base::ranges::any_of(personal_data_manager_->GetProfiles(),
+                             [field](AutofillProfile* profile) {
+                               return profile->HasInfo(
+                                   field->Type().GetStorableType());
+                             })) {
+      return true;
+    }
   }
 
-  // Only show the context menu entry for address fields, which can be filled
-  // with at least one of the user's profiles.
-  CHECK(personal_data_manager_);
-  return base::ranges::any_of(
-      personal_data_manager_->GetProfiles(), [field](AutofillProfile* profile) {
-        return profile->HasInfo(field->Type().GetStorableType());
-      });
+  // Also add the manual fallback option if:
+  // 1. The user has a profile stored, or
+  // 2. The user does not have a profile stored and is not in incognito mode.
+  // This is done so that users can be prompted to create an address profile.
+  const bool has_profile = !personal_data_manager_->GetProfiles().empty();
+  const bool is_incognito =
+      driver.GetAutofillManager().client().IsOffTheRecord();
+  return (has_profile || !is_incognito) &&
+         base::FeatureList::IsEnabled(
+             features::kAutofillForUnclassifiedFieldsAvailable);
 }
 
 void AutofillContextMenuManager::LogManualFallbackContextMenuEntryAccepted(
     BrowserAutofillManager& manager,
     const FillingProduct filling_product) {
-  if (filling_product == FillingProduct::kAddress) {
     auto& driver = static_cast<ContentAutofillDriver&>(manager.driver());
     AutofillField* field = GetAutofillField(manager, driver.GetFrameToken());
-    const bool is_address_field =
-        field && IsAddressType(field->Type().GetStorableType());
-    if (is_address_field) {
-      // Address manual fallback was triggered from a classified address field.
-      manager.GetAutocompleteUnrecognizedFallbackEventLogger()
-          .ContextMenuEntryAccepted(
-              /*address_field_has_ac_unrecognized=*/field
-                  ->ShouldSuppressSuggestionsAndFillingByDefault());
-    } else {
+    if (filling_product == FillingProduct::kAddress) {
+      const bool is_address_field =
+          field && IsAddressType(field->Type().GetStorableType());
+      if (is_address_field) {
+        // Address manual fallback was triggered from a classified address
+        // field.
+        manager.GetAutocompleteUnrecognizedFallbackEventLogger()
+            .ContextMenuEntryAccepted(
+                /*address_field_has_ac_unrecognized=*/field
+                    ->ShouldSuppressSuggestionsAndFillingByDefault());
+      } else {
+        manager.GetManualFallbackEventLogger().ContextMenuEntryAccepted(
+            FillingProduct::kAddress);
+      }
+    } else if (filling_product == FillingProduct::kCreditCard &&
+               !(field &&
+                 field->Type().group() == FieldTypeGroup::kCreditCard)) {
+      // Only log payments manual fallback when triggered from a field that is
+      // not classified as payments.
       manager.GetManualFallbackEventLogger().ContextMenuEntryAccepted(
-          FillingProduct::kAddress);
+          FillingProduct::kCreditCard);
     }
-  } else if (filling_product == FillingProduct::kCreditCard) {
-    // Only log payments manual fallback when triggered from a field that is
-    // not classified as payments.
-    manager.GetManualFallbackEventLogger().ContextMenuEntryAccepted(
-        FillingProduct::kCreditCard);
-  }
 }
 
 void AutofillContextMenuManager::LogManualFallbackContextMenuEntryShown(

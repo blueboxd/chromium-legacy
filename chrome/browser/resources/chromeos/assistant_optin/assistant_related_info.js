@@ -23,9 +23,9 @@ import './setting_zippy.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {OobeDialogHostBehavior} from '../components/behaviors/oobe_dialog_host_behavior.js';
-import {OobeI18nBehavior} from '../components/behaviors/oobe_i18n_behavior.js';
+import {OobeI18nMixin} from '../components/mixins/oobe_i18n_mixin.js';
 
-import {BrowserProxy, BrowserProxyImpl} from './browser_proxy.js';
+import {BrowserProxyImpl} from './browser_proxy.js';
 import {AssistantNativeIconType, webviewStripLinksContentScript} from './utils.js';
 
 
@@ -40,7 +40,7 @@ const RELATED_INFO_SCREEN_ID = 'RelatedInfoScreen';
  * @extends {PolymerElement}
  */
 const AssistantRelatedInfoBase =
-    mixinBehaviors([OobeI18nBehavior, OobeDialogHostBehavior], PolymerElement);
+    mixinBehaviors([OobeDialogHostBehavior], OobeI18nMixin(PolymerElement));
 
 /**
  * @polymer
@@ -218,7 +218,7 @@ class AssistantRelatedInfo extends AssistantRelatedInfoBase {
    * Handles event when animation webview cannot be loaded.
    */
   onWebViewErrorOccurred(details) {
-    if (details && details.error == 'net::ERR_ABORTED') {
+    if (details && details.error === 'net::ERR_ABORTED') {
       // Retry triggers net::ERR_ABORTED, so ignore it.
       // TODO(b/232592745): Replace with a state machine to handle aborts
       // gracefully and avoid duplicate reloads.
@@ -267,14 +267,14 @@ class AssistantRelatedInfo extends AssistantRelatedInfoBase {
       return;
     }
     this.headerReceived_ = true;
-    if (details.statusCode == '404') {
-      if (details.url != this.getDefaultAnimationUrl_()) {
+    if (details.statusCode === 404) {
+      if (details.url !== this.getDefaultAnimationUrl_()) {
         this.reloadWithDefaultUrl_ = true;
         return;
       } else {
         this.onWebViewErrorOccurred();
       }
-    } else if (details.statusCode != '200') {
+    } else if (details.statusCode !== 200) {
       this.onWebViewErrorOccurred();
     }
   }

@@ -29,12 +29,23 @@ BASE_DECLARE_FEATURE(kAddWarningShownTSToClientSafeBrowsingReport);
 // OptimizationGuide.
 BASE_DECLARE_FEATURE(kClientSideDetectionKillswitch);
 
+// Expand CSD-Phishing beyond phishing and trigger when a notification prompt
+// occurs on the page.
+BASE_DECLARE_FEATURE(kClientSideDetectionNotificationPrompt);
+
+// Creates and sends CSBRRs when notification permissions are accepted for an
+// abusive site whose interstitial has been bypassed.
+BASE_DECLARE_FEATURE(kCreateNotificationsAcceptedClientSafeBrowsingReports);
+
 // Creates and sends CSBRRs when warnings are first shown to users.
 BASE_DECLARE_FEATURE(kCreateWarningShownClientSafeBrowsingReports);
 
 // Controls whether we prompt encrypted archive deep scans to provide a
 // password.
 BASE_DECLARE_FEATURE(kDeepScanningEncryptedArchives);
+
+// Controls whether we prompt the user on unencrypted deep scans.
+BASE_DECLARE_FEATURE(kDeepScanningPromptRemoval);
 
 // Controls whether the delayed warning experiment is enabled.
 BASE_DECLARE_FEATURE(kDelayedWarnings);
@@ -50,6 +61,10 @@ BASE_DECLARE_FEATURE(kDownloadTailoredWarnings);
 // passwords for local decryption on encrypted archives.
 BASE_DECLARE_FEATURE(kEncryptedArchivesMetadata);
 
+// Controls whether the Enhanced Safe Browsing (ESB) download row promotion
+// should show.
+BASE_DECLARE_FEATURE(kEsbDownloadRowPromo);
+
 // Allows the Extension Telemetry Service to accept and use configurations
 // sent by the server.
 BASE_DECLARE_FEATURE(kExtensionTelemetryConfiguration);
@@ -61,6 +76,10 @@ BASE_DECLARE_FEATURE(kExtensionTelemetryFileDataForCommandLineExtensions);
 // Enables collection of telemetry signal whenever an extension invokes the
 // chrome.tabs API methods.
 BASE_DECLARE_FEATURE(kExtensionTelemetryTabsApiSignal);
+
+// Enables collection of telemetry signal whenever an extension invokes the
+// chrome.tabs.captureVisibleTab API method.
+BASE_DECLARE_FEATURE(kExtensionTelemetryTabsApiSignalCaptureVisibleTab);
 
 // Enables collection of telemetry signal whenever an extension invokes the
 // tabs.executeScript API call.
@@ -147,6 +166,9 @@ extern const base::FeatureParam<int> kReferrerChainEventMaximumCount;
 BASE_DECLARE_FEATURE(kSafeBrowsingAsyncRealTimeCheck);
 
 #if BUILDFLAG(IS_ANDROID)
+// Whether to call the new API on startup to reduce latency.
+BASE_DECLARE_FEATURE(kSafeBrowsingCallNewGmsApiOnStartup);
+
 // Use new GMSCore API for hash database check on browser URLs.
 BASE_DECLARE_FEATURE(kSafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck);
 

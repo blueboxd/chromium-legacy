@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Start a search in a new Chromium tab.</translation>
 <translation id="1431818719585918472">Let Chromium lock your incognito tabs.</translation>
 <translation id="1472013873724362412">Your account does not work on Chromium. Please contact your domain administrator or use a regular Google Account to sign in.</translation>
+<translation id="1503199973012840174">Your Chromium is out of date. Update it to stay safe.</translation>
 <translation id="1507010443238049608">Help improve Chromium's features and performance</translation>
 <translation id="1513122820609681462">Set Chromium As Default Browser</translation>
 <translation id="1531155317299575425">Shows prompts to sign in to Chromium.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">This address is currently saved to Chromium. To use it across Google products, save it in your Google Account, <ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">This means that Chromium will request the desktop site every time.</translation>
 <translation id="2313870531055795960">Checks URLs with a list of unsafe sites stored in Chromium. If a site tries to steal your password, or when you download a harmful file, Chromium may also send URLs, including bits of page content, to Safe Browsing.</translation>
+<translation id="231828342043114302">To receive personalised content based on your interests, sign in to Chromium.</translation>
 <translation id="2374627437126809292">Chromium uses Google Maps to give you directions and local info on detected addresses.</translation>
 <translation id="2386292341327187942">In the Search widgets box, enter 'Chromium'</translation>
 <translation id="2426113998523353159">Your organisation requires you to sign in to use Chromium.</translation>
@@ -78,7 +80,6 @@ For more settings that use data to improve your Chromium experience, go to <ph n
 <translation id="3219277919172823720">Search with Voice in Chromium</translation>
 <translation id="3228349498066165585">Some of your Chromium data hasn't been saved in your Google Account yet.
         Try waiting a few minutes before signing out. If you sign out now, this data will be deleted.</translation>
-<translation id="3256316712990552818">Copied to Chromium</translation>
 <translation id="328933489847748230">{count,plural, =1{Now showing 1 Chromium window}other{Now showing {count} Chromium windows}}</translation>
 <translation id="3344973607274501920">Chromium couldn't check your passwords. Try checking your Internet connection.</translation>
 <translation id="3366305173356742781">Chromium data in your account</translation>
@@ -313,7 +314,6 @@ Your data was encrypted with your passphrase on <ph name="TIME" />. Enter it to 
 <translation id="9059693977935746710">You won't need to remember this password. It will be saved to Password Manager for <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">Chromium is out of date</translation>
 <translation id="9110075932708282655">Use Chromium by default</translation>
-<translation id="9137114218472648150">Chromium is out of date, update to the latest version to stay secure.</translation>
 <translation id="921174536258924340">Chromium couldn't check all passwords. Try again tomorrow or <ph name="BEGIN_LINK" />check passwords in your Google Account.<ph name="END_LINK" /></translation>
 <translation id="971488683725792095">Automatically use Chromium when you tap links in messages, documents and other apps.</translation>
 <translation id="981812233959540767">Play Chromium Dino Game</translation>

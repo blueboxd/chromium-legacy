@@ -12,7 +12,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_ash.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
-#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/ash/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/platform_util.h"
@@ -21,6 +20,9 @@
 class Profile;
 
 namespace file_manager {
+
+class Volume;
+
 namespace test {
 
 static const char kODFSSampleUrl[] = "https://1drv.ms/123";
@@ -216,7 +218,7 @@ class FakeExtensionProviderOneDrive
   CreateProvidedFileSystem(
       Profile* profile,
       const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
-      ash::file_system_provider::ContentCache* content_cache) override;
+      ash::file_system_provider::CacheManager* cache_manager) override;
 
   // Calls `request_mount_callback` if set.
   bool RequestMount(

@@ -138,6 +138,7 @@ Node::InsertionNotificationRequest HTMLFormElement::InsertedInto(
   LogAddElementIfIsolatedWorldAndInDocument("form", html_names::kMethodAttr,
                                             html_names::kActionAttr);
   if (insertion_point.isConnected()) {
+    GetDocument().MarkTopLevelFormsDirty();
     GetDocument().DidChangeFormRelatedElementDynamically(
         this, WebFormRelatedChangeType::kAdd);
   }
@@ -183,6 +184,7 @@ void HTMLFormElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
 
   if (insertion_point.isConnected()) {
+    GetDocument().MarkTopLevelFormsDirty();
     GetDocument().DidChangeFormRelatedElementDynamically(
         this, WebFormRelatedChangeType::kRemove);
   }
@@ -763,26 +765,61 @@ void HTMLFormElement::CollectListedElements(
     ListedElement::List* elements_including_shadow_trees,
     bool in_shadow_tree) const {
   DCHECK(!in_shadow_tree || elements_including_shadow_trees);
-  if (!in_shadow_tree)
+  HeapVector<Member<HTMLFormElement>> nested_forms;
+  if (!in_shadow_tree) {
     elements.clear();
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillIncludeFormElementsInShadowDom)) {
+      for (HTMLFormElement& nested_form :
+           Traversal<HTMLFormElement>::DescendantsOf(*this)) {
+        nested_forms.push_back(nested_form);
+      }
+    }
+  }
   for (HTMLElement& element : Traversal<HTMLElement>::StartsAfter(root)) {
     if (ListedElement* listed_element = ListedElement::From(element)) {
-      // If there is a <form> in between |root| and |listed_element|, then we
-      // shouldn't include it in |elements_including_shadow_trees| in order to
-      // prevent multiple forms from "owning" the same |listed_element| as shown
-      // by their |elements_including_shadow_trees|. |elements| doesn't have
-      // this problem because it can check |listed_element->Form()|.
-      if (in_shadow_tree && !HasFormInBetween(&root, &element) &&
-          !listed_element->Form()) {
+      // There are two scenarios:
+      // - If `kAutofillIncludeFormElementsInShadowDom` is disabled, then we
+      //   expect every form control element to belong to at most one form
+      //   element. This means that if there is a <form> in between `root` and
+      //   `listed_element, then we should not include it in
+      //   `elements_including_shadow_trees`. Otherwise, multiple forms would
+      //    "own" the same `listed_element` as indicated by their
+      //    `elements_including_shadow_trees`.
+      // - If `kAutofillIncludeFormElementsInShadowDom` is enabled, then
+      //   Autofill only considers top level forms - forms that have form
+      //   ancestors are ignored. In that case, we should include all form
+      //   control descendants of the form for which we collect the listed
+      //   elements.
+      // Note that `elements` does not have this problem because it can check
+      // `listed_element->Form()`.
+      if (in_shadow_tree &&
+          (base::FeatureList::IsEnabled(
+               features::kAutofillIncludeFormElementsInShadowDom) ||
+           (!HasFormInBetween(&root, &element) && !listed_element->Form()))) {
         elements_including_shadow_trees->push_back(listed_element);
       } else if (listed_element->Form() == this) {
         elements.push_back(listed_element);
         if (elements_including_shadow_trees)
           elements_including_shadow_trees->push_back(listed_element);
+      } else if (base::Contains(nested_forms, listed_element->Form())) {
+        if (elements_including_shadow_trees) {
+          elements_including_shadow_trees->push_back(listed_element);
+        }
       }
     }
+    // Descend recursively into shadow DOM if the following conditions are met:
+    // - We are supposed to gather elements in shadow trees.
+    // - `element` is a shadow root.
+    // - `element` is a shadow-including descendant of `this`. If we are already
+    //    inside shadow DOM, then this is true by induction.
+    // - If `kAutofillIncludeFormElementsInShadowDom` is disabled, then we also
+    //   require that there no nested forms.
     if (elements_including_shadow_trees && element.AuthorShadowRoot() &&
-        !HasFormInBetween(in_shadow_tree ? &root : this, &element)) {
+        (in_shadow_tree || element.IsDescendantOf(this)) &&
+        (base::FeatureList::IsEnabled(
+             features::kAutofillIncludeFormElementsInShadowDom) ||
+         !HasFormInBetween(in_shadow_tree ? &root : this, &element))) {
       const Node& shadow = *element.AuthorShadowRoot();
       CollectListedElements(shadow, elements, elements_including_shadow_trees,
                             /*in_shadow_tree=*/true);
@@ -1053,6 +1090,22 @@ void HTMLFormElement::InvalidateDefaultButtonStyle() const {
 
 void HTMLFormElement::InvalidateListedElementsIncludingShadowTrees() {
   listed_elements_including_shadow_trees_are_dirty_ = true;
+}
+
+void HTMLFormElement::UseCountPropertyAccess(
+    v8::Local<v8::Name>& v8_property_name,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  bool hasPropertyInPrototypeChain =
+      !info.Holder()
+           ->GetRealNamedPropertyInPrototypeChain(
+               info.GetIsolate()->GetCurrentContext(), v8_property_name)
+           .IsEmpty();
+
+  UseCounter::Count(
+      GetDocument(),
+      hasPropertyInPrototypeChain
+          ? WebFeature::kDOMClobberedShadowedFormPropertyAccessed
+          : WebFeature::kDOMClobberedNotShadowedFormPropertyAccessed);
 }
 
 }  // namespace blink

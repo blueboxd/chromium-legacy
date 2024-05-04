@@ -27,6 +27,7 @@
 
 #include "base/containers/enum_set.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/forms/form_control_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_stringlegacynulltoemptystring_trustedscript.h"
@@ -119,6 +120,7 @@ namespace blink {
 
 using AttributeChangedFunction =
     void (HTMLElement::*)(const Element::AttributeModificationParams& params);
+using mojom::blink::FormControlType;
 
 struct AttributeTriggers {
   const QualifiedName& attribute;
@@ -227,12 +229,24 @@ bool HTMLElement::ShouldSerializeEndTag() const {
 }
 
 static inline CSSValueID UnicodeBidiAttributeForDirAuto(HTMLElement* element) {
-  if (element->HasTagName(html_names::kPreTag) ||
-      element->HasTagName(html_names::kTextareaTag))
-    return CSSValueID::kPlaintext;
-  // FIXME: For bdo element, dir="auto" should result in "bidi-override isolate"
-  // but we don't support having multiple values in unicode-bidi yet.
-  // See https://bugs.webkit.org/show_bug.cgi?id=73164.
+  DCHECK(!element->HasTagName(html_names::kBdoTag));
+  DCHECK(!element->HasTagName(html_names::kTextareaTag));
+  DCHECK(!element->HasTagName(html_names::kPreTag));
+  if (auto* input_element = DynamicTo<HTMLInputElement>(element)) {
+    // https://html.spec.whatwg.org/multipage/rendering.html#bidi-rendering has
+    // prescribed UA stylesheet rules for type=search|tel|url|email with
+    // dir=auto, setting unicode-bidi: plaintext. However, those rules need
+    // `:is()`, so this is implemented here, rather than in html.css.
+    switch (input_element->FormControlType()) {
+      case FormControlType::kInputSearch:
+      case FormControlType::kInputTelephone:
+      case FormControlType::kInputUrl:
+      case FormControlType::kInputEmail:
+        return CSSValueID::kPlaintext;
+      default:
+        return CSSValueID::kIsolate;
+    }
+  }
   return CSSValueID::kIsolate;
 }
 
@@ -347,9 +361,14 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     // with `rendering.html#bidi-rendering`. Make sure any changes here are
     // congruent with changes made there.
     if (EqualIgnoringASCIICase(value, "auto")) {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kUnicodeBidi,
-          UnicodeBidiAttributeForDirAuto(this));
+      // These three are handled by the UA stylesheet.
+      if (!HasTagName(html_names::kBdoTag) &&
+          !HasTagName(html_names::kTextareaTag) &&
+          !HasTagName(html_names::kPreTag)) {
+        AddPropertyToPresentationAttributeStyle(
+            style, CSSPropertyID::kUnicodeBidi,
+            UnicodeBidiAttributeForDirAuto(this));
+      }
     } else {
       if (IsValidDirAttribute(value)) {
         AddPropertyToPresentationAttributeStyle(
@@ -357,10 +376,6 @@ void HTMLElement::CollectStyleForPresentationAttribute(
       } else if (IsA<HTMLBodyElement>(*this)) {
         AddPropertyToPresentationAttributeStyle(
             style, CSSPropertyID::kDirection, "ltr");
-      }
-      if (!HasTagName(html_names::kBdoTag)) {
-        AddPropertyToPresentationAttributeStyle(
-            style, CSSPropertyID::kUnicodeBidi, CSSValueID::kIsolate);
       }
     }
   } else if (name.Matches(xml_names::kLangAttr)) {
@@ -1530,7 +1545,7 @@ void HTMLElement::ShowPopoverInternal(Element* invoker,
   original_document.AllOpenPopovers().insert(this);
 
   // Queue a delayed hide event, if necessary.
-  if (RuntimeEnabledFeatures::HTMLPopoverHintEnabled()) {
+  if (RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled()) {
     if (!GetDocument().HoverElement() ||
         !IsNodePopoverDescendant(*GetDocument().HoverElement())) {
       MaybeQueuePopoverHideEvent();
@@ -1967,7 +1982,7 @@ const HTMLElement* NearestTargetPopoverForInvoker(
         auto* invoke_target_element = form_element->invokeTargetElement();
 
         return invoke_target_element
-                   ? invoke_target_element
+                   ? DynamicTo<HTMLElement>(invoke_target_element)
                    : form_element->popoverTargetElement().popover.Get();
       });
 }
@@ -2199,7 +2214,7 @@ void HTMLElement::InvokePopover(Element& invoker) {
 // `popover-hide-delay` CSS property, which works for all popover types, and
 // needs to keep popovers open when a descendant is hovered.
 bool HTMLElement::IsNodePopoverDescendant(const Node& node) const {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
+  CHECK(RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled());
   CHECK(HasPopoverAttribute());
   const HTMLElement* ancestor = FindTopmostRelatedPopover(
       node, {PopoverAncestorOptions::kIncludeManualPopovers});
@@ -2216,7 +2231,7 @@ bool HTMLElement::IsNodePopoverDescendant(const Node& node) const {
 }
 
 void HTMLElement::MaybeQueuePopoverHideEvent() {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
+  CHECK(RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled());
   CHECK(HasPopoverAttribute());
   // If the popover isn't showing, or it has an infinite PopoverHideDelay, do
   // nothing.
@@ -2258,7 +2273,7 @@ void HTMLElement::MaybeQueuePopoverHideEvent() {
 // static
 void HTMLElement::HoveredElementChanged(Element* old_element,
                                         Element* new_element) {
-  if (!RuntimeEnabledFeatures::HTMLPopoverHintEnabled()) {
+  if (!RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled()) {
     return;
   }
   if (old_element) {
@@ -2334,14 +2349,14 @@ bool HTMLElement::HandleInvokeInternal(HTMLElement& invoker,
       IsPopoverReady(PopoverTriggerAction::kShow,
                      /*exception_state=*/nullptr,
                      /*include_event_handler_text=*/true, &document) &&
-      (EqualIgnoringASCIICase(action, keywords::kAuto) ||
+      (action.empty() ||
        EqualIgnoringASCIICase(action, keywords::kTogglePopover) ||
        EqualIgnoringASCIICase(action, keywords::kShowPopover));
   bool can_hide =
       IsPopoverReady(PopoverTriggerAction::kHide,
                      /*exception_state=*/nullptr,
                      /*include_event_handler_text=*/true, &document) &&
-      (EqualIgnoringASCIICase(action, keywords::kAuto) ||
+      (action.empty() ||
        EqualIgnoringASCIICase(action, keywords::kTogglePopover) ||
        EqualIgnoringASCIICase(action, keywords::kHidePopover));
   if (can_hide) {
@@ -2594,6 +2609,8 @@ bool HTMLElement::CalculateAndAdjustAutoDirectionality() {
   if (resolve_result) {
     text_direction = *resolve_result;
     ClearDirAutoInheritsFromParent();
+  } else if (RuntimeEnabledFeatures::DirAutoNoInheritanceEnabled()) {
+    text_direction = TextDirection::kLtr;
   } else {
     text_direction = ParentDirectionality();
     SetDirAutoInheritsFromParent();
@@ -3208,10 +3225,7 @@ AtomicString HTMLElement::writingSuggestions() const {
 
 void HTMLElement::setWritingSuggestions(const AtomicString& value) {
   CHECK(RuntimeEnabledFeatures::WritingSuggestionsEnabled());
-  setAttribute(html_names::kWritingsuggestionsAttr,
-               EqualIgnoringASCIICase(value, keywords::kFalse)
-                   ? keywords::kFalse
-                   : keywords::kTrue);
+  setAttribute(html_names::kWritingsuggestionsAttr, value);
 }
 
 }  // namespace blink

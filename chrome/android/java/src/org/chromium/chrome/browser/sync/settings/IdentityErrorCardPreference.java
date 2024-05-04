@@ -13,15 +13,24 @@ import android.widget.TextView;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.ErrorCardDetails;
+import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.ErrorUiAction;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.components.sync.SyncService;
 
 public class IdentityErrorCardPreference extends Preference
         implements SyncService.SyncStateChangedListener {
+    public interface Listener {
+        /** Called when the user clicks the button. */
+        void onIdentityErrorCardButtonClicked(@SyncError int error);
+    }
+
     private SyncService mSyncService;
+    private Listener mListener;
+
     private @SyncError int mIdentityError;
 
     public IdentityErrorCardPreference(Context context, AttributeSet attrs) {
@@ -32,18 +41,14 @@ public class IdentityErrorCardPreference extends Preference
     }
 
     /**
-     * Initialize the dependencies for the IdentityErrorCardPreference.
-     *
-     * <p>Must be called before the preference is attached, which is called from the containing
-     * settings screen's onViewCreated method.
+     * Initialize the dependencies for the IdentityErrorCardPreference and update the error card.
      */
-    public void initialize(SyncService syncService) {
-        mSyncService = syncService;
-    }
+    public void initialize(SyncService syncService, Listener listener) {
+        assert getParent() != null : "Not attached to any parent.";
 
-    @Override
-    public void onAttached() {
-        super.onAttached();
+        mSyncService = syncService;
+        mListener = listener;
+
         if (mSyncService != null) {
             mSyncService.addSyncStateChangedListener(this);
         }
@@ -70,10 +75,20 @@ public class IdentityErrorCardPreference extends Preference
     }
 
     private void update() {
-        mIdentityError = SyncSettingsUtils.getIdentityError(mSyncService);
+        @SyncError int error = SyncSettingsUtils.getIdentityError(mSyncService);
+        if (error == mIdentityError) {
+            // Nothing changed.
+            return;
+        }
+        mIdentityError = error;
         if (shouldShowErrorCard()) {
             setVisible(true);
             notifyChanged();
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Sync.IdentityErrorCard"
+                            + SyncSettingsUtils.getHistogramSuffixForError(mIdentityError),
+                    ErrorUiAction.SHOWN,
+                    ErrorUiAction.NUM_ENTRIES);
         } else {
             setVisible(false);
         }
@@ -89,18 +104,26 @@ public class IdentityErrorCardPreference extends Preference
         error.setText(context.getString(error_card_details.message));
         button.setText(context.getString(error_card_details.buttonLabel));
 
-        // TODO(crbug.com/1503649): Add handlers for button click.
-    }
-
-    private boolean shouldShowErrorCard() {
-        return mIdentityError != SyncError.NO_ERROR
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS);
+        button.setOnClickListener(
+                v -> {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "Sync.IdentityErrorCard"
+                                    + SyncSettingsUtils.getHistogramSuffixForError(mIdentityError),
+                            ErrorUiAction.BUTTON_CLICKED,
+                            ErrorUiAction.NUM_ENTRIES);
+                    mListener.onIdentityErrorCardButtonClicked(mIdentityError);
+                });
     }
 
     /** {@link SyncService.SyncStateChangedListener} implementation. */
     @Override
     public void syncStateChanged() {
         update();
+    }
+
+    private boolean shouldShowErrorCard() {
+        return mIdentityError != SyncError.NO_ERROR
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS);
     }
 }

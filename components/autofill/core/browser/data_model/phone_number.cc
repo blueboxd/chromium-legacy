@@ -165,7 +165,9 @@ void PhoneNumber::GetMatchingTypes(const std::u16string& text,
   // Since PHONE_HOME_WHOLE_NUMBER is meant to represent an international
   // number, it is not voted in this case.
   if (matching_types->contains(PHONE_HOME_WHOLE_NUMBER) &&
-      matching_types->contains(PHONE_HOME_CITY_AND_NUMBER)) {
+      matching_types->contains_any(
+          {PHONE_HOME_CITY_AND_NUMBER,
+           PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX})) {
     matching_types->erase(PHONE_HOME_WHOLE_NUMBER);
   }
 }
@@ -317,7 +319,11 @@ void PhoneNumber::UpdateCacheIfNeeded(const std::string& app_locale) const {
     // To enable filling of country calling codes for nationally formatted
     // numbers, infer it from the `profile_`'s country information while parsing
     // the number.
-    cached_parsed_phone_ = i18n::PhoneObject(number_, region);
+    cached_parsed_phone_ = i18n::PhoneObject(
+        number_, region,
+        /*infer_country_code=*/profile_->HasInfo(ADDRESS_HOME_COUNTRY) &&
+            base::FeatureList::IsEnabled(
+                features::kAutofillInferCountryCallingCode));
   }
 }
 
@@ -385,6 +391,23 @@ bool PhoneNumber::PhoneCombineHelper::ParseNumber(
 
   return i18n::ConstructPhoneNumber(country_ + city_ + phone_,
                                     GetRegion(profile, app_locale), value);
+}
+
+// static
+bool PhoneNumber::ImportPhoneNumberToProfile(
+    const PhoneNumber::PhoneCombineHelper& combined_phone,
+    const std::string& app_locale,
+    AutofillProfile& profile) {
+  std::u16string constructed_number;
+  // If the phone number only consists of a single component, the
+  // `PhoneCombineHelper` won't try to parse it. This happens during `SetInfo()`
+  // in this case.
+  bool parsed_successfully =
+      combined_phone.ParseNumber(profile, app_locale, &constructed_number) &&
+      profile.SetInfoWithVerificationStatus(PHONE_HOME_WHOLE_NUMBER,
+                                            constructed_number, app_locale,
+                                            VerificationStatus::kObserved);
+  return parsed_successfully;
 }
 
 bool PhoneNumber::PhoneCombineHelper::IsEmpty() const {

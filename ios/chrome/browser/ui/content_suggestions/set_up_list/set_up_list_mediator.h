@@ -16,6 +16,7 @@ class AuthenticationService;
 @protocol ContentSuggestionsViewControllerAudience;
 class PrefService;
 @class SceneState;
+@class SetUpListConfig;
 @class SetUpListItem;
 @class SetUpListItemViewData;
 
@@ -36,6 +37,18 @@ class SyncService;
 - (void)setUpListItemDidComplete:(SetUpListItem*)item
                allItemsCompleted:(BOOL)completed
                       completion:(ProceduralBlock)completion;
+
+@end
+
+// Audience for Set Up List events
+@protocol SetUpListMediatorAudience
+
+// Indicates that the Set Up List should be removed.
+- (void)removeSetUpList;
+
+// Indicates that the displayed Set Up List should be replaced by
+// `allSetConfig`.
+- (void)replaceSetUpListWithAllSet:(SetUpListConfig*)allSetConfig;
 
 @end
 
@@ -61,6 +74,9 @@ class SyncService;
 // Sends the SetUpList items up to the consumer.
 - (void)showSetUpList;
 
+// Returns the Set Up List module configuration(s) to show.
+- (NSArray<SetUpListConfig*>*)setUpListConfigs;
+
 // Returns the complete list of tasks, inclusive of the ones the user has
 // already completed.
 - (NSArray<SetUpListItemViewData*>*)allItems;
@@ -80,6 +96,9 @@ class SyncService;
 // Receiver for Set Up List actions.
 @property(nonatomic, weak) id<ContentSuggestionsViewControllerAudience>
     commandHandler;
+
+// Audience used to communicate Set Up List events.
+@property(nonatomic, weak) id<SetUpListMediatorAudience> audience;
 
 // Delegate used to communicate Content Suggestions events to the delegate.
 @property(nonatomic, weak) id<ContentSuggestionsDelegate> delegate;

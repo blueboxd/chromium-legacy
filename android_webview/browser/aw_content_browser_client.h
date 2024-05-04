@@ -161,7 +161,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id,
-      absl::optional<int64_t> navigation_id) override;
+      std::optional<int64_t> navigation_id) override;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottlesForKeepAlive(
       const network::ResourceRequest& request,
@@ -214,6 +214,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::SiteIsolationMode site_isolation_mode) override;
   bool ShouldLockProcessToSite(content::BrowserContext* browser_context,
                                const GURL& effective_url) override;
+  bool ShouldEnforceNewCanCommitUrlChecks() override;
   size_t GetMaxRendererProcessCountOverride() override;
   void WillCreateURLLoaderFactory(
       content::BrowserContext* browser_context,
@@ -267,7 +268,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   void OnDisplayInsecureContent(content::WebContents* web_contents) override;
   network::mojom::AttributionSupport GetAttributionSupport(
       AttributionReportingOsApiState state,
-      content::WebContents* web_contents) override;
+      bool client_os_disabled) override;
   // Allows the embedder to control if Attribution Reporting API operations can
   // happen in a given context.
   // For WebView Browser Attribution is explicitly disabled.
@@ -279,10 +280,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin* destination_origin,
       const url::Origin* reporting_origin,
       bool* can_bypass) override;
-  bool ShouldUseOsWebSourceAttributionReporting(
-      content::RenderFrameHost* rfh) override;
-  bool ShouldUseOsWebTriggerAttributionReporting(
-      content::RenderFrameHost* rfh) override;
+  AttributionReportingOsReportTypes GetAttributionReportingOsReportTypes(
+      content::WebContents* web_contents) override;
   blink::mojom::OriginTrialsSettingsPtr GetOriginTrialsSettings() override;
   network::mojom::IpProtectionProxyBypassPolicy
   GetIpProtectionProxyBypassPolicy() override;

@@ -15,6 +15,8 @@
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/url_pattern.h"
+#include "extensions/common/url_pattern_set.h"
 #include "extensions/common/user_script.h"
 
 namespace extensions {
@@ -74,9 +76,18 @@ void ScriptingPermissionsModifier::GrantHostPermission(
     base::OnceClosure done_callback) {
   CHECK(permissions_manager_->CanAffectExtension(*extension_));
 
-  URLPatternSet new_host_permissions({site});
-  GrantHostPermission(new_host_permissions.Clone(),
-                      new_host_permissions.Clone(), std::move(done_callback));
+  URLPatternSet explicit_hosts;
+  URLPattern explicit_host(site);
+  explicit_host.SetValidSchemes(Extension::kValidHostPermissionSchemes);
+  explicit_hosts.AddPattern(std::move(explicit_host));
+
+  URLPatternSet scriptable_hosts;
+  URLPattern scriptable_host(site);
+  scriptable_host.SetValidSchemes(UserScript::ValidUserScriptSchemes());
+  scriptable_hosts.AddPattern(std::move(scriptable_host));
+
+  GrantHostPermission(std::move(explicit_hosts), std::move(scriptable_hosts),
+                      std::move(done_callback));
 }
 
 void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
@@ -109,23 +120,31 @@ void ScriptingPermissionsModifier::RemoveHostPermissions(
     base::OnceClosure done_callback) {
   CHECK(permissions_manager_->CanAffectExtension(*extension_));
 
+  // Returns the runtime hosts that overlap the pattern with valid schemes.
+  auto get_matching_hosts = [](const URLPattern& pattern, int valid_schemes,
+                               const URLPatternSet& runtime_hosts) {
+    URLPattern host(pattern);
+    host.SetValidSchemes(valid_schemes);
+
+    URLPatternSet matching_hosts;
+    for (const auto& runtime_host : runtime_hosts) {
+      if (host.OverlapsWith(runtime_host)) {
+        matching_hosts.AddPattern(runtime_host);
+      }
+    }
+    return matching_hosts;
+  };
+
   // Revoke all sites which have some intersection with `pattern` from the
   // extension's set of runtime granted host permissions.
   std::unique_ptr<const PermissionSet> runtime_permissions =
       permissions_manager_->GetRuntimePermissionsFromPrefs(*extension_);
-
-  URLPatternSet explicit_hosts;
-  for (const auto& runtime_pattern : runtime_permissions->explicit_hosts()) {
-    if (pattern.OverlapsWith(runtime_pattern)) {
-      explicit_hosts.AddPattern(runtime_pattern);
-    }
-  }
-  URLPatternSet scriptable_hosts;
-  for (const auto& runtime_pattern : runtime_permissions->scriptable_hosts()) {
-    if (pattern.OverlapsWith(runtime_pattern)) {
-      scriptable_hosts.AddPattern(runtime_pattern);
-    }
-  }
+  URLPatternSet explicit_hosts =
+      get_matching_hosts(pattern, Extension::kValidHostPermissionSchemes,
+                         runtime_permissions->explicit_hosts());
+  URLPatternSet scriptable_hosts =
+      get_matching_hosts(pattern, UserScript::ValidUserScriptSchemes(),
+                         runtime_permissions->scriptable_hosts());
 
   WithholdHostPermissions(std::move(explicit_hosts),
                           std::move(scriptable_hosts),
@@ -186,11 +205,8 @@ void ScriptingPermissionsModifier::GrantWithheldHostPermissions() {
   const PermissionSet& withheld =
       extension_->permissions_data()->withheld_permissions();
 
-  PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(),
-                            withheld.explicit_hosts().Clone(),
-                            withheld.scriptable_hosts().Clone());
-  PermissionsUpdater(browser_context_)
-      .GrantRuntimePermissions(*extension_, permissions, base::DoNothing());
+  GrantHostPermission(withheld.explicit_hosts().Clone(),
+                      withheld.scriptable_hosts().Clone(), base::DoNothing());
 }
 
 void ScriptingPermissionsModifier::WithholdHostPermissions(

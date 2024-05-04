@@ -27,9 +27,8 @@ static constexpr std::string_view kPermissionRequestUrl =
 
 // All tests in this unit are subject to flakiness because they interact with a
 // system that can be externally modified during execution.
-class UrlFilterUiTest
-    : public InteractiveFamilyLiveTest,
-      public testing::WithParamInterface<supervised_user::FamilyIdentifier> {
+class UrlFilterUiTest : public InteractiveFamilyLiveTest,
+                        public testing::WithParamInterface<FamilyIdentifier> {
  public:
   UrlFilterUiTest()
       : InteractiveFamilyLiveTest(
@@ -223,19 +222,23 @@ IN_PROC_BROWSER_TEST_P(UrlFilterUiTest,
   int child_tab_index = 0;
   int parent_tab_index = 0;
 
-  RunTestSequence(ResetChromeTestState(kResetStateObserver));
+  RunTestSequence(ResetChromeTestState(kResetStateObserver),
+                  Log("When setup done"));
 
   RunTestSequence(
       // Supervised user navigates to inappropriate page and is blocked, and
       // makes approval request.
       InstrumentTab(kChildElementId, child_tab_index, child().browser()),
+      Log("When child navigates to blocked url"),
       NavigateWebContents(kChildElementId,
                           GetRoutedUrl("https://www.pornhub.com")),
       WaitForStateChange(kChildElementId, RemoteApprovalButtonAppeared()),
+      Log("When child requests approval"),
       ChildRequestsRemoteApproval(kChildElementId),
 
       // Parent receives remote approval request for the blocked page in Family
       // Link.
+      Log("When parent receives approval request"),
       InstrumentTab(kParentApprovalTab, parent_tab_index,
                     /*in_browser=*/head_of_household().browser()),
       ParentOpensControlListPage(kParentApprovalTab,
@@ -244,16 +247,18 @@ IN_PROC_BROWSER_TEST_P(UrlFilterUiTest,
 
       // Parent approves the request and supervised user consumes the page
       // content.
+      Log("When parent grants approval"),
       ParentApprovesPermissionRequest(kParentApprovalTab),
+      Log("Then child gets unblocked"),
       WaitForStateChange(kChildElementId, PageWithMatchingTitle("Pornhub")));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     UrlFilterUiTest,
-    testing::Values(supervised_user::FamilyIdentifier("FAMILY_DMA_NONE"),
-                    supervised_user::FamilyIdentifier("FAMILY_DMA_ALL"),
-                    supervised_user::FamilyIdentifier("FAMILY")),
+    testing::Values(FamilyIdentifier("FAMILY_DMA_ELIGIBILE_NO_CONSENT"),
+                    FamilyIdentifier("FAMILY_DMA_ELIGIBLE_WITH_CONSENT"),
+                    FamilyIdentifier("FAMILY_DMA_INELIGIBLE")),
     [](const auto& info) { return info.param->data(); });
 
 }  // namespace

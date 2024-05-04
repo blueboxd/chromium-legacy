@@ -25,6 +25,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/eea_countries_ids.h"
 #include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -69,14 +70,16 @@ bool IsSearchEngineChoiceScreenAllowedByPolicy(
   return false;
 }
 
-bool IsDefaultSearchProviderSetOrBlockedByPolicy(
-    const TemplateURLService& template_url_service) {
-  const TemplateURL* default_search_engine =
-      template_url_service.GetDefaultSearchProvider();
-
+bool IsSetOrBlockedByPolicy(const TemplateURL* default_search_engine) {
   return !default_search_engine ||
          default_search_engine->created_by_policy() ==
              TemplateURLData::CreatedByPolicy::kDefaultSearchProvider;
+}
+
+bool IsDefaultSearchProviderSetOrBlockedByPolicy(
+    const TemplateURLService& template_url_service) {
+  return IsSetOrBlockedByPolicy(
+      template_url_service.GetDefaultSearchProvider());
 }
 #endif
 
@@ -228,30 +231,34 @@ SearchEngineChoiceService::GetDynamicChoiceScreenConditions(
   // TODO(b/319050536): Remove the function declaration on these platforms.
   return SearchEngineChoiceScreenConditions::kUnsupportedBrowserType;
 #else
+  // Don't show the dialog if the choice has already been made.
+  if (IsSearchEngineChoiceCompleted(*profile_prefs_)) {
+    return SearchEngineChoiceScreenConditions::kAlreadyCompleted;
+  }
+
   // Don't show the dialog if the default search engine is set by an extension.
   if (template_url_service.IsExtensionControlledDefaultSearch()) {
     return SearchEngineChoiceScreenConditions::kExtensionControlled;
   }
 
-  if (IsDefaultSearchProviderSetOrBlockedByPolicy(template_url_service)) {
-    return SearchEngineChoiceScreenConditions::kControlledByPolicy;
-  }
-
   const TemplateURL* default_search_engine =
       template_url_service.GetDefaultSearchProvider();
-  if (!default_search_engine) {
-    // It is possible to not have a default search provider if the
-    // "DefaultSearchProviderEnabled" policy is set to `false`.
-    // It is somewhat that we could reach this, as
-    // `GetStaticChoiceScreenConditions()` should already check for that.
-    // Hypothetically, a race condition between a policy getting newly
-    // downloaded and the user making their choice on the dialog could trigger
-    // this (But not at profile creation, we wait for policies to finish
-    // applying before proceeding to the choice screen).
-    // If we proceeded here, the choice screen could be shown and we might
-    // attempt to set a DSE based on the user selection, but that would be
-    // ignored.
+  if (IsSetOrBlockedByPolicy(default_search_engine)) {
+    // It is possible that between the static checks at service creation (around
+    // the time the profile was loaded) and the moment a compatible URL is
+    // loaded to show the search engine choice dialog, some new policies come in
+    // and take control of the default search provider. If we proceeded here,
+    // the choice screen could be shown and we might attempt to set a DSE based
+    // on the user selection, but that would be ignored.
     return SearchEngineChoiceScreenConditions::kControlledByPolicy;
+  }
+  CHECK(default_search_engine);
+
+  if (switches::kSearchEngineChoiceTriggerSkipFor3p.Get()) {
+    if (default_search_engine->GetEngineType(
+            template_url_service.search_terms_data()) != SEARCH_ENGINE_GOOGLE) {
+      return SearchEngineChoiceScreenConditions::kHasNonGoogleSearchEngine;
+    }
   }
 
   if (!template_url_service.IsPrepopulatedOrDefaultProviderByPolicy(
@@ -278,10 +285,6 @@ SearchEngineChoiceService::GetDynamicChoiceScreenConditions(
     RecordUnexpectedSearchProvider(default_search_engine->data());
     return SearchEngineChoiceScreenConditions::
         kHasRemovedPrepopulatedSearchEngine;
-  }
-
-  if (IsSearchEngineChoiceCompleted(*profile_prefs_)) {
-    return SearchEngineChoiceScreenConditions::kAlreadyCompleted;
   }
 
   return SearchEngineChoiceScreenConditions::kEligible;

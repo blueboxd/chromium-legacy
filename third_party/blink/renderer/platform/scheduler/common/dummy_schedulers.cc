@@ -91,6 +91,7 @@ class DummyFrameScheduler : public FrameScheduler {
   void SetPaused(bool) override {}
   void SetShouldReportPostedTasksWhenDisabled(bool) override {}
   void SetCrossOriginToNearestMainFrame(bool) override {}
+  void SetAgentClusterId(const base::UnguessableToken&) override {}
   bool IsCrossOriginToNearestMainFrame() const override { return false; }
   void SetIsAdFrame(bool is_ad_frame) override {}
   bool IsAdFrame() const override { return false; }
@@ -244,7 +245,7 @@ class SimpleMainThread : public MainThread {
  private:
   bool IsSimpleMainThread() const override { return true; }
 
-  raw_ptr<ThreadScheduler, ExperimentalRenderer> scheduler_ptr_;
+  raw_ptr<ThreadScheduler> scheduler_ptr_;
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_task_runner_for_testing_;
 };
@@ -344,12 +345,12 @@ class DummyWebMainThreadScheduler : public WebThreadScheduler,
   void ForEachMainThreadIsolate(
       base::RepeatingCallback<void(v8::Isolate* isolate)> callback) override {
     if (isolate_) {
-      callback.Run(isolate_);
+      callback.Run(isolate_.get());
     }
   }
 
  private:
-  v8::Isolate* isolate_ = nullptr;
+  raw_ptr<v8::Isolate> isolate_ = nullptr;
 };
 
 class DummyAgentGroupScheduler : public AgentGroupScheduler {

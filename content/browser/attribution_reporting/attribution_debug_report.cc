@@ -7,20 +7,25 @@
 #include <stdint.h>
 
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/overloaded.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/os_registration.h"
+#include "components/attribution_reporting/registration_header_error.h"
+#include "components/attribution_reporting/registration_header_type.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
+#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -38,6 +43,8 @@ namespace {
 
 using EventLevelResult = ::content::AttributionTrigger::EventLevelResult;
 using AggregatableResult = ::content::AttributionTrigger::AggregatableResult;
+
+using ::attribution_reporting::mojom::RegistrationHeaderType;
 
 constexpr char kAttributionDestination[] = "attribution_destination";
 
@@ -72,7 +79,8 @@ enum class DebugDataType {
   kOsTriggerDelegated = 25,
   kTriggerEventReportWindowNotStarted = 26,
   kTriggerEventNoMatchingTriggerData = 27,
-  kMaxValue = kTriggerEventNoMatchingTriggerData,
+  kHeaderParsingError = 28,
+  kMaxValue = kHeaderParsingError,
 };
 
 std::optional<DebugDataType> DataTypeIfCookieSet(DebugDataType data_type,
@@ -249,7 +257,7 @@ std::optional<DebugDataType> GetReportDataType(AggregatableResult result,
   }
 }
 
-std::string SerializeReportDataType(DebugDataType data_type) {
+std::string_view SerializeReportDataType(DebugDataType data_type) {
   switch (data_type) {
     case DebugDataType::kSourceDestinationLimit:
       return "source-destination-limit";
@@ -307,6 +315,8 @@ std::string SerializeReportDataType(DebugDataType data_type) {
       return "os-source-delegated";
     case DebugDataType::kOsTriggerDelegated:
       return "os-trigger-delegated";
+    case DebugDataType::kHeaderParsingError:
+      return "header-parsing-error";
   }
 }
 
@@ -332,14 +342,9 @@ void SetLimit(base::Value::Dict& data_body, std::optional<T> limit) {
   SetLimit(data_body, *limit);
 }
 
-// `original_report_time` must be non-null when `data_type`'s body will contain
-// a `scheduled_report_time` field, which is only true for certain event-level
-// failures that use the entire body of the report that would have been stored
-// if attribution had succeeded.
 base::Value::Dict GetReportDataBody(DebugDataType data_type,
                                     const AttributionTrigger& trigger,
-                                    const CreateReportResult& result,
-                                    base::Time* original_report_time) {
+                                    const CreateReportResult& result) {
   base::Value::Dict data_body;
   data_body.Set(kAttributionDestination,
                 net::SchemefulSite(trigger.destination_origin()).Serialize());
@@ -390,9 +395,6 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
     case DebugDataType::kTriggerEventLowPriority:
     case DebugDataType::kTriggerEventExcessiveReports:
       DCHECK(result.dropped_event_level_report());
-      DCHECK(original_report_time);
-      *original_report_time =
-          result.dropped_event_level_report()->initial_report_time();
       return result.dropped_event_level_report()->ReportBody();
     case DebugDataType::kSourceDestinationLimit:
     case DebugDataType::kSourceNoised:
@@ -402,6 +404,7 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
     case DebugDataType::kSourceDestinationRateLimit:
     case DebugDataType::kOsSourceDelegated:
     case DebugDataType::kOsTriggerDelegated:
+    case DebugDataType::kHeaderParsingError:
       NOTREACHED_NORETURN();
   }
 
@@ -416,12 +419,26 @@ base::Value::Dict GetReportData(DebugDataType type, base::Value::Dict body) {
 }
 
 void RecordVerboseDebugReportType(DebugDataType type) {
-  static_assert(
-      DebugDataType::kMaxValue ==
-          DebugDataType::kTriggerEventNoMatchingTriggerData,
-      "Bump version of Conversions.SentVerboseDebugReportType4 histogram.");
+  static_assert(DebugDataType::kMaxValue == DebugDataType::kHeaderParsingError,
+                "Update ConversionVerboseDebugReportType enum.");
   base::UmaHistogramEnumeration("Conversions.SentVerboseDebugReportType4",
                                 type);
+}
+
+std::string_view GetHeaderName(RegistrationHeaderType type) {
+  switch (type) {
+    case RegistrationHeaderType::kSource:
+      return kAttributionReportingRegisterSourceHeader;
+    case RegistrationHeaderType::kTrigger:
+      return kAttributionReportingRegisterTriggerHeader;
+    case RegistrationHeaderType::kOsSource:
+      return kAttributionReportingRegisterOsSourceHeader;
+    case RegistrationHeaderType::kOsTrigger:
+      return kAttributionReportingRegisterOsTriggerHeader;
+    default:
+      // Should only be possible with compromised renderers.
+      return "";
+  }
 }
 
 }  // namespace
@@ -468,8 +485,7 @@ std::optional<AttributionDebugReport> AttributionDebugReport::Create(
   base::Value::List report_body;
   report_body.Append(GetReportData(data->debug_data_type, std::move(body)));
   return AttributionDebugReport(std::move(report_body),
-                                source.common_info().reporting_origin(),
-                                /*original_report_time=*/base::Time());
+                                source.common_info().reporting_origin());
 }
 
 // static
@@ -487,15 +503,13 @@ std::optional<AttributionDebugReport> AttributionDebugReport::Create(
   }
 
   base::Value::List report_body;
-  base::Time original_report_time;
 
   std::optional<DebugDataType> event_level_data_type =
       GetReportDataType(result.event_level_status(), is_debug_cookie_set);
   if (event_level_data_type) {
-    report_body.Append(
-        GetReportData(*event_level_data_type,
-                      GetReportDataBody(*event_level_data_type, trigger, result,
-                                        &original_report_time)));
+    report_body.Append(GetReportData(
+        *event_level_data_type,
+        GetReportDataBody(*event_level_data_type, trigger, result)));
     RecordVerboseDebugReportType(*event_level_data_type);
   }
 
@@ -505,8 +519,7 @@ std::optional<AttributionDebugReport> AttributionDebugReport::Create(
       aggregatable_data_type != event_level_data_type) {
     report_body.Append(GetReportData(
         *aggregatable_data_type,
-        GetReportDataBody(*aggregatable_data_type, trigger, result,
-                          /*original_report_time=*/nullptr)));
+        GetReportDataBody(*aggregatable_data_type, trigger, result)));
     RecordVerboseDebugReportType(*aggregatable_data_type);
   }
 
@@ -514,19 +527,23 @@ std::optional<AttributionDebugReport> AttributionDebugReport::Create(
     return std::nullopt;
   }
 
-  return AttributionDebugReport(
-      std::move(report_body), trigger.reporting_origin(), original_report_time);
+  return AttributionDebugReport(std::move(report_body),
+                                trigger.reporting_origin());
 }
 
 // static
 std::optional<AttributionDebugReport> AttributionDebugReport::Create(
-    const OsRegistration& registration) {
-  if (!registration.debug_reporting || registration.is_within_fenced_frame) {
+    const OsRegistration& registration,
+    size_t item_index) {
+  CHECK_LT(item_index, registration.registration_items.size());
+  const auto& registration_item = registration.registration_items[item_index];
+  if (!registration_item.debug_reporting ||
+      registration.is_within_fenced_frame) {
     return std::nullopt;
   }
 
-  auto registration_origin = attribution_reporting::SuitableOrigin::Create(
-      registration.registration_url);
+  auto registration_origin =
+      attribution_reporting::SuitableOrigin::Create(registration_item.url);
   if (!registration_origin.has_value()) {
     return std::nullopt;
   }
@@ -544,7 +561,7 @@ std::optional<AttributionDebugReport> AttributionDebugReport::Create(
   base::Value::Dict data_body;
   data_body.Set("context_site",
                 net::SchemefulSite(registration.top_level_origin).Serialize());
-  data_body.Set("registration_url", registration.registration_url.spec());
+  data_body.Set("registration_url", registration_item.url.spec());
 
   base::Value::List report_body;
   report_body.Append(GetReportData(data_type, std::move(data_body)));
@@ -552,17 +569,44 @@ std::optional<AttributionDebugReport> AttributionDebugReport::Create(
   RecordVerboseDebugReportType(data_type);
 
   return AttributionDebugReport(std::move(report_body),
-                                std::move(*registration_origin),
-                                /*original_report_time=*/base::Time());
+                                std::move(*registration_origin));
+}
+
+std::optional<AttributionDebugReport> AttributionDebugReport::Create(
+    attribution_reporting::SuitableOrigin reporting_origin,
+    const attribution_reporting::RegistrationHeaderError& error,
+    const attribution_reporting::SuitableOrigin& context_origin,
+    bool is_within_fenced_frame) {
+  if (is_within_fenced_frame) {
+    return std::nullopt;
+  }
+
+  std::string_view header_type = GetHeaderName(error.header_type);
+  if (header_type.empty()) {
+    return std::nullopt;
+  }
+
+  base::Value::Dict data_body;
+  data_body.Set("context_site", net::SchemefulSite(context_origin).Serialize());
+  data_body.Set("header", header_type);
+  data_body.Set("value", error.header_value);
+
+  const DebugDataType data_type = DebugDataType::kHeaderParsingError;
+
+  base::Value::List report_body;
+  report_body.Append(GetReportData(data_type, std::move(data_body)));
+
+  RecordVerboseDebugReportType(data_type);
+
+  return AttributionDebugReport(std::move(report_body),
+                                std::move(reporting_origin));
 }
 
 AttributionDebugReport::AttributionDebugReport(
     base::Value::List report_body,
-    attribution_reporting::SuitableOrigin reporting_origin,
-    base::Time original_report_time)
+    attribution_reporting::SuitableOrigin reporting_origin)
     : report_body_(std::move(report_body)),
-      reporting_origin_(std::move(reporting_origin)),
-      original_report_time_(original_report_time) {
+      reporting_origin_(std::move(reporting_origin)) {
   DCHECK(!report_body_.empty());
 }
 

@@ -69,26 +69,27 @@ enum class AddressProfileImportRequirementMetric {
   kMaxValue = kNoSythesizedTypesRequirementViolated,
 };
 
-// Represents the status of the field type requirements that are specific to
-// countries.
+// These values are persisted to UMA logs. Entries should not be renumbered
+// and numeric values should never be reused. Represents the status of the field
+// type requirements that are specific to countries.
 enum class AddressProfileImportCountrySpecificFieldRequirementsMetric {
-  ALL_GOOD = 0,
-  ZIP_REQUIREMENT_VIOLATED = 1,
-  STATE_REQUIREMENT_VIOLATED = 2,
-  ZIP_STATE_REQUIREMENT_VIOLATED = 3,
-  CITY_REQUIREMENT_VIOLATED = 4,
-  ZIP_CITY_REQUIREMENT_VIOLATED = 5,
-  STATE_CITY_REQUIREMENT_VIOLATED = 6,
-  ZIP_STATE_CITY_REQUIREMENT_VIOLATED = 7,
-  LINE1_REQUIREMENT_VIOLATED = 8,
-  LINE1_ZIP_REQUIREMENT_VIOLATED = 9,
-  LINE1_STATE_REQUIREMENT_VIOLATED = 10,
-  LINE1_ZIP_STATE_REQUIREMENT_VIOLATED = 11,
-  LINE1_CITY_REQUIREMENT_VIOLATED = 12,
-  LINE1_ZIP_CITY_REQUIREMENT_VIOLATED = 13,
-  LINE1_STATE_CITY_REQUIREMENT_VIOLATED = 14,
-  LINE1_ZIP_STATE_CITY_REQUIREMENT_VIOLATED = 15,
-  kMaxValue = LINE1_ZIP_STATE_CITY_REQUIREMENT_VIOLATED,
+  kAllGood = 0,
+  kZipRequirementViolated = 1,
+  kStateRequirementViolated = 2,
+  kZipStateRequirementViolated = 3,
+  kCityRequirementViolated = 4,
+  kZipCityRequirementViolated = 5,
+  kStateCityRequirementViolated = 6,
+  kZipStateCityRequirementViolated = 7,
+  kLine1RequirementViolated = 8,
+  kLine1ZipRequirementViolated = 9,
+  kLine1StateRequirementViolated = 10,
+  kLine1ZipStateRequirementViolated = 11,
+  kLine1CityRequirementViolated = 12,
+  kLine1ZipCityRequirementViolated = 13,
+  kLine1StateCityRequirementViolated = 14,
+  kLine1ZipStateCityRequirementViolated = 15,
+  kMaxValue = kLine1ZipStateCityRequirementViolated,
 };
 
 // These values are persisted to UMA logs. Entries should not be renumbered
@@ -111,7 +112,7 @@ void LogAddressProfileImportUkm(
     ukm::UkmRecorder* ukm_recorder,
     ukm::SourceId source_id,
     AutofillProfileImportType import_type,
-    AutofillClient::SaveAddressProfileOfferUserDecision user_decision,
+    AutofillClient::AddressPromptUserDecision user_decision,
     const ProfileImportMetadata& profile_import_metadata,
     size_t num_edited_fields);
 
@@ -134,11 +135,11 @@ void LogSilentUpdatesProfileImportType(AutofillProfileImportType import_type);
 
 // Logs the user decision for importing a new profile.
 void LogNewProfileImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision);
+    AutofillClient::AddressPromptUserDecision decision);
 
 // Logs the user decision for updating an exiting profile.
 void LogProfileUpdateImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision);
+    AutofillClient::AddressPromptUserDecision decision);
 
 // Logs if at least one setting-inaccessible field was removed on import.
 void LogRemovedSettingInaccessibleFields(bool did_remove);
@@ -163,7 +164,7 @@ void LogNewProfileNumberOfEditedFields(int number_of_edited_fields);
 // not accounted for in this metric.
 void LogProfileUpdateAffectedType(
     FieldType affected_type,
-    AutofillClient::SaveAddressProfileOfferUserDecision decision);
+    AutofillClient::AddressPromptUserDecision decision);
 
 // Logs that a specific type was edited in an update prompt.
 void LogProfileUpdateEditedType(FieldType edited_type);
@@ -176,12 +177,12 @@ void LogUpdateProfileNumberOfEditedFields(int number_of_edited_fields);
 // not accounted for in this metric.
 void LogUpdateProfileNumberOfAffectedFields(
     int number_of_affected_fields,
-    AutofillClient::SaveAddressProfileOfferUserDecision decision);
+    AutofillClient::AddressPromptUserDecision decision);
 
 // Logs the user's decision for migrating an existing `kLocalOrSyncable` profile
 // to `kAccount`.
 void LogProfileMigrationImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision);
+    AutofillClient::AddressPromptUserDecision decision);
 
 // Logs that a specific type was edited in a migration prompt.
 void LogProfileMigrationEditedType(FieldType edited_type);

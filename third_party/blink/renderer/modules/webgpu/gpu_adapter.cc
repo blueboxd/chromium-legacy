@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_device_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_queue_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_request_adapter_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -94,7 +95,7 @@ GPUAdapter::GPUAdapter(
     GPU* gpu,
     WGPUAdapter handle,
     scoped_refptr<DawnControlClientHolder> dawn_control_client)
-    : DawnObject(dawn_control_client, handle), gpu_(gpu) {
+    : DawnObject(dawn_control_client, handle, String()), gpu_(gpu) {
   WGPUAdapterProperties properties = {};
   WGPUAdapterPropertiesMemoryHeaps memoryHeapProperties = {};
   memoryHeapProperties.chain.sType = WGPUSType_AdapterPropertiesMemoryHeaps;
@@ -179,12 +180,13 @@ bool GPUAdapter::isCompatibilityMode() const {
   return is_compatibility_mode_;
 }
 
-void GPUAdapter::OnRequestDeviceCallback(ScriptState* script_state,
-                                         const GPUDeviceDescriptor* descriptor,
-                                         ScriptPromiseResolver* resolver,
-                                         WGPURequestDeviceStatus status,
-                                         WGPUDevice dawn_device,
-                                         const char* error_message) {
+void GPUAdapter::OnRequestDeviceCallback(
+    ScriptState* script_state,
+    const GPUDeviceDescriptor* descriptor,
+    ScriptPromiseResolverTyped<GPUDevice>* resolver,
+    WGPURequestDeviceStatus status,
+    WGPUDevice dawn_device,
+    const char* error_message) {
   switch (status) {
     case WGPURequestDeviceStatus_Success: {
       DCHECK(dawn_device);
@@ -251,12 +253,13 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptState* script_state,
   }
 }
 
-ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
-                                        GPUDeviceDescriptor* descriptor) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+ScriptPromiseTyped<GPUDevice> GPUAdapter::requestDevice(
+    ScriptState* script_state,
+    GPUDeviceDescriptor* descriptor) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<GPUDevice>>(
       script_state, ExceptionContext(ExceptionContextType::kOperationInvoke,
                                      "GPUAdapter", "requestDevice"));
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   WGPUDeviceDescriptor dawn_desc = {};
 
@@ -291,6 +294,16 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
     dawn_desc.requiredFeatureCount = required_features.size();
   }
 
+  std::string label = descriptor->label().Utf8();
+  if (!label.empty()) {
+    dawn_desc.label = label.c_str();
+  }
+
+  std::string queueLabel = descriptor->defaultQueue()->label().Utf8();
+  if (!queueLabel.empty()) {
+    dawn_desc.defaultQueue.label = queueLabel.c_str();
+  }
+
   auto* callback = MakeWGPUOnceCallback(resolver->WrapCallbackInScriptScope(
       WTF::BindOnce(&GPUAdapter::OnRequestDeviceCallback, WrapPersistent(this),
                     WrapPersistent(script_state), WrapPersistent(descriptor))));
@@ -303,10 +316,8 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise GPUAdapter::requestAdapterInfo(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
+ScriptPromiseTyped<GPUAdapterInfo> GPUAdapter::requestAdapterInfo(
+    ScriptState* script_state) {
   GPUAdapterInfo* adapter_info;
   if (RuntimeEnabledFeatures::WebGPUDeveloperFeaturesEnabled()) {
     // If WebGPU developer features have been enabled then provide all available
@@ -321,9 +332,7 @@ ScriptPromise GPUAdapter::requestAdapterInfo(ScriptState* script_state) {
     adapter_info = MakeGarbageCollected<GPUAdapterInfo>(vendor_, architecture_);
   }
 
-  resolver->Resolve(adapter_info);
-
-  return promise;
+  return ToResolvedPromise<GPUAdapterInfo>(script_state, adapter_info);
 }
 
 void GPUAdapter::Trace(Visitor* visitor) const {

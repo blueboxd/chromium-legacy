@@ -12,10 +12,14 @@
 
 namespace controlled_frame {
 
-void ControlledFrameExtensionsRendererAPIProvider::
-    EnableCustomElementAllowlist() {
-  blink::WebCustomElement::AddEmbedderCustomElementName("controlledframe");
-}
+void ControlledFrameExtensionsRendererAPIProvider::RegisterNativeHandlers(
+    extensions::ModuleSystem* module_system,
+    extensions::NativeExtensionBindingsSystem* bindings_system,
+    extensions::ScriptContext* context) {}
+
+void ControlledFrameExtensionsRendererAPIProvider::AddBindingsSystemHooks(
+    extensions::Dispatcher* dispatcher,
+    extensions::NativeExtensionBindingsSystem* bindings_system) {}
 
 void ControlledFrameExtensionsRendererAPIProvider::PopulateSourceMap(
     extensions::ResourceBundleSourceMap* source_map) {
@@ -28,16 +32,19 @@ void ControlledFrameExtensionsRendererAPIProvider::PopulateSourceMap(
                              IDR_CONTROLLED_FRAME_API_METHODS_JS);
 }
 
-bool ControlledFrameExtensionsRendererAPIProvider::RequireWebViewModules(
+void ControlledFrameExtensionsRendererAPIProvider::
+    EnableCustomElementAllowlist() {
+  blink::WebCustomElement::AddEmbedderCustomElementName("controlledframe");
+}
+
+void ControlledFrameExtensionsRendererAPIProvider::RequireWebViewModules(
     extensions::ScriptContext* context) {
   if (context->GetAvailability("controlledFrameInternal").is_available()) {
     // CHECK chromeWebViewInternal since controlledFrame will be built on top
     // of it.
     CHECK(context->GetAvailability("chromeWebViewInternal").is_available());
     context->module_system()->Require("controlledFrame");
-    return true;
   }
-  return false;
 }
 
 }  // namespace controlled_frame

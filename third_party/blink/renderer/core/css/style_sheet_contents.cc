@@ -668,6 +668,8 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(const T& rules) {
       case StyleRuleBase::kPositionFallback:
       case StyleRuleBase::kTry:
       case StyleRuleBase::kViewTransition:
+      case StyleRuleBase::kFunction:
+      case StyleRuleBase::kPositionTry:
         break;
       case StyleRuleBase::kCounterStyle:
         if (To<StyleRuleCounterStyle>(rule)

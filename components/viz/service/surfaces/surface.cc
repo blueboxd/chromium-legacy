@@ -11,9 +11,10 @@
 #include <limits>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/tick_clock.h"
@@ -44,7 +45,7 @@ void RequestCopyOfOutputOnRenderPass(std::unique_ptr<CopyOutputRequest> request,
     const base::UnguessableToken& source = request->source();
     // Remove existing CopyOutputRequests made on the Surface by the same
     // source.
-    base::EraseIf(render_pass.copy_requests,
+    std::erase_if(render_pass.copy_requests,
                   [&source](const std::unique_ptr<CopyOutputRequest>& x) {
                     return x->has_source() && x->source() == source;
                   });
@@ -75,7 +76,7 @@ void Surface::PresentationHelper::DidPresent(
     base::TimeTicks draw_start_timestamp,
     const gfx::SwapTimings& swap_timings,
     const gfx::PresentationFeedback& feedback) {
-  if (surface_client_ && frame_token_ != kInvalidOrLocalFrameToken) {
+  if (surface_client_) {
     surface_client_->OnSurfacePresented(frame_token_, draw_start_timestamp,
                                         swap_timings, feedback);
   }
@@ -284,8 +285,9 @@ Surface::QueueFrameResult Surface::CommitFrame(FrameData frame) {
       // If we are blocked on another Surface, and its latest frame is unacked,
       // we send the Ack now. This will allow frame production to continue for
       // that client, leading to the group being unblocked.
-      for (auto* it : blocking_allocation_groups_)
+      for (SurfaceAllocationGroup* it : blocking_allocation_groups_) {
         it->AckLastestActiveUnAckedFrame();
+      }
       result = QueueFrameResult::ACCEPTED_PENDING;
     }
   }
@@ -479,8 +481,9 @@ std::optional<uint64_t> Surface::GetUncommitedFrameIndexNewerThan(
 
 void Surface::UpdateReferencedAllocationGroups(
     std::vector<SurfaceAllocationGroup*> new_referenced_allocation_groups) {
-  base::flat_set<SurfaceAllocationGroup*> new_set(
-      new_referenced_allocation_groups);
+  base::flat_set<raw_ptr<SurfaceAllocationGroup, CtnExperimental>> new_set(
+      new_referenced_allocation_groups.begin(),
+      new_referenced_allocation_groups.end());
 
   for (SurfaceAllocationGroup* group : referenced_allocation_groups_) {
     if (!new_set.count(group))
@@ -659,7 +662,8 @@ void Surface::UpdateActivationDependencies(
     return;
   }
 
-  base::flat_set<SurfaceAllocationGroup*> new_blocking_allocation_groups;
+  base::flat_set<raw_ptr<SurfaceAllocationGroup, CtnExperimental>>
+      new_blocking_allocation_groups;
   std::vector<SurfaceId> new_activation_dependencies;
   for (const SurfaceId& surface_id :
        current_frame.metadata.activation_dependencies) {

@@ -70,7 +70,7 @@ class LockManager::LockRequestImpl final
  public:
   LockRequestImpl(
       V8LockGrantedCallback* callback,
-      ScriptPromiseResolver* resolver,
+      ScriptPromiseResolverTyped<IDLAny>* resolver,
       const String& name,
       mojom::blink::LockMode mode,
       mojo::PendingAssociatedReceiver<mojom::blink::LockRequest> receiver,
@@ -191,12 +191,13 @@ class LockManager::LockRequestImpl final
     v8::TryCatch try_catch(script_state->GetIsolate());
     v8::Maybe<ScriptValue> result = callback->Invoke(nullptr, lock);
     if (try_catch.HasCaught()) {
-      lock->HoldUntil(
-          ScriptPromise::Reject(script_state, try_catch.Exception()),
-          resolver_);
-    } else if (!result.IsNothing()) {
-      lock->HoldUntil(ScriptPromise::Cast(script_state, result.FromJust()),
+      lock->HoldUntil(ScriptPromiseTyped<IDLAny>::Reject(script_state,
+                                                         try_catch.Exception()),
                       resolver_);
+    } else if (!result.IsNothing()) {
+      lock->HoldUntil(
+          ToResolvedPromise<IDLAny>(script_state, result.FromJust()),
+          resolver_);
     }
   }
 
@@ -206,7 +207,7 @@ class LockManager::LockRequestImpl final
 
   // Rejects if the request was aborted, otherwise resolves/rejects with
   // |callback_|'s result.
-  Member<ScriptPromiseResolver> resolver_;
+  Member<ScriptPromiseResolverTyped<IDLAny>> resolver_;
 
   // Held to stamp the Lock object's |name| property.
   String name_;
@@ -256,24 +257,26 @@ void LockManager::SetManager(
                 execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI));
 }
 
-ScriptPromise LockManager::request(ScriptState* script_state,
-                                   const String& name,
-                                   V8LockGrantedCallback* callback,
-                                   ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLAny> LockManager::request(
+    ScriptState* script_state,
+    const String& name,
+    V8LockGrantedCallback* callback,
+    ExceptionState& exception_state) {
   return request(script_state, name, LockOptions::Create(), callback,
                  exception_state);
 }
 
-ScriptPromise LockManager::request(ScriptState* script_state,
-                                   const String& name,
-                                   const LockOptions* options,
-                                   V8LockGrantedCallback* callback,
-                                   ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLAny> LockManager::request(
+    ScriptState* script_state,
+    const String& name,
+    const LockOptions* options,
+    V8LockGrantedCallback* callback,
+    ExceptionState& exception_state) {
   // Observed context may be gone if frame is detached.
   if (!GetExecutionContext()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kInvalidStateErrorMessage);
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
   }
 
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -288,7 +291,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   if (!context->GetSecurityOrigin()->CanAccessLocks()) {
     exception_state.ThrowSecurityError(
         "Access to the Locks API is denied in this context.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
   }
   if (context->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(context, WebFeature::kFileAccessedLocks);
@@ -301,7 +304,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   if (name.StartsWith("-")) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Names cannot start with '-'.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
   }
 
   // 7. Otherwise, if both options’ steal dictionary member and option’s
@@ -311,7 +314,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The 'steal' and 'ifAvailable' options cannot be used together.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
   }
 
   // 8. Otherwise, if options’ steal dictionary member is true and option’s mode
@@ -321,7 +324,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The 'steal' option may only be used with 'exclusive' locks.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
   }
 
   // 9. Otherwise, if option’s signal dictionary member is present, and either
@@ -332,25 +335,25 @@ ScriptPromise LockManager::request(ScriptState* script_state,
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The 'signal' and 'ifAvailable' options cannot be used together.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
   }
   if (options->hasSignal() && options->steal()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The 'signal' and 'steal' options cannot be used together.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLAny>();
   }
 
   // If options["signal"] exists and is aborted, then return a promise rejected
   // with options["signal"]'s abort reason.
   if (options->hasSignal() && options->signal()->aborted()) {
-    return ScriptPromise::Reject(script_state,
-                                 options->signal()->reason(script_state));
+    return ScriptPromiseTyped<IDLAny>::Reject(
+        script_state, options->signal()->reason(script_state));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLAny>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   CheckStorageAccessAllowed(
       context, resolver,
@@ -366,7 +369,7 @@ void LockManager::RequestImpl(const LockOptions* options,
                               const String& name,
                               V8LockGrantedCallback* callback,
                               mojom::blink::LockMode mode,
-                              ScriptPromiseResolver* resolver) {
+                              ScriptPromiseResolverTyped<IDLAny>* resolver) {
   ExecutionContext* context = resolver->GetExecutionContext();
   if (!service_.is_bound()) {
     context->GetBrowserInterfaceBroker().GetInterface(
@@ -421,13 +424,14 @@ void LockManager::RequestImpl(const LockOptions* options,
   service_->RequestLock(name, mode, wait, std::move(request_remote));
 }
 
-ScriptPromise LockManager::query(ScriptState* script_state,
-                                 ExceptionState& exception_state) {
+ScriptPromiseTyped<LockManagerSnapshot> LockManager::query(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   // Observed context may be gone if frame is detached.
   if (!GetExecutionContext()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kInvalidStateErrorMessage);
-    return ScriptPromise();
+    return ScriptPromiseTyped<LockManagerSnapshot>();
   }
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
@@ -435,15 +439,16 @@ ScriptPromise LockManager::query(ScriptState* script_state,
   if (!context->GetSecurityOrigin()->CanAccessLocks()) {
     exception_state.ThrowSecurityError(
         "Access to the Locks API is denied in this context.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<LockManagerSnapshot>();
   }
   if (context->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(context, WebFeature::kFileAccessedLocks);
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<LockManagerSnapshot>>(
+          script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
 
   CheckStorageAccessAllowed(
       context, resolver,
@@ -452,7 +457,8 @@ ScriptPromise LockManager::query(ScriptState* script_state,
   return promise;
 }
 
-void LockManager::QueryImpl(ScriptPromiseResolver* resolver) {
+void LockManager::QueryImpl(
+    ScriptPromiseResolverTyped<LockManagerSnapshot>* resolver) {
   ExecutionContext* context = resolver->GetExecutionContext();
   if (!service_.is_bound()) {
     context->GetBrowserInterfaceBroker().GetInterface(
@@ -465,7 +471,7 @@ void LockManager::QueryImpl(ScriptPromiseResolver* resolver) {
   }
 
   service_->QueryState(WTF::BindOnce(
-      [](ScriptPromiseResolver* resolver,
+      [](ScriptPromiseResolverTyped<LockManagerSnapshot>* resolver,
          Vector<mojom::blink::LockInfoPtr> pending,
          Vector<mojom::blink::LockInfoPtr> held) {
         LockManagerSnapshot* snapshot = LockManagerSnapshot::Create();

@@ -7,3 +7,8 @@
 const char kCommerceNotificationKey[] = "PRICE_DROP";
 const char kContentNotificationKey[] = "CONTENT";
 const char kTipsNotificationKey[] = "TIPS";
+const char kSportsNotificationKey[] = "SPORTS";
+
+NSString* const kContentNotificationFeedbackActionIdentifier = @"feedback";
+NSString* const kContentNotificationFeedbackCategoryIdentifier =
+    @"FEEDBACK_IDENTIFIER";

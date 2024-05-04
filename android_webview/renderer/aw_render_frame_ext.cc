@@ -45,6 +45,8 @@ using SecureContextRequired = autofill::AutofillAgent::SecureContextRequired;
 using UserGestureRequired = autofill::AutofillAgent::UserGestureRequired;
 using UsesKeyboardAccessoryForSuggestions =
     autofill::AutofillAgent::UsesKeyboardAccessoryForSuggestions;
+using EnableHeavyFormDataScraping =
+    autofill::PasswordAutofillAgent::EnableHeavyFormDataScraping;
 
 constexpr char kAddressPrefix[] = "geo:0,0?q=";
 constexpr char kEmailPrefix[] = "mailto:";
@@ -156,8 +158,8 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
   auto password_autofill_agent =
-      std::make_unique<autofill::PasswordAutofillAgent>(render_frame,
-                                                        &registry_);
+      std::make_unique<autofill::PasswordAutofillAgent>(
+          render_frame, &registry_, EnableHeavyFormDataScraping(false));
   new AutofillAgent(
       render_frame,
       {ExtractAllDatalists(true), FocusRequiresScroll(false),

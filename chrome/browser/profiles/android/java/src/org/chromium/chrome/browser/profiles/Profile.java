@@ -10,8 +10,6 @@ import androidx.annotation.VisibleForTesting;
 import org.jni_zero.CalledByNative;
 import org.jni_zero.NativeMethods;
 
-import org.chromium.base.ResettersForTesting;
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.content_public.browser.BrowserContextHandle;
@@ -19,8 +17,6 @@ import org.chromium.content_public.browser.WebContents;
 
 /** Wrapper that allows passing a Profile reference around in the Java layer. */
 public class Profile implements BrowserContextHandle {
-    private static Profile sLastUsedProfileForTesting;
-
     /** Holds OTRProfileID for OffTheRecord profiles. Is null for regular profiles. */
     @Nullable private final OTRProfileID mOTRProfileID;
 
@@ -34,24 +30,6 @@ public class Profile implements BrowserContextHandle {
         } else {
             mOTRProfileID = null;
         }
-    }
-
-    /**
-     * Returns the regular (i.e., not off-the-record) profile.
-     *
-     * Note: The function name uses the "last used" terminology for consistency with
-     * profile_manager.cc which supports multiple regular profiles.
-     */
-    public static Profile getLastUsedRegularProfile() {
-        if (sLastUsedProfileForTesting != null) {
-            return sLastUsedProfileForTesting;
-        }
-        ThreadUtils.assertOnUiThread();
-        // TODO(crbug.com/704025): turn this into an assert once the bug is fixed
-        if (!ProfileManager.isInitialized()) {
-            throw new IllegalStateException("Browser hasn't finished initialization yet!");
-        }
-        return (Profile) ProfileJni.get().getLastUsedRegularProfile();
     }
 
     /**
@@ -83,15 +61,6 @@ public class Profile implements BrowserContextHandle {
         if (!profile.isOffTheRecord()) return BrowserProfileType.REGULAR;
         if (profile.isPrimaryOTRProfile()) return BrowserProfileType.INCOGNITO;
         return BrowserProfileType.OTHER_OFF_THE_RECORD_PROFILE;
-    }
-
-    /**
-     * Destroys the Profile.  Destruction is delayed until all associated
-     * renderers have been killed, so the profile might not be destroyed upon returning from
-     * this call.
-     */
-    public void destroyWhenAppropriate() {
-        ProfileJni.get().destroyWhenAppropriate(mNativeProfileAndroid, Profile.this);
     }
 
     public Profile getOriginalProfile() {
@@ -223,19 +192,9 @@ public class Profile implements BrowserContextHandle {
         return mNativeProfileAndroid;
     }
 
-    /** Sets for testing the profile to be returned by {@link #getLastUsedRegularProfile()}. */
-    public static void setLastUsedProfileForTesting(Profile profile) {
-        sLastUsedProfileForTesting = profile;
-        ResettersForTesting.register(() -> sLastUsedProfileForTesting = null);
-    }
-
     @NativeMethods
     public interface Natives {
-        Object getLastUsedRegularProfile();
-
         Object fromWebContents(WebContents webContents);
-
-        void destroyWhenAppropriate(long nativeProfileAndroid, Profile caller);
 
         Object getOriginalProfile(long nativeProfileAndroid, Profile caller);
 

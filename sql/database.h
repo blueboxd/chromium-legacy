@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <optional>
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/dcheck_is_on.h"
@@ -27,6 +27,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
+#include "base/thread_annotations.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/types/pass_key.h"
 #include "sql/internal_api_token.h"
@@ -260,8 +261,10 @@ struct COMPONENT_EXPORT(SQL) DatabaseDiagnostics {
 
 // Handle to an open SQLite database.
 //
-// Instances of this class are not thread-safe. After construction, a Database
-// instance should only be accessed from one sequence.
+// Instances of this class are not thread-safe. With few exceptions, Database
+// instances should only be accessed from one sequence. Database instances may
+// be constructed on one sequence and safely used/destroyed on another. Callers
+// may explicitly use `DetachFromSequence()` before moving to another sequence.
 //
 // When a Database instance goes out of scope, any uncommitted transactions are
 // rolled back.
@@ -401,6 +404,10 @@ class COMPONENT_EXPORT(SQL) Database {
   // Returns true if the database has been successfully opened.
   bool is_open() const;
 
+  // Detach from the currently-attached sequence. If already attached to a
+  // sequence, this method must be called from that sequence.
+  void DetachFromSequence();
+
   // Closes the database. This is automatically performed on destruction for
   // you, but this allows you to close the database early. You must not call
   // any other functions after closing it. It is permissable to call Close on
@@ -500,7 +507,7 @@ class COMPONENT_EXPORT(SQL) Database {
 
   bool HasActiveTransactions() const {
     DCHECK_GE(transaction_nesting_, 0);
-    return transaction_nesting_ > 0;
+    return is_open() && transaction_nesting_ > 0;
   }
 
   // Deprecated in favor of HasActiveTransactions().
@@ -515,15 +522,14 @@ class COMPONENT_EXPORT(SQL) Database {
   //
   // `attachment_point` must only contain lowercase letters.
   //
-  // Attachment APIs are only exposed for use in recovery. General use is
-  // discouraged in Chrome. The README has more details.
+  // Use is generally discouraged in production code. The README has more
+  // details.
   //
   // On the SQLite version shipped with Chrome (3.21+, Oct 2017), databases can
   // be attached while a transaction is opened. However, these databases cannot
   // be detached until the transaction is committed or aborted.
   bool AttachDatabase(const base::FilePath& other_db_path,
-                      base::StringPiece attachment_point,
-                      InternalApiToken);
+                      base::StringPiece attachment_point);
 
   // Detaches a database that was previously attached with AttachDatabase().
   //
@@ -532,7 +538,7 @@ class COMPONENT_EXPORT(SQL) Database {
   //
   // Attachment APIs are only exposed for use in recovery. General use is
   // discouraged in Chrome. The README has more details.
-  bool DetachDatabase(base::StringPiece attachment_point, InternalApiToken);
+  bool DetachDatabase(base::StringPiece attachment_point);
 
   // Statements ----------------------------------------------------------------
 
@@ -707,6 +713,7 @@ class COMPONENT_EXPORT(SQL) Database {
   static base::FilePath SharedMemoryFilePath(const base::FilePath& db_path);
 
   // Internal state accessed by other classes in //sql.
+  base::WeakPtr<Database> GetWeakPtr(InternalApiToken);
   sqlite3* db(InternalApiToken) const { return db_; }
   bool poisoned(InternalApiToken) const { return poisoned_; }
   base::FilePath DbPath(InternalApiToken) const { return DbPath(); }

@@ -478,7 +478,7 @@ BaseFetchContext::CheckCSPForRequestInternal(
   }
 
   ContentSecurityPolicy* csp =
-      GetContentSecurityPolicyForWorld(options.world_for_csp.get());
+      GetContentSecurityPolicyForWorld(options.world_for_csp.Get());
   if (csp &&
       !csp->AllowRequest(request_context, request_destination, url,
                          options.content_security_policy_nonce,
@@ -569,7 +569,7 @@ BaseFetchContext::CanRequestInternal(
   }
 
   if (type == ResourceType::kScript) {
-    if (!AllowScriptFromSource(url)) {
+    if (!AllowScript()) {
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
       // this check has nothing to do with CSP. https://crbug.com/600795
       return ResourceRequestBlockedReason::kCSP;

@@ -41,7 +41,7 @@ const char kGenericErrorMessage[] =
 const char kAbortErrorMessage[] = "The operation was aborted due to shutdown.";
 
 void QueryStorageUsageAndQuotaCallback(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<StorageEstimate>* resolver,
     mojom::blink::QuotaStatusCode status_code,
     int64_t usage_in_bytes,
     int64_t quota_in_bytes,
@@ -106,18 +106,19 @@ StorageManager::StorageManager(ExecutionContext* execution_context)
 
 StorageManager::~StorageManager() = default;
 
-ScriptPromise StorageManager::persist(ScriptState* script_state,
-                                      ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLBoolean> StorageManager::persist(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   DCHECK(window->IsSecureContext());  // [SecureContext] in IDL
   if (window->GetSecurityOrigin()->IsOpaque()) {
     exception_state.ThrowTypeError(kUniqueOriginErrorMessage);
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLBoolean>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLBoolean>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   GetPermissionService(window)->RequestPermission(
       CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
@@ -128,20 +129,21 @@ ScriptPromise StorageManager::persist(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise StorageManager::persisted(ScriptState* script_state,
-                                        ExceptionState& exception_state) {
+ScriptPromiseTyped<IDLBoolean> StorageManager::persisted(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
   const SecurityOrigin* security_origin =
       execution_context->GetSecurityOrigin();
   if (security_origin->IsOpaque()) {
     exception_state.ThrowTypeError(kUniqueOriginErrorMessage);
-    return ScriptPromise();
+    return ScriptPromiseTyped<IDLBoolean>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLBoolean>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   GetPermissionService(ExecutionContext::From(script_state))
       ->HasPermission(
@@ -151,8 +153,9 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise StorageManager::estimate(ScriptState* script_state,
-                                       ExceptionState& exception_state) {
+ScriptPromiseTyped<StorageEstimate> StorageManager::estimate(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
 
@@ -164,12 +167,13 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state,
       execution_context->GetSecurityOrigin();
   if (security_origin->IsOpaque()) {
     exception_state.ThrowTypeError(kUniqueOriginErrorMessage);
-    return ScriptPromise();
+    return ScriptPromiseTyped<StorageEstimate>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<StorageEstimate>>(
+          script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
 
   auto callback = resolver->WrapCallbackInScriptScope(
       WTF::BindOnce(&QueryStorageUsageAndQuotaCallback));
@@ -243,7 +247,7 @@ void StorageManager::PermissionServiceConnectionError() {
 }
 
 void StorageManager::PermissionRequestComplete(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolverTyped<IDLBoolean>* resolver,
     mojom::blink::PermissionStatus status) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed())

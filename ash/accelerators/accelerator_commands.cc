@@ -628,6 +628,11 @@ bool CanToggleOverview() {
   return true;
 }
 
+bool CanTogglePicker() {
+  CHECK(Shell::HasInstance());
+  return features::IsPickerUpdateEnabled() && Shell::Get()->picker_controller();
+}
+
 bool CanTogglePrivacyScreen() {
   CHECK(Shell::HasInstance());
   return Shell::Get()->privacy_screen_controller()->IsSupported();
@@ -1105,11 +1110,7 @@ void ShiftPrimaryDisplay() {
 }
 
 void ShowEmojiPicker(const base::TimeTicks accelerator_timestamp) {
-  if (auto* picker_controller = Shell::Get()->picker_controller()) {
-    picker_controller->ToggleWidget(accelerator_timestamp);
-  } else {
-    ui::ShowEmojiPanel();
-  }
+  ui::ShowEmojiPanel();
 }
 
 void ShowKeyboardShortcutViewer() {
@@ -1310,6 +1311,13 @@ void ToggleClipboardHistory(bool is_plain_text_paste) {
       is_plain_text_paste);
 }
 
+void TogglePicker(base::TimeTicks accelerator_timestamp) {
+  CHECK(Shell::Get()->picker_controller());
+  if (auto* picker_controller = Shell::Get()->picker_controller()) {
+    picker_controller->ToggleWidget(accelerator_timestamp);
+  }
+}
+
 void EnableOrToggleDictation() {
   Shell::Get()->accessibility_controller()->EnableOrToggleDictationFromSource(
       DictationToggleSource::kKeyboard);
@@ -1429,7 +1437,7 @@ void ToggleGameDashboard() {
   DCHECK(window);
   if (auto* context =
           GameDashboardController::Get()->GetGameDashboardContext(window)) {
-    context->ToggleMainMenu();
+    context->ToggleMainMenuByAccelerator();
   }
 }
 

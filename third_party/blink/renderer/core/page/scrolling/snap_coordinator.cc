@@ -23,6 +23,9 @@ namespace blink {
 namespace {
 // This is experimentally determined and corresponds to the UA decided
 // parameter as mentioned in spec.
+// If changing this, consider modifying
+// web_tests/fast/scrolling/area-at-exact-proximity-range-doesnt-crash.html
+// accordingly.
 constexpr float kProximityRatio = 1.0 / 3.0;
 
 cc::SnapAlignment AdjustForRtlWritingMode(cc::SnapAlignment align) {
@@ -88,6 +91,8 @@ bool SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
   gfx::PointF max_position = scrollable_area->ScrollOffsetToPosition(
       scrollable_area->MaximumScrollOffset());
   snap_container_data.set_max_position(max_position);
+  snap_container_data.set_targeted_area_id(
+      scrollable_area->GetTargetedSnapAreaId());
 
   // Scroll-padding represents inward offsets from the corresponding edge of
   // the scrollport.

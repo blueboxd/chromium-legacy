@@ -7,10 +7,19 @@
 #include <limits>
 #include <memory>
 #include <utility>
+#include <vector>
 
+#include "ash/app_list/app_collections_constants.h"
+#include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/views/app_list_keyboard_controller.h"
+#include "ash/app_list/views/app_list_nudge_controller.h"
+#include "ash/app_list/views/app_list_toast_container_view.h"
+#include "ash/app_list/views/apps_collection_section_view.h"
 #include "ash/controls/rounded_scroll_bar.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
@@ -20,8 +29,8 @@
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view.h"
 
-using views::BoxLayout;
 namespace ash {
 
 namespace {
@@ -32,7 +41,8 @@ constexpr auto kVerticalScrollInsets = gfx::Insets::TLBR(1, 0, 16, 1);
 
 // The padding between different sections within the apps collections page. Also
 // used for interior page container margin.
-constexpr int kVerticalPaddingBetweenSections = 16;
+constexpr int kVerticalPaddingBetweenSections = 8;
+constexpr int kVerticalPaddingBetweenNudgeAndSections = 8;
 
 // The horizontal interior margin for the apps page container - i.e. the margin
 // between the page bounds and the page content.
@@ -57,7 +67,16 @@ constexpr base::TimeDelta kShowPageAnimationOpacityDuration =
 
 }  // namespace
 
-AppListBubbleAppsCollectionsPage::AppListBubbleAppsCollectionsPage() {
+AppListBubbleAppsCollectionsPage::AppListBubbleAppsCollectionsPage(
+    AppListViewDelegate* view_delegate,
+    AppListConfig* app_list_config,
+    AppListA11yAnnouncer* a11y_announcer,
+    base::OnceClosure exit_page_callback)
+    : view_delegate_(view_delegate),
+      app_list_config_(app_list_config),
+      app_list_nudge_controller_(std::make_unique<AppListNudgeController>()),
+      exit_page_callback_(std::move(exit_page_callback)) {
+  AppListModelProvider::Get()->AddObserver(this);
   SetUseDefaultFillLayout(true);
 
   // The entire page scrolls.
@@ -84,17 +103,44 @@ AppListBubbleAppsCollectionsPage::AppListBubbleAppsCollectionsPage() {
   scroll_view_->SetVerticalScrollBar(std::move(vertical_scroll));
 
   auto scroll_contents = std::make_unique<views::View>();
-  auto* layout = scroll_contents->SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::Orientation::kVertical,
-      gfx::Insets::VH(kVerticalPaddingBetweenSections,
-                      kHorizontalInteriorMargin),
+  auto* layout =
+      scroll_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical,
+          gfx::Insets::VH(kVerticalPaddingBetweenNudgeAndSections,
+                          kHorizontalInteriorMargin),
+          kVerticalPaddingBetweenNudgeAndSections));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kStretch);
+
+  // Add a empty container view. A toast view should be added to
+  // `toast_container_` for user ed.
+  toast_container_ =
+      scroll_contents->AddChildView(std::make_unique<AppListToastContainerView>(
+          app_list_nudge_controller_.get(), /*keyboard_controller=*/nullptr,
+          a11y_announcer, view_delegate,
+          /*delegate=*/this,
+          /*tablet_mode=*/false));
+
+  AppListModel* const model = AppListModelProvider::Get()->model();
+
+  sections_container_ =
+      scroll_contents->AddChildView(std::make_unique<views::View>());
+  sections_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets::VH(kVerticalPaddingBetweenSections, 0),
       kVerticalPaddingBetweenSections));
-  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
+
+  PopulateCollections(model);
 
   scroll_view_->SetContents(std::move(scroll_contents));
+  toast_container_->CreateTutorialNudgeView();
+  toast_container_->UpdateVisibilityState(
+      AppListToastContainerView::VisibilityState::kShown);
 }
 
-AppListBubbleAppsCollectionsPage::~AppListBubbleAppsCollectionsPage() = default;
+AppListBubbleAppsCollectionsPage::~AppListBubbleAppsCollectionsPage() {
+  AppListModelProvider::Get()->RemoveObserver(this);
+}
 
 void AppListBubbleAppsCollectionsPage::AnimateShowPage() {
   // If skipping animations, just update visibility.
@@ -174,13 +220,31 @@ void AppListBubbleAppsCollectionsPage::AnimateHidePage() {
 }
 
 void AppListBubbleAppsCollectionsPage::AbortAllAnimations() {
-  if (scroll_view_->contents()->layer()) {
-    scroll_view_->contents()->layer()->GetAnimator()->AbortAllAnimations();
+  auto abort_animations = [](views::View* view) {
+    if (view->layer()) {
+      view->layer()->GetAnimator()->AbortAllAnimations();
+    }
+  };
+  abort_animations(scroll_view_->contents());
+  if (toast_container_) {
+    abort_animations(toast_container_);
   }
+  abort_animations(sections_container_);
+}
+
+void AppListBubbleAppsCollectionsPage::OnNudgeRemoved() {
+  CHECK(exit_page_callback_);
+
+  std::move(exit_page_callback_).Run();
 }
 
 ui::Layer* AppListBubbleAppsCollectionsPage::GetPageAnimationLayerForTest() {
   return scroll_view_->contents()->layer();
+}
+
+AppListToastContainerView*
+AppListBubbleAppsCollectionsPage::GetToastContainerViewForTest() {
+  return toast_container_;
 }
 
 void AppListBubbleAppsCollectionsPage::SetVisibilityAfterAnimation(
@@ -193,7 +257,31 @@ void AppListBubbleAppsCollectionsPage::SetVisibilityAfterAnimation(
   layer->SetTransform(gfx::Transform());
 }
 
-BEGIN_METADATA(AppListBubbleAppsCollectionsPage, views::View)
+void AppListBubbleAppsCollectionsPage::OnActiveAppListModelsChanged(
+    AppListModel* model,
+    SearchModel* search_model) {
+  PopulateCollections(model);
+}
+
+void AppListBubbleAppsCollectionsPage::PopulateCollections(
+    AppListModel* model) {
+  sections_container_->RemoveAllChildViews();
+  if (!model) {
+    return;
+  }
+
+  std::vector<AppCollection> available_collections = GetAppCollections();
+  for (AppCollection collection : available_collections) {
+    AppsCollectionSectionView* collection_view =
+        sections_container_->AddChildView(
+            std::make_unique<AppsCollectionSectionView>(collection,
+                                                        view_delegate_));
+    collection_view->UpdateAppListConfig(app_list_config_);
+    collection_view->SetModel(model);
+  }
+}
+
+BEGIN_METADATA(AppListBubbleAppsCollectionsPage)
 END_METADATA
 
 }  // namespace ash

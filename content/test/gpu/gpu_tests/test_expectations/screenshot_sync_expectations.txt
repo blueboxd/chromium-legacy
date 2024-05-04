@@ -5,7 +5,7 @@
 #         chromeos
 #         fuchsia
 #         linux ubuntu
-#         mac highsierra mojave catalina bigsur monterey ventura
+#         mac highsierra mojave catalina bigsur monterey ventura sonoma
 #         win win8 win10 win11 ]
 # Devices
 # tags: [ android-nexus-5x android-pixel-2 android-pixel-4
@@ -100,11 +100,12 @@
 ###################
 # Non-"Skip" expectations go here to suppress regular flakes/failures.
 
-# Broadly flaky unsymbolized crashes on Jacuzzi
-crbug.com/1518007 [ chromeos cros-chrome chromeos-board-jacuzzi ] ScreenshotSync_* [ RetryOnFailure ]
 
 crbug.com/324934210 [ mac intel angle-metal passthrough asan graphite-enabled ] ScreenshotSync_GPURasterWithDivs [ RetryOnFailure ]
 crbug.com/324934210 [ mac intel angle-metal passthrough asan graphite-enabled ] ScreenshotSync_GPURasterWithCanvas [ RetryOnFailure ]
+
+crbug.com/414481724 [ fuchsia fuchsia-board-qemu-x64 ] ScreenshotSync_SWRasterWithCanvas [ Failure ]
+crbug.com/414481724 [ fuchsia fuchsia-board-qemu-x64 ] ScreenshotSync_SWRasterWithDivs [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

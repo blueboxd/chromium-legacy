@@ -114,24 +114,26 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
   ~BottomAlignedBoxLayout() override {}
 
  private:
-  void Layout(View* host) override {
-    if (host->height() >= host->GetPreferredSize().height() ||
+  void LayoutImpl() override {
+    if (host_view()->height() >= host_view()->GetPreferredSize().height() ||
         !bubble_view_->is_gesture_dragging()) {
-      BoxLayout::Layout(host);
+      views::BoxLayout::LayoutImpl();
       return;
     }
 
     int consumed_height = 0;
-    for (auto i = host->children().rbegin();
-         i != host->children().rend() && consumed_height < host->height();
+    for (auto i = host_view()->children().rbegin();
+         i != host_view()->children().rend() &&
+         consumed_height < host_view()->height();
          ++i) {
       View* child = *i;
       if (!child->GetVisible()) {
         continue;
       }
       gfx::Size size = child->GetPreferredSize();
-      child->SetBounds(0, host->height() - consumed_height - size.height(),
-                       host->width(), size.height());
+      child->SetBounds(0,
+                       host_view()->height() - consumed_height - size.height(),
+                       host_view()->width(), size.height());
       consumed_height += size.height();
     }
   }
@@ -533,11 +535,11 @@ gfx::Size TrayBubbleView::CalculatePreferredSize() const {
 
 int TrayBubbleView::GetHeightForWidth(int width) const {
   width = std::max(width - GetInsets().width(), 0);
-  const auto visible_height = [width](int height, const views::View* child) {
-    return height + (child->GetVisible() ? child->GetHeightForWidth(width) : 0);
-  };
-  const int height = std::accumulate(children().cbegin(), children().cend(),
-                                     GetInsets().height(), visible_height);
+  const int height = std::transform_reduce(
+      children().cbegin(), children().cend(), GetInsets().height(),
+      std::plus<>(), [width](const views::View* child) {
+        return child->GetVisible() ? child->GetHeightForWidth(width) : 0;
+      });
   if (params_.use_fixed_height) {
     return (params_.max_height != 0) ? params_.max_height : height;
   }

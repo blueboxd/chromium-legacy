@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/url_data_source.h"
@@ -63,6 +64,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -426,14 +428,21 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
       return;
     }
     case ash::WallpaperType::kSeaPen: {
+      const base::FilePath path(info->location);
+      const std::optional<uint32_t> id = GetIdFromFileName(path);
+      if (!id.has_value()) {
+        NotifyWallpaperChanged(nullptr);
+        NotifyAttributionChanged(nullptr);
+        return;
+      }
       // TODO(b/307757290) send a unique key and set description content.
-      const std::string key = info->user_file_path;
       NotifyWallpaperChanged(
           ash::personalization_app::mojom::CurrentWallpaper::New(
-              info->layout, info->type, key,
+              info->layout, info->type,
+              /*key=*/base::NumberToString(id.value()),
               /*description_title=*/std::string(),
               /*description_content=*/std::string()));
-      FindSeaPenWallpaperAttribution(base::FilePath(info->user_file_path));
+      FindSeaPenWallpaperAttribution(id.value());
       return;
     }
     case ash::WallpaperType::kCount:
@@ -1091,59 +1100,47 @@ void PersonalizationAppWallpaperProviderImpl::FindImageMetadataInCollection(
 }
 
 void PersonalizationAppWallpaperProviderImpl::FindSeaPenWallpaperAttribution(
-    const base::FilePath& user_file_path) {
+    const uint32_t id) {
   auto* wallpaper_controller = WallpaperController::Get();
   DCHECK(wallpaper_controller);
 
   wallpaper_controller->GetSeaPenMetadata(
-      GetAccountId(profile_), user_file_path,
+      GetAccountId(profile_), id,
       base::BindOnce(&PersonalizationAppWallpaperProviderImpl::
                          SendSeaPenWallpaperAttribution,
-                     weak_ptr_factory_.GetWeakPtr(), user_file_path));
+                     weak_ptr_factory_.GetWeakPtr(), id));
 }
 
 void PersonalizationAppWallpaperProviderImpl::SendSeaPenWallpaperAttribution(
-    const base::FilePath& user_file_path,
+    const uint32_t id,
     std::optional<base::Value::Dict> sea_pen_metadata) {
-  DVLOG(3) << __func__ << "file_path: " << user_file_path << " metadata: "
+  DVLOG(3) << __func__ << " id: " << id << " metadata: "
            << (sea_pen_metadata.has_value() ? sea_pen_metadata->DebugString()
                                             : "null");
   if (!sea_pen_metadata.has_value()) {
-    LOG(ERROR) << __func__ << " unknown attribution data";
+    DVLOG(1) << __func__ << " the extracted metadata is not in JSON format";
     NotifyAttributionChanged(
         ash::personalization_app::mojom::CurrentAttribution::New(
-            std::vector<std::string>(), user_file_path.value()));
+            std::vector<std::string>(), base::NumberToString(id)));
+    return;
+  }
+
+  auto sea_pen_image_info =
+      ash::SeaPenQueryDictToRecentImageInfo(std::move(*sea_pen_metadata));
+  if (!sea_pen_image_info) {
+    NotifyAttributionChanged(
+        ash::personalization_app::mojom::CurrentAttribution::New(
+            std::vector<std::string>(), base::NumberToString(id)));
     return;
   }
 
   std::vector<std::string> attribution;
-
-  auto* freeform_query =
-      sea_pen_metadata->FindString(ash::kSeaPenFreeformQueryKey);
-  if (freeform_query) {
-    // The Sea Pen wallpaper was generated from a freeform query.
-    attribution.push_back(*freeform_query);
-    NotifyAttributionChanged(
-        ash::personalization_app::mojom::CurrentAttribution::New(
-            attribution, user_file_path.value()));
-    return;
-  }
-
-  // Otherwise, it should be generated from a template query, get the user
-  // visible query and add into `attributions`.
-  auto* user_visible_query_text =
-      sea_pen_metadata->FindString(ash::kSeaPenUserVisibleQueryTextKey);
-  if (user_visible_query_text) {
-    attribution.push_back(*user_visible_query_text);
-  }
-  auto* user_visible_query_template =
-      sea_pen_metadata->FindString(ash::kSeaPenUserVisibleQueryTemplateKey);
-  if (user_visible_query_template) {
-    attribution.push_back(*user_visible_query_template);
-  }
+  attribution.push_back(sea_pen_image_info->user_visible_query->text);
+  attribution.push_back(
+      l10n_util::GetStringUTF8(IDS_SEA_PEN_POWERED_BY_GOOGLE_AI));
   NotifyAttributionChanged(
       ash::personalization_app::mojom::CurrentAttribution::New(
-          attribution, user_file_path.value()));
+          attribution, base::NumberToString(id)));
 }
 
 void PersonalizationAppWallpaperProviderImpl::SendGooglePhotosAttribution(

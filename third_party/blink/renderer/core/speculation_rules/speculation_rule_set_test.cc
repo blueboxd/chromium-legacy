@@ -2324,7 +2324,7 @@ TEST_F(DocumentRulesTest, LinkInShadowTreeIncluded) {
 
   Document& document = page_holder.GetDocument();
   ShadowRoot& shadow_root =
-      document.body()->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      document.body()->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   auto* shadow_tree_link = AddAnchor(shadow_root, "https://foo.com/bar.html");
   AddAnchor(*document.body(), "https://foo.com/unslotted");
 
@@ -2528,7 +2528,7 @@ TEST_F(DocumentRulesTest, DisconnectedLinkInShadowTree) {
   PropagateRulesToStubSpeculationHost(page_holder, speculation_host, [&]() {
     div = MakeGarbageCollected<HTMLDivElement>(document);
     ShadowRoot& shadow_root =
-        div->AttachShadowRootForTesting(ShadowRootType::kOpen);
+        div->AttachShadowRootForTesting(ShadowRootMode::kOpen);
     link = AddAnchor(shadow_root, "https://foo.com/blah.html");
     document.body()->AppendChild(div);
   });
@@ -2626,8 +2626,8 @@ TEST_F(DocumentRulesTest, LinkReferrerPolicy) {
   const auto& console_message_storage =
       page_holder.GetPage().GetConsoleMessageStorage();
   EXPECT_EQ(console_message_storage.size(), 1u);
-  EXPECT_EQ(console_message_storage.at(0)->Nodes()[0],
-            link_with_disallowed_referrer->GetDomNodeId());
+  EXPECT_THAT(console_message_storage.at(0)->Nodes(),
+              testing::Contains(link_with_disallowed_referrer->GetDomNodeId()));
 }
 
 // Tests that changing the "referrerpolicy" attribute results in the
@@ -3131,7 +3131,7 @@ TEST_F(DocumentRulesTest, SelectorMatchesInsideShadowTree) {
   Document& document = page_holder.GetDocument();
 
   ShadowRoot& shadow_root =
-      document.body()->AttachShadowRootForTesting(ShadowRootType::kOpen);
+      document.body()->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   shadow_root.setInnerHTML(R"HTML(
     <div id="important-section"></div>
     <div id="unimportant-section"></div>
@@ -3464,7 +3464,7 @@ TEST_F(DocumentRulesTest, LinksWithoutComputedStyle) {
   // stop being rendered. It should trigger an update and be removed from
   // the candidate list.
   PropagateRulesToStubSpeculationHost(page_holder, speculation_host, [&]() {
-    important_section->AttachShadowRootForTesting(ShadowRootType::kOpen);
+    important_section->AttachShadowRootForTesting(ShadowRootMode::kOpen);
   });
   EXPECT_THAT(candidates, HasURLs());
 }

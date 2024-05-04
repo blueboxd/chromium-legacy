@@ -121,7 +121,7 @@ BrowsingHistoryService::HistoryEntry::HistoryEntry(
     const GURL& remote_icon_url_for_uma,
     int visit_count,
     int typed_count,
-    absl::optional<std::string> app_id)
+    std::optional<std::string> app_id)
     : entry_type(entry_type),
       url(url),
       title(title),
@@ -734,7 +734,7 @@ void BrowsingHistoryService::WebHistoryQueryComplete(
               HistoryEntry::REMOTE_ENTRY, gurl, title, time, client_id,
               !state->search_text.empty(), std::u16string(),
               /* blocked_visit */ false, GURL(favicon_url), 0, 0,
-              /*app_id= */ absl::nullopt));
+              /*app_id= */ std::nullopt));
         }
       }
     }

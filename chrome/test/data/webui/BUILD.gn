@@ -22,6 +22,7 @@ source_set("browser_tests") {
   testonly = true
 
   sources = [
+    "about_sys/about_sys_browsertest.cc",
     "access_code_cast/access_code_cast_browsertest.cc",
     "bookmarks/bookmarks_browsertest.cc",
     "chrome_timeticks_browsertest.cc",
@@ -59,6 +60,7 @@ source_set("browser_tests") {
     "side_panel/customize_chrome/customize_chrome_browsertest.cc",
     "side_panel/performance_controls/performance_controls_browsertest.cc",
     "side_panel/read_anything/read_anything_browsertest.cc",
+    "side_panel/reading_list/reading_list_browsertest.cc",
     "side_panel/user_notes/user_notes_browsertest.cc",
     "sync_internals/sync_internals_browsertest.cc",
     "tab_search/tab_search_browsertest.cc",
@@ -243,10 +245,7 @@ source_set("interactive_ui_tests") {
 if (is_chromeos_ash) {
   group("closure_compile") {
     testonly = true
-    deps = [
-      "chromeos:closure_compile",
-      "cr_components/chromeos:closure_compile",
-    ]
+    deps = [ "chromeos:closure_compile" ]
   }
 }
 
@@ -323,6 +322,7 @@ ts_library("build_ts") {
     "//ui/webui/resources/js:build_ts",
   ]
   definitions = [
+    "//tools/typescript/definitions/chrome_event.d.ts",
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/chrome_timeticks.d.ts",
     "//tools/typescript/definitions/dom_automation_controller.d.ts",
@@ -341,6 +341,7 @@ generate_grd("build_grd") {
     ":build_chai_grdp",
     ":build_mocha_grdp",
     ":build_ts",
+    "about_sys:build_grdp",
     "access_code_cast:build_grdp",
     "bookmarks:build_grdp",
     "commerce_internals:build_grdp",
@@ -383,6 +384,7 @@ generate_grd("build_grd") {
   ]
 
   grdp_files = [
+    "$target_gen_dir/about_sys/resources.grdp",
     "$target_gen_dir/access_code_cast/resources.grdp",
     "$target_gen_dir/bookmarks/resources.grdp",
     "$target_gen_dir/chai_resources.grdp",

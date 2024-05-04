@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/omnibox/browser/autocomplete_controller_emitter.h"
@@ -131,6 +132,13 @@ gfx::Image ChromeOmniboxClient::GetFavicon() const {
       ->GetFavicon();
 }
 
+ukm::SourceId ChromeOmniboxClient::GetUKMSourceId() const {
+  return CurrentPageExists() ? location_bar_->GetWebContents()
+                                   ->GetPrimaryMainFrame()
+                                   ->GetPageUkmSourceId()
+                             : ukm::kInvalidSourceId;
+}
+
 bool ChromeOmniboxClient::IsLoading() const {
   return location_bar_->GetWebContents()->IsLoading();
 }
@@ -157,7 +165,7 @@ PrefService* ChromeOmniboxClient::GetPrefs() {
   return profile_->GetPrefs();
 }
 
-bookmarks::BookmarkModel* ChromeOmniboxClient::GetBookmarkModel() {
+bookmarks::CoreBookmarkModel* ChromeOmniboxClient::GetBookmarkModel() {
   return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
@@ -477,7 +485,7 @@ void ChromeOmniboxClient::OnAutocompleteAccept(
   location_bar_->set_navigation_params(LocationBar::NavigationParams(
       destination_url, disposition, transition, match_selection_timestamp,
       destination_url_entered_without_scheme,
-      destination_url_entered_with_http_scheme));
+      destination_url_entered_with_http_scheme, match.extra_headers));
 
   if (browser_) {
     auto navigation = chrome::OpenCurrentURL(browser_);

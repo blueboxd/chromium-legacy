@@ -13,6 +13,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.matches;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -38,7 +39,7 @@ import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController.SyncPromoState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -72,7 +73,9 @@ public class AccountBookmarkTest {
         BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.NO_PROMO);
         mBookmarkModel =
                 runOnUiThreadBlocking(
-                        () -> BookmarkModel.getForProfile(Profile.getLastUsedRegularProfile()));
+                        () ->
+                                BookmarkModel.getForProfile(
+                                        ProfileManager.getLastUsedRegularProfile()));
         mSyncTestRule.setUpAccountAndSignInForTesting();
         mBookmarkManagerCoordinator =
                 mBookmarkTestRule.showBookmarkManager(mSyncTestRule.getActivity());
@@ -127,13 +130,26 @@ public class AccountBookmarkTest {
         onView(withText("test")).check(matches(isDisplayed()));
     }
 
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testDefaultFolders() {
+        CriteriaHelper.pollUiThread(() -> mBookmarkModel.getAccountMobileFolderId() != null);
+        runOnUiThreadBlocking(
+                () -> {
+                    assertEquals(
+                            mBookmarkModel.getAccountMobileFolderId(),
+                            mBookmarkModel.getDefaultBookmarkFolder());
+                });
+    }
+
     private void checkTopLevelAccountFoldersDisplayed() {
+        // TODO(crbug.com/1510547): This is currently broken because the account reading list
+        // folder doesn't show up without a restart. This should be updated once that folder is
+        // available.
         checkToolbarTitleMatches("Bookmarks");
         onView(withText("In your Google Account")).check(matches(isDisplayed()));
         BookmarkTestUtil.getRecyclerRowViewInteraction("Mobile bookmarks", true)
-                .check(matches(isDisplayed()));
-        onView(withText("Only on this device")).check(matches(isDisplayed()));
-        BookmarkTestUtil.getRecyclerRowViewInteraction("Mobile bookmarks", false)
                 .check(matches(isDisplayed()));
         BookmarkTestUtil.getRecyclerRowViewInteraction("Reading list", false)
                 .check(matches(isDisplayed()));

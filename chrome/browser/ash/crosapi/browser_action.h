@@ -7,9 +7,9 @@
 
 #include <cstdint>
 #include <optional>
+#include <string_view>
 
 #include "base/containers/queue.h"
-#include "base/strings/string_piece.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "components/tab_groups/tab_group_info.h"
@@ -47,8 +47,8 @@ class BrowserAction {
       int64_t target_display_id,
       std::optional<uint64_t> profile_id = std::nullopt);
   static std::unique_ptr<BrowserAction> NewWindowForDetachingTab(
-      base::StringPiece16 tab_id_str,
-      base::StringPiece16 group_id_str,
+      std::u16string_view tab_id_str,
+      std::u16string_view group_id_str,
       NewWindowForDetachingTabCallback callback);
   static std::unique_ptr<BrowserAction> NewGuestWindow(int64_t target_display);
   static std::unique_ptr<BrowserAction> NewFullscreenWindow(
@@ -60,6 +60,8 @@ class BrowserAction {
       crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition,
       crosapi::mojom::OpenUrlFrom from,
       NavigateParams::PathBehavior path_behavior);
+  static std::unique_ptr<BrowserAction> OpenCaptivePortalSignin(
+      const GURL& url);
   static std::unique_ptr<BrowserAction> OpenForFullRestore(
       bool skip_crash_restore);
   static std::unique_ptr<BrowserAction> RestoreTab();
@@ -73,7 +75,7 @@ class BrowserAction {
       ui::WindowShowState show_state,
       int32_t active_tab_index,
       int32_t first_non_pinned_tab_index,
-      base::StringPiece app_name,
+      std::string_view app_name,
       int32_t restore_window_id,
       uint64_t lacros_profile_id);
   static std::unique_ptr<BrowserAction> OpenProfileManager();
@@ -110,25 +112,6 @@ class BrowserAction {
 
  private:
   const bool is_queueable_;
-};
-
-// A queue of queueable actions.
-class BrowserActionQueue {
- public:
-  BrowserActionQueue();
-  ~BrowserActionQueue();
-
-  // Enqueues |action| if it is queueable. Cancels it otherwise.
-  void PushOrCancel(std::unique_ptr<BrowserAction> action,
-                    mojom::CreationResult cancel_reason);
-
-  void Push(std::unique_ptr<BrowserAction> action);
-  std::unique_ptr<BrowserAction> Pop();
-  bool IsEmpty() const;
-  void Clear();
-
- private:
-  base::queue<std::unique_ptr<BrowserAction>> actions_;
 };
 
 }  // namespace crosapi

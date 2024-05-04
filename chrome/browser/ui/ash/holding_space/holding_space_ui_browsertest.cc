@@ -43,6 +43,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_locale.h"
 #include "base/uuid.h"
@@ -80,6 +81,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -624,8 +626,8 @@ class HoldingSpaceUiDragAndDropBrowserTest
     return GetStorageLocationFlags() & flag;
   }
 
-  raw_ptr<DropSenderView> drop_sender_view_ = nullptr;
-  raw_ptr<DropTargetView> drop_target_view_ = nullptr;
+  raw_ptr<DropSenderView, DanglingUntriaged> drop_sender_view_ = nullptr;
+  raw_ptr<DropTargetView, DanglingUntriaged> drop_target_view_ = nullptr;
 };
 
 // Verifies that drag-and-drop of holding space items works.

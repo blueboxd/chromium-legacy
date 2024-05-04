@@ -241,6 +241,17 @@ suite('SiteSettingsPage', function() {
         '#storage-access'));
   });
 
+  test('AutomaticFullscreenRow', async function() {
+    const expandButton =
+        page.shadowRoot!.querySelector<CrExpandButtonElement>('#expandContent');
+    assertTrue(!!expandButton);
+    expandButton.click();
+    await expandButton.updateComplete;
+    assertTrue(isChildVisible(
+      page.shadowRoot!.querySelector('#advancedContentList')!,
+      '#automatic-fullscreen'));
+  });
+
   // TODO(crbug/1443466): Remove after SafetyHub is launched.
   test('UnusedSitePermissionsControlToggleExists', function() {
     assertTrue(isChildVisible(page, '#unusedSitePermissionsRevocationToggle'));
@@ -440,33 +451,6 @@ suite('UnusedSitePermissionsReviewDisabled', function() {
     await flushTasks();
 
     assertFalse(isChildVisible(page, 'settings-unused-site-permissions'));
-  });
-});
-
-suite('PermissionStorageAccessApiDisabled', function() {
-  let page: SettingsSiteSettingsPageElement;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      enablePermissionStorageAccessApi: false,
-    });
-  });
-
-  setup(function() {
-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
-    page = document.createElement('settings-site-settings-page');
-    document.body.appendChild(page);
-    flush();
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('StorageAccessLinkRow', function() {
-    assertFalse(isChildVisible(
-        page.shadowRoot!.querySelector('#basicPermissionsList')!,
-        '#storage-access'));
   });
 });
 

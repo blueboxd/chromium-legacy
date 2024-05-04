@@ -179,6 +179,7 @@ void Resource::Trace(Visitor* visitor) const {
   visitor->Trace(clients_awaiting_callback_);
   visitor->Trace(finished_clients_);
   visitor->Trace(finish_observers_);
+  visitor->Trace(options_);
   MemoryPressureListener::Trace(visitor);
 }
 
@@ -259,13 +260,13 @@ void Resource::AppendData(const char* data, size_t length) {
       data_ = SharedBuffer::Create(data, length);
     SetEncodedSize(data_->size());
   }
-  NotifyDataReceived(data, length);
+  NotifyDataReceived(base::span(data, length));
 }
 
-void Resource::NotifyDataReceived(const char* data, size_t length) {
+void Resource::NotifyDataReceived(base::span<const char> data) {
   ResourceClientWalker<ResourceClient> w(Clients());
   while (ResourceClient* c = w.Next())
-    c->DataReceived(this, data, length);
+    c->DataReceived(this, data);
 }
 
 void Resource::SetResourceBuffer(scoped_refptr<SharedBuffer> resource_buffer) {
@@ -570,7 +571,7 @@ String Resource::ReasonNotDeletable() const {
 void Resource::DidAddClient(ResourceClient* client) {
   if (scoped_refptr<SharedBuffer> data = Data()) {
     for (const auto& span : *data) {
-      client->DataReceived(this, span.data(), span.size());
+      client->DataReceived(this, span);
       // Stop pushing data if the client removed itself.
       if (!HasClient(client))
         break;

@@ -13,9 +13,8 @@ import './tab_organization_results.js';
 import './tab_organization_shared_style.css.js';
 
 import {CrFeedbackOption} from 'chrome://resources/cr_elements/cr_feedback_buttons/cr_feedback_buttons.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import type {TabOrganizationFailureElement} from './tab_organization_failure.js';
@@ -24,7 +23,7 @@ import type {TabOrganizationNotStartedElement} from './tab_organization_not_star
 import {getTemplate} from './tab_organization_page.html.js';
 import type {TabOrganizationResultsElement} from './tab_organization_results.js';
 import type {Tab, TabOrganization, TabOrganizationSession} from './tab_search.mojom-webui.js';
-import {TabOrganizationError, TabOrganizationState, UserFeedback} from './tab_search.mojom-webui.js';
+import {TabOrganizationState, UserFeedback} from './tab_search.mojom-webui.js';
 import type {TabSearchApiProxy} from './tab_search_api_proxy.js';
 import {TabSearchApiProxyImpl} from './tab_search_api_proxy.js';
 
@@ -47,12 +46,12 @@ export class TabOrganizationPageElement extends PolymerElement {
   static get properties() {
     return {
       state_: Object,
-      name_: String,
-      tabs_: Array,
-      error_: Object,
-      availableHeight_: Number,
-      isLastOrganization_: Boolean,
-      organizationId_: Number,
+      session_: Object,
+
+      availableHeight_: {
+        type: Number,
+        value: 0,
+      },
 
       tabOrganizationStateEnum_: {
         type: Object,
@@ -74,13 +73,8 @@ export class TabOrganizationPageElement extends PolymerElement {
   private apiProxy_: TabSearchApiProxy = TabSearchApiProxyImpl.getInstance();
   private listenerIds_: number[] = [];
   private state_: TabOrganizationState = TabOrganizationState.kInitializing;
-  private name_: string;
-  private tabs_: Tab[];
-  private error_: TabOrganizationError = TabOrganizationError.kNone;
-  private availableHeight_: number = 0;
-  private sessionId_: number = -1;
-  private organizationId_: number = -1;
-  private isLastOrganization_: boolean = false;
+  private availableHeight_: number;
+  private session_: TabOrganizationSession|null;
   private showFRE_: boolean;
   private multiTabOrganization_: boolean;
   private documentVisibilityChangedListener_: () => void;
@@ -123,9 +117,18 @@ export class TabOrganizationPageElement extends PolymerElement {
     document.removeEventListener(
         'visibilitychange', this.documentVisibilityChangedListener_);
 
-    if (this.sessionId_ > -1 && this.organizationId_ > -1) {
+    if (!this.session_) {
+      return;
+    }
+    if (this.multiTabOrganization_) {
+      this.session_.organizations.forEach((organization: TabOrganization) => {
+        this.apiProxy_.rejectTabOrganization(
+            this.session_!.sessionId, organization.organizationId);
+      });
+    } else {
       this.apiProxy_.rejectTabOrganization(
-          this.sessionId_, this.organizationId_);
+          this.session_.sessionId,
+          this.session_.organizations[0].organizationId);
     }
   }
 
@@ -157,17 +160,7 @@ export class TabOrganizationPageElement extends PolymerElement {
   }
 
   private setSession_(session: TabOrganizationSession) {
-    this.sessionId_ = session.sessionId;
-    this.error_ = session.error;
-    if (session.state === TabOrganizationState.kSuccess) {
-      const organization: TabOrganization = session.organizations[0];
-      this.name_ = mojoString16ToString(organization.name);
-      this.tabs_ = organization.tabs;
-      this.organizationId_ = organization.organizationId;
-      this.isLastOrganization_ = session.organizations.length === 1;
-    } else {
-      this.organizationId_ = -1;
-    }
+    this.session_ = session;
     this.maybeSetState_(session.state);
   }
 
@@ -194,35 +187,17 @@ export class TabOrganizationPageElement extends PolymerElement {
     if (!changedState) {
       return;
     }
-    switch (state) {
-      case TabOrganizationState.kInitializing:
-        break;
-      case TabOrganizationState.kNotStarted:
-        this.$.notStarted.announceHeader();
-        break;
-      case TabOrganizationState.kInProgress:
-        this.$.inProgress.announceHeader();
-        break;
-      case TabOrganizationState.kSuccess:
-        this.$.results.announceHeader();
-        // Wait until the new state is visible after the transition to focus on
-        // the new UI.
-        this.$.results.addEventListener('animationend', () => {
-          this.$.results.focusInput();
-        }, {once: true});
-        break;
-      case TabOrganizationState.kFailure:
-        this.$.failure.announceHeader();
-        break;
-      default:
-        assertNotReached('Invalid tab organization state');
-    }
-
-    // Ensure the loading state appears for a sufficient amount of time, so as
-    // to not appear jumpy if the request completes quickly.
     if (state === TabOrganizationState.kInProgress) {
+      // Ensure the loading state appears for a sufficient amount of time, so as
+      // to not appear jumpy if the request completes quickly.
       this.futureState_ = TabOrganizationState.kInProgress;
       setTimeout(() => this.applyFutureState_(), MIN_LOADING_ANIMATION_MS);
+    } else if (state === TabOrganizationState.kSuccess) {
+      // Wait until the new state is visible after the transition to focus on
+      // the new UI.
+      this.$.results.addEventListener('animationend', () => {
+        this.$.results.focusInput();
+      }, {once: true});
     }
   }
 
@@ -252,16 +227,30 @@ export class TabOrganizationPageElement extends PolymerElement {
     this.apiProxy_.requestTabOrganization();
   }
 
-  private onRefreshClick_() {
-    this.apiProxy_.rejectTabOrganization(this.sessionId_, this.organizationId_);
+  private onRejectClick_(event: CustomEvent<{organizationId: number}>) {
+    this.apiProxy_.rejectTabOrganization(
+        this.session_!.sessionId, event.detail.organizationId);
   }
 
-  private onCreateGroupClick_(event: CustomEvent<{name: string, tabs: Tab[]}>) {
-    this.name_ = event.detail.name;
-    this.tabs_ = event.detail.tabs;
+  private onRejectAllGroupsClick_() {
+    this.apiProxy_.rejectSession(this.session_!.sessionId);
+  }
 
+  private onCreateGroupClick_(
+      event: CustomEvent<{organizationId: number, name: string, tabs: Tab[]}>) {
     this.apiProxy_.acceptTabOrganization(
-        this.sessionId_, this.organizationId_, this.name_, this.tabs_);
+        this.session_!.sessionId, event.detail.organizationId,
+        event.detail.name, event.detail.tabs);
+  }
+
+  private onCreateAllGroupsClick_(event: CustomEvent<{
+    organizations: Array<{organizationId: number, name: string, tabs: Tab[]}>,
+  }>) {
+    event.detail.organizations.forEach((organization) => {
+      this.apiProxy_.acceptTabOrganization(
+          this.session_!.sessionId, organization.organizationId,
+          organization.name, organization.tabs);
+    });
   }
 
   private onCheckNow_() {
@@ -272,9 +261,10 @@ export class TabOrganizationPageElement extends PolymerElement {
     this.apiProxy_.startTabGroupTutorial();
   }
 
-  private onRemoveTab_(event: CustomEvent<{tab: Tab}>) {
+  private onRemoveTab_(event: CustomEvent<{organizationId: number, tab: Tab}>) {
     this.apiProxy_.removeTabFromOrganization(
-        this.sessionId_, this.organizationId_, event.detail.tab);
+        this.session_!.sessionId, event.detail.organizationId,
+        event.detail.tab);
   }
 
   private onLearnMoreClick_() {
@@ -282,24 +272,34 @@ export class TabOrganizationPageElement extends PolymerElement {
   }
 
   private onFeedback_(event: CustomEvent<{value: CrFeedbackOption}>) {
-    switch (event.detail.value) {
-      case CrFeedbackOption.UNSPECIFIED:
-        this.apiProxy_.setUserFeedback(
-            this.sessionId_, this.organizationId_,
-            UserFeedback.kUserFeedBackUnspecified);
-        return;
-      case CrFeedbackOption.THUMBS_UP:
-        this.apiProxy_.setUserFeedback(
-            this.sessionId_, this.organizationId_,
-            UserFeedback.kUserFeedBackPositive);
-        return;
-      case CrFeedbackOption.THUMBS_DOWN:
-        this.apiProxy_.setUserFeedback(
-            this.sessionId_, this.organizationId_,
-            UserFeedback.kUserFeedBackNegative);
-        // Show feedback dialog
-        this.apiProxy_.triggerFeedback(this.sessionId_);
-        return;
+    if (!this.session_) {
+      return;
+    }
+    const organizations: TabOrganization[] = this.multiTabOrganization_ ?
+        this.session_.organizations :
+        this.session_.organizations.slice(0, 1);
+    organizations.forEach((organization) => {
+      switch (event.detail.value) {
+        case CrFeedbackOption.UNSPECIFIED:
+          this.apiProxy_.setUserFeedback(
+              this.session_!.sessionId, organization.organizationId,
+              UserFeedback.kUserFeedBackUnspecified);
+          break;
+        case CrFeedbackOption.THUMBS_UP:
+          this.apiProxy_.setUserFeedback(
+              this.session_!.sessionId, organization.organizationId,
+              UserFeedback.kUserFeedBackPositive);
+          break;
+        case CrFeedbackOption.THUMBS_DOWN:
+          this.apiProxy_.setUserFeedback(
+              this.session_!.sessionId, organization.organizationId,
+              UserFeedback.kUserFeedBackNegative);
+          break;
+      }
+    });
+    if (event.detail.value === CrFeedbackOption.THUMBS_DOWN) {
+      // Show feedback dialog
+      this.apiProxy_.triggerFeedback(this.session_.sessionId);
     }
   }
 }

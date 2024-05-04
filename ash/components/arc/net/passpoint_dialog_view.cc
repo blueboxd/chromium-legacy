@@ -135,9 +135,10 @@ gfx::Size PasspointDialogView::CalculatePreferredSize() const {
 
 void PasspointDialogView::AddedToWidget() {
   auto& view_ax = GetWidget()->GetRootView()->GetViewAccessibility();
-  view_ax.OverrideRole(ax::mojom::Role::kDialog);
-  view_ax.OverrideName(l10n_util::GetStringFUTF16(
-      IDS_ASH_ARC_PASSPOINT_APP_APPROVAL_TITLE, app_name_));
+  view_ax.SetRole(ax::mojom::Role::kDialog);
+  view_ax.SetName(l10n_util::GetStringFUTF16(
+                      IDS_ASH_ARC_PASSPOINT_APP_APPROVAL_TITLE, app_name_),
+                  ax::mojom::NameFrom::kAttribute);
 }
 
 int PasspointDialogView::GetLabelWidth() {
@@ -157,6 +158,7 @@ std::unique_ptr<views::View> PasspointDialogView::MakeBaseLabelView(
           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
           .SetAutoColorReadabilityEnabled(false)
           .Build();
+  styled_label->set_use_legacy_preferred_size(true);
 
   if (!is_expiring) {
     std::vector<size_t> offsets;
@@ -185,18 +187,21 @@ std::unique_ptr<views::View> PasspointDialogView::MakeSubscriptionLabelView(
       {ui::GetChromeOSDeviceName(), base::UTF8ToUTF16(friendly_name),
        learn_more},
       &offsets);
-  return views::Builder<views::StyledLabel>()
-      .CopyAddressTo(&body_subscription_text_)
-      .SetText(label)
-      .SizeToFit(GetLabelWidth())
-      .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-      .SetAutoColorReadabilityEnabled(false)
-      .AddStyleRange(
-          gfx::Range(offsets.back(), offsets.back() + learn_more.length()),
-          views::StyledLabel::RangeStyleInfo::CreateForLink(
-              base::BindRepeating(&PasspointDialogView::OnLearnMoreClicked,
-                                  weak_factory_.GetWeakPtr())))
-      .Build();
+  std::unique_ptr<views::StyledLabel> styled_label =
+      views::Builder<views::StyledLabel>()
+          .CopyAddressTo(&body_subscription_text_)
+          .SetText(label)
+          .SizeToFit(GetLabelWidth())
+          .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+          .SetAutoColorReadabilityEnabled(false)
+          .AddStyleRange(
+              gfx::Range(offsets.back(), offsets.back() + learn_more.length()),
+              views::StyledLabel::RangeStyleInfo::CreateForLink(
+                  base::BindRepeating(&PasspointDialogView::OnLearnMoreClicked,
+                                      weak_factory_.GetWeakPtr())))
+          .Build();
+  styled_label->set_use_legacy_preferred_size(true);
+  return styled_label;
 }
 
 std::unique_ptr<views::View> PasspointDialogView::MakeContentsView(

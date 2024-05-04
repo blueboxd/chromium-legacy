@@ -69,6 +69,9 @@ class CORE_EXPORT ScopedStyleResolver final
 
   StyleRulePositionFallback* PositionFallbackForName(
       const AtomicString& fallback_name);
+  StyleRulePositionTry* PositionTryForName(const AtomicString& try_name);
+
+  StyleRuleFunction* FunctionForName(StringView name);
 
   const FontFeatureValuesStorage* FontFeatureValuesForFamily(
       AtomicString font_family);
@@ -117,6 +120,8 @@ class CORE_EXPORT ScopedStyleResolver final
       const StyleRuleKeyframes* new_rule,
       const StyleRuleKeyframes* existing_rule) const;
   void AddPositionFallbackRules(const RuleSet&);
+  void AddPositionTryRules(const RuleSet&);
+  void AddFunctionRules(const RuleSet&);
 
   CounterStyleMap& EnsureCounterStyleMap();
 
@@ -138,6 +143,13 @@ class CORE_EXPORT ScopedStyleResolver final
   using PositionFallbackRuleMap =
       HeapHashMap<AtomicString, Member<StyleRulePositionFallback>>;
   PositionFallbackRuleMap position_fallback_rule_map_;
+
+  using PositionTryRuleMap =
+      HeapHashMap<AtomicString, Member<StyleRulePositionTry>>;
+  PositionTryRuleMap position_try_rule_map_;
+
+  using FunctionRuleMap = HeapHashMap<String, Member<StyleRuleFunction>>;
+  FunctionRuleMap function_rule_map_;
 
   // Multiple entries are created pointing to the same
   // StyleRuleFontFeatureValues for each mentioned family name in the

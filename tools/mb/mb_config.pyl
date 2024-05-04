@@ -32,16 +32,13 @@
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official_reclient',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_dchecks_reclient',
       'chromeos-brya-chrome-skylab': 'chromeos_brya_include_unwind_tables_official_skylab_reclient',
-      'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official_reclient',
       'chromeos-jacuzzi-chrome-skylab': 'chromeos_jacuzzi_include_unwind_tables_official_skylab_reclient',
-      'chromeos-octopus-chrome-skylab': 'chromeos_octopus_include_unwind_tables_official_skylab',
+      'chromeos-octopus-chrome': 'chromeos_octopus_include_unwind_tables_official_skylab',
       'chromeos-reven-chrome': 'chromeos_reven_include_unwind_tables_official_dchecks_reclient',
       'chromeos-volteer-chrome-skylab': 'chromeos_volteer_include_unwind_tables_official_skylab_reclient',
-      'lacros-amd64-generic-chrome-skylab': 'chromeos_amd64-generic_lacros_official_skylab_reclient',
-      'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official_reclient',
-      'lacros-arm-generic-chrome-skylab': 'chromeos_arm-generic_lacros_official_skylab_reclient',
-      'lacros-arm64-generic-chrome': 'chromeos_arm64-generic_lacros_official_reclient',
-      'lacros-arm64-generic-chrome-skylab': 'chromeos_arm64-generic_lacros_official_skylab_reclient',
+      'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official_skylab_reclient',
+      'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official_skylab_reclient',
+      'lacros-arm64-generic-chrome': 'chromeos_arm64-generic_lacros_official_skylab_reclient',
       # Don't include unwind tables for linux-/mac-/win-/win64-chrome builders.
       # They monitor binary size growth, which may be affected by the tables.
       'linux-chrome': 'official_reclient',
@@ -64,7 +61,6 @@
       'android-arm32-pgo': 'official_android_arm32_pgo',
       'android-arm64-pgo': 'official_android_arm64_pgo',
       'lacros-amd64-generic-pgo': 'official_lacros_amd64_pgo',
-      'lacros-arm-generic-pgo': 'official_lacros_arm_pgo',
       'lacros-arm64-generic-pgo': 'official_lacros_arm64_pgo',
       'linux-pgo': 'official_linux_pgo',
       'mac-arm-pgo': 'official_mac_arm_pgo',
@@ -229,6 +225,7 @@
       'optimization_guide-linux': 'optimization_guide_rel',
       'optimization_guide-mac-arm64': 'optimization_guide_mac_arm64_rel',
       'optimization_guide-mac-x64': 'optimization_guide_rel',
+      'optimization_guide-win-arm64': 'optimization_guide_win_arm64_rel',
       'optimization_guide-win32': 'optimization_guide_x86_rel',
       'optimization_guide-win64': 'optimization_guide_rel',
     },
@@ -254,7 +251,6 @@
       'chromeos-betty-pi-arc-finch-smoke-chrome': 'chromeos_betty-pi-arc_dchecks',
       'chromeos-brya-chrome-dchecks-skylab': 'chromeos_brya_include_unwind_tables_official_dchecks_skylab_reclient',
       'chromeos-brya-chrome-skylab': 'chromeos_brya_include_unwind_tables_official_skylab',
-      'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official_dchecks',
       'chromeos-eve-compile-chrome': 'chromeos_eve_include_unwind_tables_official_dchecks',
       'chromeos-jacuzzi-chrome': 'chromeos_jacuzzi_include_unwind_tables_official',
@@ -294,7 +290,6 @@
       'android-arm32-pgo': 'official_android_arm32_pgo',
       'android-arm64-pgo': 'official_android_arm64_pgo',
       'lacros-amd64-generic-pgo': 'official_lacros_amd64_pgo',
-      'lacros-arm-generic-pgo': 'official_lacros_arm_pgo',
       'lacros-arm64-generic-pgo': 'official_lacros_arm64_pgo',
       'linux-pgo': 'official_linux_pgo',
       'mac-arm-pgo': 'official_mac_arm_pgo',
@@ -342,6 +337,7 @@
       'optimization_guide-linux': 'optimization_guide_rel',
       'optimization_guide-mac-arm64': 'optimization_guide_mac_arm64_rel',
       'optimization_guide-mac-x64': 'optimization_guide_rel',
+      'optimization_guide-win-arm64': 'optimization_guide_win_arm64_rel',
       'optimization_guide-win32': 'optimization_guide_x86_rel',
       'optimization_guide-win64': 'optimization_guide_rel',
     },
@@ -507,13 +503,6 @@
       'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
-    'chromeos_eve-arc-r_include_unwind_tables_official': [
-      'chromeos_device', 'eve-arc-r', 'include_unwind_tables', 'official',
-    ],
-    'chromeos_eve-arc-r_include_unwind_tables_official_reclient': [
-      'chromeos_device_reclient', 'eve-arc-r', 'include_unwind_tables', 'official', 'ozone_headless'
-    ],
-
     'chromeos_eve_include_unwind_tables_official_dchecks': [
       'chromeos_device', 'eve', 'include_unwind_tables', 'official', 'dcheck_always_on',
       'also_build_lacros_chrome_for_architecture_amd64',
@@ -625,7 +614,7 @@
 
     'codesearch_gen_chromium_cronet_bot_reclient': [
       # Set is_cronet_build to true in order to build cronet.
-      'codesearch_reclient', 'android_without_codecs', 'static', 'is_cronet_build',
+      'codesearch_cronet_reclient', 'android_without_codecs', 'static', 'is_cronet_build',
       'cronet_android', 'arm_no_neon',
     ],
 
@@ -785,10 +774,6 @@
       'official', 'release', 'lacros', 'arm64-generic-crostoolchain', 'chromeos_device_reclient', 'no_symbols', 'pgo_phase_1',
     ],
 
-    'official_lacros_arm_pgo': [
-      'official', 'release', 'lacros', 'arm-generic-crostoolchain', 'chromeos_device_reclient', 'no_symbols', 'pgo_phase_1',
-    ],
-
     'official_linux_perf': [
       'official', 'reclient', 'no_gnome_keyring', 'minimal_symbols', 'pgo_phase_0',
     ],
@@ -912,7 +897,7 @@
     ],
 
     'optimization_guide_android_arm64_rel': [
-      'minimal_symbols', 'optimization_guide', 'reclient', 'release', 'android', 'arm64',
+      'minimal_symbols', 'reclient', 'release', 'android', 'arm64',
     ],
 
     'optimization_guide_cros_rel': [
@@ -925,6 +910,10 @@
 
     'optimization_guide_rel': [
       'minimal_symbols', 'ml_internal', 'no_widevine_cdm_host_verification', 'official', 'optimization_guide', 'pgo_phase_0', 'reclient', 'release',
+    ],
+
+    'optimization_guide_win_arm64_rel': [
+      'minimal_symbols', 'ml_internal', 'official', 'optimization_guide', 'pgo_phase_0', 'reclient', 'release', 'x86', 'arm64'
     ],
 
     'optimization_guide_x86_rel': [
@@ -1166,6 +1155,12 @@
       'mixins': ['clang'],
     },
 
+    # Same as regulary codesearch without blink_enable_generated_code_formatting
+    'codesearch_cronet_reclient': {
+      'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
+      'mixins': ['reclient', 'clang', 'shared', 'debug', 'minimal_symbols'],
+    },
+
     # Same as regular codesearch except ios does not allow component builds
     'codesearch_ios_reclient': {
       'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
@@ -1204,8 +1199,8 @@
       'gn_args': ('disable_file_support=true '
                   'enable_websockets=false '
                   'include_transport_security_state_preload_list=false '
-		  'is_cronet_build=true '
-                  'use_crash_key_stubs=true use_platform_icu_alternatives=true')
+                  'is_cronet_build=true '
+                  'use_platform_icu_alternatives=true ')
     },
 
     'custom_args': {
@@ -1243,10 +1238,6 @@
 
     'eve': {
       'args_file': '//build/args/chromeos/eve.gni',
-    },
-
-    'eve-arc-r': {
-      'args_file': '//build/args/chromeos/eve-arc-r.gni',
     },
 
     'ffmpeg_branding_chrome': {

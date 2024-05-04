@@ -131,7 +131,7 @@ that, our goal is to pass them actionable reports with little ambiguity.
   by the [Security FAQ](faq.md), such as those related physically local attacks
   or inputting JavaScript in the URL bar or running Javascript directly in
   DevTools not being an indication of an XSS vulnerability. Mark as WontFix and
-  update the 'Issue access level' to `Default Visibility` so the issue is
+  update the 'Issue access level' to `Default access` so the issue is
   publicly visible.
 * **Mark as duplicate** – we want exactly one bug per root cause problem. Please
   check for duplicate issues of a given issue from that or other reporters /
@@ -140,22 +140,27 @@ that, our goal is to pass them actionable reports with little ambiguity.
     tracker.
   * If there are two open reports of the same issue, please merge as a duplicate
     in the direction of the oldest report.
+  * Use the `Mark as Duplicate` button at the upper right of the report pane.
+    This will provide a pop-up to input the bug number of the canonical report
+    that you are merging this report into as a duplicate of.
+    * Using `Mark as Duplicate` is the best practice for merging issues as
+      duplicates.
+
 * **Convert functional bugs to Type=Bug** For example, many reports are for
   crashes of a functional nature, rather than an exploitable security condition,
   such as most null pointer dereferences. Convert such reports from
   Type=Vulnerability to Type=Bug. Do NOT remove security@chromium.org from
   collaborators first (as this will result in orphaning the bug), but update the
   'Issue Access Level' to the appropriate visibility. You may consider adding
-  other visibility restrictions, such as `Limited Visibility + Googlers` and
-  select / add edit-bug-access@chromium.org to the 'Add collaborator groups'
-  (this is similar to 'Restrict-View-EditAccess' in the legacy issue tracker)
-  if the immediate disclosure could result in potential abuse (e.g. denial of
-  service issue).
+  other visibility restrictions, such as `Limited visibility + Googlers` and add
+  edit-bug-access@chromium.org to CC (this is similar to
+  'Restrict-View-EditAccess' in the legacy issue tracker) if the immediate
+  disclosure could result in potential abuse (e.g. denial of service issue).
 * **Convert to a privacy bug** - privacy issues (such as issues with incognito)
   are not considered security bugs, but functional privacy issues.
   Convert to Type=Bug and add the Privacy component. Add yourself and any other
   security team members who may potentially need access to the cc: line.
-  Update the 'Issue access level' to `Limited Visibility + Googlers` and
+  Update the 'Issue access level' to `Limited visibility + Googlers` and
   deselect / remove security@chromium.org from the 'add collaborator groups'.
 * **Add the `Needs-Feedback` hotlist (hotlistID: 5433459) and set a Next Action
   date of 24-48 hours for more information** if there is no response, close the
@@ -361,8 +366,18 @@ pass it along to / include someone who can direct it more precisely.
     * [Report incorrect phishing warning](https://safebrowsing.google.com/safebrowsing/report_error/?hl=en)
   * Googlers: see instructions at [go/safebrowsing-escalation](https://goto.google.com/safebrowsing-escalation)
   * Report suspected malicious file attachments to SafeBrowsing.
-* Make sure the report is properly forwarded when the vulnerability is in an
-  **upstream project**, the OS, or some other dependency.
+* If the report is in an upstream package that we pull into our tree via
+  `//third_party` or elsewhere:
+    * Ask the reporter to file a bug report upstream, if there is an active
+      upstream. If they can't / don't, or the report is from a bot
+      (clusterfuzz or similar), ask the `//third_party` package owner to file
+      it.
+    * For the downstream bug (the one on the Chromium tracker):
+        * Add the downstream bug to [the Status-External_Dependency hotlist](https://issues.chromium.org/hotlists/5438152).
+        * Assign that bug to an OWNER from the `//third_party` package.
+        * Ask that owner to ensure that the upstream bug is fixed, the
+          downstream copy in Chromium is rolled, and finally the
+          downstream bug is marked Fixed.
 * For vulnerabilities in services Chrome uses (e.g. Omaha, Chrome Web Store,
   SafeBrowsing), make sure the affected team is informed and has access to the
   necessary bugs.
@@ -370,7 +385,7 @@ pass it along to / include someone who can direct it more precisely.
     * Reproduce using an iOS device or desktop Safari.
     * Set Severity, Found In, and set Component Tags fields.
     * If the issue is in Webkit
-      * Add hotlist `Status_ExternalDependency` (hotlistID: 1067723)
+      * Add hotlist `Status_ExternalDependency` (hotlistID: [5438152](https://issues.chromium.org/hotlists/5438152))
       * If reported by an external VRP reporter, request they report the issue
       directly to Webkit and provide us the WebKit issue ID after they have done
       so.
@@ -498,7 +513,7 @@ VRP Panel members are also members of that chat.
 
 ### There is PII or other data in a report we do not want to publicly disclose.
 
-For these cases, please add the `SecurityEmbargo` hotlist (hotlistID: 1053360)
+For these cases, please add the `SecurityEmbargo` hotlist (hotlistID: 5432549)
 to the report. For cases of PII that can’t be permanently deleted for the
 report, this label should remain indefinitely.
 

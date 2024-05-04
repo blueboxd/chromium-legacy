@@ -74,26 +74,6 @@ TEST(OptimizationGuideFeaturesTest, ValidPageContentRAPPORMetrics) {
   EXPECT_EQ(.2, features::NoiseProbabilityForRAPPORMetrics());
 }
 
-TEST(OptimizationGuideFeaturesTest,
-     ShouldExecutePageEntitiesModelOnPageContentDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  scoped_feature_list.InitAndDisableFeature(
-      features::kPageEntitiesPageContentAnnotations);
-
-  EXPECT_FALSE(features::ShouldExecutePageEntitiesModelOnPageContent("en-US"));
-}
-
-TEST(OptimizationGuideFeaturesTest,
-     ShouldExecutePageEntitiesModelOnPageContentEmptyAllowlist) {
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  scoped_feature_list.InitAndEnableFeature(
-      features::kPageEntitiesPageContentAnnotations);
-
-  EXPECT_TRUE(features::ShouldExecutePageEntitiesModelOnPageContent("en-US"));
-}
-
 TEST(OptimizationGuideFeaturesTest, ModelQualityLoggingDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
 
@@ -111,6 +91,27 @@ TEST(OptimizationGuideFeaturesTest, ModelQualityLoggingDefault) {
       proto::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
   EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
       proto::MODEL_EXECUTION_FEATURE_TEST));
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_UNSPECIFIED));
+}
+
+TEST(OptimizationGuideFeaturesTest,
+     ModelQualityLoggingAlwaysDisabledForTestAndUnspecifiedFeatures) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kModelQualityLogging,
+      {{"model_execution_feature_test", "true"},
+       {"model_execution_feature_unspecified", "true"}});
+
+  EXPECT_TRUE(features::IsModelQualityLoggingEnabled());
+
+  // Test and Unspecified features should have logging always disabled not
+  // allowed to be controlled via finch.
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_TEST));
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_UNSPECIFIED));
 }
 
 TEST(OptimizationGuideFeaturesTest, ComposeModelQualityLoggingDisabled) {
@@ -150,19 +151,6 @@ TEST(OptimizationGuideFeaturesTest, ModelQualityLoggingDisabled) {
       proto::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
   EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
       proto::MODEL_EXECUTION_FEATURE_TEST));
-}
-
-TEST(OptimizationGuideFeaturesTest,
-     ShouldExecutePageEntitiesModelOnPageContentWithAllowlist) {
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kPageEntitiesPageContentAnnotations,
-      {{"supported_locales", "en,zh-TW"}});
-
-  EXPECT_TRUE(features::ShouldExecutePageEntitiesModelOnPageContent("en-US"));
-  EXPECT_FALSE(features::ShouldExecutePageEntitiesModelOnPageContent(""));
-  EXPECT_FALSE(features::ShouldExecutePageEntitiesModelOnPageContent("zh-CN"));
 }
 
 TEST(OptimizationGuideFeaturesTest,

@@ -179,10 +179,8 @@ class FrameInterfaceFactoryImpl : public media::mojom::FrameInterfaceFactory,
     // is, we should proceed with opening in MediaLicenseManager.
     if (base::FeatureList::IsEnabled(features::kCdmStorageDatabase) &&
         !base::FeatureList::IsEnabled(features::kCdmStorageDatabaseMigration)) {
-      CdmStorageManager* cdm_storage_manager =
-          static_cast<StoragePartitionImpl*>(
-              render_frame_host_->GetStoragePartition())
-              ->GetCdmStorageManager();
+      CdmStorageManager* cdm_storage_manager = static_cast<CdmStorageManager*>(
+          render_frame_host_->GetStoragePartition()->GetCdmStorageDataModel());
 
       cdm_storage_manager->OpenCdmStorage(
           CdmStorageBindingContext(storage_key, cdm_type_),
@@ -305,9 +303,17 @@ void MediaInterfaceProxy::CreateVideoDecoder(
   mojo::PendingRemote<media::stable::mojom::StableVideoDecoder>
       oop_video_decoder;
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
-  if (media::IsOutOfProcessVideoDecodingEnabled()) {
-    render_frame_host().GetProcess()->CreateStableVideoDecoder(
-        oop_video_decoder.InitWithNewPipeAndPassReceiver());
+  switch (media::GetOutOfProcessVideoDecodingMode()) {
+    case media::OOPVDMode::kEnabledWithGpuProcessAsProxy:
+      render_frame_host().GetProcess()->CreateStableVideoDecoder(
+          oop_video_decoder.InitWithNewPipeAndPassReceiver());
+      break;
+    case media::OOPVDMode::kEnabledWithoutGpuProcessAsProxy:
+      // Well-behaved clients shouldn't call CreateVideoDecoder() in this OOP-VD
+      // mode.
+      return;
+    case media::OOPVDMode::kDisabled:
+      break;
   }
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
   factory->CreateVideoDecoder(std::move(receiver),

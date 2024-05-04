@@ -146,10 +146,11 @@ class PictureInPictureWindowManager {
   // picture window bounds are only adjusted when, the requested window size
   // would cause the minimum inner window size to be smaller than the allowed
   // minimum (|GetMinimumInnerWindowSize|).
-  gfx::Rect AdjustPictureInPictureWindowBounds(
+  gfx::Rect CalculateOuterWindowBounds(
       const blink::mojom::PictureInPictureWindowOptions& pip_options,
       const display::Display& display,
-      const gfx::Size& minimum_window_size);
+      const gfx::Size& minimum_window_size,
+      const gfx::Size& excluded_margin);
 
   // Update the most recent window bounds for the pip window in the cache.  Call
   // this when the pip window moves or resizes, though it's okay if not every
@@ -173,6 +174,9 @@ class PictureInPictureWindowManager {
   void RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);
   }
+
+  // Notify observers that picture-in-picture window is created.
+  void NotifyObserversOnEnterPictureInPicture();
 
 #if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<AutoPipSettingOverlayView> GetOverlayView(
@@ -204,13 +208,6 @@ class PictureInPictureWindowManager {
   class DocumentWebContentsObserver;
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-  // Helper method Used to calculate the outer window bounds for Document
-  // picture-in-picture windows only.
-  gfx::Rect CalculatePictureInPictureWindowBounds(
-      const blink::mojom::PictureInPictureWindowOptions& pip_options,
-      const display::Display& display,
-      const gfx::Size& minimum_outer_window_size);
-
   // Create a Picture-in-Picture window and register it in order to be closed
   // when needed.
   // This is suffixed with "Internal" because `CreateWindow` is part of the
@@ -221,13 +218,6 @@ class PictureInPictureWindowManager {
   // There MUST be a window open.
   // This is suffixed with "Internal" to keep consistency with the method above.
   void CloseWindowInternal();
-
-  template <typename Functor>
-  void NotifyObservers(const Functor& functor) {
-    for (Observer& observer : observers_) {
-      std::invoke(functor, observer);
-    }
-  }
 
 #if !BUILDFLAG(IS_ANDROID)
   // Called when the document PiP parent web contents is being destroyed.

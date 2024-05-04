@@ -499,7 +499,8 @@ DesksController::GetVisibleOnAllDesksWindowsOnRoot(
     aura::Window* root_window) const {
   DCHECK(root_window->IsRootWindow());
   base::flat_set<aura::Window*> filtered_visible_on_all_desks_windows;
-  for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
+  for (aura::Window* visible_on_all_desks_window :
+       visible_on_all_desks_windows_) {
     if (visible_on_all_desks_window->GetRootWindow() == root_window)
       filtered_visible_on_all_desks_windows.insert(visible_on_all_desks_window);
   }
@@ -510,11 +511,8 @@ void DesksController::RestorePrimaryUserActiveDeskIndex(int active_desk_index) {
   DCHECK_GE(active_desk_index, 0);
   DCHECK_LT(active_desk_index, static_cast<int>(desks_.size()));
   user_to_active_desk_index_[GetPrimaryUserAccountId()] = active_desk_index;
-  // Following |OnActiveUserSessionChanged| approach, restoring uses
-  // DesksSwitchSource::kUserSwitch as a desk switch source.
-  // TODO(crbug.com/1145404): consider adding an UMA metric for desks
-  // restoring to change the source to kDeskRestored.
-  ActivateDesk(desks_[active_desk_index].get(), DesksSwitchSource::kUserSwitch);
+  ActivateDesk(desks_[active_desk_index].get(),
+               DesksSwitchSource::kDeskRestored);
 }
 
 void DesksController::OnNewUserShown() {
@@ -762,7 +760,8 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
 
   // If we are switching users, we don't want to notify desks of content changes
   // until the user switch animation has shown the new user's windows.
-  const bool is_user_switch = source == DesksSwitchSource::kUserSwitch;
+  const bool is_user_switch = source == DesksSwitchSource::kUserSwitch ||
+                              source == DesksSwitchSource::kDeskRestored;
   std::optional<Desk::ScopedContentUpdateNotificationDisabler>
       desks_scoped_notify_disabler;
   if (is_user_switch) {
@@ -2287,7 +2286,8 @@ void DesksController::MoveVisibleOnAllDesksWindowsFromActiveDeskTo(
   auto* mru_tracker = Shell::Get()->mru_window_tracker();
   mru_tracker->SetIgnoreActivations(true);
 
-  for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
+  for (aura::Window* visible_on_all_desks_window :
+       visible_on_all_desks_windows_) {
     MoveWindowFromActiveDeskTo(
         visible_on_all_desks_window, new_desk,
         visible_on_all_desks_window->GetRootWindow(),
@@ -2325,7 +2325,8 @@ void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
 
   auto mru_windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
-  for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
+  for (aura::Window* visible_on_all_desks_window :
+       visible_on_all_desks_windows_) {
     // If the window is floated, it will always be on top, so there is no need
     // to restack it.
     if (WindowState::Get(visible_on_all_desks_window)->IsFloated()) {

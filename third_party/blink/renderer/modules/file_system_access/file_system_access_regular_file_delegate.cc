@@ -11,8 +11,8 @@
 #include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/mojom/file_system_access/file_system_access_capacity_allocation_host.mojom-blink.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_handle.mojom-blink.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_file_modification_host.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_access_capacity_tracker.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -29,12 +29,12 @@ FileSystemAccessFileDelegate* FileSystemAccessFileDelegate::Create(
     mojom::blink::FileSystemAccessRegularFilePtr regular_file) {
   base::File backing_file = std::move(regular_file->os_file);
   int64_t backing_file_size = regular_file->file_size;
-  mojo::PendingRemote<mojom::blink::FileSystemAccessCapacityAllocationHost>
-      capacity_allocation_host_remote =
-          std::move(regular_file->capacity_allocation_host);
+  mojo::PendingRemote<mojom::blink::FileSystemAccessFileModificationHost>
+      file_modification_host_remote =
+          std::move(regular_file->file_modification_host);
   return MakeGarbageCollected<FileSystemAccessRegularFileDelegate>(
       context, std::move(backing_file), backing_file_size,
-      std::move(capacity_allocation_host_remote),
+      std::move(file_modification_host_remote),
       base::PassKey<FileSystemAccessFileDelegate>());
 }
 
@@ -42,8 +42,8 @@ FileSystemAccessRegularFileDelegate::FileSystemAccessRegularFileDelegate(
     ExecutionContext* context,
     base::File backing_file,
     int64_t backing_file_size,
-    mojo::PendingRemote<mojom::blink::FileSystemAccessCapacityAllocationHost>
-        capacity_allocation_host_remote,
+    mojo::PendingRemote<mojom::blink::FileSystemAccessFileModificationHost>
+        file_modification_host_remote,
     base::PassKey<FileSystemAccessFileDelegate>)
     :
 #if BUILDFLAG(IS_MAC)
@@ -53,7 +53,7 @@ FileSystemAccessRegularFileDelegate::FileSystemAccessRegularFileDelegate(
       backing_file_(std::move(backing_file)),
       capacity_tracker_(MakeGarbageCollected<FileSystemAccessCapacityTracker>(
           context,
-          std::move(capacity_allocation_host_remote),
+          std::move(file_modification_host_remote),
           backing_file_size,
           base::PassKey<FileSystemAccessRegularFileDelegate>())),
       task_runner_(context->GetTaskRunner(TaskType::kStorage)) {

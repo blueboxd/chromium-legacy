@@ -20,7 +20,7 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 
 namespace blink {
-
+class Blob;
 class ExceptionState;
 class ImageBitmap;
 class ImageCaptureFrameGrabber;
@@ -60,9 +60,9 @@ class MODULES_EXPORT ImageCapture final
 
   MediaStreamTrack* videoStreamTrack() const { return stream_track_.Get(); }
 
-  ScriptPromise getPhotoCapabilities(ScriptState*);
-  ScriptPromise getPhotoSettings(ScriptState*);
-  ScriptPromise takePhoto(ScriptState*, const PhotoSettings*);
+  ScriptPromiseTyped<PhotoCapabilities> getPhotoCapabilities(ScriptState*);
+  ScriptPromiseTyped<PhotoSettings> getPhotoSettings(ScriptState*);
+  ScriptPromiseTyped<Blob> takePhoto(ScriptState*, const PhotoSettings*);
   ScriptPromiseTyped<ImageBitmap> grabFrame(ScriptState*);
 
   bool CheckAndApplyMediaTrackConstraintsToSettings(
@@ -121,7 +121,7 @@ class MODULES_EXPORT ImageCapture final
   // Called when we get an updated PTZ permission value from the browser.
   void OnPermissionStatusChange(mojom::blink::PermissionStatus) override;
 
-  ScriptPromise GetMojoPhotoState(ScriptState*, PromiseResolverFunction);
+  void GetMojoPhotoState(ScriptPromiseResolver*, PromiseResolverFunction);
   void OnMojoGetPhotoState(ScriptPromiseResolver*,
                            PromiseResolverFunction,
                            bool trigger_take_photo,

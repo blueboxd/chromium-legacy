@@ -44,8 +44,8 @@ void KcerFactoryLacros::StartInitializingKcerWithoutNss(
   if (!IsPrimaryContext(context) || !lacros_service ||
       !lacros_service->IsAvailable<crosapi::mojom::CertDatabase>()) {
     return KcerFactory::InitializeKcerInstanceWithoutNss(
-        kcer_service, /*user_token_id=*/absl::nullopt,
-        /*device_token_id=*/absl::nullopt);
+        kcer_service, /*user_token_id=*/std::nullopt,
+        /*device_token_id=*/std::nullopt);
   }
 
   // `Unretained` is safe, the factory is never destroyed.
@@ -64,10 +64,10 @@ void KcerFactoryLacros::OnCertDbInfoReceived(
     return;
   }
 
-  absl::optional<SessionChapsClient::SlotId> user_token_id(
+  std::optional<SessionChapsClient::SlotId> user_token_id(
       cert_db_info->private_slot_id);
 
-  absl::optional<SessionChapsClient::SlotId> device_token_id;
+  std::optional<SessionChapsClient::SlotId> device_token_id;
   if (cert_db_info->enable_system_slot) {
     device_token_id = SessionChapsClient::SlotId(cert_db_info->system_slot_id);
   }
@@ -80,6 +80,9 @@ void KcerFactoryLacros::OnCertDbInfoReceived(
 // time this is used in production, the minimal supported version of Ash should
 // also always have the interface.
 bool KcerFactoryLacros::EnsureHighLevelChapsClientInitialized() {
+  if (did_shutdown_) {
+    return false;
+  }
   if (session_chaps_client_ && high_level_chaps_client_) {
     return true;
   }

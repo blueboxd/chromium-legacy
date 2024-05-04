@@ -203,6 +203,13 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "Shared Tab Group Data",
      sync_pb::EntitySpecifics::kSharedTabGroupDataFieldNumber,
      ModelTypeForHistograms::kSharedTabGroupData},
+    {COLLABORATION_GROUP, "COLLABORATION_GROUP", "collaboration_group",
+     "Collaboration Group",
+     sync_pb::EntitySpecifics::kCollaborationGroupFieldNumber,
+     ModelTypeForHistograms::kCollaborationGroup},
+    {PLUS_ADDRESS, "PLUS_ADDRESS", "plus_address", "Plus Address",
+     sync_pb::EntitySpecifics::kPlusAddressFieldNumber,
+     ModelTypeForHistograms::kPlusAddresses},
     // ---- Control Types ----
     {NIGORI, "NIGORI", "nigori", "Encryption Keys",
      sync_pb::EntitySpecifics::kNigoriFieldNumber,
@@ -212,7 +219,7 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(std::size(kModelTypeInfoMap) == GetNumModelTypes(),
               "kModelTypeInfoMap should have GetNumModelTypes() elements");
 
-static_assert(49 == syncer::GetNumModelTypes(),
+static_assert(51 == syncer::GetNumModelTypes(),
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
@@ -292,6 +299,9 @@ constexpr kSpecificsFieldNumberToModelTypeMap
          OUTGOING_PASSWORD_SHARING_INVITATION},
         {sync_pb::EntitySpecifics::kSharedTabGroupDataFieldNumber,
          SHARED_TAB_GROUP_DATA},
+        {sync_pb::EntitySpecifics::kCollaborationGroupFieldNumber,
+         COLLABORATION_GROUP},
+        {sync_pb::EntitySpecifics::kPlusAddressFieldNumber, PLUS_ADDRESS},
         // ---- Control Types ----
         {sync_pb::EntitySpecifics::kNigoriFieldNumber, NIGORI},
     });
@@ -448,6 +458,12 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case SHARED_TAB_GROUP_DATA:
       specifics->mutable_shared_tab_group_data();
       break;
+    case COLLABORATION_GROUP:
+      specifics->mutable_collaboration_group();
+      break;
+    case PLUS_ADDRESS:
+      specifics->mutable_plus_address();
+      break;
   }
 }
 
@@ -476,7 +492,7 @@ void internal::GetModelTypeSetFromSpecificsFieldNumberListHelper(
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(49 == syncer::GetNumModelTypes(),
+  static_assert(51 == syncer::GetNumModelTypes(),
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -581,6 +597,12 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_shared_tab_group_data()) {
     return SHARED_TAB_GROUP_DATA;
   }
+  if (specifics.has_collaboration_group()) {
+    return COLLABORATION_GROUP;
+  }
+  if (specifics.has_plus_address()) {
+    return PLUS_ADDRESS;
+  }
 
   // This client version doesn't understand |specifics|.
   DVLOG(1) << "Unknown datatype in sync proto.";
@@ -588,7 +610,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(49 == syncer::GetNumModelTypes(),
+  static_assert(51 == syncer::GetNumModelTypes(),
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -596,6 +618,9 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
   encryptable_user_types.Remove(AUTOFILL_WALLET_OFFER);
   encryptable_user_types.Remove(AUTOFILL_WALLET_USAGE);
+  // Similarly, collaboration group is not encrypted since it originates on the
+  // server.
+  encryptable_user_types.Remove(COLLABORATION_GROUP);
   // Similarly, contact info is not encrypted since it originates on the server.
   encryptable_user_types.Remove(CONTACT_INFO);
   // Commit-only types are never encrypted since they are consumed server-side.
@@ -614,6 +639,9 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(OUTGOING_PASSWORD_SHARING_INVITATION);
   // Never encrypted because consumed server-side.
   encryptable_user_types.Remove(SHARED_TAB_GROUP_DATA);
+  // Plus addresses are never encrypted because the originate from outside
+  // Chrome.
+  encryptable_user_types.Remove(PLUS_ADDRESS);
 
   return encryptable_user_types;
 }

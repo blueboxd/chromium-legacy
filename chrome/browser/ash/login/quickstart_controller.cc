@@ -4,10 +4,14 @@
 
 #include "chrome/browser/ash/login/quickstart_controller.h"
 
+#include <memory>
+
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/bluetooth_config_service.h"
 #include "base/check.h"
 #include "base/logging.h"
+#include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
@@ -34,14 +38,10 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/user_type.h"
-#include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
 
 namespace ash::quick_start {
 
 namespace {
-
-constexpr int kMaxRetryAttempts = 3;
 
 using bluetooth_config::mojom::BluetoothDevicePropertiesPtr;
 using bluetooth_config::mojom::BluetoothSystemState;
@@ -79,10 +79,10 @@ std::optional<QuickStartController::EntryPoint> EntryPointFromScreen(
 
 QuickStartMetrics::ScreenName ScreenNameFromOobeScreenId(
     OobeScreenId screen_id) {
-  //  TODO(b/298042953): Check Screen IDs for Unicorn account setup flow.
+  // TODO(b/298042953): Check Screen IDs for Unicorn account setup flow.
   if (screen_id == ConsumerUpdateScreenView::kScreenId) {
-    //  TODO(b/298042953): Update Screen ID when the new OOBE Checking for
-    //  update and determining device configuration screen is added.
+    // TODO(b/298042953): Update Screen ID when the new OOBE Checking for
+    // update and determining device configuration screen is added.
     return QuickStartMetrics::ScreenName::
         kCheckingForUpdateAndDeterminingDeviceConfiguration;
   } else if (screen_id == UserCreationView::kScreenId) {
@@ -117,19 +117,9 @@ ConnectionClosedReasonFromAbortFlowReason(
   }
 }
 
-gaia::OAuthClientInfo GetClientInfo() {
-  gaia::OAuthClientInfo client_info;
-  client_info.client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
-  client_info.client_secret =
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret();
-  return client_info;
-}
-
 }  // namespace
 
 QuickStartController::QuickStartController() {
-  gaia_client_ = std::make_unique<gaia::GaiaOAuthClient>(
-      g_browser_process->shared_url_loader_factory());
   // Main feature flag
   if (!features::IsOobeQuickStartEnabled()) {
     return;
@@ -178,6 +168,8 @@ void QuickStartController::ForceEnableQuickStart() {
   }
 
   InitTargetDeviceBootstrapController();
+  StartObservingBluetoothState();
+
   QS_LOG(INFO) << "Force enabling LocalPasswordsForConsumers!";
   ash::features::ForceEnableLocalPasswordsForConsumers();
 }
@@ -187,6 +179,13 @@ void QuickStartController::DetermineEntryPointVisibility(
   // Bootstrap controller is only instantiated when the feature is enabled (also
   // via the keyboard shortcut. See |ForceEnableQuickStart|.)
   if (!bootstrap_controller_) {
+    std::move(callback).Run(/*visible=*/false);
+    return;
+  }
+
+  // QuickStart should not be enabled for Demo mode or OS Install flows
+  if (DemoSetupController::IsOobeDemoSetupFlowInProgress() ||
+      ash::switches::IsOsInstallAllowed()) {
     std::move(callback).Run(/*visible=*/false);
     return;
   }
@@ -204,7 +203,7 @@ void QuickStartController::DetermineEntryPointVisibility(
 
 void QuickStartController::AbortFlow(AbortFlowReason reason) {
   CHECK(bootstrap_controller_);
-  QS_LOG(INFO) << "Aborting flow.";
+  QS_LOG(INFO) << "Aborting flow: " << reason;
 
   bootstrap_controller_->CloseOpenConnections(
       ConnectionClosedReasonFromAbortFlowReason(reason));
@@ -224,9 +223,14 @@ QuickStartController::EntryPoint QuickStartController::GetExitPoint() {
 }
 
 void QuickStartController::PrepareForUpdate() {
-  // TODO(b/280308569): Investigate whether state should be reset here in case
-  // of error installing update.
   bootstrap_controller_->PrepareForUpdate();
+}
+
+void QuickStartController::ResumeSessionAfterCancelledUpdate() {
+  LoginDisplayHost::default_host()
+      ->GetWizardContext()
+      ->quick_start_setup_ongoing = true;
+  controller_state_ = ControllerState::WAITING_TO_RESUME_AFTER_UPDATE;
 }
 
 void QuickStartController::InitTargetDeviceBootstrapController() {
@@ -278,7 +282,7 @@ void QuickStartController::OnStatusChanged(
       qr_code_data_ = absl::get<QRCode::PixelData>(status.payload);
       UpdateUiState(UiState::SHOWING_QR);
       QuickStartMetrics::RecordScreenOpened(
-          QuickStartMetrics::ScreenName::kSetUpAndroidPhone);
+          QuickStartMetrics::ScreenName::kSetUpWithAndroidPhone);
       return;
     case Step::ADVERTISING_WITHOUT_QR_CODE:
       UpdateUiState(UiState::CONNECTING_TO_PHONE);
@@ -286,10 +290,10 @@ void QuickStartController::OnStatusChanged(
     case Step::PIN_VERIFICATION:
       CHECK(absl::holds_alternative<PinString>(status.payload));
       pin_ = *absl::get<PinString>(status.payload);
-      CHECK(pin_.value().length() == 4);
+      CHECK_EQ(pin_.value().length(), 4UL);
       UpdateUiState(UiState::SHOWING_PIN);
       QuickStartMetrics::RecordScreenOpened(
-          QuickStartMetrics::ScreenName::kSetUpAndroidPhone);
+          QuickStartMetrics::ScreenName::kSetUpWithAndroidPhone);
       return;
     case Step::CONNECTED:
       controller_state_ = ControllerState::CONNECTED;
@@ -329,12 +333,24 @@ void QuickStartController::OnStatusChanged(
       return;
     case Step::TRANSFERRING_GOOGLE_ACCOUNT_DETAILS:
       // Intermediate state. Nothing to do.
-      CHECK(controller_state_ == ControllerState::CONNECTED);
+      if (controller_state_ != ControllerState::CONNECTED) {
+        QS_LOG(ERROR) << "Expected controller_state_ to be CONNECTED. Actual "
+                         "controller_state_: "
+                      << controller_state_;
+        AbortFlow(AbortFlowReason::ERROR);
+      }
       // TODO(b/298042953): Record Gaia Transfer screen shown once UI is
       // implemented.
       return;
     case Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS:
-      CHECK(controller_state_ == ControllerState::CONNECTED);
+      if (controller_state_ != ControllerState::CONNECTED) {
+        QS_LOG(ERROR) << "Expected controller_state_ to be CONNECTED. Actual "
+                         "controller_state_: "
+                      << controller_state_;
+        AbortFlow(AbortFlowReason::ERROR);
+        return;
+      }
+
       if (absl::holds_alternative<
               TargetDeviceBootstrapController::GaiaCredentials>(
               status.payload)) {
@@ -393,58 +409,13 @@ void QuickStartController::OnOAuthTokenReceived(
     TargetDeviceBootstrapController::GaiaCredentials gaia_creds) {
   gaia_creds_ = gaia_creds;
 
-  // TODO(b/319631013) - Track BootstrapConfiguration email mismatch via UMA.
-  QS_LOG(INFO) << "About to exchange authorization code for tokens.";
-  gaia_client_->GetTokensFromAuthCode(GetClientInfo(), gaia_creds_.auth_code,
-                                      kMaxRetryAttempts, this);
-}
-
-void QuickStartController::OnGetTokensResponse(const std::string& refresh_token,
-                                               const std::string& access_token,
-                                               int expires_in_seconds) {
-  QS_LOG(INFO) << "Successfully exchanged the authorization code for tokens.";
-
-  gaia_creds_.auth_code = "";
-  gaia_creds_.access_token = access_token;
-  gaia_creds_.refresh_token = refresh_token;
-
-  // Get an access token with userinfo scope for fetching the GaiaID.
-  QS_LOG(INFO) << "Requesting access token with userinfo scope.";
-  gaia_client_->RefreshToken(GetClientInfo(), gaia_creds_.refresh_token,
-                             {GaiaConstants::kGoogleUserInfoProfile},
-                             kMaxRetryAttempts, this);
-}
-
-void QuickStartController::OnRefreshTokenResponse(
-    const std::string& access_token,
-    int expires_in_seconds) {
-  QS_LOG(INFO) << "Received the access token. Requesting user information.";
-  gaia_client_->GetUserInfo(access_token, kMaxRetryAttempts, this);
-}
-
-void QuickStartController::OnGetUserInfoResponse(
-    const base::Value::Dict& user_info) {
-  QS_LOG(INFO) << "Successfully retrieved user information.";
-
-  const std::string* gaia_id_value = user_info.FindString("id");
-  if (!gaia_id_value || gaia_id_value->empty()) {
-    QS_LOG(ERROR) << "Obfuscated Gaia ID not found!";
+  if (gaia_creds_.gaia_id.empty()) {
+    QS_LOG(ERROR) << "Obfuscated Gaia ID missing!";
     AbortFlow(AbortFlowReason::ERROR);
     return;
   }
-  gaia_creds_.gaia_id = *gaia_id_value;
 
   FinishAccountCreation();
-}
-
-void QuickStartController::OnOAuthError() {
-  QS_LOG(ERROR) << "An authorization error occurred!";
-  AbortFlow(AbortFlowReason::ERROR);
-}
-
-void QuickStartController::OnNetworkError(int response_code) {
-  QS_LOG(ERROR) << "A network error occurred " << response_code;
-  AbortFlow(AbortFlowReason::ERROR);
 }
 
 void QuickStartController::StartObservingScreenTransitions() {
@@ -486,6 +457,16 @@ void QuickStartController::HandleTransitionToQuickStartScreen() {
              ControllerState::WAITING_TO_RESUME_AFTER_UPDATE) {
     exit_point_ = QuickStartController::EntryPoint::GAIA_INFO_SCREEN;
 
+    // It's possible the local state still needs to be cleared if an update was
+    // initiated but cancelled. We can't check/clear the state immediately upon
+    // cancelling the update since it's possible it happens before the target
+    // device persists this pref to local state.
+    if (g_browser_process->local_state()->GetBoolean(
+            prefs::kShouldResumeQuickStartAfterReboot)) {
+      g_browser_process->local_state()->ClearPref(
+          prefs::kShouldResumeQuickStartAfterReboot);
+    }
+
     if (IsBluetoothDisabled()) {
       controller_state_ = ControllerState::WAITING_FOR_BLUETOOTH_PERMISSION;
       UpdateUiState(UiState::SHOWING_BLUETOOTH_DIALOG);
@@ -507,15 +488,22 @@ void QuickStartController::HandleTransitionToQuickStartScreen() {
     // GaiaScreen. Note the the GaiaInfoScreen/GaiaScreen is technically never
     // shown when it switches to QuickStart, so |previous_screen_| is one of the
     // many screens that may have appeared up to this point.
-    // TODO(b:283965994) - Imrpve the resume logic.
-    CHECK(controller_state_ == ControllerState::CONNECTED);
-    CHECK(LoginDisplayHost::default_host()
-              ->GetWizardContext()
-              ->quick_start_setup_ongoing);
+    // TODO(b:283965994) - Improve the resume logic.
 
     // OOBE flow cannot go back after enrollment checks, update exit point.
     exit_point_ = QuickStartController::EntryPoint::GAIA_INFO_SCREEN;
 
+    if (controller_state_ != ControllerState::CONNECTED) {
+      QS_LOG(ERROR) << "Expected controller_state_ to be CONNECTED. Actual "
+                       "controller_state_: "
+                    << controller_state_;
+      AbortFlow(AbortFlowReason::ERROR);
+      return;
+    }
+
+    CHECK(LoginDisplayHost::default_host()
+              ->GetWizardContext()
+              ->quick_start_setup_ongoing);
     StartAccountTransfer();
   }
 }
@@ -547,7 +535,7 @@ void QuickStartController::OnPhoneConnectionEstablished() {
 }
 
 void QuickStartController::SavePhoneInstanceID() {
-  DCHECK(bootstrap_controller_);
+  CHECK(bootstrap_controller_);
   std::string phone_instance_id = bootstrap_controller_->GetPhoneInstanceId();
   if (phone_instance_id.empty()) {
     return;
@@ -564,31 +552,26 @@ void QuickStartController::SavePhoneInstanceID() {
 void QuickStartController::FinishAccountCreation() {
   CHECK(!gaia_creds_.email.empty());
   CHECK(!gaia_creds_.gaia_id.empty());
+  CHECK(!gaia_creds_.auth_code.empty());
 
   UpdateUiState(UiState::CREATING_ACCOUNT);
   controller_state_ = ControllerState::SETUP_COMPLETE;
 
   const AccountId account_id = AccountId::FromNonCanonicalEmail(
       gaia_creds_.email, gaia_creds_.gaia_id, AccountType::GOOGLE);
-  auto user_context = std::make_unique<UserContext>();
   // The user type is known to be regular. The unicorn flow transitions to the
   // Gaia screen and uses its own mechanism for account creation.
-  login::BuildUserContextForGaiaSignIn(
-      /*user_type=*/user_manager::UserType::kRegular,
-      /*account_id=*/account_id,
-      /*using_saml=*/false,
-      /*using_saml_api=*/false,
-      /*password=*/"",
-      /*password_attributes=*/SamlPasswordAttributes(),
-      /*sync_trusted_vault_keys=*/std::nullopt,
-      /*challenge_response_key=*/std::nullopt,
-      /*user_context=*/user_context.get());
-
-  // TODO(b/318664950) - Remove once the server starts sending the Gaia ID.
-  user_context->SetRefreshToken(gaia_creds_.refresh_token);
-  user_context->SetAccessToken(gaia_creds_.access_token);
-  // Since the tokens are being set, the auth code must be empty.
-  CHECK(user_context->GetAuthCode().empty());
+  std::unique_ptr<UserContext> user_context =
+      login::BuildUserContextForGaiaSignIn(
+          /*user_type=*/user_manager::UserType::kRegular,
+          /*account_id=*/account_id,
+          /*using_saml=*/false,
+          /*using_saml_api=*/false,
+          /*password=*/"",
+          /*password_attributes=*/SamlPasswordAttributes(),
+          /*sync_trusted_vault_keys=*/std::nullopt,
+          /*challenge_response_key=*/std::nullopt);
+  user_context->SetAuthCode(gaia_creds_.auth_code);
 
   if (LoginDisplayHost::default_host()) {
     LoginDisplayHost::default_host()->CompleteLogin(*user_context);
@@ -654,7 +637,7 @@ void QuickStartController::OnBluetoothPermissionGranted() {
 
   if (IsBluetoothDisabled()) {
     CHECK(cros_bluetooth_config_remote_);
-    cros_bluetooth_config_remote_->SetBluetoothHidDetectionActive();
+    cros_bluetooth_config_remote_->SetBluetoothEnabledWithoutPersistence();
     // Advertising will start once we are notified that bluetooth is enabled.
   }
 }
@@ -700,6 +683,72 @@ std::ostream& operator<<(std::ostream& stream,
       break;
     case QuickStartController::UiDelegate::UiState::EXIT_SCREEN:
       stream << "[exit screen]";
+      break;
+  }
+
+  return stream;
+}
+
+std::ostream& operator<<(
+    std::ostream& stream,
+    const QuickStartController::AbortFlowReason& abort_flow_reason) {
+  switch (abort_flow_reason) {
+    case QuickStartController::AbortFlowReason::USER_CLICKED_BACK:
+      stream << "[user clicked back]";
+      break;
+    case QuickStartController::AbortFlowReason::USER_CLICKED_CANCEL:
+      stream << "[user clicked cancel]";
+      break;
+    case QuickStartController::AbortFlowReason::SIGNIN_SCHOOL:
+      stream << "[signin school]";
+      break;
+    case QuickStartController::AbortFlowReason::ENTERPRISE_ENROLLMENT:
+      stream << "[enterprise enrollment]";
+      break;
+    case QuickStartController::AbortFlowReason::QUICK_START_FLOW_COMPLETE:
+      stream << "[Quick Start flow complete]";
+      break;
+    case QuickStartController::AbortFlowReason::ERROR:
+      stream << "[error]";
+      break;
+  }
+
+  return stream;
+}
+
+std::ostream& operator<<(
+    std::ostream& stream,
+    const QuickStartController::ControllerState& controller_state) {
+  switch (controller_state) {
+    case QuickStartController::ControllerState::NOT_ACTIVE:
+      stream << "[not active]";
+      break;
+    case QuickStartController::ControllerState::
+        WAITING_FOR_BLUETOOTH_PERMISSION:
+      stream << "[waiting for bluetooth permission]";
+      break;
+    case QuickStartController::ControllerState::
+        WAITING_FOR_BLUETOOTH_ACTIVATION:
+      stream << "[waiting for bluetooth activation]";
+      break;
+    case QuickStartController::ControllerState::WAITING_TO_RESUME_AFTER_UPDATE:
+      stream << "[waiting to resume after update]";
+      break;
+    case QuickStartController::ControllerState::INITIALIZING:
+      stream << "[initializing]";
+      break;
+    case QuickStartController::ControllerState::ADVERTISING:
+      stream << "[advertising]";
+      break;
+    case QuickStartController::ControllerState::CONNECTED:
+      stream << "[connected]";
+      break;
+    case QuickStartController::ControllerState::
+        CONTINUING_AFTER_ENROLLMENT_CHECKS:
+      stream << "[continuing after enrollment checks]";
+      break;
+    case QuickStartController::ControllerState::SETUP_COMPLETE:
+      stream << "[setup complete]";
       break;
   }
 

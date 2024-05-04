@@ -149,6 +149,7 @@ class ReadAnythingAppController
   std::string GetTextContent(ui::AXNodeID ax_node_id) const;
   std::string GetTextDirection(ui::AXNodeID ax_node_id) const;
   std::string GetUrl(ui::AXNodeID ax_node_id) const;
+  std::string GetAltText(ui::AXNodeID ax_node_id) const;
   bool ShouldBold(ui::AXNodeID ax_node_id) const;
   bool IsOverline(ui::AXNodeID ax_node_id) const;
   bool IsLeafNode(ui::AXNodeID ax_node_id) const;
@@ -184,10 +185,16 @@ class ReadAnythingAppController
   double GetLineSpacingValue(int line_spacing) const;
   double GetLetterSpacingValue(int letter_spacing) const;
   std::vector<std::string> GetSupportedFonts() const;
+  void RequestImageDataUrl(ui::AXNodeID node_id) const;
+  std::string GetImageDataUrl(ui::AXNodeID node_id) const;
 
   // The language code that should be used to determine which voices are
   // supported for speech.
   const std::string& GetLanguageCodeForSpeech() const;
+
+  const std::string GetDisplayNameForLocale(
+      const std::string& locale,
+      const std::string& display_locale) const;
 
   void Distill();
   void Draw();
@@ -202,7 +209,8 @@ class ReadAnythingAppController
   void OnAXTreeDistilled(const ui::AXTreeID& tree_id,
                          const std::vector<ui::AXNodeID>& content_node_ids);
 
-  void PostProcessSelection();
+  // Returns true if a draw occured.
+  bool PostProcessSelection();
 
   // Signals that the side panel has finished loading and it's safe to show
   // the UI to avoid loading artifacts.
@@ -295,6 +303,14 @@ class ReadAnythingAppController
 
   // Model that holds state for this controller.
   ReadAnythingAppModel model_;
+
+  // For metrics logging
+
+  // The time when the renderer constructor is first triggered.
+  base::TimeTicks renderer_load_triggered_time_ms_;
+
+  // The time when the WebUI connects i.e. when onConnected is called.
+  base::TimeTicks web_ui_connected_time_ms_;
 
   base::WeakPtrFactory<ReadAnythingAppController> weak_ptr_factory_{this};
 };

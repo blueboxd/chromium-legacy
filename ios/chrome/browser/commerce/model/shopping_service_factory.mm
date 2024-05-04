@@ -76,9 +76,9 @@ std::unique_ptr<KeyedService> ShoppingServiceFactory::BuildServiceInstanceFor(
       GetCurrentCountryCode(GetApplicationContext()->GetVariationsService()),
       GetApplicationContext()->GetApplicationLocale(),
       ios::LocalOrSyncableBookmarkModelFactory::GetInstance()
-          ->GetForBrowserState(chrome_state),
-      ios::AccountBookmarkModelFactory::GetInstance()->GetForBrowserState(
-          chrome_state),
+          ->GetDedicatedUnderlyingModelForBrowserState(chrome_state),
+      ios::AccountBookmarkModelFactory::GetInstance()
+          ->GetDedicatedUnderlyingModelForBrowserState(chrome_state),
       OptimizationGuideServiceFactory::GetForBrowserState(chrome_state),
       pref_service, IdentityManagerFactory::GetForBrowserState(chrome_state),
       SyncServiceFactory::GetForBrowserState(chrome_state),

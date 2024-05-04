@@ -270,6 +270,17 @@ void LockScreenMediaView::MediaControllerImageChanged(
   view_->UpdateWithMediaArtwork(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 }
 
+void LockScreenMediaView::MediaControllerChapterImageChanged(
+    int chapter_index,
+    const SkBitmap& bitmap) {
+  if (switch_media_delay_timer_->IsRunning()) {
+    return;
+  }
+
+  view_->UpdateWithChapterArtwork(chapter_index,
+                                  gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // media_message_center::MediaNotificationContainer implementations:
 
@@ -306,6 +317,11 @@ void LockScreenMediaView::SetMediaControllerForTesting(
   media_controller_remote_ = std::move(media_controller);
 }
 
+void LockScreenMediaView::SetSwitchMediaDelayTimerForTesting(
+    std::unique_ptr<base::OneShotTimer> test_timer) {
+  switch_media_delay_timer_ = std::move(test_timer);
+}
+
 views::Button* LockScreenMediaView::GetDismissButtonForTesting() {
   return dismiss_button_;
 }
@@ -331,7 +347,10 @@ void LockScreenMediaView::Show() {
 }
 
 void LockScreenMediaView::Hide() {
-  media_controller_remote_->Stop();
+  // |media_controller_remote_| can be null in tests.
+  if (media_controller_remote_.is_bound()) {
+    media_controller_remote_->Stop();
+  }
   hide_media_view_callback_.Run();
 }
 

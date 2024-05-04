@@ -155,8 +155,8 @@ enum Role {
   kDateTime = 28,
   kDefinition = 29,
   kDescriptionList = 30,
-  kDescriptionListDetail = 31,
-  kDescriptionListTerm = 32,
+  kDescriptionListDetailDeprecated = 31, // Replaced with kDefinition.
+  kDescriptionListTermDeprecated = 32,  // Replaced with kTerm.
   kDesktop = 33,  // internal
   kDetails = 34,
   kDialog = 35,
@@ -571,8 +571,8 @@ enum Mutation {
   kSubtreeUpdateEnd,
 };
 
-// Next version: 4
-// Next value: 36
+// Next version: 5
+// Next value: 38
 [Extensible, Stable, Uuid="e5a4cd0c-3152-4427-93d5-35ff7d0f1ae8"]
 enum StringAttribute {
   [Default]kNone = 0,
@@ -585,6 +585,8 @@ enum StringAttribute {
   kAutoComplete = 4,
   [MinVersion=2] kAriaBrailleLabel = 33,
   [MinVersion=2] kAriaBrailleRoleDescription = 34,
+  [MinVersion=4] kAriaNotificationAnnouncement = 36,
+  [MinVersion=4] kAriaNotificationId = 37,
   kCheckedStateDescription = 5,
   kChildTreeId = 6,
   kChildTreeNodeAppId = 7,
@@ -624,8 +626,8 @@ enum StringAttribute {
   kVirtualContent = 30,
 };
 
-// Next version: 3
-// Next value: 64
+// Next version: 4
+// Next value: 66
 [Extensible, Stable, Uuid="c350e50f-5177-405d-b155-79868449ba7b"]
 enum IntAttribute {
   [Default]kNone = 0,
@@ -772,6 +774,10 @@ enum IntAttribute {
   [MinVersion=1] kIsPopup = 61,
   [MinVersion=2] kNextWindowFocusId = 62,
   [MinVersion=2] kPreviousWindowFocusId = 63,
+
+  // ARIA notification options.
+  [MinVersion=3] kAriaNotificationInterrupt = 64,
+  [MinVersion=3] kAriaNotificationPriority = 65,
 };
 
 // Next version: 2
@@ -1453,4 +1459,15 @@ enum Dropeffect {
   kLink,
   kMove,
   kPopup,
+};
+
+enum AriaNotificationInterrupt {
+  kNone,
+  kAll,
+  kPending,
+};
+
+enum AriaNotificationPriority {
+  kNone,
+  kImportant,
 };

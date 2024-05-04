@@ -34,17 +34,17 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   PaymentInstruments(const PaymentInstruments&) = delete;
   PaymentInstruments& operator=(const PaymentInstruments&) = delete;
 
-  ScriptPromise deleteInstrument(ScriptState*,
+  ScriptPromiseTyped<IDLBoolean> deleteInstrument(ScriptState*,
+                                                  const String& instrument_key,
+                                                  ExceptionState&);
+  ScriptPromiseTyped<IDLAny> get(ScriptState*,
                                  const String& instrument_key,
                                  ExceptionState&);
-  ScriptPromise get(ScriptState*,
-                    const String& instrument_key,
-                    ExceptionState&);
   ScriptPromiseTyped<IDLSequence<IDLString>> keys(ScriptState*,
                                                   ExceptionState&);
-  ScriptPromise has(ScriptState*,
-                    const String& instrument_key,
-                    ExceptionState&);
+  ScriptPromiseTyped<IDLBoolean> has(ScriptState*,
+                                     const String& instrument_key,
+                                     ExceptionState&);
   ScriptPromise set(ScriptState*,
                     const String& instrument_key,
                     const PaymentInstrument* details,
@@ -60,24 +60,23 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
                            const PaymentInstrument*,
                            mojom::blink::PermissionStatus);
 
-  void onDeletePaymentInstrument(ScriptPromiseResolver*,
+  void onDeletePaymentInstrument(ScriptPromiseResolverTyped<IDLBoolean>*,
                                  payments::mojom::blink::PaymentHandlerStatus);
-  void onGetPaymentInstrument(ScriptPromiseResolver*,
+  void onGetPaymentInstrument(ScriptPromiseResolverTyped<IDLAny>*,
                               payments::mojom::blink::PaymentInstrumentPtr,
                               payments::mojom::blink::PaymentHandlerStatus);
   void onKeysOfPaymentInstruments(
       ScriptPromiseResolverTyped<IDLSequence<IDLString>>*,
       const Vector<String>&,
       payments::mojom::blink::PaymentHandlerStatus);
-  void onHasPaymentInstrument(ScriptPromiseResolver*,
+  void onHasPaymentInstrument(ScriptPromiseResolverTyped<IDLBoolean>*,
                               payments::mojom::blink::PaymentHandlerStatus);
   void onSetPaymentInstrument(ScriptPromiseResolver*,
                               payments::mojom::blink::PaymentHandlerStatus);
   void onClearPaymentInstruments(ScriptPromiseResolver*,
                                  payments::mojom::blink::PaymentHandlerStatus);
 
-  const raw_ref<const HeapMojoRemote<payments::mojom::blink::PaymentManager>,
-                ExperimentalRenderer>
+  const raw_ref<const HeapMojoRemote<payments::mojom::blink::PaymentManager>>
       manager_;
 
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;

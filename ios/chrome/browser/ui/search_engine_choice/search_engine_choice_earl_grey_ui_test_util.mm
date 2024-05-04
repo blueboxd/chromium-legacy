@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -28,7 +27,7 @@
                  grey_sufficientlyVisible(), nil);
   // Scroll down to find the search engine cell.
   id<GREYMatcher> scrollView =
-      grey_accessibilityID(kSearchEngineTableViewIdentifier);
+      grey_accessibilityID(kSearchEngineChoiceScrollViewIdentifier);
   [[[EarlGrey selectElementWithMatcher:searchEngineRowMatcher]
          usingSearchAction:grey_scrollInDirection(scrollDirection, scrollAmount)
       onElementWithMatcher:scrollView] assertWithMatcher:grey_notNil()];
@@ -75,36 +74,6 @@
       selectElementWithMatcher:chrome_test_util::SettingsSearchEngineButton()]
       assertWithMatcher:grey_allOf(grey_accessibilityValue(searchEngineName),
                                    grey_sufficientlyVisible(), nil)];
-}
-
-+ (void)verifyFakeOmniboxIllustrationState:(FakeOmniboxState)state {
-  switch (state) {
-    case kHidden:
-      [[EarlGrey selectElementWithMatcher:
-                     grey_allOf(grey_accessibilityID(
-                                    kFakeEmptyOmniboxAccessibilityIdentifier),
-                                grey_sufficientlyVisible(), nil)]
-          assertWithMatcher:grey_nil()];
-      [[EarlGrey
-          selectElementWithMatcher:grey_allOf(
-                                       grey_accessibilityID(
-                                           kFakeOmniboxAccessibilityIdentifier),
-                                       grey_sufficientlyVisible(), nil)]
-          assertWithMatcher:grey_nil()];
-      break;
-    case kEmpty:
-      [[EarlGrey
-          selectElementWithMatcher:
-              grey_accessibilityID(kFakeEmptyOmniboxAccessibilityIdentifier)]
-          assertWithMatcher:grey_sufficientlyVisible()];
-      break;
-    case kFull:
-      [[EarlGrey
-          selectElementWithMatcher:grey_accessibilityID(
-                                       kFakeOmniboxAccessibilityIdentifier)]
-          assertWithMatcher:grey_sufficientlyVisible()];
-      break;
-  }
 }
 
 + (id<GREYMatcher>)settingsCustomSearchEngineAccessibilityLabelWithName:

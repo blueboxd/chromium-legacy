@@ -55,19 +55,14 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
       bool is_dragging);
 
   views::Widget* divider_widget() { return divider_widget_; }
-
   bool is_resizing_with_divider() const { return is_resizing_with_divider_; }
-
   const aura::Window::Windows& observed_windows() const {
     return observed_windows_;
   }
 
-  // Used by SplitViewController to immediately stop resizing in case of
-  // external events (split view ending, tablet mode ending, etc.).
-  // TODO(sophiewen): See if we can call `EndResizeWithDivider()` instead.
-  void set_is_resizing_with_divider(bool is_resizing_with_divider) {
-    is_resizing_with_divider_ = is_resizing_with_divider;
-  }
+  // Called explicitly by the delegate that created this when it is shutting
+  // down.
+  void ShutDown();
 
   // Returns true if the divider widget is created.
   bool HasDividerWidget() const;
@@ -87,6 +82,11 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void StartResizeWithDivider(const gfx::Point& location_in_screen);
   void ResizeWithDivider(const gfx::Point& location_in_screen);
   void EndResizeWithDivider(const gfx::Point& location_in_screen);
+
+  // Finalizes and cleans up divider dragging/animating. Called when the divider
+  // snapping animation completes or is interrupted or totally skipped, or by
+  // external events (split view ending, tablet mode ending, etc.).
+  void CleanUpWindowResizing();
 
   // Do the divider spawning animation that adds a finishing touch to the
   // snapping animation of a window.
@@ -151,6 +151,14 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
 
   void StartObservingTransientChild(aura::Window* transient);
   void StopObservingTransientChild(aura::Window* transient);
+
+  // Gets the expected end drag position for `window` depending on current
+  // screen orientation and split divider position.
+  gfx::Point GetEndDragLocationInScreen(aura::Window* window) const;
+
+  // Finalizes and cleans up after stopping dragging the divider bar to resize
+  // snapped windows.
+  void FinishWindowResizing();
 
   const raw_ptr<LayoutDividerController> controller_;
 

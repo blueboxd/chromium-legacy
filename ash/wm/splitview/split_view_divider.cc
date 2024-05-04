@@ -109,8 +109,11 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
   }
 }
 
-aura::Window* SplitViewDivider::GetRootWindow() const {
-  return divider_widget_->GetNativeWindow()->GetRootWindow();
+void SplitViewDivider::ShutDown() {
+  if (divider_view_) {
+    divider_view_->OnShuttingDown();
+  }
+  CloseDividerWidget();
 }
 
 bool SplitViewDivider::HasDividerWidget() const {
@@ -137,14 +140,19 @@ void SplitViewDivider::CloseDividerWidget() {
     wm::TransientWindowManager::GetOrCreate(window)->RemoveObserver(this);
   }
   observed_windows_.clear();
+  transient_windows_observations_.RemoveAllObservations();
 
-  divider_view_ = nullptr;
   dragged_window_ = nullptr;
 
   if (divider_widget_) {
-    auto* widget_ptr = divider_widget_.get();
+    // Disable any event handling on the divider while we are closing the
+    // widget.
+    divider_view_->SetCanProcessEventsWithinSubtree(false);
+    divider_widget_->GetNativeWindow()->SetEventTargetingPolicy(
+        aura::EventTargetingPolicy::kNone);
+    divider_view_ = nullptr;
+    divider_widget_->Close();
     divider_widget_ = nullptr;
-    widget_ptr->CloseNow();
   }
 }
 
@@ -236,6 +244,12 @@ void SplitViewDivider::EndResizeWithDivider(
   // bounds in `EndResizeWithDivider()`.
   UpdateDividerPosition(modified_location_in_screen);
   controller_->EndResizeWithDivider(modified_location_in_screen);
+}
+
+void SplitViewDivider::CleanUpWindowResizing() {
+  is_resizing_with_divider_ = false;
+  controller_->OnResizeEnding();
+  FinishWindowResizing();
 }
 
 void SplitViewDivider::DoSpawningAnimation(int spawning_position) {
@@ -435,6 +449,10 @@ void SplitViewDivider::CreateDividerWidget(int divider_position) {
   divider_widget_->Show();
 }
 
+aura::Window* SplitViewDivider::GetRootWindow() const {
+  return divider_widget_->GetNativeWindow()->GetRootWindow();
+}
+
 void SplitViewDivider::RefreshStackingOrder() {
   // Skip the recursive update.
   if (pause_update_) {
@@ -540,6 +558,37 @@ void SplitViewDivider::StartObservingTransientChild(aura::Window* transient) {
 void SplitViewDivider::StopObservingTransientChild(aura::Window* transient) {
   if (transient_windows_observations_.IsObservingSource(transient))
     transient_windows_observations_.RemoveObservation(transient);
+}
+
+gfx::Point SplitViewDivider::GetEndDragLocationInScreen(
+    aura::Window* window) const {
+  DCHECK(base::Contains(observed_windows_, window));
+  gfx::Point end_location(previous_event_location_);
+
+  const SnapPosition snap_position =
+      controller_->GetPositionOfSnappedWindow(window);
+  const gfx::Rect bounds = controller_->GetSnappedWindowBoundsInScreen(
+      snap_position, window, window_util::GetSnapRatioForWindow(window));
+
+  const bool is_physical_left_or_top =
+      IsPhysicalLeftOrTop(snap_position, window);
+  if (IsLayoutHorizontal(window)) {
+    end_location.set_x(is_physical_left_or_top ? bounds.right() : bounds.x());
+  } else {
+    end_location.set_y(is_physical_left_or_top ? bounds.bottom() : bounds.y());
+  }
+  return end_location;
+}
+
+void SplitViewDivider::FinishWindowResizing() {
+  for (aura::Window* window : observed_windows_) {
+    WindowState* window_state = WindowState::Get(window);
+    if (window_state->is_dragged()) {
+      window_state->OnCompleteDrag(
+          gfx::PointF(GetEndDragLocationInScreen(window)));
+      window_state->DeleteDragDetails();
+    }
+  }
 }
 
 }  // namespace ash

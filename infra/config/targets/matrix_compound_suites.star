@@ -44,6 +44,7 @@ targets.legacy_matrix_compound_suite(
         "chromium_gtests": None,
         "chromium_gtests_for_devices_with_graphical_output": None,
         "fieldtrial_android_tests": None,
+        "jni_zero_sample_apk_test": None,
         "linux_flavor_specific_chromium_gtests": None,
         "minidump_uploader_tests": None,
         "system_webview_shell_instrumentation_tests": None,  # Not an experimental test
@@ -199,9 +200,7 @@ targets.legacy_matrix_compound_suite(
         ),
         "chromeos_chrome_all_tast_tests": targets.legacy_matrix_config(
             mixins = [
-                # FieldTrial is disabled on ChromeOS builders but not in this builder.
-                # Notify Tast to notify and handle the different UI by that.
-                "chromeos-tast-fieldtrial-enabled",
+                "chromeos-tast-public-builder",
                 "chromeos-jacuzzi-skylab-chrome-all-tast-tests",
             ],
             variants = [
@@ -210,7 +209,7 @@ targets.legacy_matrix_compound_suite(
         ),
         "chromeos_chrome_criticalstaging_tast_tests": targets.legacy_matrix_config(
             mixins = [
-                "chromeos-tast-fieldtrial-enabled",
+                "chromeos-tast-public-builder",
             ],
             variants = [
                 "CROS_JACUZZI_CQ_PUBLIC_LKGM",
@@ -218,7 +217,7 @@ targets.legacy_matrix_compound_suite(
         ),
         "chromeos_chrome_disabled_tast_tests": targets.legacy_matrix_config(
             mixins = [
-                "chromeos-tast-fieldtrial-enabled",
+                "chromeos-tast-public-builder",
             ],
             variants = [
                 "CROS_JACUZZI_CQ_PUBLIC_LKGM",
@@ -273,18 +272,24 @@ targets.legacy_matrix_compound_suite(
         ),
         "chromeos_chrome_all_tast_tests": targets.legacy_matrix_config(
             mixins = [
-                "chromeos-tast-fieldtrial-enabled",
+                "chromeos-tast-public-builder",
             ],
             variants = [
                 "CROS_OCTOPUS_PUBLIC_LKGM",
             ],
         ),
         "chromeos_chrome_criticalstaging_tast_tests": targets.legacy_matrix_config(
+            mixins = [
+                "chromeos-tast-public-builder",
+            ],
             variants = [
                 "CROS_OCTOPUS_PUBLIC_LKGM",
             ],
         ),
         "chromeos_chrome_disabled_tast_tests": targets.legacy_matrix_config(
+            mixins = [
+                "chromeos-tast-public-builder",
+            ],
             variants = [
                 "CROS_OCTOPUS_PUBLIC_LKGM",
             ],
@@ -402,6 +407,21 @@ targets.legacy_matrix_compound_suite(
             variants = [
                 "SIM_IPHONE_14_16_4",
                 "SIM_IPHONE_14_17_2",
+            ],
+        ),
+    },
+)
+
+targets.legacy_matrix_compound_suite(
+    name = "gpu_fyi_chromeos_release_gtests_volteer_skylab",
+    basic_suites = {
+        # gpu_angle_unit_gtests and gpu_desktop_specific_gtests should also be
+        # enabled here, but are removed for various reasons. See the definition
+        # for gpu_fyi_chromeos_release_gtests in compound_suites.star for more
+        # information.
+        "gpu_common_gtests_passthrough": targets.legacy_matrix_config(
+            variants = [
+                "CROS_VOLTEER_PUBLIC_RELEASE_ASH_LKGM",
             ],
         ),
     },
@@ -687,17 +707,6 @@ targets.legacy_matrix_compound_suite(
             variants = [
                 "SIM_IPHONE_X_15_5",
                 "SIM_IPAD_AIR_2_15_5",
-            ],
-        ),
-    },
-)
-
-targets.legacy_matrix_compound_suite(
-    name = "ios_blink_dbg_tests",
-    basic_suites = {
-        "ios_blink_tests": targets.legacy_matrix_config(
-            variants = [
-                "SIM_IPHONE_14_17_2",
             ],
         ),
     },
@@ -1177,6 +1186,9 @@ targets.legacy_matrix_compound_suite(
     name = "lacros_skylab_tests_amd64_generic_rel_gtest",
     basic_suites = {
         "chromeos_integration_tests": targets.legacy_matrix_config(
+            mixins = [
+                "ci_only",
+            ],
             variants = [
                 "CROS_VOLTEER_PUBLIC_LKGM",
             ],
@@ -1188,6 +1200,9 @@ targets.legacy_matrix_compound_suite(
     name = "lacros_skylab_tests_amd64_generic_rel_tast",
     basic_suites = {
         "lacros_skylab_tests": targets.legacy_matrix_config(
+            mixins = [
+                "ci_only",
+            ],
             variants = [
                 "CROS_VOLTEER_PUBLIC_LKGM",
             ],
@@ -1371,6 +1386,27 @@ targets.legacy_matrix_compound_suite(
 )
 
 targets.legacy_matrix_compound_suite(
+    name = "optimization_guide_desktop_gtests",
+    basic_suites = {
+        "optimization_guide_nogpu_gtests": None,
+        "optimization_guide_gpu_gtests": None,
+    },
+)
+
+targets.legacy_matrix_compound_suite(
+    name = "optimization_guide_desktop_script_tests",
+    basic_suites = {
+        "model_validation_tests": targets.legacy_matrix_config(
+            variants = [
+                "MODEL_VALIDATION_BASE",
+                "MODEL_VALIDATION_TRUNK",
+            ],
+        ),
+        "ondevice_stability_tests": None,
+    },
+)
+
+targets.legacy_matrix_compound_suite(
     name = "optimization_guide_linux_gtests",
     basic_suites = {
         "optimization_guide_nogpu_gtests": targets.legacy_matrix_config(
@@ -1379,10 +1415,10 @@ targets.legacy_matrix_compound_suite(
             ],
         ),
         "optimization_guide_gpu_gtests": targets.legacy_matrix_config(
-            # TODO(b:322815244): Add AMD and NVIDIA variants once driver issues
-            # are resolved.
+            # TODO(b:322815244): Add AMD variant once driver issues are fixed.
             variants = [
                 "INTEL_UHD_630",
+                "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),
     },
@@ -1403,29 +1439,9 @@ targets.legacy_matrix_compound_suite(
         "ondevice_stability_tests": targets.legacy_matrix_config(
             variants = [
                 "INTEL_UHD_630",
+                "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),
-    },
-)
-
-targets.legacy_matrix_compound_suite(
-    name = "optimization_guide_mac_gtests",
-    basic_suites = {
-        "optimization_guide_nogpu_gtests": None,
-        "optimization_guide_gpu_gtests": None,
-    },
-)
-
-targets.legacy_matrix_compound_suite(
-    name = "optimization_guide_mac_script_tests",
-    basic_suites = {
-        "model_validation_tests": targets.legacy_matrix_config(
-            variants = [
-                "MODEL_VALIDATION_BASE",
-                "MODEL_VALIDATION_TRUNK",
-            ],
-        ),
-        "ondevice_stability_tests": None,
     },
 )
 

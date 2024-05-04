@@ -11,8 +11,8 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/shared/coordinator/default_browser_promo/non_modal_default_browser_promo_scheduler_scene_agent.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
@@ -50,7 +50,7 @@
 
 @property(nonatomic, assign) PrefService* prefService;
 
-@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
+@property(nonatomic, assign) bookmarks::CoreBookmarkModel* bookmarkModel;
 
 @property(nonatomic, weak) UIViewController* baseViewController;
 
@@ -70,7 +70,7 @@
                bookmarksHandler:(id<BookmarksCommands>)bookmarksHandler
             qrGenerationHandler:(id<QRGenerationCommands>)qrGenerationHandler
                     prefService:(PrefService*)prefService
-                  bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                  bookmarkModel:(bookmarks::CoreBookmarkModel*)bookmarkModel
              baseViewController:(UIViewController*)baseViewController
                 navigationAgent:(WebNavigationBrowserAgent*)navigationAgent
         readingListBrowserAgent:

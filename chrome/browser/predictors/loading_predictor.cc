@@ -20,6 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/network_anonymization_key.h"
+#include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -238,8 +239,16 @@ bool LoadingPredictor::PrepareForPageLoad(
   // LCPP: set fonts to be prefetched to prefetch_requests.
   // TODO(crbug.com/1493768): make prefetch work for platforms without the
   // optimization guide.
+  double max_bandwidth_mbps;
+  net::NetworkChangeNotifier::ConnectionType connection_type;
+  net::NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
+      &max_bandwidth_mbps, &connection_type);
   if (base::FeatureList::IsEnabled(blink::features::kLCPPFontURLPredictor) &&
       blink::features::kLCPPFontURLPredictorEnablePrefetch.Get() &&
+      connection_type !=
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN &&
+      max_bandwidth_mbps >
+          blink::features::kLCPPFontURLPredictorPrefetchThresholdInMbps.Get() &&
       base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch) &&
       features::kLoadingPredictorPrefetchSubresourceType.Get() ==
           features::PrefetchSubresourceType::kAll) {
@@ -318,6 +327,7 @@ PrefetchManager* LoadingPredictor::prefetch_manager() {
 void LoadingPredictor::Shutdown() {
   DCHECK(!shutdown_);
   resource_prefetch_predictor_->Shutdown();
+  preconnect_manager_.reset();
   shutdown_ = true;
 }
 
@@ -345,7 +355,7 @@ void LoadingPredictor::OnNavigationFinished(NavigationId navigation_id,
     return;
 
   loading_data_collector()->RecordFinishNavigation(
-      navigation_id, old_main_frame_url, new_main_frame_url, is_error_page);
+      navigation_id, new_main_frame_url, is_error_page);
   if (active_urls_to_navigations_.find(old_main_frame_url) !=
       active_urls_to_navigations_.end()) {
     active_urls_to_navigations_[old_main_frame_url].erase(navigation_id);
@@ -424,13 +434,13 @@ void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
     prefetch_manager_->Stop(url);
 }
 
-void LoadingPredictor::HandleHintByOrigin(const GURL& url,
+bool LoadingPredictor::HandleHintByOrigin(const GURL& url,
                                           bool preconnectable,
                                           bool only_allow_https,
                                           PreconnectData& preconnect_data) {
   if (!url.is_valid() || !url.has_host() || !IsPreconnectAllowed(profile_) ||
       (only_allow_https && url.scheme() != url::kHttpsScheme)) {
-    return;
+    return false;
   }
 
   const url::Origin origin = url::Origin::Create(url);
@@ -439,7 +449,7 @@ void LoadingPredictor::HandleHintByOrigin(const GURL& url,
   // origin from the same URL will result in a different unique opaque origin,
   // so any preconnect attempt would never be used anyway.
   if (origin.opaque()) {
-    return;
+    return false;
   }
 
   // Tracking whether this is a new origin request. If so, then
@@ -458,14 +468,17 @@ void LoadingPredictor::HandleHintByOrigin(const GURL& url,
       preconnect_manager()->StartPreconnectUrl(url, true,
                                                network_anonymization_key);
     }
-    return;
+    return true;
   }
 
   if (is_new_origin || now - preconnect_data.last_preresolve_time_ >=
                            kMinDelayBetweenPreresolveRequests) {
     preconnect_data.last_preresolve_time_ = now;
     preconnect_manager()->StartPreresolveHost(url, network_anonymization_key);
+    return true;
   }
+
+  return false;
 }
 
 void LoadingPredictor::PreconnectInitiated(const GURL& url,

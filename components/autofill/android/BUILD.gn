@@ -170,6 +170,7 @@ java_cpp_enum("autofill_core_browser_java_enums") {
     "../core/browser/data_model/autofill_profile.h",
     "../core/browser/data_model/autofill_structured_address_component.h",
     "../core/browser/data_model/credit_card.h",
+    "../core/browser/data_model/iban.h",
     "../core/browser/field_types.h",
     "../core/browser/metrics/payments/mandatory_reauth_metrics.h",
     "../core/browser/metrics/payments/virtual_card_enrollment_metrics.h",
@@ -227,7 +228,6 @@ generate_jni("main_autofill_jni_headers") {
     "java/src/org/chromium/components/autofill/AutofillProfile.java",
     "java/src/org/chromium/components/autofill/SubKeyRequester.java",
   ]
-  deps = [ "//third_party/jni_zero:jni_zero_java" ]
 }
 
 # A minimal library used to expose autofill features to webview.
@@ -276,7 +276,6 @@ generate_jni("payments_jni_headers") {
     "java/src/org/chromium/components/autofill/payments/AutofillSaveCardUiInfo.java",
     "java/src/org/chromium/components/autofill/payments/LegalMessageLine.java",
   ]
-  deps = [ "//third_party/jni_zero:jni_zero_java" ]
 }
 
 static_library("payments_autofill_cc") {

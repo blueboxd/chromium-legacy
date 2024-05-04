@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -116,10 +115,6 @@ class IsolatedWebAppApplyUpdateCommand
 
   Profile& profile();
 
-  const WebApp::IsolationData::PendingUpdateInfo& update_info() const {
-    return *installed_app_->isolation_data()->pending_update_info();
-  }
-
   void CheckIfUpdateIsStillPending(base::OnceClosure next_step_callback);
 
   void CheckTrustAndSignatures(base::OnceClosure next_step_callback);
@@ -153,18 +148,17 @@ class IsolatedWebAppApplyUpdateCommand
 
   std::unique_ptr<AppLock> lock_;
 
-  IsolatedWebAppUrlInfo url_info_;
+  const IsolatedWebAppUrlInfo url_info_;
 
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<WebAppUrlLoader> url_loader_;
 
-  std::unique_ptr<ScopedKeepAlive> optional_keep_alive_;
-  std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive_;
+  const std::unique_ptr<ScopedKeepAlive> optional_keep_alive_;
+  const std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive_;
 
-  raw_ptr<const WebApp> installed_app_ = nullptr;
+  std::optional<WebApp::IsolationData::PendingUpdateInfo> pending_update_info_;
 
   std::unique_ptr<IsolatedWebAppInstallCommandHelper> command_helper_;
-  std::optional<IsolatedWebAppLocation> update_location_;
 
   base::WeakPtrFactory<IsolatedWebAppApplyUpdateCommand> weak_factory_{this};
 };

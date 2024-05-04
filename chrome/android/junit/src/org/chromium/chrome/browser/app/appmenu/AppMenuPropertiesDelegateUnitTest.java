@@ -89,9 +89,6 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuUiState;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.translate.TranslateBridgeJni;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
-import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
-import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
@@ -137,7 +134,6 @@ public class AppMenuPropertiesDelegateUnitTest {
     @Mock private ToolbarManager mToolbarManager;
     @Mock private View mDecorView;
     @Mock private LayoutStateProvider mLayoutStateProvider;
-    @Mock private StartSurfaceCoordinator mStartSurfaceCoordinator;
     @Mock private UpdateMenuItemHelper mUpdateMenuItemHelper;
     @Mock private UserPrefs.Natives mUserPrefsJniMock;
     @Mock private Profile mProfile;
@@ -161,7 +157,6 @@ public class AppMenuPropertiesDelegateUnitTest {
             new OneshotSupplierImpl<>();
     private ObservableSupplierImpl<BookmarkModel> mBookmarkModelSupplier =
             new ObservableSupplierImpl<>();
-    private OneshotSupplierImpl<StartSurface> mStartSurfaceSupplier = new OneshotSupplierImpl<>();
     private ObservableSupplierImpl<ReadAloudController> mReadAloudControllerSupplier =
             new ObservableSupplierImpl<>();
 
@@ -234,7 +229,6 @@ public class AppMenuPropertiesDelegateUnitTest {
                                 mToolbarManager,
                                 mDecorView,
                                 mLayoutStateProviderSupplier,
-                                mStartSurfaceSupplier,
                                 mBookmarkModelSupplier,
                                 mIncognitoReauthControllerSupplier,
                                 mReadAloudControllerSupplier));
@@ -632,7 +626,10 @@ public class AppMenuPropertiesDelegateUnitTest {
         mAppMenuPropertiesDelegate.prepareMenu(menu, null);
 
         Integer[] expectedItems = {
-            R.id.new_tab_menu_id, R.id.new_incognito_tab_menu_id, R.id.preferences_id
+            R.id.new_tab_menu_id,
+            R.id.new_incognito_tab_menu_id,
+            R.id.preferences_id,
+            R.id.quick_delete_menu_id
         };
         assertMenuItemsAreEqual(menu, expectedItems);
     }
@@ -751,44 +748,6 @@ public class AppMenuPropertiesDelegateUnitTest {
         mAppMenuPropertiesDelegate.updateBookmarkMenuItemShortcut(
                 bookmarkMenuItemShortcut, mTab, /* fromCCT= */ false);
         verify(bookmarkMenuItemShortcut).setEnabled(false);
-    }
-
-    @Test
-    public void updateBookmarkMenuItemRow() {
-        setShoppingListEligible(true);
-        doReturn(true).when(mBookmarkModel).isEditBookmarksEnabled();
-
-        MenuItem bookmarkMenuItemAdd = mock(MenuItem.class);
-        MenuItem bookmarkMenuItemEdit = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updateBookmarkMenuItemRow(
-                bookmarkMenuItemAdd, bookmarkMenuItemEdit, mTab);
-        verify(bookmarkMenuItemAdd).setVisible(true);
-        verify(bookmarkMenuItemAdd).setEnabled(true);
-    }
-
-    @Test
-    public void updateBookmarkMenuItemRow_NullTab() {
-        setShoppingListEligible(true);
-
-        MenuItem bookmarkMenuItemAdd = mock(MenuItem.class);
-        MenuItem bookmarkMenuItemEdit = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updateBookmarkMenuItemRow(
-                bookmarkMenuItemAdd, bookmarkMenuItemEdit, null);
-        verify(bookmarkMenuItemAdd).setVisible(false);
-        verify(bookmarkMenuItemEdit).setVisible(false);
-    }
-
-    @Test
-    public void updateBookmarkMenuItemRow_NullBookmarkModel() {
-        setShoppingListEligible(true);
-        mBookmarkModelSupplier.set(null);
-
-        MenuItem bookmarkMenuItemAdd = mock(MenuItem.class);
-        MenuItem bookmarkMenuItemEdit = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updateBookmarkMenuItemRow(
-                bookmarkMenuItemAdd, bookmarkMenuItemEdit, null);
-        verify(bookmarkMenuItemAdd).setVisible(false);
-        verify(bookmarkMenuItemEdit).setVisible(false);
     }
 
     @Test
@@ -1086,17 +1045,11 @@ public class AppMenuPropertiesDelegateUnitTest {
 
     @Test
     public void testStartSurfaceMenu() {
-        mStartSurfaceSupplier.set(mStartSurfaceCoordinator);
-        @LayoutType
-        int layoutType =
-                ChromeFeatureList.sStartSurfaceRefactor.isEnabled()
-                        ? LayoutType.START_SURFACE
-                        : LayoutType.TAB_SWITCHER;
+        @LayoutType int layoutType = LayoutType.START_SURFACE;
         setUpMocksForOverviewMenu(layoutType);
         doReturn(true).when(mAppMenuPropertiesDelegate).isAutoDarkWebContentsEnabled();
 
         when(mIncognitoTabModel.getCount()).thenReturn(0);
-        mAppMenuPropertiesDelegate.setStartSurfaceStateForTesting(StartSurfaceState.SHOWN_HOMEPAGE);
         Assert.assertTrue(mAppMenuPropertiesDelegate.shouldShowPageMenu());
         Assert.assertTrue(mAppMenuPropertiesDelegate.isInStartSurfaceHomepage());
         Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());

@@ -186,10 +186,15 @@ class CONTENT_EXPORT FedCmMetrics {
  public:
   FedCmMetrics(const GURL& provider,
                const ukm::SourceId page_source_id,
-               int session_id,
-               bool is_disabled);
+               int session_id);
 
   ~FedCmMetrics() = default;
+
+  // Records the number of times navigator.credentials.get() is called in a
+  // document. Requests made when FedCM is disabled or when there is a pending
+  // FedCM request are not counted.
+  static void RecordNumRequestsPerDocument(ukm::SourceId page_source_id,
+                                           const int num_requests);
 
   // Records the time from when a call to the API was made to when the accounts
   // dialog is shown.
@@ -290,11 +295,6 @@ class CONTENT_EXPORT FedCmMetrics {
   // Records a sample when an accounts request is sent.
   void RecordAccountsRequestSent();
 
-  // Records the number of times navigator.credentials.get() is called in a
-  // document. Requests made when FedCM is disabled, when there is a pending
-  // FedCM request or for the purpose of MDocs or multi-IDP are not counted.
-  void RecordNumRequestsPerDocument(const int num_requests);
-
   // Records metrics for a disconnect call. `duration` is nullopt if the
   // disconnect fetch request was not sent, in which case we do not log the
   // metric.
@@ -335,9 +335,6 @@ class CONTENT_EXPORT FedCmMetrics {
   // recording metrics. Each FedCM call gets a random integer session id, which
   // helps group UKM events by the session id.
   int session_id_;
-
-  // Whether metrics recording is disabled for the request.
-  bool is_disabled_{false};
 };
 
 // The following metric is recorded for UMA and UKM, but does not require an
@@ -370,6 +367,14 @@ void RecordSetLoginStatusIgnoredReason(FedCmSetLoginStatusIgnoredReason reason);
 // Records the lifecycle state if we fail a FedCM request due to a page not
 // being primary.
 void RecordLifecycleStateFailureReason(FedCmLifecycleStateFailureReason reason);
+
+// Records the number of accounts received before applying login/domain hints
+// filter.
+void RecordRawAccountsSize(int size);
+
+// Records the number of accounts received after applying login/domain hints
+// filter. If no account left, nothing will be recorded.
+void RecordReadyToShowAccountsSize(int size);
 
 }  // namespace content
 

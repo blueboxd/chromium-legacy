@@ -17,12 +17,13 @@
 #import "base/timer/elapsed_timer.h"
 #import "base/version.h"
 #import "components/bookmarks/browser/base_bookmark_model_observer.h"
-#import "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/browser/bookmark_node.h"
 #import "ios/chrome/app/spotlight/searchable_item_factory.h"
 #import "ios/chrome/app/spotlight/spotlight_interface.h"
 #import "ios/chrome/app/spotlight/spotlight_logger.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_service_factory.h"
 
@@ -54,6 +55,10 @@ class SpotlightBookmarkModelBridge;
 // stack, if any.
 @property(nonatomic, weak) NSOperation* nextBatchOperation;
 
+/// Tracks if a clear and reindex operation is pending e.g. while the app is
+/// backgrounded.
+@property(nonatomic, assign) BOOL needsClearAndReindex;
+
 @end
 
 @implementation BookmarksSpotlightManager {
@@ -63,9 +68,9 @@ class SpotlightBookmarkModelBridge;
   std::unique_ptr<BookmarkModelBridge> _accountBookmarkModelBridge;
 
   // Keep a reference to detach before deallocing.
-  raw_ptr<bookmarks::BookmarkModel> _localOrSyncableBookmarkModel;  // weak
+  raw_ptr<LegacyBookmarkModel> _localOrSyncableBookmarkModel;  // weak
   // `_accountBookmarkModel` can be `nullptr`.
-  raw_ptr<bookmarks::BookmarkModel> _accountBookmarkModel;  // weak
+  raw_ptr<LegacyBookmarkModel> _accountBookmarkModel;  // weak
 
   // Number of nodes indexed in initial scan.
   NSUInteger _nodesIndexed;
@@ -107,8 +112,8 @@ class SpotlightBookmarkModelBridge;
 - (instancetype)
         initWithLargeIconService:(favicon::LargeIconService*)largeIconService
     localOrSyncableBookmarkModel:
-        (bookmarks::BookmarkModel*)localOrSyncableBookmarkModel
-            accountBookmarkModel:(bookmarks::BookmarkModel*)accountBookmarkModel
+        (LegacyBookmarkModel*)localOrSyncableBookmarkModel
+            accountBookmarkModel:(LegacyBookmarkModel*)accountBookmarkModel
               spotlightInterface:(SpotlightInterface*)spotlightInterface
            searchableItemFactory:(SearchableItemFactory*)searchableItemFactory {
   self = [super initWithSpotlightInterface:spotlightInterface
@@ -164,7 +169,7 @@ class SpotlightBookmarkModelBridge;
   }
 
   NSMutableArray* parentNames = [self parentFolderNamesForNode:node->parent()];
-  bookmarks::BookmarkModel* parentModel = [self bookmarkModelForNode:node];
+  LegacyBookmarkModel* parentModel = [self bookmarkModelForNode:node];
 
   if (node->is_folder() && !parentModel->is_permanent_node(node)) {
     [parentNames addObject:base::SysUTF16ToNSString(node->GetTitle())];
@@ -298,7 +303,7 @@ class SpotlightBookmarkModelBridge;
 
 // Refreshes all nodes in the subtree of node.
 - (void)refreshNodeInIndex:(const bookmarks::BookmarkNode*)node
-                   inModel:(bookmarks::BookmarkModel*)model {
+                   inModel:(LegacyBookmarkModel*)model {
   DCHECK(node);
   DCHECK(model);
 
@@ -314,22 +319,14 @@ class SpotlightBookmarkModelBridge;
 // order (see comment in NodeTypeForUuidLookup).
 - (const bookmarks::BookmarkNode*)nodeWithUUID:(base::Uuid)uuid
                                usingLocalModel:(BOOL)isLocalModel {
-  bookmarks::BookmarkModel* model =
+  LegacyBookmarkModel* model =
       isLocalModel ? _localOrSyncableBookmarkModel : _accountBookmarkModel;
 
   if (!model || !model->loaded()) {
     return nullptr;
   }
 
-  const bookmarks::BookmarkNode* node = model->GetNodeByUuid(
-      uuid, bookmarks::BookmarkModel::NodeTypeForUuidLookup::kAccountNodes);
-  if (!node) {
-    node = model->GetNodeByUuid(
-        uuid,
-        bookmarks::BookmarkModel::NodeTypeForUuidLookup::kLocalOrSyncableNodes);
-  }
-
-  return node;
+  return model->GetNodeByUuid(uuid);
 }
 
 - (void)indexNextBatchInStack {
@@ -337,6 +334,11 @@ class SpotlightBookmarkModelBridge;
 
   if (self.isShuttingDown) {
     [self stopIndexing];
+    return;
+  }
+
+  if (self.isAppInBackground) {
+    // The next batch will auto resume on foreground.
     return;
   }
 
@@ -386,11 +388,34 @@ class SpotlightBookmarkModelBridge;
   [self detachBookmarkModel];
 }
 
+- (void)appWillEnterForeground {
+  [super appWillEnterForeground];
+
+  if (self.needsClearAndReindex) {
+    [self clearAndReindexModelIfNeeded];
+  } else {
+    [self indexNextBatchInStack];
+  }
+}
+
 - (void)clearAndReindexModel {
   [self stopIndexing];
 
   self.modelUpdatesShouldBeIgnored = YES;
   self.modelUpdatesShouldCauseFullReindex = NO;
+
+  self.needsClearAndReindex = YES;
+  [self clearAndReindexModelIfNeeded];
+}
+
+- (void)clearAndReindexModelIfNeeded {
+  if (self.isAppInBackground || !self.needsClearAndReindex) {
+    return;
+  }
+
+  [self stopIndexing];
+  self.needsClearAndReindex = NO;
+
   __weak BookmarksSpotlightManager* weakSelf = self;
   [self.spotlightInterface
       deleteSearchableItemsWithDomainIdentifiers:@[
@@ -409,6 +434,14 @@ class SpotlightBookmarkModelBridge;
   if (self.isShuttingDown) {
     return;
   }
+
+  // If the app is in background at this point, avoid accessing the spotlight
+  // index and schedule a full reindex on foreground.
+  if (self.isAppInBackground) {
+    self.needsClearAndReindex = YES;
+    return;
+  }
+
   self.modelUpdatesShouldBeIgnored = NO;
   self.modelUpdatesShouldCauseFullReindex = YES;
 
@@ -416,7 +449,6 @@ class SpotlightBookmarkModelBridge;
   // operations.
   DCHECK(_indexingStack.empty());
   DCHECK(!self.nextBatchOperation);
-  DCHECK(self.modelUpdatesShouldCauseFullReindex);
 
   // If this method is called before bookmark model loaded, or after it
   // unloaded, reindexing won't be possible. The latter should happen at
@@ -449,7 +481,7 @@ class SpotlightBookmarkModelBridge;
                             _pendingLargeIconTasksCount);
 }
 
-- (bookmarks::BookmarkModel*)bookmarkModelForNode:
+- (LegacyBookmarkModel*)bookmarkModelForNode:
     (const bookmarks::BookmarkNode*)node {
   if (node->HasAncestor(_localOrSyncableBookmarkModel->root_node())) {
     return _localOrSyncableBookmarkModel;
@@ -514,11 +546,11 @@ class SpotlightBookmarkModelBridge;
 
 #pragma mark - BookmarkModelBridgeObserver
 
-- (void)bookmarkModelLoaded:(bookmarks::BookmarkModel*)model {
+- (void)bookmarkModelLoaded:(LegacyBookmarkModel*)model {
   [self reindexBookmarksIfNeeded];
 }
 
-- (void)bookmarkModelBeingDeleted:(bookmarks::BookmarkModel*)model {
+- (void)bookmarkModelBeingDeleted:(LegacyBookmarkModel*)model {
   if (_accountBookmarkModel == model) {
     _accountBookmarkModel = nullptr;
   }
@@ -530,8 +562,15 @@ class SpotlightBookmarkModelBridge;
   [self stopIndexing];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
         didChangeNode:(const bookmarks::BookmarkNode*)bookmarkNode {
+  if (self.isAppInBackground) {
+    // Normally, no model updates should happen in background.
+    // In case they do, process them on foreground.
+    self.needsClearAndReindex = YES;
+    return;
+  }
+
   if (self.modelUpdatesShouldBeIgnored) {
     return;
   }
@@ -545,13 +584,20 @@ class SpotlightBookmarkModelBridge;
   [self refreshNodeInIndex:bookmarkNode inModel:model];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
     didChangeChildrenForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
            didAddNode:(const bookmarks::BookmarkNode*)node
              toFolder:(const bookmarks::BookmarkNode*)folder {
+  if (self.isAppInBackground) {
+    // Normally, no model updates should happen in background.
+    // In case they do, process them on foreground.
+    self.needsClearAndReindex = YES;
+    return;
+  }
+
   if (self.modelUpdatesShouldBeIgnored) {
     return;
   }
@@ -565,10 +611,17 @@ class SpotlightBookmarkModelBridge;
   [self refreshNodeInIndex:node inModel:model];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
           didMoveNode:(const bookmarks::BookmarkNode*)bookmarkNode
            fromParent:(const bookmarks::BookmarkNode*)oldParent
              toParent:(const bookmarks::BookmarkNode*)newParent {
+  if (self.isAppInBackground) {
+    // Normally, no model updates should happen in background.
+    // In case they do, process them on foreground.
+    self.needsClearAndReindex = YES;
+    return;
+  }
+
   if (self.modelUpdatesShouldBeIgnored) {
     return;
   }
@@ -582,12 +635,19 @@ class SpotlightBookmarkModelBridge;
   [self refreshNodeInIndex:bookmarkNode inModel:model];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
         didDeleteNode:(const bookmarks::BookmarkNode*)node
            fromFolder:(const bookmarks::BookmarkNode*)folder {
 }
 
-- (void)bookmarkModelRemovedAllNodes:(bookmarks::BookmarkModel*)model {
+- (void)bookmarkModelRemovedAllNodes:(LegacyBookmarkModel*)model {
+  if (self.isAppInBackground) {
+    // Normally, no model updates should happen in background.
+    // In case they do, process them on foreground.
+    self.needsClearAndReindex = YES;
+    return;
+  }
+
   if (self.modelUpdatesShouldBeIgnored) {
     return;
   }
@@ -601,9 +661,16 @@ class SpotlightBookmarkModelBridge;
   [self clearAllBookmarkSpotlightItems];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
        willDeleteNode:(const bookmarks::BookmarkNode*)node
            fromFolder:(const bookmarks::BookmarkNode*)folder {
+  if (self.isAppInBackground) {
+    // Normally, no model updates should happen in background.
+    // In case they do, process them on foreground.
+    self.needsClearAndReindex = YES;
+    return;
+  }
+
   if (self.modelUpdatesShouldBeIgnored) {
     return;
   }
@@ -618,8 +685,15 @@ class SpotlightBookmarkModelBridge;
 }
 
 // The node favicon changed.
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
     didChangeFaviconForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
+  if (self.isAppInBackground) {
+    // Normally, no model updates should happen in background.
+    // In case they do, process them on foreground.
+    self.needsClearAndReindex = YES;
+    return;
+  }
+
   if (self.modelUpdatesShouldBeIgnored) {
     return;
   }
@@ -633,8 +707,15 @@ class SpotlightBookmarkModelBridge;
   [self refreshNodeInIndex:bookmarkNode inModel:model];
 }
 
-- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+- (void)bookmarkModel:(LegacyBookmarkModel*)model
     willChangeBookmarkNode:(const bookmarks::BookmarkNode*)bookmarkNode {
+  if (self.isAppInBackground) {
+    // Normally, no model updates should happen in background.
+    // In case they do, process them on foreground.
+    self.needsClearAndReindex = YES;
+    return;
+  }
+
   if (self.modelUpdatesShouldBeIgnored) {
     return;
   }

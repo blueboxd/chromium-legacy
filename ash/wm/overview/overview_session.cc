@@ -13,7 +13,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
-#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
@@ -36,6 +35,7 @@
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_float_container_stacker.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/splitview/split_view_overview_session.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -59,6 +59,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/scoped_animation_disabler.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -66,7 +67,6 @@ namespace ash {
 namespace {
 
 // Values for scrolling the grid by using the keyboard.
-// TODO(sammiequon): See if we can use the same values used for web scrolling.
 constexpr int kKeyboardPressScrollingDp = 75;
 constexpr int kKeyboardHoldScrollingDp = 15;
 
@@ -456,7 +456,7 @@ void OverviewSession::SelectWindow(OverviewItemBase* item) {
   // opposed to having two consecutive calls.
   auto* window_state = WindowState::Get(window);
   if (window_state->IsMinimized()) {
-    ScopedAnimationDisabler disabler(window);
+    wm::ScopedAnimationDisabler disabler(window);
     // The following instance self-destructs when the window state changed.
     new AsyncWindowStateChangeObserver(
         window, base::BindOnce([](WindowState* window_state) {
@@ -767,7 +767,7 @@ void OverviewSession::PositionWindows(
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->PositionWindows(animate, ignored_items);
 
-  RefreshNoWindowsWidgetBoundsOnEachGrid(animate);
+  UpdateNoWindowsWidgetOnEachGrid(animate, /*is_continuous_enter=*/false);
 }
 
 bool OverviewSession::IsWindowInOverview(const aura::Window* window) {
@@ -1250,8 +1250,8 @@ void OverviewSession::UpdateAccessibilityFocus() {
   // If there is only one widget left, clear the focus overrides so that they
   // do not point to deleted objects.
   if (a11y_widgets.size() == 1) {
-    get_view_a11y(/*index=*/0).OverridePreviousFocus(nullptr);
-    get_view_a11y(/*index=*/0).OverrideNextFocus(nullptr);
+    get_view_a11y(/*index=*/0).SetPreviousFocus(nullptr);
+    get_view_a11y(/*index=*/0).SetNextFocus(nullptr);
     a11y_widgets[0]->GetContentsView()->NotifyAccessibilityEvent(
         ax::mojom::Event::kTreeChanged, true);
     return;
@@ -1261,8 +1261,8 @@ void OverviewSession::UpdateAccessibilityFocus() {
   for (int i = 0; i < size; ++i) {
     int previous_index = (i + size - 1) % size;
     int next_index = (i + 1) % size;
-    get_view_a11y(i).OverridePreviousFocus(a11y_widgets[previous_index]);
-    get_view_a11y(i).OverrideNextFocus(a11y_widgets[next_index]);
+    get_view_a11y(i).SetPreviousFocus(a11y_widgets[previous_index]);
+    get_view_a11y(i).SetNextFocus(a11y_widgets[next_index]);
     a11y_widgets[i]->GetContentsView()->NotifyAccessibilityEvent(
         ax::mojom::Event::kTreeChanged, true);
   }
@@ -1323,7 +1323,8 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
           ->InSplitViewMode()) {
     return;
   }
-  overview_grid->RefreshNoWindowsWidgetBounds(/*animate=*/false);
+  overview_grid->UpdateNoWindowsWidget(IsEmpty(), /*animate=*/false,
+                                       /*is_continuous_enter=*/false);
 }
 
 void OverviewSession::OnWindowDestroying(aura::Window* window) {
@@ -1568,11 +1569,13 @@ void OverviewSession::OnSplitViewStateChanged(
   // session.
   CHECK_NE(OverviewEnterExitType::kPine, enter_exit_overview_type_);
 
-  RefreshNoWindowsWidgetBoundsOnEachGrid(/*animate=*/false);
+  UpdateNoWindowsWidgetOnEachGrid(/*animate=*/false,
+                                  /*is_continuous_enter=*/false);
 }
 
 void OverviewSession::OnSplitViewDividerPositionChanged() {
-  RefreshNoWindowsWidgetBoundsOnEachGrid(/*animate=*/false);
+  UpdateNoWindowsWidgetOnEachGrid(/*animate=*/false,
+                                  /*is_continuous_enter=*/false);
 }
 
 void OverviewSession::OnDisplayTabletStateChanged(display::TabletState state) {
@@ -1607,9 +1610,8 @@ bool OverviewSession::ProcessForScrolling(const ui::KeyEvent& event) {
     return false;
   }
 
-  // TODO(sammiequon): This only works for tablet mode at the moment, so using
-  // the primary display works. If this feature is adapted for multi display
-  // then this needs to be revisited.
+  // The scrollable overview grid only works for tablet mode, so using the
+  // primary display works.
   auto* grid = GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
   const bool press = (event.type() == ui::ET_KEY_PRESSED);
 
@@ -1657,16 +1659,6 @@ void OverviewSession::UpdateNoWindowsWidgetOnEachGrid(
   for (auto& grid : grid_list_) {
     grid->UpdateNoWindowsWidget(IsEmpty(), animate, is_continuous_enter);
   }
-}
-
-void OverviewSession::RefreshNoWindowsWidgetBoundsOnEachGrid(bool animate) {
-  // If there are overview items then the no windows widgets will not be
-  // visible so early return.
-  if (!IsEmpty())
-    return;
-
-  for (auto& grid : grid_list_)
-    grid->RefreshNoWindowsWidgetBounds(animate);
 }
 
 void OverviewSession::OnItemAdded(aura::Window* window) {

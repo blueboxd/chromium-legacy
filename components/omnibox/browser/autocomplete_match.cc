@@ -4,8 +4,9 @@
 
 #include "components/omnibox/browser/autocomplete_match.h"
 
+#include <vector>
+
 #include "base/check_op.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
@@ -32,6 +33,7 @@
 #include "components/omnibox/browser/document_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_engine_utils.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -279,6 +281,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       allowed_to_be_default_match(match.allowed_to_be_default_match),
       destination_url(match.destination_url),
       stripped_destination_url(match.stripped_destination_url),
+      extra_headers(match.extra_headers),
       image_dominant_color(match.image_dominant_color),
       image_url(match.image_url),
       entity_id(match.entity_id),
@@ -341,6 +344,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   allowed_to_be_default_match = std::move(match.allowed_to_be_default_match);
   destination_url = std::move(match.destination_url);
   stripped_destination_url = std::move(match.stripped_destination_url);
+  extra_headers = std::move(match.extra_headers);
   image_dominant_color = std::move(match.image_dominant_color);
   image_url = std::move(match.image_url);
   entity_id = std::move(match.entity_id);
@@ -410,6 +414,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   allowed_to_be_default_match = match.allowed_to_be_default_match;
   destination_url = match.destination_url;
   stripped_destination_url = match.stripped_destination_url;
+  extra_headers = match.extra_headers;
   image_dominant_color = match.image_dominant_color;
   image_url = match.image_url;
   entity_id = match.entity_id;
@@ -619,6 +624,9 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
           case KEYWORD_MODE_STARTER_PACK_TABS:
             return use_chrome_refresh_icons ? omnibox::kProductChromeRefreshIcon
                                             : omnibox::kProductIcon;
+
+          case KEYWORD_MODE_STARTER_PACK_ASK_GOOGLE:
+            return omnibox::kSparkIcon;
           default:
             break;
         }
@@ -1411,7 +1419,7 @@ void AutocompleteMatch::FilterAndSortActionsInSuggest() {
   // Collect all Actions in Suggest.
   omnibox::ActionInfo::ActionType remove_action_type =
       OmniboxFieldTrial::kActionsInSuggestRemoveActionTypes.Get();
-  base::EraseIf(actions, [&actions_in_suggest_to_reinsert, remove_action_type](
+  std::erase_if(actions, [&actions_in_suggest_to_reinsert, remove_action_type](
                              const scoped_refptr<OmniboxAction>& action) {
     auto* ais = OmniboxActionInSuggest::FromAction(action.get());
     if (ais != nullptr && ais->Type() != remove_action_type) {
@@ -1487,6 +1495,7 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(prefix_autocompletion);
   res += base::trace_event::EstimateMemoryUsage(destination_url);
   res += base::trace_event::EstimateMemoryUsage(stripped_destination_url);
+  res += base::trace_event::EstimateMemoryUsage(extra_headers);
   res += base::trace_event::EstimateMemoryUsage(image_dominant_color);
   res += base::trace_event::EstimateMemoryUsage(image_url);
   res += base::trace_event::EstimateMemoryUsage(entity_id);

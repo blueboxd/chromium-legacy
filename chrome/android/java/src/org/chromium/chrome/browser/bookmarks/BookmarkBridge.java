@@ -53,6 +53,12 @@ class BookmarkBridge {
     private @Nullable BookmarkId mDesktopFolderId;
     private @Nullable BookmarkId mLocalOrSyncableReadingListFolderId;
 
+    /** Returns whether account bookmark folders are currently active. */
+    public boolean areAccountBookmarkFoldersActive() {
+        ThreadUtils.assertOnUiThread();
+        return BookmarkBridgeJni.get().areAccountBookmarkFoldersActive(mNativeBookmarkBridge);
+    }
+
     /**
      * Handler to fetch the bookmarks, titles, urls and folder hierarchy.
      *
@@ -93,11 +99,14 @@ class BookmarkBridge {
     /**
      * Gets the url for an image representing the given url.
      *
-     * @param url The url to fetch the image for.
+     * @param url The bookmark url to get the image url for.
+     * @param isAccountBookmark Whether the bookmark is associated with an account.
      * @param callback The callback which will receive the image url.
      */
-    public void getImageUrlForBookmark(GURL url, Callback<GURL> callback) {
-        BookmarkBridgeJni.get().getImageUrlForBookmark(mNativeBookmarkBridge, url, callback);
+    public void getImageUrlForBookmark(
+            GURL url, boolean isAccountBookmark, Callback<GURL> callback) {
+        BookmarkBridgeJni.get()
+                .getImageUrlForBookmark(mNativeBookmarkBridge, url, isAccountBookmark, callback);
     }
 
     /** Returns the most recently added BookmarkId */
@@ -226,7 +235,10 @@ class BookmarkBridge {
      * @param ignoreVisibility Whether the visible while empty logic, found in BookmarkClient, is
      *     used when gathering nodes. When true, all folders are shown regardless of client defined
      *     visibility. When false, the client defined visibility rules are used. See
-     *     components/bookmarks/browser/bookmark_client.h for more information.
+     *     components/bookmarks/browser/bookmark_client.h for more information. When account
+     *     bookmarks are active, only a subset of the local folders are included when this is true.
+     *     This is to avoid overloading the user with a lof of unnecessary local folders (folders
+     *     included are the local Mobile and Reading List folders).
      * @return The top level folders, including special folders (managed bookmarks, reading list,
      *     partner bookmarks).
      */
@@ -268,11 +280,20 @@ class BookmarkBridge {
         return BookmarkBridgeJni.get().getAccountReadingListFolder(mNativeBookmarkBridge);
     }
 
+    /** Returns the default reading list location. */
     public BookmarkId getDefaultReadingListFolder() {
         ThreadUtils.assertOnUiThread();
         if (mNativeBookmarkBridge == 0) return null;
         assert mIsNativeBookmarkModelLoaded;
         return BookmarkBridgeJni.get().getDefaultReadingListFolder(mNativeBookmarkBridge);
+    }
+
+    /** Returns the default bookmark location. */
+    public BookmarkId getDefaultBookmarkFolder() {
+        ThreadUtils.assertOnUiThread();
+        if (mNativeBookmarkBridge == 0) return null;
+        assert mIsNativeBookmarkModelLoaded;
+        return BookmarkBridgeJni.get().getDefaultBookmarkFolder(mNativeBookmarkBridge);
     }
 
     /**
@@ -1036,6 +1057,11 @@ class BookmarkBridge {
         depthList.add(depth);
     }
 
+    @CalledByNative
+    private static void clearLastUsedParent() {
+        BookmarkUtils.clearLastUsedPrefs();
+    }
+
     private static List<Pair<Integer, Integer>> createPairsList(int[] left, int[] right) {
         List<Pair<Integer, Integer>> pairList = new ArrayList<>();
         for (int i = 0; i < left.length; i++) {
@@ -1049,7 +1075,13 @@ class BookmarkBridge {
     public interface Natives {
         BookmarkModel nativeGetForProfile(Profile profile);
 
-        void getImageUrlForBookmark(long nativeBookmarkBridge, GURL url, Callback<GURL> callback);
+        boolean areAccountBookmarkFoldersActive(long nativeBookmarkBridge);
+
+        void getImageUrlForBookmark(
+                long nativeBookmarkBridge,
+                GURL url,
+                boolean isAccountBookmark,
+                Callback<GURL> callback);
 
         BookmarkId getMostRecentlyAddedUserBookmarkIdForUrl(long nativeBookmarkBridge, GURL url);
 
@@ -1065,6 +1097,8 @@ class BookmarkBridge {
         BookmarkId getAccountReadingListFolder(long nativeBookmarkBridge);
 
         BookmarkId getDefaultReadingListFolder(long nativeBookmarkBridge);
+
+        BookmarkId getDefaultBookmarkFolder(long nativeBookmarkBridge);
 
         // TODO(crbug.com/1515332): Remove this method.
         void getAllFoldersWithDepths(

@@ -361,9 +361,6 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kZoom);
     params.types_enabled.push_back(PageActionIconType::kFileSystemAccess);
 
-    if (dom_distiller::IsDomDistillerEnabled() && browser_->is_type_normal()) {
-      params.types_enabled.push_back(PageActionIconType::kReaderMode);
-    }
     if (features::IsReadAnythingOmniboxIconEnabled()) {
       params.types_enabled.push_back(PageActionIconType::kReadAnything);
     }
@@ -384,7 +381,7 @@ void LocationBarView::Init() {
 
   // TODO(crbug.com/1167060): Place this in the proper order upon having final
   // mocks.
-  params.types_enabled.push_back(PageActionIconType::kSaveAutofillAddress);
+  params.types_enabled.push_back(PageActionIconType::kAutofillAddress);
 
   if (browser_) {
     if (sharing_hub::HasPageAction(profile_, is_popup_mode_) &&

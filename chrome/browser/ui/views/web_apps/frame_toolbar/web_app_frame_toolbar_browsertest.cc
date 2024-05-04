@@ -1353,7 +1353,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
 
 #if BUILDFLAG(IS_WIN)
   views::NamedWidgetShownWaiter widget_waiter(
-      views::test::AnyWidgetTestPasskey{}, "DropdownBarHost");
+      views::test::AnyWidgetTestPasskey{}, "FindBarHost");
   // Press Ctrl+F to open find bar.
   content::NativeWebKeyboardEvent event(
       blink::WebKeyboardEvent::Type::kRawKeyDown,
@@ -1757,7 +1757,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
       LoadWholeAppIsDraggableTestPageWithDataAndGetURL()));
   content::WaitForLoadStop(helper()->browser_view()->GetActiveWebContents());
 
-  absl::optional<SkRegion> draggable_region =
+  std::optional<SkRegion> draggable_region =
       helper()->browser_view()->browser()->app_controller()->draggable_region();
 
   EXPECT_TRUE(draggable_region.has_value());
@@ -2025,9 +2025,17 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Test to ensure crbug.com/1513330 won't reproduce.
+// TODO(b/41492287): Flaky on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_WindowSetResizableDoesntBlockMoveToAndMoveByApis \
+  DISABLED_WindowSetResizableDoesntBlockMoveToAndMoveByApis
+#else
+#define MAYBE_WindowSetResizableDoesntBlockMoveToAndMoveByApis \
+  WindowSetResizableDoesntBlockMoveToAndMoveByApis
+#endif
 IN_PROC_BROWSER_TEST_F(
     WebAppFrameToolbarBrowserTest_AdditionalWindowingControls,
-    WindowSetResizableDoesntBlockMoveToAndMoveByApis) {
+    MAYBE_WindowSetResizableDoesntBlockMoveToAndMoveByApis) {
   InstallAndLaunchWebApp();
   helper()->GrantWindowManagementPermission();
 

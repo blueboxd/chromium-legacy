@@ -8267,6 +8267,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CookieControls.HighConfidence.Opened">
+  <obsolete>
+    Deprecated as of 02/2024 (replaced by
+    TrackingProtection.UserBypass.Animated.Opened).
+  </obsolete>
   <owner>kmg@google.com</owner>
   <owner>sauski@google.com</owner>
   <description>
@@ -8275,6 +8279,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CookieControls.HighConfidence.Shown">
+  <obsolete>
+    Deprecated as of 02/2024 (replaced by
+    TrackingProtection.UserBypass.Animated).
+  </obsolete>
   <owner>kmg@google.com</owner>
   <owner>sauski@google.com</owner>
   <description>
@@ -8283,6 +8291,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CookieControls.LowConfidence.Opened">
+  <obsolete>Deprecated as of 02/2024.</obsolete>
   <owner>kmg@google.com</owner>
   <owner>sauski@google.com</owner>
   <description>
@@ -8291,6 +8300,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CookieControls.LowConfidence.Shown">
+  <obsolete>Deprecated as of 02/2024.</obsolete>
   <owner>kmg@google.com</owner>
   <owner>sauski@google.com</owner>
   <description>
@@ -8299,6 +8309,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CookieControls.MediumConfidence.Opened">
+  <obsolete>
+    Deprecated as of 02/2024 (replaced by
+    TrackingProtection.UserBypass.Shown.Opened).
+  </obsolete>
   <owner>kmg@google.com</owner>
   <owner>sauski@google.com</owner>
   <description>
@@ -8307,6 +8321,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CookieControls.MediumConfidence.Shown">
+  <obsolete>
+    Deprecated as of 02/2024 (replaced by TrackingProtection.UserBypass.Shown).
+  </obsolete>
   <owner>kmg@google.com</owner>
   <owner>sauski@google.com</owner>
   <description>
@@ -8506,6 +8523,13 @@ should be able to be added at any place in this file.
     Please enter the description of the metric. Starting with M84 this is is
     also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
     data.
+  </description>
+</action>
+
+<action name="CustomTabs.OmniboxClicked">
+  <owner>ender@google.com</owner>
+  <description>
+    Emitted by CCT when the Omnibox is clicked whenever CCT hosts an Omnibox.
   </description>
 </action>
 
@@ -9495,6 +9519,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DownloadNotificationV2.Button_CopyToClipboard">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>cros-system-ui-productivity-eng@google.com</owner>
+  <description>
+    User clicks &quot;Copy to clipboard&quot; button on a download notification
+    with the downloads integration V2 feature enabled.
+  </description>
+</action>
+
 <action name="DownloadNotificationV2.Button_Pause">
   <owner>andrewxu@chromium.org</owner>
   <owner>cros-system-ui-productivity-eng@google.com</owner>
@@ -9519,6 +9552,15 @@ should be able to be added at any place in this file.
   <description>
     User clicks &quot;Show in folder&quot; button on a download notification
     with the downloads integration V2 feature enabled.
+  </description>
+</action>
+
+<action name="DownloadNotificationV2.Button_ViewDetailsInBrowser">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>cros-system-ui-productivity-eng@google.com</owner>
+  <description>
+    User clicks &quot;View details in browser&quot; button on a download
+    notification with the downloads integration V2 feature enabled.
   </description>
 </action>
 
@@ -13376,6 +13418,93 @@ should be able to be added at any place in this file.
   <description>
     Reported when an insecure form is submitted anyway despite the warning. iOS
     only.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInAlert.Cancelled">
+  <owner>scottyoder@google.com</owner>
+  <owner>hiramahmood@google.com</owner>
+  <description>
+    Recorded after the iOS notifications alert is requested and the user cancels
+    the alert.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInAlert.Error" not_user_triggered="true">
+  <owner>scottyoder@google.com</owner>
+  <owner>hiramahmood@google.com</owner>
+  <description>
+    Recorded after the iOS notifications alert is requested and an error occurs.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInAlert.OpenedSettings">
+  <owner>scottyoder@google.com</owner>
+  <owner>hiramahmood@google.com</owner>
+  <description>
+    Recorded after the iOS notifications alert is requested and the user taps on
+    the Open Settings option.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInAlert.PermissionDenied">
+  <owner>scottyoder@google.com</owner>
+  <owner>hiramahmood@google.com</owner>
+  <description>
+    Recorded after the iOS notifications alert is requested and permission to
+    enabled notifications is denied.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInAlert.PermissionGranted">
+  <owner>scottyoder@google.com</owner>
+  <owner>hiramahmood@google.com</owner>
+  <description>
+    Recorded after permission is granted to enable notifications.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInPrompt.ContentEnabled">
+  <owner>hiramahmood@google.com</owner>
+  <owner>scottyoder@google.com</owner>
+  <description>
+    Recorded when the user opts in to Content notifications through the
+    Notifications Opt-In prompt.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInPrompt.NotificationsEnabled">
+  <owner>hiramahmood@google.com</owner>
+  <owner>scottyoder@google.com</owner>
+  <description>
+    Recorded when the user's notification opt-in preferances are successfully
+    enabled.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInPrompt.PriceTrackingEnabled">
+  <owner>hiramahmood@google.com</owner>
+  <owner>scottyoder@google.com</owner>
+  <description>
+    Recorded when the user opts in to Tips notifications through the
+    Notifications Opt-In prompt.
+  </description>
+</action>
+
+<action name="IOS.Notifications.OptInPrompt.TipsEnabled">
+  <owner>hiramahmood@google.com</owner>
+  <owner>scottyoder@google.com</owner>
+  <description>
+    Recorded when the user opts in to Price Tracking notifications through the
+    Notifications Opt-In prompt.
+  </description>
+</action>
+
+<action name="IOS.Notifications.Tips.NotSentError" not_user_triggered="true">
+  <owner>scottyoder@google.com</owner>
+  <owner>hiramahmood@google.com</owner>
+  <description>
+    Recorded when there is an error sending a notification to the user.
   </description>
 </action>
 
@@ -20532,6 +20661,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileContentNotificationsSettingsBack">
+  <owner>guiperez@google.com</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    Reported when user goes back from Content Notification Settings UI to the
+    root Notification Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileContentNotificationsSettingsClose">
+  <owner>guiperez@google.com</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    Is reported when the Content Notification Settings UI is dismissed. iOS
+    only.
+  </description>
+</action>
+
 <action name="MobileContentSettingsBack">
   <owner>gambard@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -20999,6 +21146,23 @@ should be able to be added at any place in this file.
     User tapped on the UMA link on the first run welcome view. This metric is
     only recorded if and after the TOS are accepted. This metric is specific to
     iOS.
+  </description>
+</action>
+
+<action name="MobileFullscreenEntered">
+  <owner>ajuma@chromium.org</owner>
+  <owner>alionadangla@chromium.org</owner>
+  <description>
+    Reported when user scrolled to enter in fullscreen mode. iOS only.
+  </description>
+</action>
+
+<action name="MobileFullscreenExited">
+  <owner>ajuma@chromium.org</owner>
+  <owner>alionadangla@chromium.org</owner>
+  <description>
+    Reported when user scrolled or tapped on the toolbars to exit fullscreen
+    mode. iOS only.
   </description>
 </action>
 
@@ -22574,6 +22738,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobilePageLoadedWithToEdge" not_user_triggered="true">
+  <owner>lazzzis@google.com</owner>
+  <owner>edge-to-edge@chromium.org</owner>
+  <description>
+    Reported when a web page is loaded with edge to edge drawing enabled for the
+    page. Android only.
+  </description>
+</action>
+
 <action name="MobilePasswordBreachOpenPasswordManager">
   <owner>noemies@google.com</owner>
   <description>
@@ -24099,15 +24272,21 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabStripCloseTab">
-  <obsolete>Deprecated as of 5/2015</obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User tapped on the close button of a tab strip tab. Obsolete until
+    19/02/2024.
+  </description>
 </action>
 
 <action name="MobileTabStripNewTab">
-  <obsolete>Deprecated as of 5/2015</obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User opened a tab using the tab strip new ta button. Obsolete until
+    19/02/2024.
+  </description>
 </action>
 
 <action name="MobileTabStripScrollDidEnd">
@@ -25037,9 +25216,50 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MultitaskMenu_Exit_Fullscreen">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@chromium.org</owner>
+  <description>
+    Recorded when the user pressed the exit fullscreen option in the multitask
+    menu.
+  </description>
+</action>
+
+<action name="MultitaskMenu_Float">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@chromium.org</owner>
+  <description>
+    Recorded when the user pressed the float option in the multitask menu.
+  </description>
+</action>
+
+<action name="MultitaskMenu_Fullscreen">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@chromium.org</owner>
+  <description>
+    Recorded when the user pressed the fullscreen option in the multitask menu.
+  </description>
+</action>
+
+<action name="MultitaskMenu_HalfSplit_Primary">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@chromium.org</owner>
+  <description>
+    Recorded when a window is half split to primary direction.
+  </description>
+</action>
+
+<action name="MultitaskMenu_HalfSplit_Secondary">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@chromium.org</owner>
+  <description>
+    Recorded when a window is half split to secondary direction.
+  </description>
+</action>
+
 <action name="MultitaskMenu_PartialSplit_OneThird">
   <owner>sophiewen@chromium.org</owner>
-  <owner>shidi@chromium.org</owner>
+  <owner>chromeos-wm-corexp@chromium.org</owner>
   <description>
     Recorded when a window is partial split to one third.
   </description>
@@ -25047,9 +25267,17 @@ should be able to be added at any place in this file.
 
 <action name="MultitaskMenu_PartialSplit_TwoThirds">
   <owner>sophiewen@chromium.org</owner>
-  <owner>shidi@chromium.org</owner>
+  <owner>chromeos-wm-corexp@chromium.org</owner>
   <description>
     Recorded when a window is partial split to two thirds.
+  </description>
+</action>
+
+<action name="MultitaskMenu_UnFloat">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@chromium.org</owner>
+  <description>
+    Recorded when the user pressed the unfloat option in the multitask menu.
   </description>
 </action>
 
@@ -33116,6 +33344,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingHubDesktop.FollowSelected">
+  <obsolete>Removed 02/2024</obsolete>
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <description>
@@ -33169,6 +33398,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingHubDesktop.UnfollowSelected">
+  <obsolete>Removed 02/2024</obsolete>
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <description>
@@ -33836,6 +34066,15 @@ should be able to be added at any place in this file.
   <owner>lens-chrome-eng@google.com</owner>
   <owner>juanmojica@google.com</owner>
   <description>Recorded when the Lens side panel entry is shown.</description>
+</action>
+
+<action name="SidePanel.LensOverlayResults.Shown">
+  <owner>lens-chrome-eng@google.com</owner>
+  <owner>juanmojica@google.com</owner>
+  <owner>mercerd@google.com</owner>
+  <description>
+    Recorded when the Lens Overlay side panel entry is shown.
+  </description>
 </action>
 
 <action name="SidePanel.Performance.Pinned.BySidePanelHeaderButton">
@@ -38024,6 +38263,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Sync_OpenLinkedServicesPage">
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <description>
+    The user has clicked on the linked services row in
+    chrome://settings/syncSetup to open the Linked Services page.
+  </description>
+</action>
+
 <action name="Sync_SaveNewPassphraseClicked">
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -39410,6 +39658,32 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TrackingProtection.UserBypass.Animated">
+  <owner>alvingo@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>User bypass icon was animated.</description>
+</action>
+
+<action name="TrackingProtection.UserBypass.Animated.Opened">
+  <owner>alvingo@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>User bypass icon was animated and clicked on.</description>
+</action>
+
+<action name="TrackingProtection.UserBypass.Shown">
+  <owner>alvingo@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>User bypass icon was shown and not animated.</description>
+</action>
+
+<action name="TrackingProtection.UserBypass.Shown.Opened">
+  <owner>alvingo@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    User bypass icon was shown and clicked on (without animation).
+  </description>
+</action>
+
 <action name="TrackpadScroll">
   <obsolete>
     Not needed as of 05/2018 since performance metrics for ScrollBegin show the
@@ -39859,6 +40133,15 @@ should be able to be added at any place in this file.
   <owner>mickeyburks@chromium.org</owner>
   <owner>frizzle-team@google.com</owner>
   <description>An IPH was not shown to the user due to an error.</description>
+</action>
+
+<action name="UserEducation.MessageNotShown.ExceededMaxShowCount">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown because it has been shown more than the allowed number
+    of times.
+  </description>
 </action>
 
 <action name="UserEducation.MessageNotShown.FeatureDisabled">
@@ -41214,6 +41497,8 @@ should be able to be added at any place in this file.
       label="For AutoDarkUserEducationMessageOptIn feature."/>
   <suffix name="AutofillExternalAccountProfileSuggestion"
       label="For AutofillExternalAccountProfileSuggestion feature."/>
+  <suffix name="AutofillManualFallback"
+      label="For AutofillManualFallback feature."/>
   <suffix name="AutofillVirtualCardSuggestion"
       label="For AutofillVirtualCardSuggestion feature."/>
   <suffix name="BackNavigationMenu" label="For BackNavigationMenu feature."/>
@@ -41277,6 +41562,8 @@ should be able to be added at any place in this file.
   <suffix name="DataSaverMilestonePromo"
       label="For DataSaverMilestonePromo feature."/>
   <suffix name="DataSaverPreview" label="For DataSaverPreview feature."/>
+  <suffix name="DeepScanPromptRemoval"
+      label="For deep scan prompt removal feature."/>
   <suffix name="DefaultSiteView" label="For DefaultSiteView feature."/>
   <suffix name="DesktopCustomizeChrome" label="For Customize Chrome feature."/>
   <suffix name="DesktopCustomizeChromeRefresh"
@@ -41314,32 +41601,36 @@ should be able to be added at any place in this file.
       label="For Extensions request access button feature."/>
   <suffix name="FeatureNotificationGuideDefaultBrowserNotificationShown"
       label="For feature notification guide default browser notification
-             feature."/>
+             feature. (obsolete)"/>
   <suffix name="FeatureNotificationGuideDefaultBrowserPromo"
-      label="For feature notification guide default browser promo."/>
+      label="For feature notification guide default browser promo. (obsolete)"/>
   <suffix name="FeatureNotificationGuideIncognitoTabHelpBubble"
-      label="For feature notification guide incognito tab help bubble."/>
+      label="For feature notification guide incognito tab help bubble.
+             (obsolete)"/>
   <suffix name="FeatureNotificationGuideIncognitoTabNotificationShown"
       label="For feature notification guide incognito tab notification
-             feature."/>
+             feature. (obsolete)"/>
   <suffix name="FeatureNotificationGuideIncognitoTabUsed"
-      label="For FeatureNotificationGuideIncognitoTabUsed feature."/>
+      label="For FeatureNotificationGuideIncognitoTabUsed feature. (obsolete)"/>
   <suffix name="FeatureNotificationGuideNTPSuggestionCardHelpBubble"
-      label="For feature notification guide NTP suggestion card help bubble."/>
+      label="For feature notification guide NTP suggestion card help bubble.
+             (obsolete)"/>
   <suffix name="FeatureNotificationGuideNTPSuggestionCardNotificationShown"
       label="For feature notification guide NTP suggestion card notification
-             feature."/>
+             feature. (obsolete)"/>
   <suffix name="FeatureNotificationGuideSignInHelpBubble"
-      label="For feature notification guide sign in help bubble."/>
+      label="For feature notification guide sign in help bubble. (obsolete)"/>
   <suffix name="FeatureNotificationGuideSignInNotificationShown"
-      label="For feature notification guide sign in notification feature."/>
+      label="For feature notification guide sign in notification feature.
+             (obsolete)"/>
   <suffix name="FeatureNotificationGuideVoiceSearchHelpBubble"
-      label="For feature notification guide voice search help bubble."/>
+      label="For feature notification guide voice search help bubble.
+             (obsolete)"/>
   <suffix name="FeatureNotificationGuideVoiceSearchNotificationShown"
       label="For feature notification guide voice search notification
-             feature."/>
+             feature. (obsolete)"/>
   <suffix name="FeatureNotificationGuideVoiceSearchUsed"
-      label="For FeatureNotificationGuideVoiceSearchUsed feature."/>
+      label="For FeatureNotificationGuideVoiceSearchUsed feature. (obsolete)"/>
   <suffix name="FeedCardMenu" label="For FeedCardMenu feature."/>
   <suffix name="FeedHeaderMenu" label="For FeedHeaderMenu feature."/>
   <suffix name="FeedSwipeRefresh" label="For FeedSwipeRefresh feature."/>
@@ -41369,7 +41660,8 @@ should be able to be added at any place in this file.
   <suffix name="IntentChip"
       label="In product help for opening a webpage in an app using the intent
              chip."/>
-  <suffix name="iOSChoiceScreen" label="For iOSChoiceScreen feature"/>
+  <suffix name="iOSChoiceScreen"
+      label="(obsolete) For iOSChoiceScreen feature"/>
   <suffix name="iOSDefaultBrowserBadgeEligibility"
       label="For iOSDefaultBrowserBadgeEligibility feature"/>
   <suffix name="iOSDefaultBrowserOverflowMenuBadge"
@@ -41387,12 +41679,15 @@ should be able to be added at any place in this file.
       label="For iOSNewTabToolbarItemFeature feature"/>
   <suffix name="iOSOmniboxPositionFeature"
       label="For the iOSOmniboxPositionFeature feature"/>
+  <suffix name="iOSOverflowMenuCustomization"
+      label="For iOSOverflowMenuCustomization feature"/>
   <suffix name="iOSParcelTrackingFeature"
       label="For the iOSParcelTrackingFeature feature"/>
   <suffix name="iOSPasswordPromoDesktop"
       label="For iOSPasswordPromoDesktop feature"/>
   <suffix name="iOSPostDefaultAbandonmentPromo"
       label="For iOSPostDefaultAbandonmentPromo feature"/>
+  <suffix name="iOSPromoAllTabs" label="For All Tabs default browser promo."/>
   <suffix name="iOSPromoAppStore" label="For iOSPromoAppStore feature"/>
   <suffix name="iOSPromoCredentialProviderExtension"
       label="For iOSPromoCredentialProviderExtension feature"/>
@@ -41400,11 +41695,16 @@ should be able to be added at any place in this file.
       label="For iOSPromoDefaultBrowser feature"/>
   <suffix name="iOSPromoDefaultBrowserReminder"
       label="For iOSPromoDefaultBrowserReminder feature"/>
+  <suffix name="iOSPromoGenericDefaultBrowser"
+      label="For generivc default browser promo."/>
+  <suffix name="iOSPromoMadeForIOS"
+      label="For Made for iOS default browser promo."/>
   <suffix name="iOSPromoPasswordManagerWidget"
       label="For iOSPromoPasswordManagerWidget feature"/>
   <suffix name="iOSPromoPostRestore" label="For iOSPromoPostRestore feature"/>
   <suffix name="iOSPromoPostRestoreDefaultBrowser"
       label="For iOSPromoPostRestoreDefaultBrowser feature"/>
+  <suffix name="iOSPromoStaySafe" label="For Stay Safe default browser promo."/>
   <suffix name="iOSPromoWhatsNew" label="For iOSPromoWhatsNew feature"/>
   <suffix name="iOSPullToRefreshFeature"
       label="For iOSPullToRefreshFeature feature"/>
@@ -41414,6 +41714,8 @@ should be able to be added at any place in this file.
       label="For iOSShareToolbarItemFeature feature"/>
   <suffix name="iOSSwipeBackForwardFeature"
       label="For iOSSwipeBackForwardFeature feature"/>
+  <suffix name="iOSSwipeToolbarToChangeTabFeature"
+      label="For iOSSwipeToolbarToChangeTabFeature feature"/>
   <suffix name="iOSTabGridSwipeRightForIncognito"
       label="For iOSTabGridSwipeRightForIncognito feature"/>
   <suffix name="iOSTabGridToolbarItemFeature"
@@ -41479,6 +41781,7 @@ should be able to be added at any place in this file.
       label="For Android PWA install menu."/>
   <suffix name="QuietNotificationPrompts"
       label="For the quiet notification prompts feature."/>
+  <suffix name="ReadAloudAppMenuFeature" label="For ReadAloudAppMenu feature."/>
   <suffix name="ReadingListDiscovery"
       label="For ReadingListDiscoveryFeature feature."/>
   <suffix name="ReadingListEntryPoint"
@@ -42128,6 +42431,7 @@ should be able to be added at any place in this file.
   <suffix name="NewTabButton" label="New tab button for thumbnail tab strip"/>
   <suffix name="PinnedClearBrowsingDataButton"
       label="Pinned clear browsing data button"/>
+  <suffix name="PinnedDevToolsButton" label="Pinned developer tools button"/>
   <suffix name="PinnedNewIncognitoWindowButton"
       label="Pinned new incognito window button"/>
   <suffix name="PinnedPrintButton" label="Pinned print button"/>

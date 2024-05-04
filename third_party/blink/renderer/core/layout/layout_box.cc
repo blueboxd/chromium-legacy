@@ -1257,7 +1257,8 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
 
   const bool apply_fixed_size = StyleRef().ApplyControlFixedSize(&element);
   const auto* select = DynamicTo<HTMLSelectElement>(element);
-  if (UNLIKELY(select && select->UsesMenuList() && !select->SlottedButton())) {
+  if (UNLIKELY(select && select->UsesMenuList() &&
+               !select->IsAppearanceBikeshed())) {
     return apply_fixed_size ? MenuListIntrinsicInlineSize(*select, *this)
                             : kIndefiniteSize;
   }
@@ -4359,21 +4360,6 @@ const LayoutObject* LayoutBox::AcceptableImplicitAnchor() const {
   };
   ForEachAnchorQueryOnContainer(*this, validate_anchor);
   return is_acceptable_anchor ? anchor_layout_object : nullptr;
-}
-
-std::optional<wtf_size_t> LayoutBox::PositionFallbackIndex() const {
-  const auto& layout_results = GetLayoutResults();
-  if (layout_results.empty()) {
-    return std::nullopt;
-  }
-  // We only need to check the first fragment, because when the box is
-  // fragmented, position fallback results are duplicated on all fragments.
-#if EXPENSIVE_DCHECKS_ARE_ON()
-  AssertSameDataOnLayoutResults(layout_results, [](const auto& result) {
-    return result->PositionFallbackIndex();
-  });
-#endif
-  return layout_results.front()->PositionFallbackIndex();
 }
 
 const Vector<NonOverflowingScrollRange>*

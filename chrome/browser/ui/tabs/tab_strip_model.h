@@ -171,9 +171,9 @@ class TabStripModel : public TabGroupController {
   // Retrieve the Profile associated with this TabStripModel.
   Profile* profile() const { return profile_; }
 
-  // Retrieve the index of the currently active WebContents. This will be
-  // kNoTab if no tab is currently selected (this happens while the tab strip is
-  // being initialized or is empty).
+  // Retrieve the index of the currently active WebContents. The only time this
+  // is kNoTab is if the tab strip is being initialized or destroyed. Note that
+  // tab strip destruction is an asynchronous process.
   int active_index() const {
     return selection_model_.active().has_value()
                ? static_cast<int>(selection_model_.active().value())
@@ -193,8 +193,15 @@ class TabStripModel : public TabGroupController {
 
   // Adds the specified WebContents in the default location. Tabs opened
   // in the foreground inherit the opener of the previously active tab.
+  // Use of the detached tab is preferred over webcontents, so when possible
+  // use AppendTab instead of this method.
   void AppendWebContents(std::unique_ptr<content::WebContents> contents,
                          bool foreground);
+
+  // Adds the specified Tab at the end of the Tabstrip. Tabs opened
+  // in the foreground inherit the opener of the previously active tab and
+  // become the active tab.
+  void AppendTab(std::unique_ptr<tabs::TabModel> tab, bool foreground);
 
   // Adds the specified WebContents at the specified location.
   // |add_types| is a bitmask of AddTabTypes; see it for details.
@@ -290,6 +297,9 @@ class TabStripModel : public TabGroupController {
 
   // Returns the currently active WebContents, or NULL if there is none.
   content::WebContents* GetActiveWebContents() const;
+
+  // Returns the currently active Tab, or NULL if there is none.
+  tabs::TabModel* GetActiveTab() const;
 
   // Returns the WebContents at the specified index, or NULL if there is
   // none.
@@ -834,7 +844,8 @@ class TabStripModel : public TabGroupController {
 
   bool tab_strip_ui_was_set_ = false;
 
-  base::ObserverList<TabStripModelObserver>::Unchecked observers_;
+  base::ObserverList<TabStripModelObserver>::UncheckedAndDanglingUntriaged
+      observers_;
 
   // A profile associated with this TabStripModel.
   raw_ptr<Profile, AcrossTasksDanglingUntriaged> profile_;

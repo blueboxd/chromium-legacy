@@ -61,6 +61,12 @@ std::pair<ProxyChain, const ProxyServer&> ProxyChain::SplitLast() const {
   return std::make_pair(new_chain, std::ref(proxy_server_list_->back()));
 }
 
+const ProxyServer& ProxyChain::First() const {
+  DCHECK(IsValid());
+  DCHECK_NE(length(), 0u);
+  return proxy_server_list_->front();
+}
+
 const ProxyServer& ProxyChain::Last() const {
   DCHECK(IsValid());
   DCHECK_NE(length(), 0u);
@@ -101,11 +107,7 @@ bool ProxyChain::IsValidInternal() const {
     return false;
   }
   if (is_single_proxy()) {
-    bool is_valid = proxy_server_list_.value().at(0).is_valid();
-    if (proxy_server_list_.value().at(0).is_quic()) {
-      is_valid = is_valid && is_for_ip_protection();
-    }
-    return is_valid;
+    return proxy_server_list_.value().at(0).is_valid();
   }
   bool all_https = base::ranges::all_of(
       proxy_server_list_.value(), [](const auto& proxy_server) {

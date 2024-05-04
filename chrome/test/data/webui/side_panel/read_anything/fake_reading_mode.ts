@@ -4,7 +4,7 @@
 
 export class FakeReadingMode {
   // The root AXNodeID of the tree to be displayed.
-  rootId: number = 0;
+  rootId: number = 1;
 
   startNodeId: number = 0;
   startOffset: number = 0;
@@ -23,8 +23,8 @@ export class FakeReadingMode {
   colorTheme: number = 0;
 
   // Current audio settings values.
-  speechRate: number = 0;
-  highlightGranularity: number = 0;
+  speechRate: number = 1;
+  highlightGranularity: number = 1;
 
   // Enum values for various visual theme changes.
   standardLineSpacing: number = 0;
@@ -56,6 +56,8 @@ export class FakeReadingMode {
   // The language code that should be used for speech synthesis voices.
   speechSynthesisLanguageCode: string = '';
 
+  private maxNodeId: number = 5;
+
   // Returns the stored user voice preference for the given language.
   getStoredVoice(_lang: string): string {
     return 'abc';
@@ -65,13 +67,14 @@ export class FakeReadingMode {
   // the AXNode for the provided AXNodeID. If there is a selection contained
   // in this node, only returns children which are partially or entirely
   // contained within the selection.
-  getChildren(_nodeId: number): number[] {
-    return [];
+  getChildren(nodeId: number): number[] {
+    return (nodeId > this.maxNodeId) ? [] : [nodeId + 1];
   }
 
-  // Returns the HTML tag of the AXNode for the provided AXNodeID.
-  getHtmlTag(_nodeId: number): string {
-    return 'div';
+  // Returns the HTML tag of the AXNode for the provided AXNodeID. For testing,
+  // odd numbered nodes are divs and even numbered nodes are text.
+  getHtmlTag(nodeId: number): string {
+    return (nodeId % 2 === 0) ? '' : 'div';
   }
 
   // Returns the language of the AXNode for the provided AXNodeID.
@@ -82,8 +85,8 @@ export class FakeReadingMode {
   // Returns the text content of the AXNode for the provided AXNodeID. If a
   // selection begins or ends in this node, truncates the text to only return
   // the selected text.
-  getTextContent(_nodeId: number): string {
-    return 'foo';
+  getTextContent(nodeId: number): string {
+    return 'super awesome text content' + nodeId;
   }
 
   // Returns the text direction of the AXNode for the provided AXNodeID.
@@ -103,6 +106,16 @@ export class FakeReadingMode {
 
   // Returns true if the element has overline text styling.
   isOverline(_nodeId: number): boolean {
+    return false;
+  }
+
+  // Returns true if the element is a leaf node.
+  isLeafNode(nodeId: number): boolean {
+    return nodeId === this.maxNodeId;
+  }
+
+  // Returns true if the webpage corresponds to a Google Doc.
+  isGoogleDocs(): boolean {
     return false;
   }
 
@@ -127,8 +140,12 @@ export class FakeReadingMode {
   onVeryLooseLineSpacing() {}
 
   // Called when a user makes a font size change via the webui toolbar.
-  onFontSizeChanged(_increase: boolean) {}
-  onFontSizeReset() {}
+  onFontSizeChanged(_increase: boolean) {
+    this.fontSize = this.fontSize + (_increase ? 1 : -1);
+  }
+  onFontSizeReset() {
+    this.fontSize = 0;
+  }
 
   // Called when a user toggles links via the webui toolbar.
   onLinksEnabledToggled() {}
@@ -146,17 +163,25 @@ export class FakeReadingMode {
   onBlueTheme() {}
 
   // Called when the font is changed via the webui toolbar.
-  onFontChange(_font: string) {}
+  onFontChange(font: string) {
+    this.fontName = font;
+  }
 
   // Called when the speech rate is changed via the webui toolbar.
-  onSpeechRateChange(_rate: number) {}
+  onSpeechRateChange(rate: number) {
+    this.speechRate = rate;
+  }
 
   // Called when the voice used for speech is changed via the webui toolbar.
   onVoiceChange(_voice: string, _lang: string) {}
 
   // Called when the highlight granularity is changed via the webui toolbar.
-  turnedHighlightOn() {}
-  turnedHighlightOff() {}
+  turnedHighlightOn() {
+    this.highlightGranularity = 1;
+  }
+  turnedHighlightOff() {
+    this.highlightGranularity = 0;
+  }
 
   // Returns the actual spacing value to use based on the given lineSpacing
   // category.
@@ -209,6 +234,12 @@ export class FakeReadingMode {
   // Sets the default language. Used by tests only.
   setLanguageForTesting(_code: string) {}
 
+  // Called when the side panel has finished loading and it's safe to call
+  // SidePanelWebUIView::ShowUI
+  shouldShowUi(): boolean {
+    return true;
+  }
+
   ////////////////////////////////////////////////////////////////
   // Implemented in read_anything/app.ts and called by native c++.
   ////////////////////////////////////////////////////////////////
@@ -234,6 +265,42 @@ export class FakeReadingMode {
   // preferences and can be used to set up the page.
   restoreSettingsFromPrefs() {}
 
+  // Inits the AXPosition instance in ReadAnythingAppController with the
+  // starting node. Currently needed to orient the AXPosition to the correct
+  // position, but we should be able to remove this in the future.
+  initAxPositionWithNode(_startingNodeId: number): void {}
+
+  // Gets the starting text index for the current Read Aloud text segment
+  // for the given node. nodeId should be a node returned by getCurrentText.
+  // Returns -1 if the node is invalid.
+  getCurrentTextStartIndex(_nodeId: number): number {
+    return 0;
+  }
+
+  // Gets the ending text index for the current Read Aloud text segment
+  // for the given node. nodeId should be a node returned by getCurrentText or
+  // getPreviousText. Returns -1 if the node is invalid.
+  getCurrentTextEndIndex(_nodeId: number): number {
+    return 5;
+  }
+
+  // Gets the nodes of the  next text that should be spoken and highlighted.
+  // Use getCurrentTextStartIndex and getCurrentTextEndIndex to get the bounds
+  // for text associated with these nodes.
+  getCurrentText(): number[] {
+    return [2];
+  }
+
+  // Increments the processed_granularity_index_ in ReadAnythingAppModel,
+  // effectively updating ReadAloud's state of the current granularity to
+  // refer to the next granularity.
+  movePositionToNextGranularity(): void {}
+
+  // Decrements the processed_granularity_index_ in ReadAnythingAppModel,
+  // effectively updating ReadAloud's state of the current granularity to
+  // refer to the previous granularity.
+  movePositionToPreviousGranularity(): void {}
+
   // Returns the index of the next sentence of the given text, such that the
   // next sentence is equivalent to text.substr(0, <returned_index>).
   // If the sentence exceeds the maximum text length, the sentence will be
@@ -246,4 +313,8 @@ export class FakeReadingMode {
   // Signal that the supported fonts should be updated i.e. that the brower's
   // preferred language has changed.
   updateFonts() {}
+
+  getDisplayNameForLocale(_locale: string, _displayLocale: string): string {
+    return '';
+  }
 }

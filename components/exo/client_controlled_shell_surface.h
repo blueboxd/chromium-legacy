@@ -174,7 +174,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
                          bool default_scale_cancellation,
                          bool supports_floated_state);
 
-  // Overridden from SurfaceTreeHost:
+  // SurfaceTreeHost:
   void DidReceiveCompositorFrameAck() override;
 
   // ShellSurfaceBase:
@@ -190,7 +190,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   void OnDidProcessDisplayChanges(
       const DisplayConfigurationChange& configuration_change) override;
 
-  // Overridden from views::WidgetDelegate:
+  // views::WidgetDelegate:
+  void WindowClosing() override;
   bool CanMaximize() const override;
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
@@ -201,15 +202,15 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
                                gfx::Rect* bounds,
                                ui::WindowShowState* show_state) const override;
 
-  // Overridden from views::View:
+  // views::View:
   gfx::Size GetMaximumSize() const override;
   void OnDeviceScaleFactorChanged(float old_dsf, float new_dsf) override;
 
-  // Overridden from aura::WindowObserver:
+  // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
 
-  // Overridden from ui::CompositorLockClient:
+  // ui::CompositorLockClient:
   void CompositorLockTimedOut() override;
 
   // A factory callback to create ClientControlledState::Delegate.
@@ -235,14 +236,14 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // Update the resizability based on the resize lock type.
   void UpdateResizability() override;
 
-  // Overridden from exo::ShellSurfaceBase
+  // exo::ShellSurfaceBase
   void SetSystemModal(bool system_modal) override;
 
  protected:
-  // Overridden from ShellSurfaceBase:
+  // ShellSurfaceBase:
   float GetScale() const override;
 
-  // Overridden from SurfaceTreeHost:
+  // SurfaceTreeHost:
   float GetScaleFactor() const override;
 
  private:
@@ -250,8 +251,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
                            OverlayShadowBounds);
   class ScopedSetBoundsLocally;
   class ScopedLockedToRoot;
+  class ScopedDeferWindowStateUpdate;
 
-  // Overridden from ShellSurfaceBase:
+  // ShellSurfaceBase:
   void SetWidgetBounds(const gfx::Rect& bounds,
                        bool adjusted_by_server) override;
   gfx::Rect GetVisibleBounds() const override;
@@ -260,6 +262,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   std::optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
   bool OnPreWidgetCommit() override;
+  void ShowWidget(bool activate) override;
   void OnPostWidgetCommit() override;
   void OnSurfaceDestroying(Surface* surface) override;
 
@@ -340,8 +343,6 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // TODO(oshima): Remove this once all boards are migrated to P or above.
   bool server_reparent_window_ = false;
 
-  bool ignore_bounds_change_request_ = false;
-
   bool display_rotating_with_pip_ = false;
 
   // True if the window state has changed during the commit.
@@ -357,6 +358,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   ash::ArcResizeLockType pending_resize_lock_type_ =
       ash::ArcResizeLockType::NONE;
+
+  std::unique_ptr<ScopedDeferWindowStateUpdate>
+      scoped_defer_window_state_update_;
 
   // True if the window supports the floated state.
   bool supports_floated_state_;

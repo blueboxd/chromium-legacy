@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/wallpaper_search/wallpaper_search_background_manager.h"
 #include "chrome/browser/search/background/wallpaper_search/wallpaper_search_data.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -64,7 +65,12 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 
+using side_panel::customize_chrome::mojom::DescriptorDName;
+using side_panel::customize_chrome::mojom::DescriptorDValue;
 using side_panel::customize_chrome::mojom::UserFeedback;
+using side_panel::customize_chrome::mojom::WallpaperSearchResult;
+using side_panel::customize_chrome::mojom::WallpaperSearchResultPtr;
+using side_panel::customize_chrome::mojom::WallpaperSearchStatus;
 
 namespace {
 
@@ -142,6 +148,25 @@ WallpaperSearchHandler::~WallpaperSearchHandler() {
             *history_entry_);
   }
 
+  bool is_result = false;
+  if (background_id) {
+    if (base::Contains(wallpaper_search_results_, *background_id)) {
+      base::UmaHistogramEnumeration(
+          "NewTabPage.WallpaperSearch.SessionSetTheme",
+          NtpWallpaperSearchThemeType::kResult);
+      is_result = true;
+    } else {
+      base::UmaHistogramEnumeration(
+          "NewTabPage.WallpaperSearch.SessionSetTheme",
+          NtpWallpaperSearchThemeType::kHistory);
+    }
+  } else if (inspiration_token_ &&
+             wallpaper_search_background_manager_->IsCurrentBackground(
+                 *inspiration_token_)) {
+    base::UmaHistogramEnumeration("NewTabPage.WallpaperSearch.SessionSetTheme",
+                                  NtpWallpaperSearchThemeType::kInspiration);
+  }
+
   if (!log_entries_.empty()) {
     auto& [log_entry, render_time] = log_entries_.back();
     auto* quality =
@@ -152,8 +177,7 @@ WallpaperSearchHandler::~WallpaperSearchHandler() {
       quality->set_complete_latency_ms(
           (base::Time::Now() - *render_time).InMilliseconds());
     }
-    if (background_id.has_value() &&
-        base::Contains(wallpaper_search_results_, *background_id)) {
+    if (is_result) {
       auto* image_quality =
           std::get<0>(wallpaper_search_results_[*background_id]);
       if (image_quality) {
@@ -222,6 +246,11 @@ void WallpaperSearchHandler::GetDescriptors(GetDescriptorsCallback callback) {
       url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
   descriptors_simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
+  descriptors_simple_url_loader_->SetRetryOptions(
+      /*max_retries=*/3,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_5XX |
+          network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
+          network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED);
   descriptors_simple_url_loader_->DownloadToString(
       profile_->GetURLLoaderFactory().get(),
       base::BindOnce(&WallpaperSearchHandler::OnDescriptorsRetrieved,
@@ -231,7 +260,7 @@ void WallpaperSearchHandler::GetDescriptors(GetDescriptorsCallback callback) {
 
 void WallpaperSearchHandler::GetInspirations(GetInspirationsCallback callback) {
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
-                                                         absl::nullopt);
+                                                         std::nullopt);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation(
@@ -296,11 +325,25 @@ void WallpaperSearchHandler::GetWallpaperSearchResults(
     side_panel::customize_chrome::mojom::ResultDescriptorsPtr
         result_descriptors,
     GetWallpaperSearchResultsCallback callback) {
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  if (!identity_manager ||
+      !identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
+    std::move(callback).Run(WallpaperSearchStatus::kSignedOut,
+                            std::vector<WallpaperSearchResultPtr>());
+    return;
+  }
+#if BUILDFLAG(IS_CHROMEOS)
+  // Check if user is browsing in guest mode.
+  if (profile_->IsGuestSession()) {
+    std::move(callback).Run(WallpaperSearchStatus::kSignedOut,
+                            std::vector<WallpaperSearchResultPtr>());
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      std::move(callback),
-      side_panel::customize_chrome::mojom::WallpaperSearchStatus::kError,
-      std::vector<
-          side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>());
+      std::move(callback), WallpaperSearchStatus::kError,
+      std::vector<WallpaperSearchResultPtr>());
   if (!base::FeatureList::IsEnabled(
           ntp_features::kCustomizeChromeWallpaperSearch) ||
       !base::FeatureList::IsEnabled(
@@ -448,8 +491,7 @@ void WallpaperSearchHandler::SetBackgroundToInspirationImage(
 
 void WallpaperSearchHandler::UpdateHistory() {
   const auto& history = wallpaper_search_background_manager_->GetHistory();
-  std::vector<side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>
-      thumbnails;
+  std::vector<WallpaperSearchResultPtr> thumbnails;
 
   auto barrier = base::BarrierCallback<std::pair<SkBitmap, base::Token>>(
       history.size(), base::BindOnce(&WallpaperSearchHandler::OnHistoryDecoded,
@@ -663,8 +705,7 @@ void WallpaperSearchHandler::OnDescriptorsJsonParsed(
 void WallpaperSearchHandler::OnHistoryDecoded(
     std::vector<HistoryEntry> history,
     std::vector<std::pair<SkBitmap, base::Token>> results) {
-  std::vector<side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>
-      thumbnails;
+  std::vector<WallpaperSearchResultPtr> thumbnails;
 
   // Use the original history array to order the results.
   // O(n^2) but there should never be more than 6 in each vector.
@@ -681,8 +722,7 @@ void WallpaperSearchHandler::OnHistoryDecoded(
         const bool success = gfx::PNGCodec::EncodeBGRASkBitmap(
             small_bitmap, /*discard_transparency=*/false, &encoded);
         if (success) {
-          auto thumbnail =
-              side_panel::customize_chrome::mojom::WallpaperSearchResult::New();
+          auto thumbnail = WallpaperSearchResult::New();
           thumbnail->image = base::Base64Encode(encoded);
           thumbnail->id = std::move(id);
           if (entry.subject) {
@@ -725,6 +765,7 @@ void WallpaperSearchHandler::OnInspirationImageDecoded(
     const base::Token& id,
     base::ElapsedTimer timer,
     const gfx::Image& image) {
+  inspiration_token_ = id;
   wallpaper_search_background_manager_->SelectLocalBackgroundImage(
       id, image.AsBitmap(), /*is_inspiration_image=*/true, std::move(timer));
 }
@@ -736,7 +777,7 @@ void WallpaperSearchHandler::OnInspirationsRetrieved(
     // Network errors (i.e. the server did not provide a response).
     DVLOG(1) << "Request failed with error: "
              << inspirations_simple_url_loader_->NetError();
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(std::nullopt);
     return;
   }
 
@@ -759,7 +800,7 @@ void WallpaperSearchHandler::OnInspirationsJsonParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (!result.has_value() || !result->is_list()) {
     DVLOG(1) << "Parsing JSON failed: " << result.error();
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(std::nullopt);
     return;
   }
   std::vector<side_panel::customize_chrome::mojom::InspirationGroupPtr>
@@ -794,9 +835,7 @@ void WallpaperSearchHandler::OnInspirationsJsonParsed(
               descriptor_d_dict->FindString("name")) {
         if (descriptor_d_name->compare("Yellow") == 0) {
           mojo_inspiration_group->descriptors->color =
-              side_panel::customize_chrome::mojom::DescriptorDValue::NewName(
-                  side_panel::customize_chrome::mojom::DescriptorDName::
-                      kYellow);
+              DescriptorDValue::NewName(DescriptorDName::kYellow);
         }
       }
     }
@@ -813,7 +852,7 @@ void WallpaperSearchHandler::OnInspirationsJsonParsed(
       if (!background_image || !thumbnail_image || !description || !id_string) {
         continue;
       }
-      const absl::optional<base::Token> id_token =
+      const std::optional<base::Token> id_token =
           base::Token::FromString(*id_string);
       if (!id_token.has_value()) {
         continue;
@@ -836,7 +875,7 @@ void WallpaperSearchHandler::OnInspirationsJsonParsed(
   if (mojo_inspiration_groups.size() > 0) {
     std::move(callback).Run(std::move(mojo_inspiration_groups));
   } else {
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(std::nullopt);
   }
 }
 
@@ -898,11 +937,8 @@ void WallpaperSearchHandler::OnWallpaperSearchResultsRetrieved(
     if (result.error().error() ==
         optimization_guide::OptimizationGuideModelExecutionError::
             ModelExecutionError::kRequestThrottled) {
-      std::move(callback).Run(
-          side_panel::customize_chrome::mojom::WallpaperSearchStatus::
-              kRequestThrottled,
-          std::vector<
-              side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>());
+      std::move(callback).Run(WallpaperSearchStatus::kRequestThrottled,
+                              std::vector<WallpaperSearchResultPtr>());
     }
     return;
   }
@@ -976,8 +1012,7 @@ void WallpaperSearchHandler::OnWallpaperSearchResultsDecoded(
     std::vector<
         std::pair<optimization_guide::proto::WallpaperSearchImageQuality*,
                   SkBitmap>> bitmaps) {
-  std::vector<side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>
-      thumbnails;
+  std::vector<WallpaperSearchResultPtr> thumbnails;
 
   for (auto& [image_quality, bitmap] : bitmaps) {
     auto dimensions =
@@ -990,8 +1025,7 @@ void WallpaperSearchHandler::OnWallpaperSearchResultsDecoded(
     const bool success = gfx::PNGCodec::EncodeBGRASkBitmap(
         small_bitmap, /*discard_transparency=*/false, &encoded);
     if (success) {
-      auto thumbnail =
-          side_panel::customize_chrome::mojom::WallpaperSearchResult::New();
+      auto thumbnail = WallpaperSearchResult::New();
       auto id = base::Token::CreateRandom();
       wallpaper_search_results_[id] =
           std::make_tuple(image_quality, std::nullopt, std::move(bitmap));
@@ -1004,9 +1038,7 @@ void WallpaperSearchHandler::OnWallpaperSearchResultsDecoded(
   UmaHistogramMediumTimes(
       "NewTabPage.WallpaperSearch.GetResultProcessingLatency",
       processing_timer.Elapsed());
-  std::move(callback).Run(
-      side_panel::customize_chrome::mojom::WallpaperSearchStatus::kOk,
-      std::move(thumbnails));
+  std::move(callback).Run(WallpaperSearchStatus::kOk, std::move(thumbnails));
 }
 
 void WallpaperSearchHandler::LaunchDelayedHatsSurvey() {

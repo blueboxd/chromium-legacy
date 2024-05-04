@@ -36,13 +36,21 @@ using on_device_model::mojom::LoadModelResult;
 namespace ml {
 namespace {
 
-const base::FeatureParam<double> kTemperature{
+const base::FeatureParam<int> kMaxTopK{
     &optimization_guide::features::kOptimizationGuideOnDeviceModel,
-    "on_device_model_temperature", 0.2};
+    "on_device_model_max_topk", 128};
 
-const base::FeatureParam<int> kTopK{
+const base::FeatureParam<bool> kPreferTextureWeights{
     &optimization_guide::features::kOptimizationGuideOnDeviceModel,
-    "on_device_model_topk", 3};
+    "on_device_model_prefer_texture_weights", true};
+
+const base::FeatureParam<bool> kEnableHostMappedPointer{
+    &optimization_guide::features::kOptimizationGuideOnDeviceModel,
+    "on_device_model_enable_host_mapped_pointer", true};
+
+const base::FeatureParam<bool> kUseLowPower{
+    &optimization_guide::features::kOptimizationGuideOnDeviceModel,
+    "on_device_model_use_low_power", false};
 
 // Helper to bind object methods as weak task-posting callback functions.
 template <typename R, typename C, typename... Args>
@@ -63,6 +71,15 @@ int CalculateTokensPerSecond(int num_tokens, base::TimeDelta duration) {
   }
   return (num_tokens / static_cast<float>(duration.InMicroseconds())) *
          base::Time::kMicrosecondsPerSecond;
+}
+
+float GetTemperature(std::optional<float> temperature) {
+  return std::max(0.0f, temperature.value_or(0.0f));
+}
+
+uint32_t GetTopK(std::optional<uint32_t> top_k) {
+  return std::min(static_cast<uint32_t>(kMaxTopK.Get()),
+                  std::max(1u, top_k.value_or(1)));
 }
 
 // Handles sending and canceling responses.
@@ -250,7 +267,10 @@ class SessionImpl : public on_device_model::OnDeviceModel::Session {
         .context_mode = GetContextMode(*input) | ContextMode::kSave,
         .max_tokens = input->max_tokens.value_or(0),
         .token_offset = input->token_offset.value_or(0),
-        .context_saved_fn = &context_saved_fn};
+        .context_saved_fn = &context_saved_fn,
+        .top_k = GetTopK(input->top_k),
+        .temperature = GetTemperature(input->temperature),
+    };
     if (adaptation_id_) {
       options.adaptation_id = &adaptation_id_.value();
     }
@@ -280,7 +300,10 @@ class SessionImpl : public on_device_model::OnDeviceModel::Session {
         .token_offset = input->token_offset.value_or(0),
         .max_output_tokens = input->max_output_tokens.value_or(0),
         .score_ts_interval = ts_interval,
-        .execution_output_fn = &output_fn};
+        .execution_output_fn = &output_fn,
+        .top_k = GetTopK(input->top_k),
+        .temperature = GetTemperature(input->temperature),
+    };
     if (adaptation_id_) {
       options.adaptation_id = &adaptation_id_.value();
     }
@@ -363,20 +386,10 @@ base::expected<uint32_t, LoadModelResult> OnDeviceModelExecutor::LoadAdaptation(
     return base::unexpected(LoadModelResult::kFailedToLoadLibrary);
   }
 
-  auto weights = std::make_unique<base::MemoryMappedFile>();
-  if (!assets.weights.IsValid() ||
-      !weights->Initialize(assets.weights.Duplicate(),
-                           base::MemoryMappedFile::READ_WRITE_COPY)) {
-    LOG(ERROR) << "Unable to load weights";
-    return base::unexpected(LoadModelResult::kFailedToLoadLibrary);
-  }
-
   uint32_t id;
   const ChromeMLModelData data = {
       .model_proto_data = model_proto->data(),
       .model_proto_size = model_proto->length(),
-      .weights_data = weights->mutable_bytes().data(),
-      .weights_size = weights->length(),
       .weights_file = assets.weights.TakePlatformFile(),
   };
   ChromeMLAdaptationDescriptor descriptor = {
@@ -386,7 +399,6 @@ base::expected<uint32_t, LoadModelResult> OnDeviceModelExecutor::LoadAdaptation(
     return base::unexpected(LoadModelResult::kFailedToLoadLibrary);
   }
   adaptation_data_.push_back(std::move(model_proto));
-  adaptation_data_.push_back(std::move(weights));
   return base::ok(id);
 }
 
@@ -411,14 +423,6 @@ LoadModelResult OnDeviceModelExecutor::Init(
     return LoadModelResult::kFailedToLoadLibrary;
   }
 
-  weights_ = std::make_unique<base::MemoryMappedFile>();
-  if (!assets.weights.IsValid() ||
-      !weights_->Initialize(assets.weights.Duplicate(),
-                            base::MemoryMappedFile::READ_WRITE_COPY)) {
-    LOG(ERROR) << "Unable to load weights";
-    return LoadModelResult::kFailedToLoadLibrary;
-  }
-
   if (assets.ts_data.IsValid()) {
     if (!ts_data_.Initialize(std::move(assets.ts_data)) ||
         !assets.ts_sp_model.IsValid() ||
@@ -439,15 +443,10 @@ LoadModelResult OnDeviceModelExecutor::Init(
 
   auto model_proto_dispose =
       CreateWeakCallbackFn(&OnDeviceModelExecutor::DisposeModelProto, this);
-  auto weights_dispose =
-      CreateWeakCallbackFn(&OnDeviceModelExecutor::DisposeWeights, this);
   const ChromeMLModelData data = {
       .model_proto_data = model_proto_->data(),
       .model_proto_size = model_proto_->length(),
       .model_proto_dispose = &model_proto_dispose,
-      .weights_data = weights_->mutable_bytes().data(),
-      .weights_size = weights_->length(),
-      .weights_dispose = &weights_dispose,
       .weights_file = assets.weights.TakePlatformFile(),
   };
   auto sentencepiece_model_proto_dispose =
@@ -458,11 +457,14 @@ LoadModelResult OnDeviceModelExecutor::Init(
       .sentencepiece_model_proto_dispose = &sentencepiece_model_proto_dispose,
       .model_data = &data,
       .max_tokens = params->max_tokens,
-      .temperature = static_cast<float>(kTemperature.Get()),
-      .top_k = kTopK.Get(),
+      .temperature = 0.0f,
+      .top_k = kMaxTopK.Get(),
       .ts_dimension = params->ts_dimension.value_or(0),
       .adaptation_ranks = params->adaptation_ranks.data(),
       .adaptation_ranks_size = params->adaptation_ranks.size(),
+      .prefer_texture_weights = kPreferTextureWeights.Get(),
+      .enable_host_mapped_pointer = kEnableHostMappedPointer.Get(),
+      .use_low_power = kUseLowPower.Get(),
   };
   if (ts_data_.IsValid()) {
     CHECK(ts_sp_model_.IsValid());
@@ -484,10 +486,6 @@ void OnDeviceModelExecutor::DisposeSentencepiece() {
 
 void OnDeviceModelExecutor::DisposeModelProto() {
   model_proto_ = nullptr;
-}
-
-void OnDeviceModelExecutor::DisposeWeights() {
-  weights_ = nullptr;
 }
 
 // static

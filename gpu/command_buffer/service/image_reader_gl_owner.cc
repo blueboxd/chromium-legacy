@@ -77,12 +77,12 @@ uint32_t NumRequiredMaxImages(TextureOwner::Mode mode) {
   return features::LimitAImageReaderMaxSizeToOne() ? 1 : 2;
 }
 
-absl::optional<gfx::Size> GetImageSize(AImage* image) {
+std::optional<gfx::Size> GetImageSize(AImage* image) {
   int32_t width = 0, height = 0;
   if (AImage_getWidth(image, &width) != AMEDIA_OK ||
       AImage_getHeight(image, &height) != AMEDIA_OK || width <= 0 ||
       height <= 0) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return gfx::Size(width, height);
@@ -102,8 +102,7 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
                            base::ScopedFD fence_fd)
       : base::android::ScopedHardwareBufferFenceSync(std::move(handle),
                                                      std::move(fence_fd),
-                                                     base::ScopedFD(),
-                                                     true /* is_video */),
+                                                     base::ScopedFD()),
         texture_owner_(std::move(texture_owner)),
         image_(image) {
     DCHECK(image_);

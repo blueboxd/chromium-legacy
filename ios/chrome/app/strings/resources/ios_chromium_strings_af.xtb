@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Begin ’n soektog in ’n nuwe Chromium-oortjie.</translation>
 <translation id="1431818719585918472">Laat Chromium toe om jou Incognito-oortjies te sluit.</translation>
 <translation id="1472013873724362412">Jou rekening werk nie in Chromium nie. Kontak asseblief jou domeinadministrateur of gebruik 'n gewone Google-rekening om aan te meld.</translation>
+<translation id="1503199973012840174">Jou Chromium is verouderd. Dateer dit op om veilig te bly.</translation>
 <translation id="1507010443238049608">Help om Chromium se kenmerke en werkverrigting te verbeter</translation>
 <translation id="1513122820609681462">Stel Chromium as verstekblaaier</translation>
 <translation id="1531155317299575425">Wys porboodskappe om by Chromium aan te meld.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Hierdie adres is tans in Chromium gestoor. Stoor dit in jou Google-rekening, <ph name="USER_EMAIL" />, om dit in alle Google-produkte te gebruik.</translation>
 <translation id="2236584955986023187">Dit beteken dat Chromium elke keer die rekenaarwerf sal versoek.</translation>
 <translation id="2313870531055795960">Vergelyk URL'e met 'n lys onveilige werwe wat in Chromium geberg is. As 'n werf probeer om jou wagwoord te steel, of wanneer jy 'n skadelike lêer aflaai, sal Chromium dalk ook URL'e, insluitend stukkies bladsyinhoud, na Veiligblaai toe stuur.</translation>
+<translation id="231828342043114302">Meld by Chromium aan om gepersonaliseerde inhoud op grond van jou belangstellings te ontvang.</translation>
 <translation id="2374627437126809292">Chromium gebruik Google Maps om vir jou aanwysings en plaaslike inligting oor bespeurde adresse te gee.</translation>
 <translation id="2386292341327187942">Voer Chromium in die Search-legstuk-boks in</translation>
 <translation id="2426113998523353159">Jou organisasie vereis dat jy aanmeld om Chromium te gebruik.</translation>
@@ -78,7 +80,6 @@ Gaan na <ph name="BEGIN_LINK" />Google-dienste<ph name="END_LINK" /> vir meer in
 <translation id="3219277919172823720">Soek met stem in Chromium</translation>
 <translation id="3228349498066165585">Sommige van jou Chromium-data is nog nie in jou Google-rekening gestoor nie.
         Probeer om ’n paar minute te wag voordat jy afmeld. As jy nou afmeld, sal hierdie data uitgevee word.</translation>
-<translation id="3256316712990552818">Na Chromium gekopieer</translation>
 <translation id="328933489847748230">{count,plural, =1{Wys nou in 1 Chromium-vensters}other{Wys nou in {count} Chromium-vensters}}</translation>
 <translation id="3344973607274501920">Chromium kon nie jou wagwoorde nagaan nie. Probeer jou internetverbinding nagaan.</translation>
 <translation id="3366305173356742781">Chromium-data in jou rekening</translation>
@@ -213,6 +214,7 @@ Net iemand met jou wagfrase kan jou geënkripteerde data lees. Die wagfrase word
 <translation id="6752854822223394465">Jou organisasie stel tans Chromium op …</translation>
 <translation id="6794054469102824109">Maak die Chromium Dino-speletjie oop.</translation>
 <translation id="6820823224820483452">Chromium kon nie alle wagwoorde nagaan nie. Probeer môre weer.</translation>
+<translation id="6830362027989570433">Chromium-outovulaansig is uitgevou</translation>
 <translation id="6852799557929001644">Kry van ander apps op hierdie toestel af toegang tot jou Chromium-wagwoorde en meer.</translation>
 <translation id="6887138405044152640">Om hierdie oortjie na ’n ander toestel toe te stuur, moet jy daar by Chromium aanmeld.</translation>
 <translation id="6911341667534646387">Hou aan om die Chromium-data in jou Google-rekening te gebruik</translation>
@@ -312,7 +314,6 @@ Jou data is op <ph name="TIME" /> met jou wagfrase geënkripteer. Voer dit in om
 <translation id="9059693977935746710">Jy hoef nie hierdie wagwoord te onthou nie. Dit sal vir <ph name="EMAIL" /> in Wagwoordbestuurder gestoor word</translation>
 <translation id="9089354809943900324">Chromium is verouderd</translation>
 <translation id="9110075932708282655">Gebruik Chromium by verstek</translation>
-<translation id="9137114218472648150">Chromium is verouderd, dateer op na die nuutste weergawe om veilig te bly.</translation>
 <translation id="921174536258924340">Chromium kon nie alle wagwoorde nagaan nie. Probeer môre weer of <ph name="BEGIN_LINK" />gaan wagwoorde in jou Google-rekening na<ph name="END_LINK" />.</translation>
 <translation id="971488683725792095">Gebruik Chromium outomaties wanneer jy op skakels in boodskappe, dokumente en ander apps tik.</translation>
 <translation id="981812233959540767">Speel Chromium Dino-speletjie</translation>

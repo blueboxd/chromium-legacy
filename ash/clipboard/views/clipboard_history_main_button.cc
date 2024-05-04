@@ -31,7 +31,7 @@ ClipboardHistoryMainButton::ClipboardHistoryMainButton(
   views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
 
   // Let the parent handle accessibility features.
-  GetViewAccessibility().OverrideIsIgnored(/*value=*/true);
+  GetViewAccessibility().SetIsIgnored(true);
 
   // TODO(crbug.com/1205227): Revisit if this comment makes sense still. It was
   // attached to CreateInkDrop() but sounds more about talking about a null
@@ -99,7 +99,7 @@ void ClipboardHistoryMainButton::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->DrawRect(GetLocalBounds(), flags);
 }
 
-BEGIN_METADATA(ClipboardHistoryMainButton, views::Button)
+BEGIN_METADATA(ClipboardHistoryMainButton)
 END_METADATA
 
 }  // namespace ash

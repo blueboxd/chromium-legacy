@@ -4,6 +4,8 @@
 
 #include "components/facilitated_payments/content/browser/content_facilitated_payments_driver_factory.h"
 
+#include "content/public/browser/navigation_handle.h"
+
 namespace payments::facilitated {
 
 ContentFacilitatedPaymentsDriverFactory::
@@ -26,18 +28,30 @@ void ContentFacilitatedPaymentsDriverFactory::RenderFrameDeleted(
   driver_map_.erase(render_frame_host);
 }
 
+void ContentFacilitatedPaymentsDriverFactory::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->IsInOutermostMainFrame()) {
+    return;
+  }
+  auto& driver = GetOrCreateForFrame(navigation_handle->GetRenderFrameHost());
+  driver.DidFinishNavigation();
+}
+
 void ContentFacilitatedPaymentsDriverFactory::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
   // The driver is only created for the outermost main frame as the PIX code is
-  // only expected to be present there.
-  if (render_frame_host != render_frame_host->GetOutermostMainFrame()) {
+  // only expected to be present there. Only active frames allowed.
+  if (render_frame_host != render_frame_host->GetOutermostMainFrame() ||
+      !render_frame_host->IsActive()) {
     return;
   }
   auto& driver = GetOrCreateForFrame(render_frame_host);
-  CHECK(render_frame_host->IsActive());
   // Initialize PIX code detection.
-  driver.DidFinishLoad(validated_url);
+  driver.DidFinishLoad(validated_url, render_frame_host->GetPageUkmSourceId());
 }
 
 ContentFacilitatedPaymentsDriver&

@@ -9,6 +9,7 @@
 #include <string>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/base64.h"
@@ -614,7 +615,8 @@ NetworkContext::NetworkContext(
 #if BUILDFLAG(IS_ANDROID)
           base::BindRepeating(&ReturnAppStatusListenerIfAlive,
                               weak_factory_.GetWeakPtr(),
-                              app_status_listeners_.rbegin()->get()),
+                              base::UnsafeDanglingUntriaged(
+                                  app_status_listeners_.rbegin()->get())),
 #endif  // BUILDFLAG(IS_ANDROID)
           /*file_operations_factory=*/nullptr);
     } else {
@@ -1092,7 +1094,7 @@ size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
   if (internal_host_resolver_)
     sum += internal_host_resolver_->GetNumOutstandingRequestsForTesting();
   for (const auto& host_resolver : host_resolvers_)
-    sum += host_resolver.first->GetNumOutstandingRequestsForTesting();
+    sum += host_resolver->GetNumOutstandingRequestsForTesting();  // IN-TEST
   return sum;
 }
 
@@ -1802,13 +1804,12 @@ void NetworkContext::CreateHostResolver(
     internal_resolver = private_internal_resolver.get();
   }
 
-  host_resolvers_.emplace(
-      std::make_unique<HostResolver>(
-          std::move(receiver),
-          base::BindOnce(&NetworkContext::OnHostResolverShutdown,
-                         base::Unretained(this)),
-          internal_resolver, url_request_context_->net_log()),
-      std::move(private_internal_resolver));
+  host_resolvers_.emplace(std::make_unique<HostResolver>(
+      std::move(receiver),
+      base::BindOnce(&NetworkContext::OnHostResolverShutdown,
+                     base::Unretained(this)),
+      internal_resolver, std::move(private_internal_resolver),
+      url_request_context_->net_log()));
 }
 
 void NetworkContext::VerifyCertForSignedExchange(
@@ -2364,12 +2365,16 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   // Decide which ProxyDelegate to create. At most one of these will be the
   // case for any given NetworkContext: either PrefetchProxy, handling its
   // custom proxy configs, or IpProtection, using the proxy allowlist.
+  // TODO(https://crbug.com/40947771): Once the WebView traffic experiment is
+  // done, we should only create an IpProtectionProxyDelegate when
+  // `params_->ip_protection_config_getter` is set (to avoid creating proxy
+  // delegates for network contexts that don't participate in IP Protection, or
+  // for any network context when the IP Protection feature is disabled).
   auto* nspal = network_service_->network_service_proxy_allow_list();
   if (!params_->initial_custom_proxy_config && nspal->IsEnabled()) {
     auto ipp_config_cache = std::make_unique<IpProtectionConfigCacheImpl>(
         std::move(params_->ip_protection_config_getter));
     std::unique_ptr<IpProtectionProxyDelegate> proxy_delegate =
-
         std::make_unique<IpProtectionProxyDelegate>(
             nspal, std::move(ipp_config_cache), params_->enable_ip_protection);
     proxy_delegate->SetReceiver(
@@ -2491,7 +2496,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::make_unique<NetworkContextApplicationStatusListener>());
     cache_params.app_status_listener_getter = base::BindRepeating(
         &ReturnAppStatusListenerIfAlive, weak_factory_.GetWeakPtr(),
-        app_status_listeners_.rbegin()->get());
+        base::UnsafeDanglingUntriaged(app_status_listeners_.rbegin()->get()));
 #endif  // BUILDFLAG(IS_ANDROID)
     builder.EnableHttpCache(cache_params);
   }
@@ -2791,7 +2796,7 @@ void NetworkContext::OnHttpCacheSizeComputed(
     HttpCacheDataCounter* counter,
     bool is_upper_limit,
     int64_t result_or_error) {
-  EraseIf(http_cache_data_counters_, base::MatchesUniquePtr(counter));
+  std::erase_if(http_cache_data_counters_, base::MatchesUniquePtr(counter));
   std::move(callback).Run(is_upper_limit, result_or_error);
 }
 

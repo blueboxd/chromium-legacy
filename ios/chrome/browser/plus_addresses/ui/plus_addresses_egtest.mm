@@ -12,10 +12,11 @@
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
+#import "ios/chrome/test/earl_grey/chrome_actions_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
@@ -26,9 +27,10 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
-const char kEmailFormUrl[] = "/email_signup_form.html";
-const char kEmailFieldId[] = "email";
-const char kFakeSuggestionLabel[] = "plus?";
+
+constexpr char kEmailFormUrl[] = "/email_signup_form.html";
+constexpr char kEmailFieldId[] = "email";
+constexpr char kFakeSuggestionLabel[] = "Lorem Ipsum";
 
 // Assert that a given plus address modal event of type `event_type` occurred
 // `count` times.
@@ -79,7 +81,7 @@ void ExpectModalTimeSample(
   // Ensure a fake identity is available, as this is required by the
   // plus_addresses feature.
   _fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:_fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:_fakeIdentity];
 
   [self loadPlusAddressEligiblePage];
 }
@@ -100,9 +102,8 @@ void ExpectModalTimeSample(
   std::string fakeLocalUrl =
       base::EscapeQueryParamValue("chrome://version", /*use_plus=*/false);
   config.additional_args.push_back(base::StringPrintf(
-      "--enable-features=PlusAddressesEnabled:suggestion-"
-      "label/%s/server-url/%s/manage-url/%s",
-      kFakeSuggestionLabel, fakeLocalUrl.c_str(), fakeLocalUrl.c_str()));
+      "--enable-features=PlusAddressesEnabled:server-url/%s/manage-url/%s",
+      fakeLocalUrl.c_str(), fakeLocalUrl.c_str()));
   return config;
 }
 
@@ -212,9 +213,8 @@ id<GREYMatcher> GetMatcherForErrorReportLink() {
   id<GREYMatcher> link_text = GetMatcherForSettingsLink();
 
   // Take note of how many tabs are open before clicking the link.
-  NSUInteger oldRegularTabCount = [ChromeEarlGreyAppInterface mainTabCount];
-  NSUInteger oldIncognitoTabCount =
-      [ChromeEarlGreyAppInterface incognitoTabCount];
+  NSUInteger oldRegularTabCount = [ChromeEarlGrey mainTabCount];
+  NSUInteger oldIncognitoTabCount = [ChromeEarlGrey incognitoTabCount];
 
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:link_text];
   [[EarlGrey selectElementWithMatcher:link_text] performAction:grey_tap()];
@@ -228,8 +228,7 @@ id<GREYMatcher> GetMatcherForErrorReportLink() {
       assertWithMatcher:grey_notVisible()];
 }
 
-// TODO(b/324865662): This test fails on official bots.
-- (void)DISABLED_testPlusAddressBottomSheetErrorReportLink {
+- (void)testPlusAddressBottomSheetErrorReportLink {
   // Tap an element that is eligible for plus_address autofilling.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kEmailFieldId)];
@@ -244,9 +243,8 @@ id<GREYMatcher> GetMatcherForErrorReportLink() {
   id<GREYMatcher> link_text = GetMatcherForErrorReportLink();
 
   // Take note of how many tabs are open before clicking the link.
-  NSUInteger oldRegularTabCount = [ChromeEarlGreyAppInterface mainTabCount];
-  NSUInteger oldIncognitoTabCount =
-      [ChromeEarlGreyAppInterface incognitoTabCount];
+  NSUInteger oldRegularTabCount = [ChromeEarlGrey mainTabCount];
+  NSUInteger oldIncognitoTabCount = [ChromeEarlGrey incognitoTabCount];
 
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:link_text];
   [[EarlGrey selectElementWithMatcher:link_text] performAction:grey_tap()];
@@ -260,8 +258,7 @@ id<GREYMatcher> GetMatcherForErrorReportLink() {
       assertWithMatcher:grey_notVisible()];
 }
 
-// TODO(b/324865662): This test fails on official bots.
-- (void)DISABLED_testSwipeToDismiss {
+- (void)testSwipeToDismiss {
   // TODO(crbug.com/1508365): Test fails on iPad.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Fails on iPad.");
@@ -306,6 +303,23 @@ id<GREYMatcher> GetMatcherForErrorReportLink() {
       plus_addresses::PlusAddressMetrics::PlusAddressModalCompletionStatus::
           kReservePlusAddressError,
       1);
+}
+
+// A test to ensure that a row in the settings view shows up for
+// plus_addresses, and that tapping it opens a new tab for its settings, which
+// are managed externally.
+- (void)testSettings {
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Take note of how many tabs are open before clicking the link in settings,
+  // which should simply open a new tab.
+  NSUInteger oldRegularTabCount = [ChromeEarlGrey mainTabCount];
+  NSUInteger oldIncognitoTabCount = [ChromeEarlGrey incognitoTabCount];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:grey_accessibilityID(kSettingsPlusAddressesId)];
+
+  // A new tab should open after tapping the link.
+  [ChromeEarlGrey waitForMainTabCount:oldRegularTabCount + 1];
+  [ChromeEarlGrey waitForIncognitoTabCount:oldIncognitoTabCount];
 }
 
 @end

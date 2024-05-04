@@ -27,6 +27,11 @@ BASE_DECLARE_FEATURE(kAllowWindowDragUsingSystemDragDrop);
 
 BASE_DECLARE_FEATURE(kAllowEyeDropperWGCScreenCapture);
 
+#if !defined(ANDROID)
+BASE_DECLARE_FEATURE(kCastAppMenuExperiment);
+extern const base::FeatureParam<bool> kCastListedFirst;
+#endif
+
 BASE_DECLARE_FEATURE(kWebAppIconInTitlebar);
 
 BASE_DECLARE_FEATURE(kChromeLabs);
@@ -35,15 +40,26 @@ extern const base::FeatureParam<int> kChromeLabsActivationPercentage;
 
 BASE_DECLARE_FEATURE(kCloseOmniboxPopupOnInactiveAreaClick);
 
+BASE_DECLARE_FEATURE(kDefaultBrowserPromptRefresh);
+
+// Whether to show the updated info bar strings.
+extern const base::FeatureParam<bool> kUpdatedInfoBarCopy;
+
+// Base duration after which the user may be remprompted.
+extern const base::FeatureParam<base::TimeDelta> kRepromptDuration;
+
+// Maximum number of times a user will be prompted. When set to -1, the user
+// will be prompted indefinitely.
+extern const base::FeatureParam<int> kMaxPromptCount;
+
+// Exponential backoff multiplier for the reprompt duration.
+extern const base::FeatureParam<int> kRepromptDurationMultiplier;
+
 BASE_DECLARE_FEATURE(kExtensionsMenuInAppMenu);
 bool IsExtensionMenuInRootAppMenu();
 
 #if !defined(ANDROID)
 BASE_DECLARE_FEATURE(kAccessCodeCastUI);
-#endif
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
-BASE_DECLARE_FEATURE(kCameraMicPreview);
 #endif
 
 BASE_DECLARE_FEATURE(kEvDetailsInPageInfo);
@@ -58,6 +74,20 @@ BASE_DECLARE_FEATURE(kHaTSWebUI);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 BASE_DECLARE_FEATURE(kLightweightExtensionOverrideConfirmations);
+#endif
+
+BASE_DECLARE_FEATURE(kPreloadTopChromeWebUI);
+// This enum entry values must be in sync with
+// WebUIContentsPreloadManager::PreloadMode.
+enum class PreloadTopChromeWebUIMode {
+  kPreloadOnWarmup = 0,
+  kPreloadOnMakeContents = 1
+};
+extern const base::FeatureParam<PreloadTopChromeWebUIMode>
+    kPreloadTopChromeWebUIMode;
+
+#if !BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kPressAndHoldEscToExitBrowserFullscreen);
 #endif
 
 BASE_DECLARE_FEATURE(kResponsiveToolbar);
@@ -148,8 +178,6 @@ extern const base::FeatureParam<double>
 // Enable 'demo mode' for Tab Organization triggering, which triggers much more
 // predictably and frequently.
 extern const base::FeatureParam<bool> KTabOrganizationTriggerDemoMode;
-
-BASE_DECLARE_FEATURE(kTabOrganizationRefreshButton);
 
 BASE_DECLARE_FEATURE(kTabSearchChevronIcon);
 

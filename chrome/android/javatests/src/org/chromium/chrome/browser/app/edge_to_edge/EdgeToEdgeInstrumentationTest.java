@@ -12,6 +12,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Build;
 import android.view.View;
 
@@ -26,17 +27,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeControllerFactory;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeControllerImpl;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeOSWrapperImpl;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
@@ -45,6 +50,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ActivityTestUtils;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -52,7 +58,7 @@ import org.chromium.ui.test.util.DeviceRestriction;
 import org.chromium.ui.test.util.UiRestriction;
 
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Batch(Batch.PER_CLASS)
+@DoNotBatch(reason = "Testing startup behavior")
 @CommandLineFlags.Add({
     ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
 })
@@ -103,6 +109,13 @@ public class EdgeToEdgeInstrumentationTest {
         }
     }
 
+    // Declare the watcher before the app launches.
+    HistogramWatcher mEligibleHistograms =
+            HistogramWatcher.newBuilder()
+                    .expectBooleanRecord("Android.EdgeToEdge.Eligible", true)
+                    .expectNoRecords("Android.EdgeToEdge.IneligibilityReason")
+                    .build();
+
     @Before
     public void setUp() {
         mTestServer = sActivityTestRule.getTestServer();
@@ -123,6 +136,7 @@ public class EdgeToEdgeInstrumentationTest {
         mTestOsWrapper = new TestOsWrapper();
         mEdgeToEdgeController.setOsWrapperForTesting(mTestOsWrapper);
         mTestOsWrapper.resetPaddingMonitor();
+        EdgeToEdgeControllerFactory.setHas3ButtonNavBar(false);
     }
 
     @After
@@ -292,5 +306,60 @@ public class EdgeToEdgeInstrumentationTest {
                 "Padding has been removed when viewport-fit=auto.",
                 padding,
                 heightOnCover - heightOnAuto);
+    }
+
+    @Test
+    @MediumTest
+    @DisabledTest(message = "crbug.com/41492043")
+    public void testUnfold() {
+        activateFeatureToEdge();
+        assertEquals(
+                "This test should start in portrait orientation!",
+                Orientation.PORTRAIT,
+                mActivity.getResources().getConfiguration().orientation);
+
+        // Set 3-button mode to simulate switching to a tablet.
+        // Using a mocked static EdgeToEdgeControllerFactory#isSupportedConfiguration would be
+        // better but they are not supported on Android by Mockito.
+        EdgeToEdgeControllerFactory.setHas3ButtonNavBar(true);
+
+        // Use an orientation change to trigger new insets.
+        int targetOrientation = Configuration.ORIENTATION_LANDSCAPE;
+        rotate(targetOrientation);
+        assertFalse(
+                "Should exit ToEdge when device no longer supported",
+                mEdgeToEdgeController.isToEdge());
+    }
+
+    @Test
+    @MediumTest
+    public void testEligibleHistogramRecord() {
+        UserActionTester userActionTester = new UserActionTester();
+        activateFeatureToEdge();
+
+        Assert.assertTrue(
+                "User action is not recorded",
+                userActionTester.getActions().contains("MobilePageLoadedWithToEdge"));
+        mEligibleHistograms.assertExpected("Incorrect histogram recordings");
+    }
+
+    @Test
+    @MediumTest
+    public void testNavigationBarColor() {
+        goToNormal();
+        int originalNavigationBarColor = SemanticColorUtils.getBottomSystemNavColor(mActivity);
+
+        goToEdge();
+        assertEquals(
+                "Navigation bar should be transparent in edge to edge.",
+                Color.TRANSPARENT,
+                mActivity.getWindow().getNavigationBarColor());
+
+        goToNormal();
+        assertEquals(
+                "Navigation bar should have the right color when transitioning away from edge to"
+                        + " edge,",
+                originalNavigationBarColor,
+                mActivity.getWindow().getNavigationBarColor());
     }
 }

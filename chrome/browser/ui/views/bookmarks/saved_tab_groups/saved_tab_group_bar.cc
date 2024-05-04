@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "base/functional/bind.h"
+#include "base/types/to_address.h"
 #include "base/uuid.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
@@ -48,7 +49,9 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
+namespace tab_groups {
 namespace {
+
 // The maximum number of buttons (excluding the overflow menu button) that can
 // appear in the SavedTabGroupBar.
 constexpr int kMaxVisibleButtons = 4;
@@ -105,7 +108,7 @@ class SavedTabGroupBar::OverflowMenu : public views::View {
     // Convert the event location into `parent_bar_`'s coordinate space.
     const gfx::Point screen_loc = ConvertPointToScreen(this, event.location());
     const gfx::Point bar_loc =
-        ConvertPointFromScreen(std::to_address(parent_bar_), screen_loc);
+        ConvertPointFromScreen(base::to_address(parent_bar_), screen_loc);
     ui::DropTargetEvent event_copy(event);
     event_copy.set_location(bar_loc);
 
@@ -182,7 +185,7 @@ class SavedTabGroupBar::OverflowMenu : public views::View {
   raw_ref<SavedTabGroupBar> parent_bar_;
 };
 
-BEGIN_METADATA(SavedTabGroupBar, OverflowMenu, views::View)
+BEGIN_METADATA(SavedTabGroupBar, OverflowMenu)
 END_METADATA
 
 SavedTabGroupBar::SavedTabGroupBar(Browser* browser,
@@ -859,3 +862,5 @@ SavedTabGroupBar::CalculateDropIndicatorIndexInCombinedSpace() const {
 
 BEGIN_METADATA(SavedTabGroupBar)
 END_METADATA
+
+}  // namespace tab_groups

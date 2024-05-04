@@ -125,14 +125,16 @@ void Serial::ContextDestroyed() {
     entry.value->ContextDestroyed();
 }
 
-void Serial::OnPortAdded(mojom::blink::SerialPortInfoPtr port_info) {
+void Serial::OnPortConnectedStateChanged(
+    mojom::blink::SerialPortInfoPtr port_info) {
+  bool connected = port_info->connected;
   SerialPort* port = GetOrCreatePort(std::move(port_info));
-  port->DispatchEvent(*Event::CreateBubble(event_type_names::kConnect));
-}
-
-void Serial::OnPortRemoved(mojom::blink::SerialPortInfoPtr port_info) {
-  SerialPort* port = GetOrCreatePort(std::move(port_info));
-  port->DispatchEvent(*Event::CreateBubble(event_type_names::kDisconnect));
+  port->set_connected(connected);
+  if (connected) {
+    port->DispatchEvent(*Event::CreateBubble(event_type_names::kConnect));
+  } else {
+    port->DispatchEvent(*Event::CreateBubble(event_type_names::kDisconnect));
+  }
 }
 
 ScriptPromiseTyped<IDLSequence<SerialPort>> Serial::getPorts(
@@ -202,18 +204,19 @@ mojom::blink::SerialPortFilterPtr Serial::CreateMojoFilter(
   return mojo_filter;
 }
 
-ScriptPromise Serial::requestPort(ScriptState* script_state,
-                                  const SerialPortRequestOptions* options,
-                                  ExceptionState& exception_state) {
+ScriptPromiseTyped<SerialPort> Serial::requestPort(
+    ScriptState* script_state,
+    const SerialPortRequestOptions* options,
+    ExceptionState& exception_state) {
   if (ShouldBlockSerialServiceCall(GetSupplementable()->DomWindow(),
                                    GetExecutionContext(), &exception_state)) {
-    return ScriptPromise();
+    return ScriptPromiseTyped<SerialPort>();
   }
 
   if (!LocalFrame::HasTransientUserActivation(DomWindow()->GetFrame())) {
     exception_state.ThrowSecurityError(
         "Must be handling a user gesture to show a permission request.");
-    return ScriptPromise();
+    return ScriptPromiseTyped<SerialPort>();
   }
 
   Vector<mojom::blink::SerialPortFilterPtr> filters;
@@ -222,7 +225,7 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
       auto mojo_filter = CreateMojoFilter(filter, exception_state);
       if (!mojo_filter) {
         CHECK(exception_state.HadException());
-        return ScriptPromise();
+        return ScriptPromiseTyped<SerialPort>();
       }
 
       CHECK(!exception_state.HadException());
@@ -240,7 +243,7 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
     }
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<SerialPort>>(
       script_state, exception_state.GetContext());
   request_port_promises_.insert(resolver);
 
@@ -365,7 +368,7 @@ void Serial::OnGetPorts(
   resolver->Resolve(ports);
 }
 
-void Serial::OnRequestPort(ScriptPromiseResolver* resolver,
+void Serial::OnRequestPort(ScriptPromiseResolverTyped<SerialPort>* resolver,
                            mojom::blink::SerialPortInfoPtr port_info) {
   DCHECK(request_port_promises_.Contains(resolver));
   request_port_promises_.erase(resolver);

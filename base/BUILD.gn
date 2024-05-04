@@ -215,8 +215,6 @@ component("base") {
   sources = [
     "allocator/allocator_check.cc",
     "allocator/allocator_check.h",
-    "allocator/allocator_extension.cc",
-    "allocator/allocator_extension.h",
     "allocator/dispatcher/configuration.h",
     "allocator/dispatcher/dispatcher.cc",
     "allocator/dispatcher/dispatcher.h",
@@ -273,9 +271,6 @@ component("base") {
     "containers/checked_iterators.h",
     "containers/circular_deque.h",
     "containers/contains.h",
-    "containers/cxx20_erase.h",
-    "containers/cxx20_erase_internal.h",
-    "containers/cxx20_erase_vector.h",
     "containers/enum_set.h",
     "containers/extend.h",
     "containers/fixed_flat_map.h",
@@ -293,6 +288,8 @@ component("base") {
     "containers/map_util.h",
     "containers/small_map.h",
     "containers/stack.h",
+    "containers/to_value_list.h",
+    "containers/to_vector.h",
     "containers/unique_ptr_adapters.h",
     "containers/util.h",
     "containers/vector_buffer.h",
@@ -306,14 +303,10 @@ component("base") {
     "debug/asan_invalid_access.h",
     "debug/asan_service.cc",
     "debug/asan_service.h",
-    "debug/buffered_dwarf_reader.cc",
-    "debug/buffered_dwarf_reader.h",
     "debug/debugger.cc",
     "debug/debugger.h",
     "debug/dump_without_crashing.cc",
     "debug/dump_without_crashing.h",
-    "debug/dwarf_line_no.cc",
-    "debug/dwarf_line_no.h",
     "debug/leak_annotations.h",
     "debug/profiler.cc",
     "debug/profiler.h",
@@ -565,7 +558,8 @@ component("base") {
     "process/process_handle.cc",
     "process/process_handle.h",
     "process/process_info.h",
-    "process/process_metrics_iocounters.h",
+    "process/set_process_title.cc",
+    "process/set_process_title.h",
     "profiler/frame.cc",
     "profiler/frame.h",
     "profiler/metadata_recorder.cc",
@@ -921,6 +915,8 @@ component("base") {
     "trace_event/heap_profiler_allocation_context_tracker.h",
     "trace_event/memory_allocator_dump_guid.cc",
     "trace_event/memory_allocator_dump_guid.h",
+    "trace_event/named_trigger.cc",
+    "trace_event/named_trigger.h",
     "trace_event/trace_id_helper.cc",
     "trace_event/trace_id_helper.h",
     "traits_bag.h",
@@ -939,6 +935,7 @@ component("base") {
     "types/pass_key.h",
     "types/strong_alias.h",
     "types/supports_ostream_operator.h",
+    "types/to_address.h",
     "types/token_type.h",
     "types/variant_util.h",
     "unguessable_token.cc",
@@ -1203,6 +1200,8 @@ component("base") {
       "android/meminfo_dump_provider.h",
       "android/memory_pressure_listener_android.cc",
       "android/memory_pressure_listener_android.h",
+      "android/memory_purge_manager_android.cc",
+      "android/memory_purge_manager_android.h",
       "android/path_service_android.cc",
       "android/path_utils.cc",
       "android/path_utils.h",
@@ -1484,7 +1483,7 @@ component("base") {
       "//third_party/fuchsia-sdk/sdk/pkg/async-loop-cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async-loop-default",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl",
-      "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/inspect_component_cpp",
       "//third_party/icu",
     ]
 
@@ -1678,6 +1677,8 @@ component("base") {
       sources += [
         "memory/discardable_shared_memory.cc",
         "memory/discardable_shared_memory.h",
+        "memory/shared_memory_switch.cc",
+        "memory/shared_memory_switch.h",
         "metrics/histogram_shared_memory.cc",
         "metrics/histogram_shared_memory.h",
         "process/kill.cc",
@@ -2139,7 +2140,7 @@ component("base") {
         "mac/mach_port_rendezvous.cc",
         "mac/mach_port_rendezvous.h",
         "process/kill_mac.cc",
-        "process/launch_mac.cc",
+        "process/launch_ios.cc",
         "process/memory_mac.mm",
         "process/port_provider_mac.cc",
         "process/port_provider_mac.h",
@@ -2210,17 +2211,24 @@ component("base") {
 
     configs += linux_configs
     all_dependent_configs += linux_configs
-    sources += [ "system/sys_info_linux.cc" ]
+    sources += [
+      "process/set_process_title_linux.cc",
+      "process/set_process_title_linux.h",
+      "system/sys_info_linux.cc",
+    ]
     if (!is_cronet_build) {
       # These dependencies are not required on Android.
       sources += [
         "nix/mime_util_xdg.cc",
         "nix/mime_util_xdg.h",
+        "nix/scoped_xdg_activation_token_injector.cc",
+        "nix/scoped_xdg_activation_token_injector.h",
         "nix/xdg_util.cc",
         "nix/xdg_util.h",
       ]
       defines += [ "USE_SYMBOLIZE" ]
       deps += [
+        ":dwarf_helpers",
         "//base/third_party/symbolize",
         "//base/third_party/xdg_user_dirs",
       ]
@@ -2457,6 +2465,34 @@ component("base") {
   }
 }
 
+if (is_linux || is_chromeos) {
+  # Split out as a separate target for two reasons:
+  # - the line number reader is 2x slower in debug builds if not optimized,
+  #   leading to a worse dev experience and test timeouts.
+  # - it would be nice to upstream this logic into something like Abseil. The
+  #   logic that drives the base symbolizer is already imported more or less
+  #   directly from Abseil.
+  source_set("dwarf_helpers") {
+    sources = [
+      "debug/buffered_dwarf_reader.cc",
+      "debug/buffered_dwarf_reader.h",
+      "debug/dwarf_line_no.cc",
+      "debug/dwarf_line_no.h",
+    ]
+
+    deps = [
+      "//base/allocator/partition_allocator:raw_ptr",
+      "//base/numerics:base_numerics",
+      "//base/third_party/symbolize",
+    ]
+
+    defines = [ "USE_SYMBOLIZE" ]
+
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+}
+
 # Build flags for Control Flow Integrity
 # https://www.chromium.org/developers/testing/control-flow-integrity
 buildflag_header("cfi_buildflags") {
@@ -2483,6 +2519,12 @@ buildflag_header("debugging_buildflags") {
   # TODO(crbug.com/1420774): Try and enable these checks on Android too.
   enable_commandline_sequence_checks =
       (is_debug || dcheck_always_on) && !is_android
+
+  if (enable_stack_trace_line_numbers) {
+    assert(
+        symbol_level > 0,
+        "symbol_level must be set to greater than 0 for source line numbers.")
+  }
 
   flags = [
     "DCHECK_IS_CONFIGURABLE=$dcheck_is_configurable",
@@ -3156,11 +3198,11 @@ test("base_unittests") {
     "command_line_unittest.cc",
     "component_export_unittest.cc",
     "containers/adapters_unittest.cc",
+    "containers/buffer_iterator_unittest.cc",
     "containers/checked_iterators_unittest.cc",
     "containers/circular_deque_unittest.cc",
     "containers/contains_unittest.cc",
     "containers/enum_set_unittest.cc",
-    "containers/erase_unittest.cc",
     "containers/extend_unittest.cc",
     "containers/fixed_flat_map_unittest.cc",
     "containers/fixed_flat_set_unittest.cc",
@@ -3175,6 +3217,8 @@ test("base_unittests") {
     "containers/map_util_unittest.cc",
     "containers/small_map_unittest.cc",
     "containers/span_unittest.cc",
+    "containers/to_value_list_unittest.cc",
+    "containers/to_vector_unittest.cc",
     "containers/unique_ptr_adapters_unittest.cc",
     "containers/vector_buffer_unittest.cc",
     "cpu_unittest.cc",
@@ -3447,7 +3491,6 @@ test("base_unittests") {
     "test/test_pending_task_unittest.cc",
     "test/test_proto_loader_unittest.cc",
     "test/test_waitable_event_unittest.cc",
-    "test/to_vector_unittest.cc",
     "third_party/dynamic_annotations/dynamic_annotations_compiletest.cc",
     "thread_annotations_unittest.cc",
     "threading/hang_watcher_unittest.cc",
@@ -3493,19 +3536,17 @@ test("base_unittests") {
     "types/pass_key_unittest.cc",
     "types/strong_alias_unittest.cc",
     "types/supports_ostream_operator_unittest.cc",
+    "types/to_address_unittest.cc",
     "types/token_type_unittest.cc",
     "types/variant_util_unittest.cc",
     "unguessable_token_unittest.cc",
+    "unsafe_buffers_unittest.cc",
     "uuid_unittest.cc",
     "value_iterators_unittest.cc",
     "values_unittest.cc",
     "version_unittest.cc",
     "vlog_unittest.cc",
   ]
-
-  if (use_blink) {
-    sources += [ "metrics/histogram_shared_memory_unittest.cc" ]
-  }
 
   if (!is_cronet_build) {
     # location_unittest.cc fails gn check for tracing-shimmed Cronet builds.
@@ -3521,7 +3562,7 @@ test("base_unittests") {
     ]
   }
 
-  if (use_safe_libcxx) {
+  if (use_safe_libcxx || use_safe_libstdcxx) {
     sources += [ "libcpp_hardening_test.cc" ]
   }
 
@@ -3553,9 +3594,6 @@ test("base_unittests") {
     "//third_party/icu",
     "//third_party/modp_b64",
   ]
-  if (is_clang) {
-    deps += [ ":base_unsafe_buffers_unittest_sources" ]
-  }
 
   data_deps = [
     "//base/test:immediate_crash_test_helper",
@@ -3584,9 +3622,11 @@ test("base_unittests") {
     "//tools/metrics/histograms/enums.xml",
   ]
 
-  if (!is_ios) {
+  if (use_blink) {
     sources += [
       "allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc",
+      "memory/shared_memory_switch_unittest.cc",
+      "metrics/histogram_shared_memory_unittest.cc",
     ]
 
     data_deps += [ "//base/test:test_proto_descriptor" ]
@@ -3670,6 +3710,7 @@ test("base_unittests") {
       "debug/proc_maps_linux_unittest.cc",
       "files/scoped_file_linux_unittest.cc",
       "nix/mime_util_xdg_unittest.cc",
+      "process/set_process_title_linux_unittest.cc",
     ]
 
     if (!is_nacl) {
@@ -3944,7 +3985,7 @@ test("base_unittests") {
     if (enable_pkeys && is_debug && !is_component_build) {
       # This test requires RELRO, which is not enabled in component builds.
       # Also, require a debug build, since we only disable stack protectors in
-      # debug builds in partition alloc (see below why it's needed).
+      # debug builds in PartitionAlloc (see below why it's needed).
       sources += [ "allocator/partition_allocator/src/partition_alloc/thread_isolation/pkey_unittest.cc" ]
 
       # We want to test the pkey code without access to memory that is not
@@ -4152,24 +4193,7 @@ test("base_unittests") {
 
   if (enable_nocompile_tests) {
     deps += [ ":base_nocompile_tests" ]
-    if (is_clang) {
-      deps += [ ":base_unsafe_buffers_nocompile_tests" ]
-    }
   }
-}
-
-source_set("base_unsafe_buffers_unittest_sources") {
-  testonly = true
-  visibility = [ ":*" ]
-  configs += [ "//build/config/compiler:unsafe_buffer_warning" ]
-  sources = [
-    "containers/buffer_iterator_unittest.cc",
-    "unsafe_buffers_unittest.cc",
-  ]
-  deps = [
-    "//base",
-    "//testing/gtest",
-  ]
 }
 
 # Test that CFG is enabled in Rust code.
@@ -4203,11 +4227,14 @@ if (enable_nocompile_tests) {
       "allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr_nocompile.nc",
       "allocator/partition_allocator/src/partition_alloc/pointers/raw_ref_nocompile.nc",
       "callback_list_nocompile.nc",
+      "containers/buffer_iterator_nocompile.nc",
       "containers/checked_iterators_nocompile.nc",
       "containers/contains_nocompile.nc",
       "containers/enum_set_nocompile.nc",
       "containers/heap_array_nocompile.nc",
       "containers/span_nocompile.nc",
+      "containers/to_value_list_nocompile.nc",
+      "containers/to_vector_nocompile.nc",
       "debug/crash_logging_nocompile.nc",
       "functional/bind_nocompile.nc",
       "functional/callback_nocompile.nc",
@@ -4230,18 +4257,13 @@ if (enable_nocompile_tests) {
       "traits_bag_nocompile.nc",
       "types/pass_key_nocompile.nc",
       "types/variant_util_nocompile.nc",
+      "unsafe_buffers_nocompile.nc",
       "values_nocompile.nc",
     ]
-    deps = [ ":base" ]
-  }
-
-  nocompile_source_set("base_unsafe_buffers_nocompile_tests") {
-    configs = [ "//build/config/compiler:unsafe_buffer_warning" ]
-    sources = [
-      "containers/buffer_iterator_nocompile.nc",
-      "unsafe_buffers_nocompile.nc",
+    deps = [
+      ":base",
+      "//build/config/clang:unsafe_buffers_buildflags",
     ]
-    deps = [ ":base" ]
   }
 }
 
@@ -4286,6 +4308,7 @@ if (is_android || is_robolectric) {
       "android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",
       "android/java/src/org/chromium/base/memory/JavaHeapDumpGenerator.java",
       "android/java/src/org/chromium/base/memory/MemoryInfoBridge.java",
+      "android/java/src/org/chromium/base/memory/MemoryPurgeManager.java",
       "android/java/src/org/chromium/base/metrics/NativeUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
       "android/java/src/org/chromium/base/task/PostTask.java",
@@ -4699,11 +4722,11 @@ if (is_android) {
       ":base_cached_flags_java",
       ":base_java",
       "//build/android:build_java",
+      "//testing/android/instrumentation:instrumentation_test_runner_java",
       "//third_party/accessibility_test_framework:accessibility_test_framework_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
       "//third_party/android_deps:espresso_java",
       "//third_party/android_deps:guava_android_java",
-      "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_core_core_java",
@@ -4728,7 +4751,6 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/MockitoErrorHandler.java",
       "test/android/javatests/src/org/chromium/base/test/ResetCachedFlagValuesTestHook.java",
       "test/android/javatests/src/org/chromium/base/test/ScreenshotOnFailureStatement.java",
-      "test/android/javatests/src/org/chromium/base/test/TestListInstrumentationRunListener.java",
       "test/android/javatests/src/org/chromium/base/test/TestTraceEvent.java",
       "test/android/javatests/src/org/chromium/base/test/UiThreadStatement.java",
       "test/android/javatests/src/org/chromium/base/test/UiThreadTest.java",
@@ -4961,6 +4983,7 @@ if (is_android) {
       ":base_junit_test_support",
       ":base_shared_preferences_java",
       "//base/test:test_support_java",
+      "//testing/android/instrumentation:instrumentation_test_runner_java",
       "//third_party/android_deps:guava_android_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_test_core_java",
@@ -5109,6 +5132,12 @@ if (is_linux || is_chromeos) {
     sources = [ "nix/mime_util_xdg_fuzzer.cc" ]
     deps = [ "//base" ]
   }
+}
+
+fuzzer_test("base_persistent_histogram_allocator_fuzzer") {
+  sources = [ "metrics/persistent_histogram_allocator_fuzzer.cc" ]
+  deps = [ "//base" ]
+  seed_corpus = "//base/test/data/pma_corpus"
 }
 
 fuzzer_test("string_number_conversions_fuzzer") {

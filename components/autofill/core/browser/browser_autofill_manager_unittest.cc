@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/browser_autofill_manager.h"
+
 #include <stddef.h>
 
 #include <memory>
@@ -37,11 +39,11 @@
 #include "components/autofill/core/browser/autofill_plus_address_delegate.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_api.h"
 #include "components/autofill/core/browser/crowdsourcing/mock_autofill_crowdsourcing_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/form_data_importer_test_api.h"
 #include "components/autofill/core/browser/form_structure_test_api.h"
@@ -69,6 +71,7 @@
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_test_helpers.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -105,6 +108,8 @@ namespace autofill {
 
 namespace {
 
+using ::base::Bucket;
+using ::base::BucketsAre;
 using ::base::UTF8ToUTF16;
 using mojom::SubmissionIndicatorEvent;
 using mojom::SubmissionSource;
@@ -381,12 +386,6 @@ auto EqualsFillFieldLogEvent(const FillFieldLogEvent& expected) {
             expected.filling_prevented_by_iframe_security_policy));
 }
 
-Matcher<Suggestion> IsPlusAddressSuggestion() {
-  return Field(&Suggestion::popup_item_id,
-               AnyOf(PopupItemId::kCreateNewPlusAddress,
-                     PopupItemId::kFillExistingPlusAddress));
-}
-
 // Creates a GUID for testing. For example,
 // MakeGuid(123) = "00000000-0000-0000-0000-000000000123";
 std::string MakeGuid(size_t last_digit) {
@@ -421,7 +420,7 @@ class MockAutofillClient : public TestAutofillClient {
   ~MockAutofillClient() override = default;
 
   MOCK_METHOD(version_info::Channel, GetChannel, (), (const override));
-  MOCK_METHOD(AutofillOptimizationGuide*,
+  MOCK_METHOD(MockAutofillOptimizationGuide*,
               GetAutofillOptimizationGuide,
               (),
               (const override));
@@ -640,7 +639,7 @@ class MockAutofillDriver : public TestAutofillDriver {
   // Mock methods to enable testability.
   MOCK_METHOD((base::flat_set<FieldGlobalId>),
               ApplyFormAction,
-              (mojom::ActionType action_type,
+              (mojom::FormActionType action_type,
                mojom::ActionPersistence action_persistence,
                const FormData& data,
                const url::Origin& triggered_origin,
@@ -648,8 +647,8 @@ class MockAutofillDriver : public TestAutofillDriver {
               (override));
   MOCK_METHOD(void,
               ApplyFieldAction,
-              (mojom::ActionPersistence action_persistence,
-               mojom::TextReplacement text_replacement,
+              (mojom::FieldActionType action_type,
+               mojom::ActionPersistence action_persistence,
                const FieldGlobalId& field_id,
                const std::u16string& value),
               (override));
@@ -733,7 +732,7 @@ class BrowserAutofillManagerTest : public testing::Test {
     browser_autofill_manager_.reset();
 
     personal_data().SetPrefService(nullptr);
-    personal_data().ClearCreditCards();
+    personal_data().test_payments_data_manager().ClearCreditCards();
   }
 
   MockTouchToFillDelegate& touch_to_fill_delegate() {
@@ -755,10 +754,12 @@ class BrowserAutofillManagerTest : public testing::Test {
                                                     trigger_source);
   }
 
-  void DidShowAutofillSuggestions(const FormData& form,
-                                  size_t field_index = 0) {
+  void DidShowAutofillSuggestions(
+      const FormData& form,
+      size_t field_index = 0,
+      PopupItemId popup_item_id = PopupItemId::kAddressEntry) {
     browser_autofill_manager_->DidShowSuggestions(
-        std::vector<PopupItemId>({PopupItemId::kAddressEntry}), form,
+        std::vector<PopupItemId>({popup_item_id}), form,
         form.fields[field_index]);
   }
 
@@ -800,8 +801,8 @@ class BrowserAutofillManagerTest : public testing::Test {
           trigger_details);
     } else if (const CreditCard* card =
                    personal_data().GetCreditCardByGUID(guid)) {
-      browser_autofill_manager_->FillOrPreviewCreditCardForm(
-          mojom::ActionPersistence::kFill, form, field, *card, trigger_details);
+      browser_autofill_manager_->AuthenticateThenFillCreditCardForm(
+          form, field, *card, trigger_details);
     }
   }
 
@@ -823,21 +824,6 @@ class BrowserAutofillManagerTest : public testing::Test {
     EXPECT_CALL(*autofill_driver_, ApplyFormAction)
         .WillOnce(DoAll(SaveArg<2>(&response_data), Return(global_ids)));
     FillAutofillFormData(input_form, input_field, guid, trigger_details);
-    return response_data;
-  }
-
-  FormData PreviewVirtualCardDataAndGetResults(
-      mojom::ActionPersistence action_persistence,
-      const FormData& input_form,
-      const FormFieldData& input_field,
-      const CreditCard& virtual_card) {
-    FormData response_data;
-    EXPECT_CALL(*autofill_driver_, ApplyFormAction)
-        .WillOnce((DoAll(SaveArg<2>(&response_data),
-                         Return(std::vector<FieldGlobalId>{}))));
-    browser_autofill_manager_->FillOrPreviewCreditCardForm(
-        action_persistence, input_form, input_field, virtual_card,
-        {.trigger_source = AutofillTriggerSource::kPopup});
     return response_data;
   }
 
@@ -904,8 +890,8 @@ class BrowserAutofillManagerTest : public testing::Test {
     card->SetNetworkForMaskedCard(kVisaCard);
 
     EXPECT_CALL(*autofill_driver_, ApplyFormAction).Times(AtLeast(1));
-    browser_autofill_manager_->FillOrPreviewCreditCardForm(
-        mojom::ActionPersistence::kFill, *form, form->fields[0], *card,
+    browser_autofill_manager_->AuthenticateThenFillCreditCardForm(
+        *form, form->fields[0], *card,
         {.trigger_source = AutofillTriggerSource::kPopup});
   }
 
@@ -1212,8 +1198,8 @@ class BrowserAutofillManagerTest : public testing::Test {
 
     AutofillProfile profile3(
         i18n_model_definition::kLegacyHierarchyCountryCode);
-    test::SetProfileInfo(&profile3, "", "", "", "", "", "", "", "", "", "", "",
-                         "");
+    test::SetProfileInfo(&profile3, "", "", "", "", "", "", "", "", "", "",
+                         "US", "");
     profile3.set_guid(MakeGuid(3));
     profile3.set_use_date(AutofillClock::Now());
     personal_data().AddProfile(profile3);
@@ -1473,12 +1459,13 @@ TEST_F(BrowserAutofillManagerTest,
   GetAutofillSuggestions(form, first_field);
   external_delegate()->CheckNoSuggestions(first_field.global_id());
 
-  // Expect 3 address suggestions + footer because the fixture created three
-  // profiles during set up (see `CreateTestAutofillProfiles()`).
+  // Expect 2 address suggestions + footer because the fixture created three
+  // profiles during set up, one of which is empty and cannot be suggested
+  // (see `CreateTestAutofillProfiles()`).
   GetAutofillSuggestions(
       form, first_field,
       AutofillSuggestionTriggerSource::kManualFallbackAddress);
-  external_delegate()->CheckSuggestionCount(first_field.global_id(), 5);
+  external_delegate()->CheckSuggestionCount(first_field.global_id(), 4);
   // Expect 4 credit card suggestions + footer because the fixture created 3
   // credit cards during setup (see `CreateTestCreditCards()`).
   GetAutofillSuggestions(
@@ -1501,11 +1488,12 @@ TEST_F(BrowserAutofillManagerTest,
   FormsSeen({form});
 
   for (const auto& field : form.fields) {
-    // Expect 3 address suggestions + footer because the fixture created three
-    // profiles during set up (see `CreateTestAutofillProfiles()`).
+    // Expect 2 address suggestions + footer because the fixture created three
+    // profiles during set up, one of which is empty and cannot be suggested
+    // (see `CreateTestAutofillProfiles()`).
     GetAutofillSuggestions(
         form, field, AutofillSuggestionTriggerSource::kManualFallbackAddress);
-    external_delegate()->CheckSuggestionCount(field.global_id(), 5);
+    external_delegate()->CheckSuggestionCount(field.global_id(), 4);
     base::ranges::all_of(
         external_delegate()->suggestions(), [](const Suggestion& suggestion) {
           return suggestion.popup_item_id == PopupItemId::kAddressEntry;
@@ -1666,7 +1654,7 @@ TEST_F(BrowserAutofillManagerTest, GetVirtualCreditCardsForStandaloneCvcField) {
       .SetFourDigitCombinationsInDOM(combinations);
 
   // Set up virtual card usage data and credit cards.
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   CreditCard masked_server_card = test::GetVirtualCard();
   masked_server_card.set_guid("1234");
   VirtualCardUsageData virtual_card_usage_data =
@@ -1984,8 +1972,12 @@ TEST_F(BrowserAutofillManagerTest,
   EXPECT_FALSE(external_delegate()->on_suggestions_returned_seen());
 }
 
+// Tests that `SingleFieldFormFillRouter` returns to the
+// `AutofillExternalDelegate`, if it has any. It also checks that the time delay
+// for returning the suggestions is measured.
 TEST_F(BrowserAutofillManagerTest,
        OnSuggestionsReturned_CallsExternalDelegate) {
+  base::HistogramTester histogram_tester;
   FormData form = CreateTestAddressFormData();
   form.fields = {CreateTestFormField("Some Field", "somefield", "",
                                      FormControlType::kInputText)};
@@ -2011,6 +2003,159 @@ TEST_F(BrowserAutofillManagerTest,
             AutofillSuggestionTriggerSource::kFormControlElementClicked);
   external_delegate()->CheckSuggestions(form.fields[0].global_id(),
                                         {suggestions[0], suggestions[1]});
+  histogram_tester.ExpectTotalCount(
+      "Autofill.Popup.SingleFieldFormFillerDelay.Autocomplete", 1);
+}
+
+// Tests that metrics are logged to measure whether Autocomplete would have been
+// suppressed by Plus Address suggestions whenever an Autocomplete popup is
+// shown. Simulates Autocomplete suggestions that do not contain email strings.
+TEST_F(BrowserAutofillManagerTest,
+       AutocompleteSuppressionWithoutEmailSuggestions) {
+  // Required to enable heuristics for small forms.
+  base::test::ScopedFeatureList feature_list{
+      features::kAutofillEnableEmailHeuristicOnlyAddressForms};
+
+  autofill_client_.identity_test_environment().MakePrimaryAccountAvailable(
+      "plus@plus.plus", signin::ConsentLevel::kSignin);
+  // Clear profiles to avoid that Autofill takes precedence.
+  personal_data().ClearProfiles();
+  FormData form_without_email =
+      test::GetFormData({.fields = {{.role = NAME_FIRST}}});
+  FormData form_with_email =
+      test::GetFormData({.fields = {{.role = EMAIL_ADDRESS}}});
+  FormsSeen({form_without_email, form_with_email});
+
+  ON_CALL(single_field_form_fill_router(), OnGetSingleFieldSuggestions)
+      .WillByDefault(
+          [&](const FormFieldData& field, const AutofillClient&,
+              SingleFieldFormFiller::OnSuggestionsReturnedCallback callback,
+              const SuggestionsContext&) {
+            std::move(callback).Run(field.global_id(),
+                                    {Suggestion(u"one"), Suggestion(u"test@")});
+            return true;
+          });
+
+  // An interaction with a non-email field will never lead to a suppression of
+  // Autocomplete.
+  {
+    base::HistogramTester histogram_tester;
+    GetAutofillSuggestions(
+        form_without_email, form_without_email.fields[0],
+        AutofillSuggestionTriggerSource::kFormControlElementClicked);
+    histogram_tester.ExpectUniqueSample(
+        kAutocompleteSuppressionByPlusAddressUma,
+        AutocompleteSuppressionByPlusAddress::kNotSuppressed, 1);
+  }
+
+  // But an interaction with an email field will suppress Autocomplete.
+  {
+    base::HistogramTester histogram_tester;
+    GetAutofillSuggestions(
+        form_with_email, form_with_email.fields[0],
+        AutofillSuggestionTriggerSource::kFormControlElementClicked);
+    histogram_tester.ExpectUniqueSample(
+        kAutocompleteSuppressionByPlusAddressUma,
+        AutocompleteSuppressionByPlusAddress::kSuppressedWithoutEmailResults,
+        1);
+  }
+}
+
+// Tests that metrics are logged to measure whether Autocomplete would have been
+// suppressed by Plus Address suggestions. Simulates Autocomplete suggestions
+// with email strings. Also tests that no metrics are emitted for signed-out
+// users and in incognito mode.
+TEST_F(BrowserAutofillManagerTest,
+       AutocompleteSuppressionWithEmailSuggestions) {
+  // Required to enable heuristics for small forms.
+  base::test::ScopedFeatureList feature_list{
+      features::kAutofillEnableEmailHeuristicOnlyAddressForms};
+
+  // Clear profiles to avoid that Autofill takes precedence.
+  personal_data().ClearProfiles();
+  FormData form = test::GetFormData({.fields = {{.role = EMAIL_ADDRESS}}});
+  FormsSeen({form});
+  ON_CALL(single_field_form_fill_router(), OnGetSingleFieldSuggestions)
+      .WillByDefault(
+          [&](const FormFieldData& field, const AutofillClient&,
+              SingleFieldFormFiller::OnSuggestionsReturnedCallback callback,
+              const SuggestionsContext&) {
+            std::move(callback).Run(
+                field.global_id(),
+                {Suggestion(u"one"), Suggestion(u"test@foo.com")});
+            return true;
+          });
+
+  // No metrics are recorded if the user is not signed in.
+  {
+    base::HistogramTester histogram_tester;
+    GetAutofillSuggestions(
+        form, form.fields[0],
+        AutofillSuggestionTriggerSource::kFormControlElementClicked);
+    histogram_tester.ExpectTotalCount(kAutocompleteSuppressionByPlusAddressUma,
+                                      0);
+  }
+
+  // An interaction with an email field will suppress Autocomplete for a
+  // signed-in user.
+  autofill_client_.identity_test_environment().MakePrimaryAccountAvailable(
+      "plus@plus.plus", signin::ConsentLevel::kSignin);
+  {
+    base::HistogramTester histogram_tester;
+    GetAutofillSuggestions(
+        form, form.fields[0],
+        AutofillSuggestionTriggerSource::kFormControlElementClicked);
+    histogram_tester.ExpectUniqueSample(
+        kAutocompleteSuppressionByPlusAddressUma,
+        AutocompleteSuppressionByPlusAddress::kSuppressedWithEmailResults, 1);
+  }
+
+  // No metrics are recorded in incognito mode.
+  autofill_client_.set_is_off_the_record(true);
+  {
+    base::HistogramTester histogram_tester;
+    GetAutofillSuggestions(
+        form, form.fields[0],
+        AutofillSuggestionTriggerSource::kFormControlElementClicked);
+    histogram_tester.ExpectTotalCount(kAutocompleteSuppressionByPlusAddressUma,
+                                      0);
+  }
+}
+
+// Tests that Autocomplete suppression metrics are logged correctly even if the
+// focused field disappears while Autocomplete is retrieving suggestions.
+// Regression test for (b/327866993).
+TEST_F(BrowserAutofillManagerTest, AutocompleteSuppressionFieldDisappears) {
+  // Required to enable heuristics for small forms.
+  base::test::ScopedFeatureList feature_list{
+      features::kAutofillEnableEmailHeuristicOnlyAddressForms};
+
+  // Clear profiles to avoid that Autofill takes precedence.
+  personal_data().ClearProfiles();
+  FormData form = test::GetFormData({.fields = {{.role = EMAIL_ADDRESS}}});
+  FormsSeen({form});
+  ON_CALL(single_field_form_fill_router(), OnGetSingleFieldSuggestions)
+      .WillByDefault(
+          [&](const FormFieldData& field, const AutofillClient&,
+              SingleFieldFormFiller::OnSuggestionsReturnedCallback callback,
+              const SuggestionsContext&) {
+            browser_autofill_manager_->OnFormsSeen(
+                /*updated_forms=*/{}, /*removed_forms=*/{form.global_id()});
+            std::move(callback).Run(
+                field.global_id(),
+                {Suggestion(u"one"), Suggestion(u"test@foo.com")});
+            return true;
+          });
+
+  autofill_client_.identity_test_environment().MakePrimaryAccountAvailable(
+      "plus@plus.plus", signin::ConsentLevel::kSignin);
+  base::HistogramTester histogram_tester;
+  GetAutofillSuggestions(
+      form, form.fields[0],
+      AutofillSuggestionTriggerSource::kFormControlElementClicked);
+  histogram_tester.ExpectUniqueSample(
+      kAutocompleteSuppressionByPlusAddressUma,
+      AutocompleteSuppressionByPlusAddress::kSuppressedWithEmailResults, 1);
 }
 
 class BrowserAutofillManagerTestForMetadataCardSuggestions
@@ -2299,7 +2444,7 @@ TEST_F(BrowserAutofillManagerTest,
 
   // Clear the test credit cards and try again -- we should still show the
   // mixed form warning.
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   GetAutofillSuggestions(form, form.fields[0]);
   external_delegate()->CheckSuggestions(
       form.fields[0].global_id(),
@@ -2387,7 +2532,7 @@ TEST_P(BrowserAutofillManagerTestForMetadataCardSuggestions,
 TEST_F(BrowserAutofillManagerTest,
        GetCreditCardSuggestions_MaskedCardWithMoreThan6Digits) {
   // Add a masked server card.
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
 
   CreditCard masked_server_card;
   test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
@@ -2414,7 +2559,7 @@ TEST_F(BrowserAutofillManagerTest,
 // suggested after non expired cards even if they have a higher ranking score.
 TEST_P(BrowserAutofillManagerTestForMetadataCardSuggestions,
        GetCreditCardSuggestions_ExpiredCards) {
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
 
   // Add a never used non expired credit card.
   CreditCard credit_card0("002149C1-EE28-4213-A3B9-DA243FFF021B",
@@ -2472,7 +2617,7 @@ TEST_P(BrowserAutofillManagerTestForMetadataCardSuggestions,
 // enabled and the input field is empty.
 TEST_P(BrowserAutofillManagerTestForMetadataCardSuggestions,
        GetCreditCardSuggestions_SuppressDisusedCreditCardsOnEmptyField) {
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   ASSERT_EQ(0U, personal_data().GetCreditCards().size());
 
   // Add a never used non expired local credit card.
@@ -2579,7 +2724,7 @@ TEST_P(BrowserAutofillManagerTestForMetadataCardSuggestions,
        GetCreditCardSuggestions_NumberMissing) {
   // Create one normal credit card and one credit card with the number
   // missing.
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   ASSERT_EQ(0U, personal_data().GetCreditCards().size());
 
   CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
@@ -2691,7 +2836,7 @@ TEST_F(BrowserAutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
           PopupItemId::kInsecureContextPaymentDisabledMessage)});
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   GetAutofillSuggestions(form, field);
   external_delegate()->CheckNoSuggestions(field.global_id());
 }
@@ -3353,9 +3498,14 @@ class BrowserAutofillManagerWithLogEventsTest
     : public BrowserAutofillManagerTest {
  protected:
   BrowserAutofillManagerWithLogEventsTest() {
-    scoped_features_.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillLogUKMEventsWithSampleRate,
-                              features::kAutofillParsingPatternProvider},
+    base::FieldTrialParams feature_parameters{
+        {features::kAutofillLogUKMEventsWithSamplingOnSessionRate.name, "100"},
+    };
+    scoped_features_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/{{features::
+                                   kAutofillLogUKMEventsWithSamplingOnSession,
+                               feature_parameters},
+                              {features::kAutofillParsingPatternProvider, {}}},
         /*disabled_features=*/{});
   }
 
@@ -5464,7 +5614,7 @@ TEST_F(BrowserAutofillManagerTest,
 }
 
 TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_VirtualCard) {
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   CreditCard masked_server_card(CreditCard::RecordType::kMaskedServerCard,
                                 /*server_id=*/"a123");
   test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
@@ -6191,7 +6341,8 @@ TEST_F(BrowserAutofillManagerTest,
   FormsSeen({form});
 
   base::HistogramTester histogram_tester;
-  DidShowAutofillSuggestions(form);
+  DidShowAutofillSuggestions(form, /*field_index=*/0,
+                             PopupItemId::kCreditCardEntry);
   histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                      AutofillMetrics::SUGGESTIONS_SHOWN, 1);
   histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
@@ -6406,85 +6557,6 @@ TEST_F(BrowserAutofillManagerTest, AutocompleteMetrics) {
     histogram_tester.ExpectTotalCount(
         kTypeHistogram + "ServerOrHeuristics." + suffix, 4);
   }
-}
-
-struct ContextMenuImpressionTestCase {
-  // Autocomplete attribute value.
-  const char* autocomplete_attribute_value;
-  // Heuristic type for the field in the test case.
-  FieldType heuristic_type;
-  // Server type for the field in the test case.
-  FieldType server_type;
-  // Expected autocomplete state that would be logged in the metrics.
-  AutofillMetrics::AutocompleteState expected_autocomplete_state;
-  // Expected autofill type that would be logged in the metrics.
-  FieldType expected_autofill_type;
-};
-
-class BrowserAutofillManagerContextMenuImpressionsTest
-    : public testing::WithParamInterface<ContextMenuImpressionTestCase>,
-      public BrowserAutofillManagerTest {};
-
-INSTANTIATE_TEST_SUITE_P(
-    BrowserAutofillManagerContextMenuTests,
-    BrowserAutofillManagerContextMenuImpressionsTest,
-    testing::Values(
-        // Empty Autocomplete attribute
-        ContextMenuImpressionTestCase{"", UNKNOWN_TYPE, NO_SERVER_DATA,
-                                      AutofillMetrics::AutocompleteState::kNone,
-                                      UNKNOWN_TYPE},
-        // Valid Autocomplete attribute
-        ContextMenuImpressionTestCase{
-            "name", UNKNOWN_TYPE, EMAIL_ADDRESS,
-            AutofillMetrics::AutocompleteState::kValid, NAME_FULL},
-        // Garbage Autocomplete attribute
-        ContextMenuImpressionTestCase{
-            "asdf", ADDRESS_HOME_COUNTRY, UNKNOWN_TYPE,
-            AutofillMetrics::AutocompleteState::kGarbage, UNKNOWN_TYPE},
-        // Off Autocomplete attribute
-        ContextMenuImpressionTestCase{
-            "off", ADDRESS_HOME_COUNTRY, EMAIL_ADDRESS,
-            AutofillMetrics::AutocompleteState::kOff, EMAIL_ADDRESS}));
-
-// Tests that metrics are emitted correctly on form submission for the fields
-// from where the context menu was triggered.
-TEST_P(BrowserAutofillManagerContextMenuImpressionsTest,
-       ContextMenuImpressionMetrics) {
-  auto test_case = GetParam();
-
-  FormData form;
-  form.name = u"MyForm";
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-  form.fields = {CreateTestFormField("", "", "", FormControlType::kInputText,
-                                     test_case.autocomplete_attribute_value)};
-
-  // Override the types and simulate seeing the form on page load.
-  auto form_structure = std::make_unique<FormStructure>(form);
-  test_api(*form_structure)
-      .SetFieldTypes({test_case.heuristic_type}, {test_case.server_type});
-  browser_autofill_manager_->AddSeenFormStructure(std::move(form_structure));
-
-  // Simulate context menu trigger for all the fields.
-  browser_autofill_manager_->OnContextMenuShownInField(
-      form.global_id(), form.fields[0].global_id());
-
-  // Submit the form and verify that all metrics are collected correctly.
-  base::HistogramTester histogram_tester;
-  FormSubmitted(form);
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Autofill.FieldContextMenuImpressions.ByAutocomplete"),
-      BucketsAre(base::Bucket(test_case.expected_autocomplete_state, 1)));
-
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Autofill.FieldContextMenuImpressions.ByAutofillType"),
-              BucketsAre(base::Bucket(test_case.expected_autofill_type, 1)));
-
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Autofill.FormContextMenuImpressions.ByNumberOfFields"),
-              BucketsAre(base::Bucket(1, 1)));
 }
 
 // Test that if a form is mixed content we show a warning instead of any
@@ -6743,42 +6815,6 @@ TEST_F(BrowserAutofillManagerTest, ScanCreditCardBasedOnIsFormSecure) {
   ASSERT_EQ(card_number_field_https.name, u"cardnumber");
   EXPECT_TRUE(browser_autofill_manager_->ShouldShowScanCreditCard(
       form_https, card_number_field_https));
-}
-
-// Ensure that the experimental plus_addresses feature is not shown by default.
-// This is true even if the PlusAddressService had existing data for the current
-// domain.
-TEST_F(BrowserAutofillManagerTest, NoPlusAddressSuggestionsByDefault) {
-  auto plus_address_delegate =
-      std::make_unique<NiceMock<MockAutofillPlusAddressDelegate>>();
-  ON_CALL(*plus_address_delegate, SupportsPlusAddresses)
-      .WillByDefault(Return(false));
-  ON_CALL(*plus_address_delegate, GetPlusAddress)
-      .WillByDefault(
-          Return(std::make_optional<std::string>("plus_plus@plus.plus")));
-  autofill_client_.set_plus_address_delegate(std::move(plus_address_delegate));
-
-  // Set up our form data. Notably, the first field is an email address.
-  FormData form = test::GetFormData(
-      {.fields = {{.role = EMAIL_ADDRESS, .autocomplete_attribute = "email"}}});
-  form.name = u"MyForm";
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-
-  FormsSeen({form});
-
-  // Check that suggestions are made for the field that has the autocomplete
-  // attribute, and ensure that they are exactly the expected set, with no plus
-  // address data.
-  GetAutofillSuggestions(form, form.fields[0]);
-  external_delegate()->CheckSuggestions(
-      form.fields[0].global_id(),
-      {Suggestion("buddy@gmail.com", "", Suggestion::Icon::kNoIcon,
-                  PopupItemId::kAddressEntry),
-       Suggestion("theking@gmail.com", "", Suggestion::Icon::kNoIcon,
-                  PopupItemId::kAddressEntry),
-       AutofillSuggestionGenerator::CreateSeparator(),
-       AutofillSuggestionGenerator::CreateManageAddressesEntry()});
 }
 
 // Tests that compose suggestions are not queried if Autofill has suggestions
@@ -7090,7 +7126,7 @@ INSTANTIATE_TEST_SUITE_P(,
 
 TEST_P(BrowserAutofillManagerTestForSharingNickname,
        VerifySuggestion_DuplicateCards) {
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   ASSERT_EQ(0U, personal_data().GetCreditCards().size());
   CreditCard local_card = GetLocalCard();
   personal_data().AddCreditCard(local_card);
@@ -7115,7 +7151,7 @@ TEST_P(BrowserAutofillManagerTestForSharingNickname,
 
 TEST_P(BrowserAutofillManagerTestForSharingNickname,
        VerifySuggestion_UnrelatedCards) {
-  personal_data().ClearCreditCards();
+  personal_data().test_payments_data_manager().ClearCreditCards();
   ASSERT_EQ(0U, personal_data().GetCreditCards().size());
   CreditCard local_card = GetLocalCard();
   personal_data().AddCreditCard(local_card);
@@ -7500,8 +7536,6 @@ class BrowserAutofillManagerPlusAddressTest
     BrowserAutofillManagerTest::SetUp();
     auto plus_address_delegate =
         std::make_unique<NiceMock<MockAutofillPlusAddressDelegate>>();
-    ON_CALL(*plus_address_delegate, SupportsPlusAddresses)
-        .WillByDefault(Return(true));
     autofill_client_.set_plus_address_delegate(
         std::move(plus_address_delegate));
   }
@@ -7512,9 +7546,9 @@ class BrowserAutofillManagerPlusAddressTest
   }
 };
 
-// Ensure that plus address options aren't shown unexpectedly.
+// Ensure that plus address options aren't queried for non-email fields.
 TEST_F(BrowserAutofillManagerPlusAddressTest, NoPlusAddressesWithNameFields) {
-  EXPECT_CALL(plus_address_delegate(), RecordAutofillSuggestionEvent).Times(0);
+  EXPECT_CALL(plus_address_delegate(), GetSuggestions).Times(0);
 
   // Set up our form data.
   FormData form = test::GetFormData(
@@ -7526,12 +7560,9 @@ TEST_F(BrowserAutofillManagerPlusAddressTest, NoPlusAddressesWithNameFields) {
   FormsSeen({form});
 
   // Check that suggestions are made for the field that has the autocomplete
-  // attribute. Ensure that there is no plus address option shown, because those options are
-  // only applicable to email fields.
+  // attribute. Ensure that there is no plus address option shown.
   GetAutofillSuggestions(form, form.fields[0]);
   EXPECT_TRUE(external_delegate()->on_suggestions_returned_seen());
-  EXPECT_THAT(external_delegate()->suggestions(),
-              Each(Not(IsPlusAddressSuggestion())));
 
   // Also check that there are no suggestions for the field without the
   // autocomplete attribute, ensuring that unrecognized fields don't get plus
@@ -7540,75 +7571,13 @@ TEST_F(BrowserAutofillManagerPlusAddressTest, NoPlusAddressesWithNameFields) {
   EXPECT_FALSE(external_delegate()->on_suggestions_returned_seen());
 }
 
-// Tests that plus address suggestions are offered iff the value in the focused
-// field matches the prefix of the plus address.
-TEST_F(BrowserAutofillManagerPlusAddressTest, PlusAddressSuggestionShown) {
-  ON_CALL(plus_address_delegate(), GetPlusAddress)
-      .WillByDefault(
-          Return(std::make_optional<std::string>("plus+plus@plus.plus")));
-  const Suggestion kFillSuggestion =
-      Suggestion("plus+plus@plus.plus", "", Suggestion::Icon::kPlusAddress,
-                 PopupItemId::kFillExistingPlusAddress);
-
-  // Set up our form data. The first field is an email address.
-  FormData form = test::GetFormData(
-      {.fields = {{.role = EMAIL_ADDRESS, .autocomplete_attribute = "email"}}});
-  form.name = u"MyForm";
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-  FormsSeen({form});
-
-  MockFunction<void(int)> check;
-  {
-    InSequence s;
-    EXPECT_CALL(plus_address_delegate(),
-                RecordAutofillSuggestionEvent(
-                    AutofillPlusAddressDelegate::SuggestionEvent::
-                        kExistingPlusAddressSuggested));
-    EXPECT_CALL(check, Call(1));
-    EXPECT_CALL(plus_address_delegate(),
-                RecordAutofillSuggestionEvent(
-                    AutofillPlusAddressDelegate::SuggestionEvent::
-                        kExistingPlusAddressSuggested));
-    EXPECT_CALL(check, Call(2));
-  }
-
-  // Check that suggestions are made for the field that has the autocomplete
-  // attribute, and ensure that they are exactly the expected set.
-  GetAutofillSuggestions(form, form.fields[0]);
-  EXPECT_TRUE(external_delegate()->on_suggestions_returned_seen());
-  EXPECT_THAT(external_delegate()->suggestions(),
-              ElementsAre(kFillSuggestion, _, _, _, _));
-  check.Call(1);
-
-  // If the user types a letter and it matches the plus address (after
-  // normalization), the plus address continues to be shown.
-  form.fields[0].value = u"P";
-  GetAutofillSuggestions(form, form.fields[0]);
-  EXPECT_TRUE(external_delegate()->on_suggestions_returned_seen());
-  EXPECT_THAT(external_delegate()->suggestions(), ElementsAre(kFillSuggestion));
-  check.Call(2);
-
-  // If the value does not match the prefix of the plus address, nothing is
-  // shown.
-  form.fields[0].value = u"pp";
-  GetAutofillSuggestions(form, form.fields[0]);
-  EXPECT_FALSE(external_delegate()->on_suggestions_returned_seen());
-}
-
-// Ensure that email fields without existing plus addresses for the domain, but
-// with the feature enabled, still offer creation of a new plus address if their
-// value is empty.
+// Tests that address suggestions are queried and shown for email fields.
 TEST_F(BrowserAutofillManagerPlusAddressTest,
        CreatePlusAddressSuggestionShown) {
-  EXPECT_CALL(plus_address_delegate(),
-              RecordAutofillSuggestionEvent(
-                  AutofillPlusAddressDelegate::SuggestionEvent::
-                      kCreateNewPlusAddressSuggested));
-  ON_CALL(plus_address_delegate(), GetPlusAddress)
-      .WillByDefault(Return(std::optional<std::string>()));
-  ON_CALL(plus_address_delegate(), GetCreateSuggestionLabel)
-      .WillByDefault(Return(u"Create plus address"));
+  EXPECT_CALL(plus_address_delegate(), GetSuggestions)
+      .WillOnce(Return(std::vector<Suggestion>{
+          Suggestion(PopupItemId::kCreateNewPlusAddress)}));
+
   // Set up our form data. Notably, the first field is an email address.
   FormData form = test::GetFormData(
       {.fields = {{.role = EMAIL_ADDRESS, .autocomplete_attribute = "email"}}});
@@ -7618,21 +7587,36 @@ TEST_F(BrowserAutofillManagerPlusAddressTest,
 
   FormsSeen({form});
 
-  // Check that suggestions are made for the field that has the autocomplete
-  // attribute, and ensure that they are exactly the expected set.
+  // Check that the plus address suggestion is offered.
   GetAutofillSuggestions(form, form.fields[0]);
   EXPECT_TRUE(external_delegate()->on_suggestions_returned_seen());
   EXPECT_THAT(external_delegate()->suggestions(),
-              ElementsAre(Suggestion("Create plus address", "",
-                                     Suggestion::Icon::kPlusAddress,
-                                     PopupItemId::kCreateNewPlusAddress),
+              ElementsAre(EqualsSuggestion(PopupItemId::kCreateNewPlusAddress),
                           _, _, _, _));
+}
 
-  // Check that no suggestions are offered if the focused field is not empty
-  // and there is no existing plus address.
-  form.fields[0].value = u"pp";
-  GetAutofillSuggestions(form, form.fields[0]);
-  EXPECT_FALSE(external_delegate()->on_suggestions_returned_seen());
+// Tests that only Plus Address suggestions are shown when the trigger source is
+// a manual fallback for plus addresses.
+TEST_F(BrowserAutofillManagerPlusAddressTest, ManualFallbackPlusAddress) {
+  EXPECT_CALL(
+      plus_address_delegate(),
+      GetSuggestions(
+          _, _, _,
+          AutofillSuggestionTriggerSource::kManualFallbackPlusAddresses))
+      .WillOnce(Return(std::vector<Suggestion>{
+          Suggestion(PopupItemId::kCreateNewPlusAddress)}));
+
+  FormData form = CreateTestAddressFormData();
+  FormsSeen({form});
+
+  // Check that only the plus address suggestion is offered.
+  GetAutofillSuggestions(
+      form, form.fields[0],
+      AutofillSuggestionTriggerSource::kManualFallbackPlusAddresses);
+  EXPECT_TRUE(external_delegate()->on_suggestions_returned_seen());
+  EXPECT_THAT(
+      external_delegate()->suggestions(),
+      ElementsAre(EqualsSuggestion(PopupItemId::kCreateNewPlusAddress)));
 }
 
 // Test that plus address inputs are forced to !should_autocomplete

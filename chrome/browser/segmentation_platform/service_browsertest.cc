@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include <memory>
+
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -267,7 +269,7 @@ class SegmentationPlatformTest : public PlatformBrowserTest {
     proto::SegmentationModelMetadata search_user_metadata;
     MetadataWriter writer = MetadataWriter(&search_user_metadata);
     writer.SetSegmentationMetadataConfig(proto::TimeUnit::DAY, 1, 7, 7, 7);
-    writer.AddUmaFeatures(uma_features.begin(), uma_features.size());
+    writer.AddUmaFeatures(uma_features.data(), uma_features.size());
 
     return search_user_metadata;
   }

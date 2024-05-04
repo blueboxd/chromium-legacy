@@ -4,9 +4,10 @@
 
 #include "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.h"
 
+#include <vector>
+
 #include "base/barrier_callback.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -16,8 +17,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/trace_event/trace_event.h"
 
+#include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
-#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -49,8 +50,10 @@ bool IsExtendedPublicSuffixDomainMatch(
     return true;
   }
 
-  std::string domain1(GetExtendedTopLevelDomain(url1, psl_extensions));
-  std::string domain2(GetExtendedTopLevelDomain(url2, psl_extensions));
+  std::string domain1(
+      affiliations::GetExtendedTopLevelDomain(url1, psl_extensions));
+  std::string domain2(
+      affiliations::GetExtendedTopLevelDomain(url2, psl_extensions));
   if (domain1.empty() || domain2.empty()) {
     return false;
   }
@@ -112,7 +115,7 @@ void InjectAffiliationAndBrandingInformation(
 // Transforms federated credentials into non zero-click ones.
 void TrimUsernameOnlyCredentials(std::vector<PasswordForm>& credentials) {
   // Remove username-only credentials which are not federated.
-  base::EraseIf(credentials, [](const PasswordForm& form) {
+  std::erase_if(credentials, [](const PasswordForm& form) {
     return form.scheme == PasswordForm::Scheme::kUsernameOnly &&
            form.federation_origin.opaque();
   });
@@ -276,7 +279,7 @@ LoginsResultOrError GetLoginsHelper::MergeResults(
         // For web federated credentials the signon_realm has a different
         // style. Extract the origin from URL instead for the lookup.
         if (form.IsFederatedCredential() &&
-            !IsValidAndroidFacetURI(form.signon_realm)) {
+            !affiliations::IsValidAndroidFacetURI(form.signon_realm)) {
           signon_realm = url::Origin::Create(form.url).GetURL().spec();
         }
         if (base::Contains(affiliations_, signon_realm)) {
@@ -292,7 +295,7 @@ LoginsResultOrError GetLoginsHelper::MergeResults(
   // Erase any form which has no match_type assigned. This can happen if PSL
   // matched form was not marked as such inside ProccessExactAndPSLForms()
   // because of PSL extension list.
-  base::EraseIf(final_result,
+  std::erase_if(final_result,
                 [](const auto& form) { return !form.match_type.has_value(); });
 
   TrimUsernameOnlyCredentials(final_result);
@@ -300,7 +303,7 @@ LoginsResultOrError GetLoginsHelper::MergeResults(
   // Remove grouped only matches if filling across groups is disabled.
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kFillingAcrossGroupedSites)) {
-    base::EraseIf(final_result, [](const auto& form) {
+    std::erase_if(final_result, [](const auto& form) {
       return form.match_type == PasswordForm::MatchType::kGrouped;
     });
   }

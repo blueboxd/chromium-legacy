@@ -44,7 +44,7 @@ ui::ElementTracker::ElementList GetTargetableEvents() {
   // See ui/views/interaction/interactive_views_test.cc:330.
   auto elements =
       ui::ElementTracker::GetElementTracker()->GetAllElementsForTesting();
-  base::EraseIf(elements, [](auto* e1) {
+  std::erase_if(elements, [](auto* e1) {
     // We must ensure to never select `kInteractiveTestPivotElementId` because
     // it is an internal element of the interactive test framework. Selecting it
     // will likely result in asserting in the framework.
@@ -71,7 +71,7 @@ void WaitForClosingBrowsersToClose() {
 KombuchaInProcessFuzzer::KombuchaInProcessFuzzer()
     : InteractiveBrowserTestT(InProcessFuzzerOptions{
           .run_loop_timeout_behavior = RunLoopTimeoutBehavior::kContinue,
-          .run_loop_timeout = base::Seconds(20),
+          .run_loop_timeout = base::Seconds(10),
       }) {}
 
 KombuchaInProcessFuzzer::~KombuchaInProcessFuzzer() = default;

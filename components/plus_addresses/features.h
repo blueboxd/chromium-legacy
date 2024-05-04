@@ -9,22 +9,10 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
-namespace plus_addresses {
+namespace plus_addresses::features {
 
 COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
 BASE_DECLARE_FEATURE(kFeature);
-
-// Used to control the enterprise plus address feature's autofill suggestion
-// label. Defaults to generic Lorem Ipsum as strings are not yet determined.
-COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
-extern const base::FeatureParam<std::string>
-    kEnterprisePlusAddressSuggestionLabelOverride;
-
-// Used to control the enterprise plus address feature's label in settings.
-// Defaults to generic Lorem Ipsum as strings are not yet determined.
-COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
-extern const base::FeatureParam<std::string>
-    kEnterprisePlusAddressSettingsLabelOverride;
 
 // Used to control the enterprise plus address feature's OAuth scope.
 COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
@@ -63,6 +51,12 @@ extern const base::FeatureParam<std::string> kPlusAddressErrorReportUrl;
 COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
 extern const base::FeatureParam<bool> kDisableForForbiddenUsers;
 
-}  // namespace plus_addresses
+COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
+BASE_DECLARE_FEATURE(kPlusAddressFallbackFromContextMenu);
+
+COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
+BASE_DECLARE_FEATURE(kPlusAddressRefresh);
+
+}  // namespace plus_addresses::features
 
 #endif  // COMPONENTS_PLUS_ADDRESSES_FEATURES_H_

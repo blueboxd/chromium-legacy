@@ -471,7 +471,20 @@ void PermissionRequestManager::DidFinishNavigation(
               back_forward_cache::DisabledReasonId::kPermissionRequestManager));
     }
   }
+
+  // `CleanUpRequests()` will update activity indicators. `DidFinishNavigation`
+  // means that a new document was recently created, it should not display
+  // blocked indicators from a previous document.
+  auto* pscs = content_settings::PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  // `pscs` can be nullptr in tests.
+  if (pscs) {
+    pscs->OnPermissionRequestCleanupStart();
+  }
   CleanUpRequests();
+  if (pscs) {
+    pscs->OnPermissionRequestCleanupEnd();
+  }
 }
 
 void PermissionRequestManager::DocumentOnLoadCompletedInPrimaryMainFrame() {
@@ -807,7 +820,7 @@ bool PermissionRequestManager::RecreateView() {
   }
 
   current_request_prompt_disposition_ = view_->GetPromptDisposition();
-  if (should_do_auto_response_for_testing) {
+  if (auto_response_for_test_ != NONE && should_do_auto_response_for_testing) {
     // MAC_OS_PROMPT disposition has it's own auto-response logic for testing,
     // so if that was the original disposition we would have skipped our own
     // auto-response logic. Since the disposition can have changed, trigger

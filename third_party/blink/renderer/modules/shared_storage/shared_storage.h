@@ -22,6 +22,7 @@ class SharedStorageWorklet;
 class SharedStorageSetMethodOptions;
 class SharedStorageRunOperationMethodOptions;
 class SharedStorageUrlWithMetadata;
+class SharedStorageWorklet;
 class WorkletOptions;
 
 class MODULES_EXPORT SharedStorage final
@@ -51,8 +52,10 @@ class MODULES_EXPORT SharedStorage final
                        ExceptionState&);
   ScriptPromise Delete(ScriptState*, const String& key, ExceptionState&);
   ScriptPromise clear(ScriptState*, ExceptionState&);
-  ScriptPromise get(ScriptState*, const String& key, ExceptionState&);
-  ScriptPromise length(ScriptState*, ExceptionState&);
+  ScriptPromiseTyped<IDLString> get(ScriptState*,
+                                    const String& key,
+                                    ExceptionState&);
+  ScriptPromiseTyped<IDLUnsignedLong> length(ScriptState*, ExceptionState&);
   ScriptPromiseTyped<IDLDouble> remainingBudget(ScriptState*, ExceptionState&);
   ScriptValue context(ScriptState*, ExceptionState&) const;
   ScriptPromise selectURL(ScriptState*,
@@ -69,10 +72,11 @@ class MODULES_EXPORT SharedStorage final
                     const String& name,
                     const SharedStorageRunOperationMethodOptions* options,
                     ExceptionState&);
-  ScriptPromise createWorklet(ScriptState*,
-                              const String& module_url,
-                              const WorkletOptions* options,
-                              ExceptionState&);
+  ScriptPromiseTyped<SharedStorageWorklet> createWorklet(
+      ScriptState*,
+      const String& module_url,
+      const WorkletOptions* options,
+      ExceptionState&);
   SharedStorageWorklet* worklet(ScriptState*, ExceptionState&);
 
  private:

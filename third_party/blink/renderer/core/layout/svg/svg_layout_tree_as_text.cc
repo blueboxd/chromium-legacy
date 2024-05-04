@@ -264,6 +264,16 @@ static bool WriteSVGPaint(WTF::TextStream& ts,
     ts << "[type=SOLID] [color=" << color << "]";
     return true;
   }
+  if (paint.type == SVGPaintType::kContextFill) {
+    ts << " [" << paint_name << "={" << s;
+    ts << "[type=CONTEXT-FILL]";
+    return true;
+  }
+  if (paint.type == SVGPaintType::kContextStroke) {
+    ts << " [" << paint_name << "={" << s;
+    ts << "[type=CONTEXT-STROKE]";
+    return true;
+  }
   return false;
 }
 
@@ -342,11 +352,11 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
                        ValueForLength(style.Y(), viewport_resolver, style,
                                       SVGLengthMode::kHeight));
     WriteNameValuePair(ts, "width",
-                       ValueForLength(style.UsedWidth(), viewport_resolver,
-                                      style, SVGLengthMode::kWidth));
+                       ValueForLength(style.Width(), viewport_resolver, style,
+                                      SVGLengthMode::kWidth));
     WriteNameValuePair(ts, "height",
-                       ValueForLength(style.UsedHeight(), viewport_resolver,
-                                      style, SVGLengthMode::kHeight));
+                       ValueForLength(style.Height(), viewport_resolver, style,
+                                      SVGLengthMode::kHeight));
   } else if (auto* element = DynamicTo<SVGLineElement>(*svg_element)) {
     const SVGLengthContext length_context(svg_element);
     WriteNameValuePair(ts, "x1",

@@ -106,6 +106,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "crypto/crypto_buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
@@ -332,9 +333,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       search_engine_choice_dialog_service =
           search_engines::SearchEngineChoiceServiceFactory::GetForProfile(
               profile);
-  const bool is_eea_country = search_engines::IsEeaChoiceCountry(
+  const bool is_eea_choice_country = search_engines::IsEeaChoiceCountry(
       search_engine_choice_dialog_service->GetCountryId());
-  html_source->AddBoolean("useLargeSearchEngineIcons", is_eea_country);
+  html_source->AddBoolean("isEeaChoiceCountry", is_eea_choice_country);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
@@ -357,16 +358,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
   bool show_privacy_guide =
-      !chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild();
+      base::FeatureList::IsEnabled(features::kPrivacyGuideForceAvailable) ||
+      (!chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild());
   html_source->AddBoolean("showPrivacyGuide", show_privacy_guide);
-
-  html_source->AddBoolean("enablePrivacyGuide3", base::FeatureList::IsEnabled(
-                                                     features::kPrivacyGuide3));
-
-  html_source->AddBoolean(
-      "enablePrivacyGuidePreload",
-      base::FeatureList::IsEnabled(features::kPrivacyGuidePreload) &&
-          base::FeatureList::IsEnabled(features::kPrivacyGuide3));
 
   html_source->AddBoolean(
       "enableCbdTimeframeRequired",
@@ -387,6 +381,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "enableHttpsFirstModeNewSettings",
       base::FeatureList::IsEnabled(features::kHttpsFirstModeIncognito));
+
+  html_source->AddBoolean(
+      "enableLinkedServicesSetting",
+      base::FeatureList::IsEnabled(features::kLinkedServicesSetting));
 
   html_source->AddBoolean(
       "enablePageContentSetting",
@@ -493,9 +491,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(network::features::kPrivateStateTokens) ||
           base::FeatureList::IsEnabled(network::features::kFledgePst));
 
-  html_source->AddBoolean("safetyCheckNotificationPermissionsEnabled",
-                          base::FeatureList::IsEnabled(
-                              features::kSafetyCheckNotificationPermissions));
   html_source->AddBoolean(
       "safetyCheckUnusedSitePermissionsEnabled",
       base::FeatureList::IsEnabled(
@@ -520,7 +515,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                               privacy_sandbox::kCookieSettingsUiAlignment));
   html_source->AddBoolean(
       "isIpProtectionV1Enabled",
-      base::FeatureList::IsEnabled(privacy_sandbox::kIpProtectionV1));
+      base::FeatureList::IsEnabled(privacy_sandbox::kIpProtectionUx) && false);
   auto* onboarding_service =
       TrackingProtectionOnboardingFactory::GetForProfile(profile);
   html_source->AddBoolean(
@@ -541,22 +536,17 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(
           performance_manager::features::kMemorySaverMultistateMode));
   html_source->AddBoolean(
-      "isDiscardExceptionsImprovementsEnabled",
-      base::FeatureList::IsEnabled(
-          performance_manager::features::kDiscardExceptionsImprovements));
-  html_source->AddBoolean(
       "isBatterySaverModeManagedByOS",
       performance_manager::user_tuning::IsBatterySaverModeManagedByOS());
-
-  html_source->AddBoolean(
-      "enablePermissionStorageAccessApi",
-      base::FeatureList::IsEnabled(
-          permissions::features::kPermissionStorageAccessAPI));
 
   html_source->AddBoolean(
       "autoPictureInPictureEnabled",
       base::FeatureList::IsEnabled(
           blink::features::kMediaSessionEnterPictureInPicture));
+
+  html_source->AddBoolean("enableAutomaticFullscreenContentSetting",
+                          base::FeatureList::IsEnabled(
+                              features::kAutomaticFullscreenContentSetting));
 
   // AI
   optimization_guide::proto::ModelExecutionFeature

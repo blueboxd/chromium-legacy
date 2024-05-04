@@ -21,7 +21,6 @@
 #include "ash/wm/splitview/layout_divider_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_types.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_metrics.h"
@@ -245,16 +244,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                                SnapPosition snap_position,
                                WindowSnapActionSource snap_action_source);
 
-  // Swaps the window(s). If the it is triggered by `kDoubleTap` with only one
-  // window snapped, the window will be snapped to the other position. For all
-  // other cases with `primary_window_` and `secondary_widnow_` available, the
-  // two windows will be swapped together with their bounds.
-  void SwapWindows();
-
-  // |window| should be |primary_window_| or |secondary_window_|, and this
-  // function returns |LEFT| or |RIGHT| accordingly.
-  SnapPosition GetPositionOfSnappedWindow(const aura::Window* window) const;
-
   // |position| should be |LEFT| or |RIGHT|, and this function returns
   // |primary_window_| or |secondary_window_| accordingly.
   aura::Window* GetSnappedWindow(SnapPosition position);
@@ -273,21 +262,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
       SnapPosition snap_position,
       aura::Window* window_for_minimum_size,
       float snap_ratio);
-
-  // Gets snapped bounds in screen coordinates based on `snap_position` and
-  // `snap_ratio`. The snapped bounds are updated to accommodate for the
-  // `split_view_divider_` so that the windows and `split_view_divider_` are not
-  // overlapped.
-  gfx::Rect GetSnappedWindowBoundsInScreen(
-      SnapPosition snap_position,
-      aura::Window* window_for_minimum_size,
-      float snap_ratio);
-
-  // Calculates the new divider position to move `divider_position_` to, such
-  // that the primary window will occupy `snap_ratio` of the screen, and the
-  // secondary window will occupy the rest.
-  int CalculateDividerPosition(SnapPosition snap_position,
-                               float snap_ratio) const;
 
   // Returns true if we should consider the width of the split view divider.
   bool ShouldConsiderDivider() const;
@@ -390,7 +364,15 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void StartResizeWithDivider(const gfx::Point& location_in_screen) override;
   void UpdateResizeWithDivider(const gfx::Point& location_in_screen) override;
   void EndResizeWithDivider(const gfx::Point& location_in_screen) override;
+  void OnResizeEnding() override;
+  void SwapWindows() override;
+  gfx::Rect GetSnappedWindowBoundsInScreen(
+      SnapPosition snap_position,
+      aura::Window* window_for_minimum_size,
+      float snap_ratio) const override;
   aura::Window::Windows GetLayoutWindows() const override;
+  SnapPosition GetPositionOfSnappedWindow(
+      const aura::Window* window) const override;
 
  private:
   friend class SplitViewControllerTest;
@@ -463,10 +445,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // Gets the position where the black scrim should show.
   SnapPosition GetBlackScrimPosition(const gfx::Point& location_in_screen);
 
-  // Updates |divider_position_| according to the current event location during
-  // resizing.
-  void UpdateDividerPosition(const gfx::Point& location_in_screen);
-
   // Returns the closest fixed location to `divider_position`.
   int GetClosestFixedDividerPosition(int divider_position);
 
@@ -474,7 +452,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // position change.
   void StopAndShoveAnimatedDivider();
 
-  // Stops the divider animation and updates the `divider_position_`.
+  // Stops the divider animation and `SetDividerPosition()`.
   void StopSnapAnimation();
 
   // Returns true if we should end split view after resizing, i.e. the
@@ -521,11 +499,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // snapped windows.
   void ModifyPositionRatios(std::vector<float>* out_position_ratios);
 
-  // Gets the expected end drag position for |window| depending on current
-  // screen orientation and split divider position.
-  gfx::Point GetEndDragLocationInScreen(aura::Window* window,
-                                        const gfx::Point& location_in_screen);
-
   // Restores |window| transform to identity transform if applicable.
   void RestoreTransformIfApplicable(aura::Window* window);
 
@@ -554,19 +527,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // Inserts |window| into overview window grid if overview mode is active. Do
   // nothing if overview mode is inactive at the moment.
   void InsertWindowToOverview(aura::Window* window, bool animate = true);
-
-  // Finalizes and cleans up after stopping dragging the divider bar to resize
-  // snapped windows.
-  void FinishWindowResizing(aura::Window* window);
-
-  // Starts performant resize for tablet mode.
-  void StartTabletResize();
-
-  // Ends performant resize for tablet mode.
-  void EndTabletResize();
-
-  // Finalizes and cleans up performant resize for tablet mode.
-  void EndTabletResizeImpl();
 
   // Finalizes and cleans up divider dragging/animating. Called when the divider
   // snapping animation completes or is interrupted or totally skipped.
@@ -638,8 +598,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // The closest position ratio of divider among kFixedPositionRatios,
   // kOneThirdSnapRatio and kTwoThirdSnapRatio based on current
-  // `divider_position_`. Used to update `divider_position_` on work area
-  // changes.
+  // `SplitViewDivider::divider_position_`. Used to update
+  // `SplitViewDivider::divider_position_` on work area changes.
+  // TODO(sophiewen | michelefan): Move this variable to `SplitViewDivider`.
   float divider_closest_ratio_ = std::numeric_limits<float>::quiet_NaN();
 
   // The animation that animates the divider to a fixed position after resizing.

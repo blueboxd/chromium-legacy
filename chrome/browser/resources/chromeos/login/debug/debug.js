@@ -59,7 +59,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
   if (isNativeIcons) {
     if (type === 'WAA') {
       zippy['nativeIconType'] = AssistantNativeIconType.WAA;
-    } else if (type == 'DA') {
+    } else if (type === 'DA') {
       zippy['nativeIconType'] = AssistantNativeIconType.DA;
     } else {
       console.error('### Uknown zippy type ' + type);
@@ -407,40 +407,6 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
     {
       id: 'add-child',
       kind: ScreenKind.NORMAL,
-    },
-    {
-      id: 'offline-ad-login',
-      kind: ScreenKind.NORMAL,
-      // Remove this step from preview here, because it can only occur during
-      // enterprise enrollment step and it is already available there in debug
-      // overlay.
-      handledSteps: 'unlock,creds',
-      suffix: 'E',
-      states: [
-        {
-          id: 'unlock',
-          trigger: (screen) => {
-            screen.setUIStep('unlock');
-          },
-          data: {},
-        },
-        {
-          id: 'creds',
-          trigger: (screen) => {
-            screen.setUIStep('creds');
-            screen.isDomainJoin = false;
-          },
-          data: {},
-        },
-        {
-          id: 'creds(isDomainJoin)',
-          trigger: (screen) => {
-            screen.setUIStep('creds');
-            screen.isDomainJoin = true;
-          },
-          data: {},
-        },
-      ],
     },
     {
       id: 'enterprise-enrollment',
@@ -2242,7 +2208,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
 
     toggleGameMode() {
       KNOWN_SCREENS.forEach((screen, index) => {
-        if (screen.id == 'marketing-opt-in') {
+        if (screen.id === 'marketing-opt-in') {
           for (const state of screen.states) {
             if (state.data) {
               state.data.cloudGamingDevice = !state.data.cloudGamingDevice;
@@ -2358,7 +2324,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
       this.knownScreens = [];
       this.screenButtons = {};
       /** @suppress {visibility} */
-      for (const id of Oobe.getInstance().screens_) {
+      for (const id of Oobe.getInstance().screens) {
         if (id in this.screenMap) {
           const screenDef = this.screenMap[id];
           const screenElement = $(id);
@@ -2453,12 +2419,12 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
             this.statesPanel.content, state.id,
             this.triggerScreenState.bind(
                 this, this.currentScreenId_, state.id));
-        if (state.id == this.lastScreenState_) {
+        if (state.id === this.lastScreenState_) {
           button.element.classList.add('debug-button-selected');
         }
       }
 
-      if (this.currentScreenId_ == 'marketing-opt-in') {
+      if (this.currentScreenId_ === 'marketing-opt-in') {
         document.getElementsByClassName('gametoggle-button')[0].removeAttribute(
             'hidden');
       } else {

@@ -187,7 +187,7 @@ suite('RestrictedEnabled', function() {
   });
 });
 
-suite('TopicsSubpage', function() {
+suite('TopicsSubpageWithProactiveTopicsBlockingDisabled', function() {
   let page: SettingsPrivacySandboxTopicsSubpageElement;
   let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
   let settingsPrefs: SettingsPrefsElement;
@@ -197,6 +197,7 @@ suite('TopicsSubpage', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isPrivacySandboxRestricted: false,
+      isProactiveTopicsBlockingEnabled: false,
     });
     settingsPrefs = document.createElement('settings-prefs');
     return CrSettingsPrefs.initialized;
@@ -516,7 +517,7 @@ suite('TopicsSubpage', function() {
   });
 });
 
-suite('TopicsSubpageEmpty', function() {
+suite('TopicsSubpageEmptyWithProactiveTopicsBlockingDisabled', function() {
   let page: SettingsPrivacySandboxTopicsSubpageElement;
   let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
   let metricsBrowserProxy: TestMetricsBrowserProxy;
@@ -525,6 +526,7 @@ suite('TopicsSubpageEmpty', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isPrivacySandboxRestricted: false,
+      isProactiveTopicsBlockingEnabled: false,
     });
     settingsPrefs = document.createElement('settings-prefs');
     return CrSettingsPrefs.initialized;
@@ -898,24 +900,6 @@ suite('TopicsSubpageWithProactiveTopicsBlockingEnabled', function() {
       '#manageTopicsSection',
     ];
     idsToBeHidden.forEach(id => assertFalse(isChildVisible(page, id)));
-  });
-
-  test('disclaimerLinks', async function() {
-    const disclaimer = page.shadowRoot!.querySelector('#disclaimer');
-    assertTrue(!!disclaimer);
-    assertTrue(isVisible(disclaimer));
-
-    const links = page.shadowRoot!.querySelectorAll<HTMLAnchorElement>(
-        '#disclaimer a[href]');
-
-    assertEquals(1, links.length);
-    assertEquals(
-        links[0]!.getAttribute('aria-description'),
-        loadTimeData.getString('opensInNewTab'),
-        'the link should indicate that it will be opened in a new tab');
-
-    assertEquals(
-        links[0]!.href, 'https://support.google.com/chrome?p=ad_privacy');
   });
 
   function assertToastOpened() {
@@ -1753,7 +1737,7 @@ suite('ManageTopicsAndAdTopicsPageState', function() {
   });
 });
 
-suite('FledgeSubpage', function() {
+suite('FledgeSubpageWithProactiveTopicsBlockingDisabled', function() {
   let page: SettingsPrivacySandboxFledgeSubpageElement;
   let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
   let settingsPrefs: SettingsPrefsElement;
@@ -1763,6 +1747,7 @@ suite('FledgeSubpage', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isPrivacySandboxRestricted: false,
+      isProactiveTopicsBlockingEnabled: false,
     });
     settingsPrefs = document.createElement('settings-prefs');
     return CrSettingsPrefs.initialized;

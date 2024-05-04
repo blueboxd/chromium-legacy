@@ -46,7 +46,8 @@ class PLATFORM_EXPORT RTCVideoDecoderFactory
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(
+  std::unique_ptr<webrtc::VideoDecoder> Create(
+      const webrtc::Environment& env,
       const webrtc::SdpVideoFormat& format) override;
 
   std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override;
@@ -57,8 +58,7 @@ class PLATFORM_EXPORT RTCVideoDecoderFactory
 
  private:
   void CheckAndWaitDecoderSupportStatusIfNeeded() const;
-  raw_ptr<media::GpuVideoAcceleratorFactories, ExperimentalRenderer>
-      gpu_factories_;
+  raw_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
   base::WeakPtr<media::DecoderFactory> decoder_factory_;
 
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;

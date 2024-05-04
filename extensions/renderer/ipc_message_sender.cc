@@ -6,6 +6,7 @@
 
 #include <optional>
 #include <utility>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -560,7 +561,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     return WorkerThreadDispatcher::GetServiceWorkerData()->GetRendererHost();
   }
 
-  const raw_ptr<WorkerThreadDispatcher, ExperimentalRenderer> dispatcher_;
+  const raw_ptr<WorkerThreadDispatcher> dispatcher_;
   const int64_t service_worker_version_id_;
   std::optional<ExtensionId> extension_id_;
 };

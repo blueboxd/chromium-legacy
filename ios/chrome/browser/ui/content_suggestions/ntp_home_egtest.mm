@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -35,7 +36,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -153,6 +153,9 @@ id<GREYMatcher> mostlyNotVisible() {
   // Use commandline args to enable the Discover feed for this test case.
   // Disabled elsewhere to account for possible flakiness.
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
+  // Make sure the search engine country is set, for `testFavicons` test.
+  config.additional_args.push_back(
+      std::string("--") + switches::kSearchEngineChoiceCountry + "=US");
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
   // Show doodle to make sure tests cover async callback logic updating logo.
@@ -182,12 +185,9 @@ id<GREYMatcher> mostlyNotVisible() {
 
 - (void)setUp {
   [super setUp];
-  [ChromeEarlGreyAppInterface
-      setBoolValue:YES
-       forUserPref:base::SysUTF8ToNSString(prefs::kArticlesForYouEnabled)];
-  [ChromeEarlGreyAppInterface
-      setBoolValue:YES
-       forUserPref:base::SysUTF8ToNSString(feed::prefs::kArticlesListVisible)];
+  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kArticlesForYouEnabled];
+  [ChromeEarlGrey setBoolValue:YES
+                   forUserPref:feed::prefs::kArticlesListVisible];
 
   self.defaultSearchEngine = [SearchEnginesAppInterface defaultSearchEngine];
   [NewTabPageAppInterface disableSetUpList];
@@ -470,14 +470,13 @@ id<GREYMatcher> mostlyNotVisible() {
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 
   [ChromeEarlGreyUI waitForAppToIdle];
-  CGFloat collectionWidth =
-      [NewTabPageAppInterface collectionView].bounds.size.width;
-  GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
+  CGFloat NTPWidth = [NewTabPageAppInterface NTPView].bounds.size.width;
+  GREYAssertTrue(NTPWidth > 0, @"The NTP width is nil.");
 
   // The fake omnibox might be slightly bigger than the screen in order to cover
   // it for all screen scale.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
-      assertWithMatcher:OmniboxWidthBetween(collectionWidth + 1, 2)];
+      assertWithMatcher:OmniboxWidthBetween(NTPWidth + 1, 2)];
 
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
                                 error:nil];
@@ -964,7 +963,10 @@ id<GREYMatcher> mostlyNotVisible() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:grey_accessibilityID(kSettingsSearchEngineCellId)];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Yahoo!")]
+  NSString* yahooSearchEngineName =
+      [SettingsAppInterface usYahooSearchEngineName];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(yahooSearchEngineName)]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::SettingsMenuBackButton()]
@@ -1019,9 +1021,7 @@ id<GREYMatcher> mostlyNotVisible() {
 }
 
 - (void)testMinimumHeight {
-  [ChromeEarlGreyAppInterface
-      setBoolValue:NO
-       forUserPref:base::SysUTF8ToNSString(prefs::kArticlesForYouEnabled)];
+  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kArticlesForYouEnabled];
 
   [self
       testNTPInitialPositionAndContent:[NewTabPageAppInterface collectionView]];
@@ -1288,7 +1288,7 @@ id<GREYMatcher> mostlyNotVisible() {
 
   FakeSystemIdentity* identity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:identity];
-  [SigninEarlGreyUI signinWithFakeIdentity:identity];
+  [SigninEarlGrey signinWithFakeIdentity:identity];
   GREYWaitForAppToIdle(@"App failed to idle");
 
   // Verify Identity Disc is visible since it is the top-most element and should
@@ -1557,7 +1557,7 @@ id<GREYMatcher> mostlyNotVisible() {
   [SigninEarlGrey addFakeIdentity:identity];
   [SigninEarlGrey setIsSubjectToParentalControls:YES forIdentity:identity];
 
-  [SigninEarlGreyUI signinWithFakeIdentity:identity];
+  [SigninEarlGrey signinWithFakeIdentity:identity];
 
   // Check feed label and if NTP is scrollable.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::DiscoverHeaderLabel()]
@@ -1687,10 +1687,8 @@ id<GREYMatcher> mostlyNotVisible() {
                                      IDS_IOS_DISCOVER_FEED_TITLE_OFF_LABEL)];
   NSString* labelText =
       visible ? labelTextForVisibleFeed : labelTextForHiddenFeed;
-  [EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   chrome_test_util::DiscoverHeaderLabel(),
-                                   grey_sufficientlyVisible(), nil)];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DiscoverHeaderLabel()]
+      assertWithMatcher:grey_sufficientlyVisible()];
   UILabel* discoverHeaderLabel = [NewTabPageAppInterface discoverHeaderLabel];
   GREYAssertTrue([discoverHeaderLabel.text isEqualToString:labelText],
                  @"Discover header label is incorrect");

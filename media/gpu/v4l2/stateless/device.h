@@ -21,8 +21,10 @@
 
 namespace media {
 
-enum class BufferType { kCompressedData, kRawFrames, kInvalid };
+enum class BufferType { kCompressedData, kDecodedFrame, kInvalid };
 enum class MemoryType { kMemoryMapped, kDmaBuf, kInvalid };
+
+std::string BufferTypeString(const BufferType buffer_type);
 
 // Abstraction to hold compressed and uncompressed buffers. This class
 // provides a structure that does not include and V4L2 references. This is done
@@ -136,7 +138,7 @@ class MEDIA_GPU_EXPORT Device : public base::RefCountedThreadSafe<Device> {
   // up with the retrieved format, |TryOutputFormat| and |SetOutputFormat| are
   // used.
   std::optional<BufferFormat> GetOutputFormat();
-  std::optional<BufferFormat> TryOutputFormat(const BufferFormat& format);
+  bool TryOutputFormat(const BufferFormat& format);
   std::optional<BufferFormat> SetOutputFormat(const BufferFormat& format);
 
   // Stops streaming on the |type| of buffer using the VIDIOC_STREAMOFF ioctl.

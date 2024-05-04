@@ -30,6 +30,7 @@
 #include "components/background_sync/background_sync_permission_context.h"
 #include "components/embedder_support/permission_context_utils.h"
 #include "components/permissions/contexts/local_fonts_permission_context.h"
+#include "components/permissions/contexts/speaker_selection_permission_context.h"
 #include "components/permissions/contexts/window_management_permission_context.h"
 #include "components/permissions/permission_manager.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -113,6 +114,9 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
   permission_contexts[ContentSettingsType::MEDIASTREAM_MIC] =
       std::make_unique<MediaStreamDevicePermissionContext>(
           profile, ContentSettingsType::MEDIASTREAM_MIC);
+
+  permission_contexts[ContentSettingsType::SPEAKER_SELECTION] =
+      std::make_unique<SpeakerSelectionPermissionContext>(profile);
 
   // TODO(crbug.com/1025610): Move once Notifications are supported on WebLayer.
   permission_contexts[ContentSettingsType::NOTIFICATIONS] =

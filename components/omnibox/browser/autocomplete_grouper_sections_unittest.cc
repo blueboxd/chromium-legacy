@@ -1381,6 +1381,30 @@ TEST(AutocompleteGrouperSectionsTest, DesktopSecondaryNTPZpsSection) {
           CreateMatch(98, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST)},
          {});
   }
+  // Test groups and limits when RealboxContextualAndTrendingSuggestions feature
+  // is disabled.
+  scoped_config.Reset();
+  scoped_config.Get().enabled = false;
+  {
+    SCOPED_TRACE(
+        "Matches should be added up to their group limit. "
+        "(RealboxContextualAndTrendingSuggestions feature disabled)");
+    test({CreateMatch(100, omnibox::GROUP_PREVIOUS_SEARCH_RELATED_ENTITY_CHIPS),
+          CreateMatch(99, omnibox::GROUP_PREVIOUS_SEARCH_RELATED_ENTITY_CHIPS),
+          CreateMatch(98, omnibox::GROUP_PREVIOUS_SEARCH_RELATED_ENTITY_CHIPS),
+          CreateMatch(97, omnibox::GROUP_PREVIOUS_SEARCH_RELATED_ENTITY_CHIPS)},
+         {100, 99, 98});
+  }
+  {
+    SCOPED_TRACE(
+        "Given no matches that can be added to this section because of their "
+        "Group limit, should return no matches. "
+        "(RealboxContextualAndTrendingSuggestions feature disabled)");
+    test({CreateMatch(100, omnibox::GROUP_PREVIOUS_SEARCH_RELATED),
+          CreateMatch(99, omnibox::GROUP_PREVIOUS_SEARCH_RELATED),
+          CreateMatch(98, omnibox::GROUP_TRENDS)},
+         {});
+  }
 }
 
 // Tests the behavior when DesktopNTPZpsSection and
@@ -1466,4 +1490,96 @@ TEST(AutocompleteGrouperSectionsTest,
         },
         {200, 199, 198, 197, 100, 99, 98, 97, 92, 91, 90});
   }
+  // Test groups and limits when RealboxContextualAndTrendingSuggestions feature
+  // is disabled.
+  scoped_config.Reset();
+  scoped_config.Get().enabled = false;
+  {
+    SCOPED_TRACE(
+        "Given 8 psuggest matches, and trending matches with a secondary side "
+        "type, but RealboxContextualAndTrendingSuggestions"
+        "feature disabled, do not show trending on the RHS.");
+    test(
+        {
+            CreateMatch(100, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(99, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(98, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(97, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(96, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(95, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(94, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(93, omnibox::GROUP_PERSONALIZED_ZERO_SUGGEST),
+            CreateMatch(92, omnibox::GROUP_TRENDS),
+            CreateMatch(91, omnibox::GROUP_TRENDS),
+            CreateMatch(90, omnibox::GROUP_TRENDS),
+            CreateMatch(89, omnibox::GROUP_TRENDS),
+        },
+        {100, 99, 98, 97, 96, 95, 94, 93}, false);
+  }
 }
+
+// Test that (on Android) sections are grouped by Search vs URL.
+#if BUILDFLAG(IS_ANDROID)
+TEST(AutocompleteGrouperSectionsTest,
+     AndroidNonZPSSection_groupsBySearchVsUrl) {
+  auto test = [](ACMatches matches, std::vector<int> expected_relevances) {
+    PSections sections;
+    omnibox::GroupConfigMap group_configs;
+    sections.push_back(std::make_unique<AndroidNonZPSSection>(group_configs));
+    auto out_matches = Section::GroupMatches(std::move(sections), matches);
+    VerifyMatches(out_matches, expected_relevances);
+  };
+
+  {
+    SCOPED_TRACE("No matches = no crashes.");
+    test({}, {});
+  }
+  {
+    SCOPED_TRACE("Grouping top section only.");
+    test({CreateMatch(100, omnibox::GROUP_SEARCH)}, {100});
+  }
+  {
+    SCOPED_TRACE("Grouping top two sections.");
+    test(
+        {
+            CreateMatch(20, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(19, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(18, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(10, omnibox::GROUP_SEARCH),
+            CreateMatch(9, omnibox::GROUP_SEARCH),
+        },
+        // 20     -- default match.
+        // 10, 9  -- top searches.
+        // 19, 18 -- top URLs.
+        {20, 10, 9, 19, 18});
+  }
+  {
+    SCOPED_TRACE("Grouping all sections.");
+    test(
+        {
+            CreateMatch(20, omnibox::GROUP_OTHER_NAVS),
+            // top adaptive group
+            CreateMatch(19, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(18, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(10, omnibox::GROUP_SEARCH),
+            CreateMatch(9, omnibox::GROUP_SEARCH),
+            CreateMatch(17, omnibox::GROUP_OTHER_NAVS),
+            // bottom adaptive group
+            CreateMatch(16, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(8, omnibox::GROUP_SEARCH),
+            CreateMatch(7, omnibox::GROUP_SEARCH),
+            CreateMatch(15, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(14, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(6, omnibox::GROUP_SEARCH),
+            CreateMatch(5, omnibox::GROUP_SEARCH),
+            CreateMatch(13, omnibox::GROUP_OTHER_NAVS),
+            CreateMatch(12, omnibox::GROUP_OTHER_NAVS),
+        },
+        {
+            20,                             // the default match
+            10, 9, 19, 18, 17,              // the top adaptive group
+            8, 7, 6, 5, 16, 15, 14, 13, 12  // the bottom adaptive group.
+        });
+  }
+}
+#endif

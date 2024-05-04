@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <optional>
 #include <vector>
 
 #include "base/functional/callback.h"
@@ -34,6 +35,8 @@ using GetHDCPStateCallback =
 using SetHDCPStateCallback = base::OnceCallback<void(bool)>;
 using DisplayControlCallback = base::OnceCallback<void(bool)>;
 using SetPrivacyScreenCallback = base::OnceCallback<void(bool)>;
+using GetSeamlessRefreshRatesCallback =
+    base::OnceCallback<void(const std::optional<RefreshRange>&)>;
 
 // Interface for classes that perform display configuration actions on behalf
 // of DisplayConfigurator.
@@ -64,7 +67,7 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual void Configure(
       const std::vector<display::DisplayConfigurationParams>& config_requests,
       ConfigureCallback callback,
-      uint32_t modeset_flag) = 0;
+      display::ModesetFlags modeset_flags) = 0;
 
   // Sets the HDCP Key Property.
   virtual void SetHdcpKeyProp(int64_t display_id,
@@ -89,7 +92,7 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
 
   // Sets the color calibration for the specified display.
   virtual void SetColorCalibration(int64_t display_id,
-                                   const ColorCalibration& calibration);
+                                   const ColorCalibration& calibration) = 0;
 
   // Sets the display profile space gamma adjustment for the specified display.
   virtual void SetGammaAdjustment(int64_t display_id,
@@ -99,19 +102,25 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   // This doesn't affect gamma or degamma. It returns true the color matrix was
   // sent to the GPU process successfully.
   virtual bool SetColorMatrix(int64_t display_id,
-                              const std::vector<float>& color_matrix);
+                              const std::vector<float>& color_matrix) = 0;
 
   // Sets the given |gamma_lut| and |degamma_lut| on the display with
   // |display_id|. Returns true if the given tables were sent to the GPU process
   // successfully.
   virtual bool SetGammaCorrection(int64_t display_id,
                                   const GammaCurve& degamma,
-                                  const GammaCurve& gamma);
+                                  const GammaCurve& gamma) = 0;
 
   // Sets the privacy screen state on the display with |display_id|.
   virtual void SetPrivacyScreen(int64_t display_id,
                                 bool enabled,
                                 SetPrivacyScreenCallback callback) = 0;
+
+  // Get a description of supported seamless refresh rates for the display with
+  // |display_id|.
+  virtual void GetSeamlessRefreshRates(
+      int64_t display_id,
+      GetSeamlessRefreshRatesCallback callback) const = 0;
 
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 

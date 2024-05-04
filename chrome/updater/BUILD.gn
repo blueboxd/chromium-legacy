@@ -132,6 +132,8 @@ if (is_win || is_mac || is_linux) {
       "update_block_check.h",
       "update_service_impl.cc",
       "update_service_impl.h",
+      "update_service_impl_impl.cc",
+      "update_service_impl_impl.h",
       "update_service_impl_inactive.cc",
       "update_service_impl_inactive.h",
       "update_service_internal.h",
@@ -297,8 +299,6 @@ if (is_win || is_mac || is_linux) {
         "win/ui/ui_ctls.h",
         "win/ui/ui_util.cc",
         "win/ui/ui_util.h",
-        "win/ui/yes_no_dialog.cc",
-        "win/ui/yes_no_dialog.h",
       ]
       deps += [
         "//build:branding_buildflags",
@@ -606,6 +606,8 @@ if (is_win || is_mac || is_linux) {
         "//chrome/updater/app/server/win:winver",
         "//chrome/updater/win:wrl_strict",
       ]
+
+      libs = [ "wtsapi32.lib" ]
     }
 
     if (is_linux) {
@@ -722,7 +724,6 @@ if (is_win || is_mac || is_linux) {
     ]
     if (is_win) {
       sources += [
-        # TODO(crbug.com/1447274) - eliminate the dependency on //chrome/test.
         "//chrome/test/base/process_inspector_win.cc",
         "//chrome/test/base/process_inspector_win.h",
       ]
@@ -783,8 +784,8 @@ if (is_win || is_mac || is_linux) {
       "test/request_matcher.h",
       "test/server.cc",
       "test/server.h",
+      "update_service_impl_impl_unittest.cc",
       "update_service_impl_inactive_unittest.cc",
-      "update_service_impl_unittest.cc",
       "update_service_unittest.cc",
       "update_usage_stats_task_unittest.cc",
       "updater_scope_unittest.cc",

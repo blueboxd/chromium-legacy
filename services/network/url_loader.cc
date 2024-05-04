@@ -74,7 +74,6 @@
 #include "services/network/network_service_memory_cache_writer.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/constants.h"
-#include "services/network/public/cpp/corb/orb_impl.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
@@ -84,6 +83,7 @@
 #include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/orb/orb_impl.h"
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
@@ -522,7 +522,6 @@ URLLoader::URLLoader(
       network_context_client_(context.GetNetworkContextClient()),
       delete_callback_(std::move(delete_callback)),
       options_(options),
-      corb_detachable_(request.corb_detachable),
       resource_type_(request.resource_type),
       is_load_timing_enabled_(request.enable_load_timing),
       factory_params_(context.GetFactoryParams()),
@@ -541,7 +540,7 @@ URLLoader::URLLoader(
           FROM_HERE,
           mojo::SimpleWatcher::ArmingPolicy::MANUAL,
           base::SequencedTaskRunner::GetCurrentDefault()),
-      per_factory_corb_state_(context.GetMutableCorbState()),
+      per_factory_orb_state_(context.GetMutableOrbState()),
       devtools_request_id_(request.devtools_request_id),
       request_mode_(request.mode),
       request_credentials_mode_(request.credentials_mode),
@@ -584,8 +583,6 @@ URLLoader::URLLoader(
           request.request_body->AllowHTTP1ForStreamingUpload()),
       accept_ch_frame_observer_(std::move(accept_ch_frame_observer)),
       provide_data_use_updates_(context.DataUseUpdatesEnabled()) {
-  TRACE_EVENT("loading", "URLLoader::URLLoader",
-              perfetto::Flow::FromPointer(this));
   DCHECK(delete_callback_);
 
   mojom::TrustedURLLoaderHeaderClient* url_loader_header_client =
@@ -613,6 +610,10 @@ URLLoader::URLLoader(
   url_request_ = url_request_context_->CreateRequest(
       GURL(request.url), request.priority, this, traffic_annotation,
       /*is_for_websockets=*/false, request.net_log_create_info);
+
+  TRACE_EVENT(
+      "loading", "URLLoader::URLLoader",
+      perfetto::Flow::ProcessScoped(url_request_->net_log().source().id));
 
   url_request_->set_method(request.method);
   url_request_->set_site_for_cookies(request.site_for_cookies);
@@ -1085,6 +1086,9 @@ void URLLoader::OnDoneBeginningTrustTokenOperation(
 }
 
 void URLLoader::ScheduleStart() {
+  TRACE_EVENT(
+      "loading", "URLLoader::ScheduleStart",
+      perfetto::Flow::ProcessScoped(url_request_->net_log().source().id));
   bool defer = false;
   if (resource_scheduler_client_) {
     resource_scheduler_request_handle_ =
@@ -1101,8 +1105,9 @@ void URLLoader::ScheduleStart() {
 }
 
 URLLoader::~URLLoader() {
-  TRACE_EVENT("loading", "URLLoader::~URLLoader",
-              perfetto::TerminatingFlow::FromPointer(this));
+  TRACE_EVENT(
+      "loading", "URLLoader::~URLLoader",
+      perfetto::Flow::ProcessScoped(url_request_->net_log().source().id));
   if (keepalive_ && keepalive_statistics_recorder_) {
     keepalive_statistics_recorder_->OnLoadFinished(
         *factory_params_->top_frame_id, keepalive_request_size_);
@@ -1774,15 +1779,16 @@ void URLLoader::ContinueOnResponseStarted() {
   }
 
   // Figure out if we need to sniff (for MIME type detection or for Opaque
-  // Response Blocking / ORB)
+  // Response Blocking / ORB).
   if (factory_params_->is_orb_enabled) {
-    corb_analyzer_ = corb::ResponseAnalyzer::Create(*per_factory_corb_state_);
-    is_more_corb_sniffing_needed_ = true;
+    orb_analyzer_ = orb::ResponseAnalyzer::Create(*per_factory_orb_state_);
+    is_more_orb_sniffing_needed_ = true;
     auto decision =
-        corb_analyzer_->Init(url_request_->url(), url_request_->initiator(),
-                             request_mode_, request_destination_, *response_);
-    if (MaybeBlockResponseForCorb(decision))
+        orb_analyzer_->Init(url_request_->url(), url_request_->initiator(),
+                            request_mode_, request_destination_, *response_);
+    if (MaybeBlockResponseForOrb(decision)) {
       return;
+    }
   }
 
   if ((options_ & mojom::kURLLoadOptionSniffMimeType)) {
@@ -1983,28 +1989,28 @@ void URLLoader::DidRead(int num_bytes,
           is_more_mime_sniffing_needed_ = false;
       }
 
-      if (is_more_corb_sniffing_needed_) {
-        corb::ResponseAnalyzer::Decision corb_decision =
-            corb::ResponseAnalyzer::Decision::kSniffMore;
+      if (is_more_orb_sniffing_needed_) {
+        orb::ResponseAnalyzer::Decision orb_decision =
+            orb::ResponseAnalyzer::Decision::kSniffMore;
 
         // `has_new_data_to_sniff` can be false at the end-of-stream.
         bool has_new_data_to_sniff = new_data_offset < data.length();
         if (has_new_data_to_sniff)
-          corb_decision = corb_analyzer_->Sniff(data);
+          orb_decision = orb_analyzer_->Sniff(data);
 
-        if (corb_decision == corb::ResponseAnalyzer::Decision::kSniffMore &&
+        if (orb_decision == orb::ResponseAnalyzer::Decision::kSniffMore &&
             stop_sniffing_after_processing_current_data) {
-          corb_decision = corb_analyzer_->HandleEndOfSniffableResponseBody();
-          DCHECK_NE(corb::ResponseAnalyzer::Decision::kSniffMore,
-                    corb_decision);
+          orb_decision = orb_analyzer_->HandleEndOfSniffableResponseBody();
+          DCHECK_NE(orb::ResponseAnalyzer::Decision::kSniffMore, orb_decision);
         }
 
-        if (MaybeBlockResponseForCorb(corb_decision))
+        if (MaybeBlockResponseForOrb(orb_decision)) {
           return;
+        }
       }
     }
 
-    if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_) {
+    if (!is_more_mime_sniffing_needed_ && !is_more_orb_sniffing_needed_) {
       SendResponseToClient();
     } else {
       complete_read = false;
@@ -2305,8 +2311,10 @@ void URLLoader::DeleteSelf() {
 }
 
 void URLLoader::SendResponseToClient() {
-  TRACE_EVENT("loading", "network::URLLoader::SendResponseToClient",
-              perfetto::Flow::FromPointer(this), "url", url_request_->url());
+  TRACE_EVENT(
+      "loading", "network::URLLoader::SendResponseToClient",
+      perfetto::Flow::ProcessScoped(url_request_->net_log().source().id), "url",
+      url_request_->url());
   DCHECK_EQ(emitted_devtools_raw_request_, emitted_devtools_raw_response_);
   response_->emitted_extra_info = emitted_devtools_raw_request_;
 
@@ -2599,40 +2607,28 @@ void URLLoader::CompleteBlockedResponse(
   memory_cache_writer_.reset();
 }
 
-URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
-  // CORB should only do work after the response headers have been received.
+URLLoader::BlockResponseForOrbResult URLLoader::BlockResponseForOrb() {
+  // ORB should only do work after the response headers have been received.
   DCHECK(has_received_response_);
 
-  // Caller should have set up a CorbAnalyzer for BlockResponseForCorb to be
+  // Caller should have set up a OrbAnalyzer for BlockResponseForOrb to be
   // able to do its job.
-  DCHECK(corb_analyzer_);
+  DCHECK(orb_analyzer_);
 
   // The response headers and body shouldn't yet be sent to the URLLoaderClient.
   DCHECK(response_);
   DCHECK(consumer_handle_.is_valid());
 
   // Send stripped headers to the real URLLoaderClient.
-  corb::SanitizeBlockedResponseHeaders(*response_);
+  orb::SanitizeBlockedResponseHeaders(*response_);
 
   // Determine error code. This essentially handles the "ORB v0.1" and "ORB
   // v0.2" difference.
   int blocked_error_code =
-      (corb_analyzer_->ShouldHandleBlockedResponseAs() ==
-       corb::ResponseAnalyzer::BlockedResponseHandling::kEmptyResponse)
+      (orb_analyzer_->ShouldHandleBlockedResponseAs() ==
+       orb::ResponseAnalyzer::BlockedResponseHandling::kEmptyResponse)
           ? net::OK
           : net::ERR_BLOCKED_BY_ORB;
-
-  // todo(lukasza/vogelheim): https://crbug.com/827633#c5:
-  // This preserves compatibility with current implementations, which use
-  // net::ERR_ABORTED when the resource is detachable. This is also used for
-  // resources with an empty destination in "ORB v0.2". This behaviour will
-  // no longer be used once kOpaqueResponseBlockingErrorsForAllFetches is
-  // perma-enabled.
-  if (corb_detachable_ && blocked_error_code == net::OK) {
-    CHECK(!base::FeatureList::IsEnabled(
-        features::kOpaqueResponseBlockingErrorsForAllFetches));
-    blocked_error_code = net::ERR_ABORTED;
-  }
 
   // Send empty body to the real URLLoaderClient. This preserves "ORB v0.1"
   // behaviour and will also go away once
@@ -2659,34 +2655,12 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
         response_->Clone(), std::move(consumer_handle), std::nullopt);
   }
 
-  // At this point, corb_analyzer_ has done its duty. We'll reset it now
+  // At this point, orb_analyzer_ has done its duty. We'll reset it now
   // to force UMA reporting to happen earlier, to support easier testing.
   bool should_report_blocked_response =
-      corb_analyzer_->ShouldReportBlockedResponse();
-  corb_analyzer_.reset();
+      orb_analyzer_->ShouldReportBlockedResponse();
+  orb_analyzer_.reset();
   CompleteBlockedResponse(blocked_error_code, should_report_blocked_response);
-
-  // If the factory is asking to complete requests of this type, then we need to
-  // continue processing the response to make sure the network cache is
-  // populated.  Otherwise we can cancel the request.
-  //
-  // TODO(lukasza/vogelheim): The `corb_detachable_` logic is meant to ensure a
-  // response is cached (in some cases). With HTTP cache partitioning, this is
-  // likely much less effective than it used to be. Maybe this mechanism should
-  // be retired.
-  if (corb_detachable_) {
-    // Discard any remaining callbacks or data by rerouting the pipes to
-    // EmptyURLLoaderClient.
-    receiver_.reset();
-    EmptyURLLoaderClientWrapper::DrainURLRequest(
-        url_loader_client_.BindNewPipeAndPassReceiver(),
-        receiver_.BindNewPipeAndPassRemote());
-    receiver_.set_disconnect_handler(
-        base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
-
-    // Ask the caller to continue processing the request.
-    return kContinueRequest;
-  }
 
   // Close the socket associated with the request, to prevent leaking
   // information.
@@ -2703,26 +2677,26 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   return kWillCancelRequest;
 }
 
-bool URLLoader::MaybeBlockResponseForCorb(
-    corb::ResponseAnalyzer::Decision corb_decision) {
-  DCHECK(corb_analyzer_);
-  DCHECK(is_more_corb_sniffing_needed_);
+bool URLLoader::MaybeBlockResponseForOrb(
+    orb::ResponseAnalyzer::Decision orb_decision) {
+  DCHECK(orb_analyzer_);
+  DCHECK(is_more_orb_sniffing_needed_);
   bool will_cancel = false;
-  switch (corb_decision) {
-    case network::corb::ResponseAnalyzer::Decision::kBlock: {
-      will_cancel = BlockResponseForCorb() == kWillCancelRequest;
-      corb_analyzer_.reset();
-      is_more_corb_sniffing_needed_ = false;
+  switch (orb_decision) {
+    case network::orb::ResponseAnalyzer::Decision::kBlock: {
+      will_cancel = BlockResponseForOrb() == kWillCancelRequest;
+      orb_analyzer_.reset();
+      is_more_orb_sniffing_needed_ = false;
       break;
     }
-    case network::corb::ResponseAnalyzer::Decision::kAllow:
-      corb_analyzer_.reset();
-      is_more_corb_sniffing_needed_ = false;
+    case network::orb::ResponseAnalyzer::Decision::kAllow:
+      orb_analyzer_.reset();
+      is_more_orb_sniffing_needed_ = false;
       break;
-    case network::corb::ResponseAnalyzer::Decision::kSniffMore:
+    case network::orb::ResponseAnalyzer::Decision::kSniffMore:
       break;
   }
-  DCHECK_EQ(is_more_corb_sniffing_needed_, !!corb_analyzer_);
+  DCHECK_EQ(is_more_orb_sniffing_needed_, !!orb_analyzer_);
   return will_cancel;
 }
 
@@ -2766,7 +2740,7 @@ void URLLoader::ReportFlaggedResponseCookies(bool call_cookie_observer) {
 }
 
 void URLLoader::StartReading() {
-  if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_) {
+  if (!is_more_mime_sniffing_needed_ && !is_more_orb_sniffing_needed_) {
     // Treat feed types as text/plain.
     if (response_->mime_type == "application/rss+xml" ||
         response_->mime_type == "application/atom+xml") {

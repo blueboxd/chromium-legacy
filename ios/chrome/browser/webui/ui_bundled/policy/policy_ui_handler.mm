@@ -100,6 +100,9 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"reportUploaded", IDS_REPORT_UPLOADED},
       {"copyPoliciesDone", IDS_COPY_POLICIES_DONE},
       {"exportPoliciesDone", IDS_EXPORT_POLICIES_JSON_DONE},
+      {"sort", IDS_POLICY_TABLE_COLUMN_SORT},
+      {"sortAscending", IDS_POLICY_TABLE_COLUMN_SORT_ASCENDING},
+      {"sortDescending", IDS_POLICY_TABLE_COLUMN_SORT_DESCENDING},
   };
   source->AddLocalizedStrings(kStrings);
   source->AddLocalizedStrings(policy::kPolicySources);
@@ -137,9 +140,10 @@ void PolicyUIHandler::RegisterMessages() {
 
   policy::UserCloudPolicyManager* user_cloud_policy_manager =
       browser_state->GetUserCloudPolicyManager();
-  if (user_cloud_policy_manager && user_cloud_policy_manager->core()) {
-    signin::IdentityManager* identity_manager =
-        IdentityManagerFactory::GetForBrowserState(browser_state);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browser_state);
+  if (user_cloud_policy_manager && user_cloud_policy_manager->core() &&
+      identity_manager) {
     user_policy_status_provider_ =
         std::make_unique<UserCloudPolicyStatusProvider>(
             this, user_cloud_policy_manager->core(), identity_manager);

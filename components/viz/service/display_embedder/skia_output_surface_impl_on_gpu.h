@@ -215,7 +215,9 @@ class SkiaOutputSurfaceImplOnGpu
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores);
   void ResetStateOfImages();
-  void EndAccessImages(const base::flat_set<ImageContextImpl*>& image_contexts);
+  void EndAccessImages(
+      const base::flat_set<raw_ptr<ImageContextImpl, CtnExperimental>>&
+          image_contexts);
 
   size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   void ReleaseImageContexts(
@@ -408,6 +410,14 @@ class SkiaOutputSurfaceImplOnGpu
                               bool is_downscale_or_identity_in_both_dimensions,
                               std::unique_ptr<CopyOutputRequest> request);
 
+  void CopyOutputRGBAInTexture(SkSurface* surface,
+                               copy_output::RenderPassGeometry geometry,
+                               const gfx::ColorSpace& color_space,
+                               const SkIRect& src_rect,
+                               SkSurface::RescaleMode rescale_mode,
+                               bool is_downscale_or_identity_in_both_dimensions,
+                               std::unique_ptr<CopyOutputRequest> request);
+
   void CopyOutputNV12(SkSurface* surface,
                       copy_output::RenderPassGeometry geometry,
                       const gfx::ColorSpace& color_space,
@@ -431,7 +441,8 @@ class SkiaOutputSurfaceImplOnGpu
                      const SkIRect& source_selection,
                      std::optional<SkVector> scaling,
                      bool is_downscale_or_identity_in_both_dimensions,
-                     SkSurface* dest_surface);
+                     SkSurface* dest_surface,
+                     gfx::Point destination_origin);
 
   // Helper for `CopyOutputNV12()` & `CopyOutputRGBA()` methods, flushes writes
   // to |surface| with |end_semaphores| and |end_state|.
@@ -459,6 +470,7 @@ class SkiaOutputSurfaceImplOnGpu
   // to access the NV12 planes.
   bool ImportSurfacesForNV12Planes(
       const BlitRequest& blit_request,
+      gfx::Size intermediate_dst_size,
       std::array<MailboxAccessData, CopyOutputResult::kNV12MaxPlanes>&
           mailbox_access_datas,
       bool is_multiplane);
@@ -581,10 +593,11 @@ class SkiaOutputSurfaceImplOnGpu
 
    private:
     const raw_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
-    base::flat_set<ImageContextImpl*> image_contexts_;
+    base::flat_set<raw_ptr<ImageContextImpl, CtnExperimental>> image_contexts_;
   };
   PromiseImageAccessHelper promise_image_access_helper_{this};
-  base::flat_set<ImageContextImpl*> image_contexts_to_apply_end_state_;
+  base::flat_set<raw_ptr<ImageContextImpl, CtnExperimental>>
+      image_contexts_to_apply_end_state_;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
   std::unique_ptr<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;
@@ -623,7 +636,8 @@ class SkiaOutputSurfaceImplOnGpu
   scoped_refptr<AsyncReadResultLock> async_read_result_lock_;
 
   // Tracking for ongoing AsyncReadResults.
-  base::flat_set<AsyncReadResultHelper*> async_read_result_helpers_;
+  base::flat_set<raw_ptr<AsyncReadResultHelper, CtnExperimental>>
+      async_read_result_helpers_;
 
   // Pending release fence callbacks. These callbacks can be delayed if Vulkan
   // external semaphore type has copy transference, which means importing

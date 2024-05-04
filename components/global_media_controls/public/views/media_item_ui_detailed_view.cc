@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #include "components/global_media_controls/public/views/media_item_ui_detailed_view.h"
+#include <memory>
 
 #include "base/metrics/histogram_functions.h"
+#include "components/global_media_controls/public/views/media_progress_view.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
-#include "components/media_message_center/media_squiggly_progress_view.h"
 #include "components/media_message_center/vector_icons/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
+#include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,6 +27,11 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_utils.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/global_media_controls/public/views/chapter_item_view.h"
+#endif
 
 namespace global_media_controls {
 
@@ -302,11 +309,13 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
       theme_.play_button_container_color_id,
       kPlayPauseButtonSize.height() / 2));
 
-  // |controls_row| holds all the available media action buttons and the
+  // `controls_row` holds all the available media action buttons and the
   // progress view.
   auto* controls_row = AddChildView(std::make_unique<views::BoxLayoutView>());
-  controls_row->SetCrossAxisAlignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+  // TODO(b/328317702): The fllowing lines are removed as a temp fix of the
+  // tobo bug.
+  // controls_row->SetCrossAxisAlignment(
+  //     views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Create the previous track button.
   CreateMediaButton(
@@ -314,9 +323,10 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
       media_message_center::kMediaPreviousTrackIcon,
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK);
 
-  // Create the squiggly progress view.
-  squiggly_progress_view_ = controls_row->AddChildView(
-      std::make_unique<media_message_center::MediaSquigglyProgressView>(
+  // Create the progress view.
+  progress_view_ =
+      controls_row->AddChildView(std::make_unique<MediaProgressView>(
+          (media_display_page_ != MediaDisplayPage::kMediaDialogView),
           theme_.playing_progress_foreground_color_id,
           theme_.playing_progress_background_color_id,
           theme_.paused_progress_foreground_color_id,
@@ -326,7 +336,7 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
                               base::Unretained(this)),
           base::BindRepeating(&MediaItemUIDetailedView::SeekTo,
                               base::Unretained(this))));
-  controls_row->SetFlexForView(squiggly_progress_view_, 1);
+  controls_row->SetFlexForView(progress_view_, 1);
 
   // Create the next track button.
   CreateMediaButton(
@@ -340,9 +350,9 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
         controls_row, kNotMediaActionButtonId,
         media_message_center::kMediaCastStartIcon,
         IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SHOW_DEVICE_LIST);
-    start_casting_button_->SetCallback(base::BindRepeating(
-        &MediaItemUIDetailedView::StartCastingButtonPressed,
-        base::Unretained(this)));
+    start_casting_button_->SetCallback(
+        base::BindRepeating(&MediaItemUIDetailedView::StartCastingButtonPressed,
+                            base::Unretained(this)));
     start_casting_button_->SetVisible(false);
   }
 
@@ -446,6 +456,37 @@ void MediaItemUIDetailedView::UpdateWithMediaMetadata(
   artist_label_->SetText(metadata.artist);
 
   container_->OnMediaSessionMetadataChanged(metadata);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    return;
+  }
+
+  if (!chapter_list_view_ && metadata.chapters.empty()) {
+    return;
+  }
+
+  if (metadata.chapters.empty()) {
+    chapter_list_view_->RemoveAllChildViews();
+    return;
+  }
+
+  if (!chapter_list_view_) {
+    chapter_list_view_ = AddChildView(
+        views::Builder<views::BoxLayoutView>()
+            .SetOrientation(views::BoxLayout::Orientation::kVertical)
+            .SetInsideBorderInsets(gfx::Insets::TLBR(16, 8, 8, 8))
+            .Build());
+  } else {
+    chapter_list_view_->RemoveAllChildViews();
+  }
+
+  for (int index = 0; index < static_cast<int>(metadata.chapters.size());
+       index++) {
+    chapters_[index] = chapter_list_view_->AddChildView(
+        std::make_unique<ChapterItemView>(metadata.chapters[index], theme_));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void MediaItemUIDetailedView::UpdateWithMediaActions(
@@ -459,7 +500,7 @@ void MediaItemUIDetailedView::UpdateWithMediaActions(
 void MediaItemUIDetailedView::UpdateWithMediaPosition(
     const media_session::MediaPosition& position) {
   position_ = position;
-  squiggly_progress_view_->UpdateProgress(position);
+  progress_view_->UpdateProgress(position);
 }
 
 void MediaItemUIDetailedView::UpdateWithMediaArtwork(
@@ -480,6 +521,20 @@ void MediaItemUIDetailedView::UpdateWithMediaArtwork(
     artwork_view_->SetClipPath(path);
   }
   SchedulePaint();
+}
+
+void MediaItemUIDetailedView::UpdateWithChapterArtwork(
+    int index,
+    const gfx::ImageSkia& image) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    return;
+  }
+
+  if (auto it = chapters_.find(index); it != chapters_.end()) {
+    it->second->UpdateArtwork(image);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void MediaItemUIDetailedView::UpdateDeviceSelectorAvailability(
@@ -515,7 +570,7 @@ void MediaItemUIDetailedView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 bool MediaItemUIDetailedView::OnKeyPressed(const ui::KeyEvent& event) {
   // As soon as the media view gets the focus, it should be able to handle key
   // events that can change the progress.
-  return squiggly_progress_view_->OnKeyPressed(event);
+  return progress_view_->OnKeyPressed(event);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -713,9 +768,8 @@ views::Button* MediaItemUIDetailedView::GetActionButtonForTesting(
   return (i == action_buttons_.end()) ? nullptr : *i;
 }
 
-media_message_center::MediaSquigglyProgressView*
-MediaItemUIDetailedView::GetProgressViewForTesting() {
-  return squiggly_progress_view_;
+MediaProgressView* MediaItemUIDetailedView::GetProgressViewForTesting() {
+  return progress_view_;
 }
 
 media_session::MediaPosition MediaItemUIDetailedView::GetPositionForTesting() {
@@ -738,6 +792,17 @@ MediaItemUIDetailedView::GetDeviceSelectorForTesting() {
 views::View* MediaItemUIDetailedView::GetDeviceSelectorSeparatorForTesting() {
   return device_selector_view_separator_;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+views::View* MediaItemUIDetailedView::GetChapterListViewForTesting() {
+  return chapter_list_view_;
+}
+
+base::flat_map<int, ChapterItemView*>
+MediaItemUIDetailedView::GetChaptersForTesting() {
+  return chapters_;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 BEGIN_METADATA(MediaItemUIDetailedView)
 END_METADATA

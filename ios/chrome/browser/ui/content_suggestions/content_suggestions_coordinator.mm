@@ -82,6 +82,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_collection_view.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_collection_view_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_container_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_ranking_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack_half_sheet_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack_half_sheet_table_view_controller.h"
@@ -124,7 +127,9 @@
 
 @interface ContentSuggestionsCoordinator () <
     ContentSuggestionsViewControllerAudience,
+    MagicStackCollectionViewControllerAudience,
     MagicStackHalfSheetTableViewControllerDelegate,
+    MagicStackModuleContainerDelegate,
     MagicStackParcelListHalfSheetTableViewControllerDelegate,
     NotificationsConfirmationPresenter,
     NotificationsOptInAlertCoordinatorDelegate,
@@ -195,6 +200,8 @@
   SafetyCheckMagicStackMediator* _safetyCheckMediator;
   MostVisitedTilesMediator* _mostVisitedTilesMediator;
   TabResumptionMediator* _tabResumptionMediator;
+
+  MagicStackCollectionViewController* _magicStackCollectionView;
 }
 
 - (void)start {
@@ -330,7 +337,7 @@
         initWithSafetyCheckManager:safetyCheckManager
                         localState:GetApplicationContext()->GetLocalState()
                           appState:self.browser->GetSceneState().appState];
-    _safetyCheckMediator.presentationDelegate = self;
+    _safetyCheckMediator.presentationAudience = self;
     [moduleMediators addObject:_safetyCheckMediator];
   }
 
@@ -346,6 +353,9 @@
         self.contentSuggestionsMetricsRecorder;
     self.contentSuggestionsMediator.magicStackRankingModel =
         _magicStackRankingModel;
+    if (IsIOSMagicStackCollectionViewEnabled()) {
+      _magicStackRankingModel.delegate = self.contentSuggestionsMediator;
+    }
   }
 
   self.contentSuggestionsMediator.NTPMetricsDelegate = self.NTPMetricsDelegate;
@@ -366,6 +376,12 @@
       HandlerForProtocol(self.browser->GetCommandDispatcher(),
                          ParcelTrackingOptInCommands);
 
+  if (IsIOSMagicStackCollectionViewEnabled()) {
+    _magicStackCollectionView =
+        [[MagicStackCollectionViewController alloc] init];
+    _magicStackCollectionView.audience = self;
+  }
+
   if (_magicStackRankingModel) {
     _magicStackRankingModel.consumer = self.contentSuggestionsViewController;
   }
@@ -373,6 +389,11 @@
   _safetyCheckMediator.consumer = self.contentSuggestionsViewController;
   _mostVisitedTilesMediator.consumer = self.contentSuggestionsViewController;
   _setUpListMediator.consumer = self.contentSuggestionsViewController;
+
+  if (IsIOSMagicStackCollectionViewEnabled()) {
+    self.contentSuggestionsMediator.magicStackConsumer =
+        _magicStackCollectionView;
+  }
   self.contentSuggestionsMediator.consumer =
       self.contentSuggestionsViewController;
 }
@@ -418,7 +439,7 @@
   _started = NO;
 }
 
-- (UIViewController*)viewController {
+- (ContentSuggestionsViewController*)viewController {
   return self.contentSuggestionsViewController;
 }
 
@@ -450,51 +471,6 @@
 - (UIEdgeInsets)safeAreaInsetsForDiscoverFeed {
   return [self.browser->GetSceneState()
               .window.rootViewController.view safeAreaInsets];
-}
-
-- (void)neverShowModuleType:(ContentSuggestionsModuleType)type {
-  switch (type) {
-    case ContentSuggestionsModuleType::kTabResumption:
-      [_tabResumptionMediator disableModule];
-      break;
-    case ContentSuggestionsModuleType::kSafetyCheck:
-      [_safetyCheckMediator disableModule];
-      break;
-    case ContentSuggestionsModuleType::kSetUpListSync:
-    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
-    case ContentSuggestionsModuleType::kSetUpListAutofill:
-    case ContentSuggestionsModuleType::kSetUpListNotifications:
-    case ContentSuggestionsModuleType::kCompactedSetUpList:
-      [_setUpListMediator disableModule];
-      break;
-    case ContentSuggestionsModuleType::kParcelTracking: {
-      [self presentParcelTrackingAlertCoordinator];
-      break;
-    }
-    default:
-      break;
-  }
-}
-
-- (void)enableNotifications:(ContentSuggestionsModuleType)type {
-  // This is only supported for Set Up List modules.
-  CHECK(IsSetUpListModuleType(type));
-
-  // Ask user for permission to opt-in notifications.
-  [_notificationsOptInAlertCoordinator stop];
-  _notificationsOptInAlertCoordinator =
-      [[NotificationsOptInAlertCoordinator alloc]
-          initWithBaseViewController:self.viewController
-                             browser:self.browser];
-  _notificationsOptInAlertCoordinator.clientIds =
-      std::vector{PushNotificationClientId::kTips};
-  _notificationsOptInAlertCoordinator.confirmationMessage =
-      l10n_util::GetNSStringF(
-          IDS_IOS_NOTIFICATIONS_CONFIRMATION_MESSAGE,
-          l10n_util::GetStringUTF16(
-              content_suggestions::SetUpListTitleStringID()));
-  _notificationsOptInAlertCoordinator.delegate = self;
-  [_notificationsOptInAlertCoordinator start];
 }
 
 - (void)didTapMagicStackEditButton {
@@ -551,6 +527,69 @@
 
 - (void)didTapSetUpListItemView:(SetUpListItemView*)view {
   [self didSelectSetUpListItem:view.type];
+}
+
+#pragma mark - MagicStackModuleContainerDelegate
+
+- (void)seeMoreWasTappedForModuleType:(ContentSuggestionsModuleType)type {
+  switch (type) {
+    case ContentSuggestionsModuleType::kSafetyCheck:
+      [self didSelectSafetyCheckItem:SafetyCheckItemType::kDefault];
+      break;
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+      [self showSetUpListShowMoreMenu];
+      break;
+    case ContentSuggestionsModuleType::kParcelTracking:
+      [self showMagicStackParcelList];
+      break;
+    default:
+      break;
+  }
+}
+
+- (void)neverShowModuleType:(ContentSuggestionsModuleType)type {
+  switch (type) {
+    case ContentSuggestionsModuleType::kTabResumption:
+      [_tabResumptionMediator disableModule];
+      break;
+    case ContentSuggestionsModuleType::kSafetyCheck:
+      [_safetyCheckMediator disableModule];
+      break;
+    case ContentSuggestionsModuleType::kSetUpListSync:
+    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
+    case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kSetUpListNotifications:
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+      [_setUpListMediator disableModule];
+      break;
+    case ContentSuggestionsModuleType::kParcelTracking: {
+      [self presentParcelTrackingAlertCoordinator];
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+- (void)enableNotifications:(ContentSuggestionsModuleType)type {
+  // This is only supported for Set Up List modules.
+  CHECK(IsSetUpListModuleType(type));
+
+  // Ask user for permission to opt-in notifications.
+  [_notificationsOptInAlertCoordinator stop];
+  _notificationsOptInAlertCoordinator =
+      [[NotificationsOptInAlertCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser];
+  _notificationsOptInAlertCoordinator.clientIds =
+      std::vector{PushNotificationClientId::kTips};
+  _notificationsOptInAlertCoordinator.confirmationMessage =
+      l10n_util::GetNSStringF(
+          IDS_IOS_NOTIFICATIONS_CONFIRMATION_MESSAGE,
+          l10n_util::GetStringUTF16(
+              content_suggestions::SetUpListTitleStringID()));
+  _notificationsOptInAlertCoordinator.delegate = self;
+  [_notificationsOptInAlertCoordinator start];
 }
 
 #pragma mark - MagicStackHalfSheetTableViewControllerDelegate

@@ -81,7 +81,7 @@ BOOL AreCredentialsAtIndexesConnected(
 // YES if passwords were fetched at least once.
 @property(nonatomic, assign) BOOL passwordsWereFetched;
 
-// YES if the active field is of type 'password'.
+// YES if the active field is obfuscated.
 @property(nonatomic, assign) BOOL activeFieldIsObfuscated;
 
 // The relevant active web state.
@@ -133,6 +133,10 @@ BOOL AreCredentialsAtIndexesConnected(
         std::make_unique<autofill::FormActivityObserverBridge>(_webState, self);
   }
   return self;
+}
+
+- (void)dealloc {
+  [self disconnect];
 }
 
 - (void)disconnect {
@@ -343,18 +347,14 @@ BOOL AreCredentialsAtIndexesConnected(
 
   password_manager::PasswordManagerDriver* driver =
       IOSPasswordManagerDriverFactory::FromWebStateAndWebFrame(webState, frame);
-  const std::vector<raw_ptr<const password_manager::PasswordForm,
-                            VectorExperimental>>* passwordForms =
+  const base::span<const password_manager::PasswordForm> passwordForms =
       passwordManager->GetBestMatches(driver, formId);
-  if (!passwordForms) {
-    return @[];
-  }
 
   NSMutableArray<ManualFillCredential*>* credentials =
-      [[NSMutableArray alloc] initWithCapacity:passwordForms->size()];
-  for (const password_manager::PasswordForm* form : *passwordForms) {
+      [[NSMutableArray alloc] initWithCapacity:passwordForms.size()];
+  for (const password_manager::PasswordForm& form : passwordForms) {
     ManualFillCredential* credential =
-        [[ManualFillCredential alloc] initWithPasswordForm:*form];
+        [[ManualFillCredential alloc] initWithPasswordForm:form];
     [credentials addObject:credential];
   }
 
@@ -442,7 +442,9 @@ BOOL AreCredentialsAtIndexesConnected(
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   if (_webState) {
-    _webState->RemoveObserver(_webStateObserverBridge.get());
+    if (_webStateObserverBridge) {
+      _webState->RemoveObserver(_webStateObserverBridge.get());
+    }
     _webState = nullptr;
   }
   _webStateObserverBridge.reset();

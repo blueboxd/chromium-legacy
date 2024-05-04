@@ -196,6 +196,7 @@ class WebThemeEngine {
         WebScrollbarOverlayColorTheme::kWebScrollbarOverlayColorThemeDark;
     std::optional<SkColor> thumb_color;
     bool is_thumb_minimal_mode = false;
+    bool is_web_test = false;
   };
 
   struct ScrollbarButtonExtraParams {
@@ -310,17 +311,6 @@ class WebThemeEngine {
   virtual SystemColorInfoState GetSystemColorInfo() {
     SystemColorInfoState state;
     return state;
-  }
-  virtual void EmulateForcedColors(bool is_dark_theme, bool is_web_test) {}
-
-  // Updates the WebThemeEngine's global light, dark and forced colors
-  // ColorProvider instances using the RendererColorMaps provided. Returns true
-  // if new ColorProviders were created, returns false otherwise.
-  virtual bool UpdateColorProviders(
-      const ui::RendererColorMap& light_colors,
-      const ui::RendererColorMap& dark_colors,
-      const ui::RendererColorMap& forced_colors_map) {
-    return false;
   }
 };
 

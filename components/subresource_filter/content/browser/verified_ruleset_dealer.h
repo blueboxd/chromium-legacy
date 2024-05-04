@@ -11,9 +11,10 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
-#include "components/subresource_filter/content/common/ruleset_dealer.h"
+#include "components/subresource_filter/core/common/ruleset_dealer.h"
 
 namespace base {
 class File;
@@ -177,6 +178,8 @@ class VerifiedRuleset::Handle {
   // least until the callback returns.
   void GetRulesetAsync(base::OnceCallback<void(VerifiedRuleset*)> callback);
 
+  base::WeakPtr<Handle> AsWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
+
  private:
   // This is to allow ADSF to post |ruleset_.get()| pointer to |task_runner_|.
   friend class AsyncDocumentSubresourceFilter;
@@ -185,6 +188,7 @@ class VerifiedRuleset::Handle {
   raw_ptr<base::SequencedTaskRunner, DanglingUntriaged> task_runner_;
   std::unique_ptr<VerifiedRuleset, base::OnTaskRunnerDeleter> ruleset_;
   SEQUENCE_CHECKER(sequence_checker_);
+  base::WeakPtrFactory<Handle> weak_ptr_factory_{this};
 };
 
 }  // namespace subresource_filter

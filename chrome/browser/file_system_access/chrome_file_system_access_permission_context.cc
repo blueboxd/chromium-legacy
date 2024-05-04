@@ -487,6 +487,7 @@ InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
     case Result::BLOCKED_TOO_LARGE:
     case Result::BLOCKED_UNSUPPORTED_FILE_TYPE:
     case Result::DANGEROUS_ACCOUNT_COMPROMISE:
+    case Result::BLOCKED_SCAN_FAILED:
       return ChromeFileSystemAccessPermissionContext::AfterWriteCheckResult::
           kBlock;
 
@@ -779,7 +780,6 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
           context_->GetGrantedObject(origin_, PathAsPermissionKey(path_));
       auto opposite_type =
           type_ == GrantType::kRead ? GrantType::kWrite : GrantType::kRead;
-
       if (new_status == PermissionStatus::GRANTED) {
         if (object) {
           // Persisted permissions include both read and write information in
@@ -1164,6 +1164,29 @@ bool ChromeFileSystemAccessPermissionContext::RevokeActiveGrants(
     }
   }
   return grant_revoked;
+}
+
+void ChromeFileSystemAccessPermissionContext::RevokeAllActiveGrants() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto& [origin, origin_state] : active_permissions_map_) {
+    for (auto& [_, grant] : origin_state.read_grants) {
+      grant->SetStatus(
+          PermissionStatus::ASK,
+          PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
+    }
+    for (auto& [_, grant] : origin_state.write_grants) {
+      grant->SetStatus(
+          PermissionStatus::ASK,
+          PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
+    }
+    // Only update `persisted_grant_status` if the state has not already been
+    // set via tab backgrounding.
+    if (origin_state.persisted_grant_status !=
+        PersistedGrantStatus::kBackgrounded) {
+      origin_state.persisted_grant_status = PersistedGrantStatus::kLoaded;
+    }
+  }
 }
 
 scoped_refptr<content::FileSystemAccessPermissionGrant>

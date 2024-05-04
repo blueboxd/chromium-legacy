@@ -396,7 +396,7 @@ struct CommitNavigationParams {
 
   // Encoded version of blink::PageState, opaque history state (received by
   // UpdateState Mojo message).
-  string page_state;
+  mojo_base.mojom.ByteString page_state;
 
   // For browser-initiated navigations, this is the unique id of the
   // NavigationEntry being navigated to. (For renderer-initiated navigations it
@@ -520,6 +520,10 @@ struct CommitNavigationParams {
   // Whether this is a cross-site navigation that swaps BrowsingContextGroups.
   bool is_cross_site_cross_browsing_context_group = false;
 
+  // Whether the new document should start with sticky user activation, because
+  // the previously committed document did, and the navigation was same-site.
+  bool should_have_sticky_user_activation = false;
+
   // Should only be set to a valid value for main-frame same-site navigations
   // where we did a proactive BrowsingInstance swap and we're reusing the old
   // page's process.
@@ -625,9 +629,9 @@ struct CommitNavigationParams {
   string? cookie_deprecation_label;
 };
 
-// Parameters used to dispatch the `pageconceal` event on the old Document for
+// Parameters used to dispatch the `pageswap` event on the old Document for
 // a navigation. Only generated for same-origin navigations.
-struct PageConcealEventParams {
+struct PageSwapEventParams {
   // The URL of the destination page.
   url.mojom.Url url;
 

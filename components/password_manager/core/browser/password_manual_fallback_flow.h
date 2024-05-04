@@ -19,6 +19,10 @@ namespace autofill {
 class AutofillClient;
 }  // namespace autofill
 
+namespace device_reauth {
+class DeviceAuthenticator;
+}  // namespace device_reauth
+
 namespace password_manager {
 
 class PasswordManagerDriver;
@@ -45,10 +49,13 @@ class PasswordManualFallbackFlow : public autofill::AutofillPopupDelegate,
   // Generates suggestions and shows the Autofill popup if the passwords were
   // already read from disk. Otherwise, saves the input parameters to run the
   // flow when the passwords are read from disk.
-  void RunFlow(const gfx::RectF& bounds,
+  void RunFlow(autofill::FieldRendererId field_id,
+               const gfx::RectF& bounds,
                base::i18n::TextDirection text_direction) override;
 
   // AutofillPopupDelegate:
+  absl::variant<autofill::AutofillDriver*, PasswordManagerDriver*> GetDriver()
+      override;
   void OnPopupShown() override;
   void OnPopupHidden() override;
   void DidSelectSuggestion(const autofill::Suggestion& suggestion) override;
@@ -59,8 +66,6 @@ class PasswordManualFallbackFlow : public autofill::AutofillPopupDelegate,
   bool RemoveSuggestion(const autofill::Suggestion& suggestion) override;
   void ClearPreviewedForm() override;
   autofill::FillingProduct GetMainFillingProduct() const override;
-  int32_t GetWebContentsPopupControllerAxId() const override;
-  void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
  private:
   // Is used to track whether the flow was invoked and whether the passwords
@@ -81,6 +86,12 @@ class PasswordManualFallbackFlow : public autofill::AutofillPopupDelegate,
   // function assumes that passwords have been read from disk.
   void RunFlowImpl(const gfx::RectF& bounds,
                    base::i18n::TextDirection text_direction);
+  void FillPasswordSuggestion(const std::u16string& password);
+  // Executed when the biometric reautch that guards password filling completes.
+  void OnBiometricReauthCompleted(const std::u16string& password,
+                                  bool auth_succeeded);
+  // Cancels an ongoing biometric re-authentication.
+  void CancelBiometricReauthIfOngoing();
 
   const PasswordSuggestionGenerator suggestion_generator_;
   const raw_ptr<PasswordManagerDriver> password_manager_driver_;
@@ -95,6 +106,7 @@ class PasswordManualFallbackFlow : public autofill::AutofillPopupDelegate,
   // * it is changed to `kPasswordsAvailable` when the passwords are read from
   // disk by the `SavedPasswordsPresenter`.
   FlowState flow_state_ = FlowState::kCreated;
+  autofill::FieldRendererId saved_field_id_;
   std::optional<gfx::RectF> saved_bounds_;
   std::optional<base::i18n::TextDirection> saved_text_direction_;
   // Reads passwords from disk and
@@ -103,8 +115,10 @@ class PasswordManualFallbackFlow : public autofill::AutofillPopupDelegate,
                           SavedPasswordsPresenter::Observer>
       passwords_presenter_observation_{this};
 
-  // If not null then it will be called in destructor.
-  base::OnceClosure deletion_callback_;
+  // Used to trigger a reauthentication prompt based on biometrics that needs
+  // to be cleared before the password is filled. Currently only used
+  // on Android, Mac and Windows.
+  std::unique_ptr<device_reauth::DeviceAuthenticator> authenticator_;
 
   base::WeakPtrFactory<PasswordManualFallbackFlow> weak_ptr_factory_{this};
 };

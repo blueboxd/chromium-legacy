@@ -87,19 +87,24 @@ static bool ConsumeRelativeOriginColor(CSSParserTokenRange& args,
       return true;
     } else if (auto* css_color_mix_value =
                    DynamicTo<cssvalue::CSSColorMixValue>(css_color)) {
-      // TODO(crbug.com/1519215): Support color-mix as origin color.
+      // TODO(crbug.com/41492196): Support color-mix as origin color.
       return false;
     } else {
       CSSValueID value_id = To<CSSIdentifierValue>(css_color)->GetValueID();
-      // TODO(crbug.com/1447327): Just like with
+      // TODO(crbug.com/325309578): Just like with
       // css_parsing_utils::ResolveColor(), currentcolor is not currently
       // handled.
       if (value_id == CSSValueID::kCurrentcolor) {
         return false;
       }
-      // TODO(crbug.com/1447327): Handle color scheme.
-      result = StyleColor::ColorFromKeyword(value_id,
-                                            mojom::blink::ColorScheme::kLight);
+      // TODO(crbug.com/40935612): Handle color scheme.
+      const ui::ColorProvider* color_provider =
+          context.GetDocument()
+              ? context.GetDocument()->GetColorProviderForPainting(
+                    mojom::blink::ColorScheme::kLight)
+              : nullptr;
+      result = StyleColor::ColorFromKeyword(
+          value_id, mojom::blink::ColorScheme::kLight, color_provider);
       return true;
     }
   }

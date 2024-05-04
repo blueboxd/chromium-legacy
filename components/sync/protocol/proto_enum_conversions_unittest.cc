@@ -72,10 +72,6 @@ TEST(ProtoEnumConversionsTest, GetWifiConfigurationProxyOptionString) {
       sync_pb::WifiConfigurationSpecifics::ProxyConfiguration::ProxyOption);
 }
 
-TEST(ProtoEnumConversionsTest, GetUpdatesSourceString) {
-  TestEnumStringsNonEmpty(sync_pb::GetUpdatesCallerInfo::GetUpdatesSource);
-}
-
 TEST(ProtoEnumConversionsTest, GetUpdatesOriginString) {
   TestEnumStringsNonEmpty(sync_pb::SyncEnums::GetUpdatesOrigin);
 }
@@ -127,6 +123,11 @@ TEST(ProtoEnumConversionsTest, GetInitialSyncStateString) {
 
 TEST(ProtoEnumConversionsTest, GetCategoryBenefitTypeString) {
   TestEnumStringsNonEmpty(sync_pb::CardBenefit::CategoryBenefitType);
+}
+
+TEST(ProtoEnumConversionsTest, GetAutoUpgradeStateString) {
+  TestEnumStringsNonEmpty(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo::
+    AutoUpgradeState);
 }
 
 }  // namespace

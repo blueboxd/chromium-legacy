@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.segmentation_platform.SegmentationPlatformServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -843,7 +844,7 @@ public final class ReturnToChromeUtil {
     public static void cacheReturnTimeFromSegmentation() {
         SegmentationPlatformService segmentationPlatformService =
                 SegmentationPlatformServiceFactory.getForProfile(
-                        Profile.getLastUsedRegularProfile());
+                        ProfileManager.getLastUsedRegularProfile());
         PredictionOptions predictionOptions = new PredictionOptions(false);
         segmentationPlatformService.getClassificationResult(
                 START_V2_SEGMENTATION_PLATFORM_KEY,
@@ -902,7 +903,7 @@ public final class ReturnToChromeUtil {
     }
 
     private static void updateFeedVisibility() {
-        Profile profile = Profile.getLastUsedRegularProfile();
+        Profile profile = ProfileManager.getLastUsedRegularProfile();
         ChromeSharedPreferences.getInstance()
                 .writeBoolean(
                         ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE,
@@ -920,11 +921,6 @@ public final class ReturnToChromeUtil {
     public static boolean moveDownLogo() {
         return ChromeFeatureList.sSurfacePolish.isEnabled()
                 && StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.getValue();
-    }
-
-    /** Returns true if START_SURFACE_REFACTOR is enabled. */
-    public static boolean isStartSurfaceRefactorEnabled(Context context) {
-        return ChromeFeatureList.sStartSurfaceRefactor.isEnabled();
     }
 
     /**

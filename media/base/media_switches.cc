@@ -302,11 +302,6 @@ const base::FeatureParam<base::TimeDelta>
         &kAudioRendererAlgorithmParameters, "starting_capacity_for_encrypted",
         base::Milliseconds(500)};
 
-// Prefer FFmpeg to LibVPX for Vp8 decoding with opaque alpha mode.
-BASE_FEATURE(kFFmpegDecodeOpaqueVP8,
-             "FFmpegDecodeOpaqueVP8",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
 BASE_FEATURE(kOverlayFullscreenVideo,
              "overlay-fullscreen-video",
@@ -627,10 +622,13 @@ BASE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo,
 #endif
 );
 
-// Enables using RasterInterface in VideoResourceUpdater.
+#if BUILDFLAG(IS_ANDROID)
+// Enables using RasterInterface in VideoResourceUpdater (note: this is
+// unconditionally the case on all other platforms).
 BASE_FEATURE(kRasterInterfaceInVideoResourceUpdater,
              "RasterInterfaceInVideoResourceUpdater",
              base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
 // Enables binding software video NV12/P010 GMBs as separate shared images.
 BASE_FEATURE(kMultiPlaneSoftwareVideoSharedImages,
@@ -737,7 +735,7 @@ BASE_FEATURE(kGlobalMediaControlsAutoDismiss,
 // Updated global media controls UI for CrOS.
 BASE_FEATURE(kGlobalMediaControlsCrOSUpdatedUI,
              "GlobalMediaControlsCrOSUpdatedUI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #else   // BUILDFLAG(IS_CHROMEOS)
 // Updated global media controls UI for all the non-CrOS desktop platforms.
 BASE_FEATURE(kGlobalMediaControlsUpdatedUI,
@@ -857,7 +855,12 @@ BASE_FEATURE(kVaapiAV1Encoder,
 // calls for thread safe backends.
 BASE_FEATURE(kGlobalVaapiLock,
              "GlobalVaapiLock",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 // TODO(b/214589754): revisit the need for the BUILDFLAG(IS_CHROMEOS) guard (as
@@ -877,12 +880,18 @@ BASE_FEATURE(kVaapiVp9SModeHWEncoding,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
-// Enables the new V4L2StatefulVideoDecoder instead of V4L2VideoDecoder.
-BASE_FEATURE(kV4L2FlatStatelessVideoDecoder,
-             "V4L2FlatStatelessVideoDecoder",
+// Enables the new V4L2 flat video decoder clients instead of V4L2VideoDecoder.
+// Owners: frkoenig@chromium.org, mcasas@chromium.org
+// Expiry: When flat decoders are supported on all platforms and the legacy
+//         decoders have been deprecated.
+BASE_FEATURE(kV4L2FlatVideoDecoder,
+             "V4L2FlatVideoDecoder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the new V4L2StatefulVideoDecoder instead of V4L2VideoDecoder.
+// Owners: frkoenig@chromium.org, mcasas@chromium.org
+// Expiry: When the |V4L2FlatVideoDecoder| flag handles both stateful and
+//         stateless decoders.
 BASE_FEATURE(kV4L2FlatStatefulVideoDecoder,
              "V4L2FlatStatefulVideoDecoder",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -906,7 +915,7 @@ BASE_FEATURE(kVideoToolboxAv1Decoding,
 // Expiry: When VTVideoDecodeAccelerator is deleted
 BASE_FEATURE(kVideoToolboxVideoDecoder,
              "VideoToolboxVideoDecoder",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_APPLE)
 
 // A video encoder is allowed to drop a frame in cast mirroring.
@@ -1243,7 +1252,12 @@ BASE_FEATURE(kAllowMediaCodecSoftwareDecoder,
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
 BASE_FEATURE(kBuiltInHlsPlayer,
              "BuiltInHlsPlayer",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 BASE_FEATURE(kBuiltInHlsMP4,
              "kBuiltInHlsMP4",
@@ -1266,13 +1280,6 @@ BASE_FEATURE(kChromeOSHWVBREncoding,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
-
-// Use a dedicated thread for hardware video decoding in Video decoder process.
-// If this is disabled, a sequenced task runner in base::ThreadPool is used for
-// hardware video decoding.
-BASE_FEATURE(kUseDedicatedDecoderThreadInVideoDecoderProcess,
-             "UseDedicatedDecoderThreadInVideoDecoderProcess",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(USE_VAAPI)
 // Enable the hardware-accelerated direct video decoder instead of the one
@@ -1303,7 +1310,7 @@ BASE_FEATURE(kUSeSequencedTaskRunnerForVEA,
 // Expiry: When GLImageProcessor is deleted
 BASE_FEATURE(kUseGLForScaling,
              "UseGLForScaling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // Experimental support for GL based image processing. On some architectures,
 // the hardware accelerated video decoder outputs frames in a format not
 // understood by the display controller. We usually use LibYUV to convert these
@@ -1452,19 +1459,38 @@ BASE_FEATURE(kAllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled,
 BASE_FEATURE(kExposeOutOfProcessVideoDecodingToLacros,
              "ExposeOutOfProcessVideoDecodingToLacros",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the new media player features.
+BASE_FEATURE(kBackgroundListening,
+             "BackgroundListening",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
-// Spawn utility processes to perform hardware decode acceleration instead of
-// using the GPU process.
+// Spawn utility processes to perform hardware decode acceleration on behalf of
+// renderer processes (instead of using the GPU process). The GPU process will
+// still be used as a proxy between renderers and utility processes (see
+// go/oop-vd-dd). This feature and |kUseGTFOOutOfProcessVideoDecoding| are
+// mutually exclusive.
 BASE_FEATURE(kUseOutOfProcessVideoDecoding,
              "UseOutOfProcessVideoDecoding",
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+// Spawn utility processes to perform hardware decode acceleration on behalf of
+// renderer processes (instead of using the GPU process). The GPU process will
+// NOT be used as a proxy between renderers and utility processes (see
+// go/oopvd-gtfo-dd). This feature and |kUseOutOfProcessVideoDecoding| are
+// mutually exclusive.
+// Owner: andrescj@chromium.org
+// Expiry: one milestone after this path is enabled by default
+BASE_FEATURE(kUseGTFOOutOfProcessVideoDecoding,
+             "UseGTFOOutOfProcessVideoDecoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -1688,6 +1714,15 @@ BASE_FEATURE(kCastStreamingPerformanceOverlay,
 // Controls whether mirroring negotiations will include the VP9 codec for video
 // encoding.
 //
+// NOTE: this is the default codec for Cast Streaming. Be careful when
+// disabling.
+BASE_FEATURE(kCastStreamingVp8,
+             "CastStreamingVp8",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether mirroring negotiations will include the VP9 codec for video
+// encoding.
+//
 // NOTE: currently only software VP9 encoding is supported.
 // TODO(https://crbug.com/1311770): hardware VP9 encoding should be added.
 BASE_FEATURE(kCastStreamingVp9,
@@ -1746,19 +1781,12 @@ BASE_FEATURE(kLibaomUseChromeThreads,
              "LibaomUseChromeThreads",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-// Allows decoding of theora / vp3 content.
-BASE_FEATURE(kTheoraVideoCodec,
-             "TheoraVideoCodec",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS) && BUILDFLAG(IS_CHROMEOS)
 // Allows demuxing of AVI and decoding of MPEG4 streams. These should not be
 // allowed through the web in Chrome, but may be enabled by the local file app.
 BASE_FEATURE(kCrOSLegacyMediaFormats,
              "CrOSLegacyMediaFormats",
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -1828,16 +1856,28 @@ bool IsMediaFoundationD3D11VideoCaptureEnabled() {
 #endif
 
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
-bool IsOutOfProcessVideoDecodingEnabled() {
+OOPVDMode GetOutOfProcessVideoDecodingMode() {
 #if BUILDFLAG(IS_CASTOS)
   // The sandbox for OOP-VD was designed assuming that we're not on CastOS (see
   // go/oop-vd-sandbox).
   //
   // TODO(b/210759684): revisit the sandbox to see if this restriction is
   // necessary.
-  return false;
+  return OOPVDMode::kDisabled;
 #else
-  return base::FeatureList::IsEnabled(kUseOutOfProcessVideoDecoding);
+  const bool use_gtfo_oopvd =
+      base::FeatureList::IsEnabled(kUseGTFOOutOfProcessVideoDecoding);
+  const bool use_regular_oopvd =
+      base::FeatureList::IsEnabled(kUseOutOfProcessVideoDecoding);
+  LOG_IF(WARNING, use_gtfo_oopvd && use_regular_oopvd)
+      << "UseGTFOOutOfProcessVideoDecoding and UseOutOfProcessVideoDecoding "
+         "are both enabled; ignoring UseOutOfProcessVideoDecoding";
+  if (use_gtfo_oopvd) {
+    return OOPVDMode::kEnabledWithoutGpuProcessAsProxy;
+  } else if (use_regular_oopvd) {
+    return OOPVDMode::kEnabledWithGpuProcessAsProxy;
+  }
+  return OOPVDMode::kDisabled;
 #endif
 }
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)

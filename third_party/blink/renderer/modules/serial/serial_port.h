@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
@@ -27,9 +28,9 @@ class UnguessableToken;
 namespace blink {
 
 class ReadableStream;
-class ScriptPromiseResolver;
 class ScriptState;
 class Serial;
+class SerialInputSignals;
 class SerialOptions;
 class SerialOutputSignals;
 class SerialPortInfo;
@@ -53,17 +54,20 @@ class SerialPort final : public EventTarget,
   ScriptPromise open(ScriptState*,
                      const SerialOptions* options,
                      ExceptionState&);
+  bool connected() { return connected_; }
   ReadableStream* readable(ScriptState*, ExceptionState&);
   WritableStream* writable(ScriptState*, ExceptionState&);
-  ScriptPromise getSignals(ScriptState*, ExceptionState&);
-  ScriptPromise setSignals(ScriptState*,
-                           const SerialOutputSignals*,
-                           ExceptionState&);
+  ScriptPromiseTyped<SerialInputSignals> getSignals(ScriptState*,
+                                                    ExceptionState&);
+  ScriptPromiseTyped<IDLUndefined> setSignals(ScriptState*,
+                                              const SerialOutputSignals*,
+                                              ExceptionState&);
   ScriptPromise close(ScriptState*, ExceptionState&);
   ScriptPromise forget(ScriptState*, ExceptionState&);
 
   const base::UnguessableToken& token() const { return info_->token; }
 
+  void set_connected(bool connected) { connected_ = connected; }
   ScriptPromise ContinueClose(ScriptState*);
   void AbortClose();
   void StreamsClosed();
@@ -97,13 +101,14 @@ class SerialPort final : public EventTarget,
   void OnOpen(mojo::PendingReceiver<device::mojom::blink::SerialPortClient>,
               ScriptPromiseResolver*,
               mojo::PendingRemote<device::mojom::blink::SerialPort>);
-  void OnGetSignals(ScriptPromiseResolver*,
+  void OnGetSignals(ScriptPromiseResolverTyped<SerialInputSignals>*,
                     device::mojom::blink::SerialPortControlSignalsPtr);
-  void OnSetSignals(ScriptPromiseResolver*, bool success);
+  void OnSetSignals(ScriptPromiseResolverTyped<IDLUndefined>*, bool success);
   void OnClose();
   void OnForget(ScriptPromiseResolver*);
 
   const mojom::blink::SerialPortInfoPtr info_;
+  bool connected_;
   const Member<Serial> parent_;
 
   uint32_t buffer_size_ = 0;

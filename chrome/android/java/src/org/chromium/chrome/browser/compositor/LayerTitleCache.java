@@ -16,7 +16,6 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TitleBitmapFactory;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -170,15 +169,8 @@ public class LayerTitleCache {
      */
     public void fetchFaviconWithCallback(final Tab tab, FaviconImageCallback callback) {
         if (mFaviconHelper == null) mFaviconHelper = new FaviconHelper();
-
-        // Since tab#getProfile() is not available by this time, we will use tab#isIncognito boolean
-        // to get the correct profile.
-        Profile profile =
-                !tab.isIncognito()
-                        ? Profile.getLastUsedRegularProfile()
-                        : Profile.getLastUsedRegularProfile()
-                                .getPrimaryOTRProfile(/* createIfNeeded= */ true);
-        mFaviconHelper.getLocalFaviconImageForURL(profile, tab.getUrl(), mFaviconSize, callback);
+        mFaviconHelper.getLocalFaviconImageForURL(
+                tab.getProfile(), tab.getUrl(), mFaviconSize, callback);
     }
 
     /**

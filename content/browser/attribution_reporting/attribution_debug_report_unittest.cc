@@ -10,6 +10,10 @@
 
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/os_registration.h"
+#include "components/attribution_reporting/registration_header_error.h"
+#include "components/attribution_reporting/registration_header_type.mojom.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -18,6 +22,7 @@
 #include "content/browser/attribution_reporting/os_registration.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/store_source_result.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "net/base/schemeful_site.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,8 +33,12 @@ namespace {
 
 using ::testing::Message;
 
-using EventLevelResult = ::content::AttributionTrigger::EventLevelResult;
 using AggregatableResult = ::content::AttributionTrigger::AggregatableResult;
+using EventLevelResult = ::content::AttributionTrigger::EventLevelResult;
+using ::attribution_reporting::OsRegistrationItem;
+using ::attribution_reporting::RegistrationHeaderError;
+using ::attribution_reporting::SuitableOrigin;
+using ::attribution_reporting::mojom::RegistrationHeaderType;
 
 AttributionReport DefaultEventLevelReport(
     base::Time source_time = base::Time::Now()) {
@@ -943,12 +952,14 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
       {
           "os_source",
           OsRegistration(
-              /*registration_url=*/GURL("https://a.test/x"),
-              /*debug_reporting=*/true,
+              {OsRegistrationItem(GURL("https://a.test/x"),
+                                  /*debug_reporting=*/true)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               AttributionInputEvent(),
               /*is_within_fenced_frame=*/false,
-              /*render_frame_id=*/GlobalRenderFrameHostId()),
+              /*render_frame_id=*/GlobalRenderFrameHostId(),
+              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
+               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
           R"json([{
             "body": {
               "context_site": "https://b.test",
@@ -960,11 +971,13 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
       {
           "os_trigger",
           OsRegistration(
-              /*registration_url=*/GURL("https://a.test/x"),
-              /*debug_reporting=*/true,
+              {OsRegistrationItem(GURL("https://a.test/x"),
+                                  /*debug_reporting=*/true)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/false,
-              /*render_frame_id=*/GlobalRenderFrameHostId()),
+              /*render_frame_id=*/GlobalRenderFrameHostId(),
+              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
+               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
           R"json([{
             "body": {
               "context_site": "https://b.test",
@@ -976,44 +989,137 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
       {
           "debug_reporting_disabled",
           OsRegistration(
-              /*registration_url=*/GURL("https://a.test/x"),
-              /*debug_reporting=*/false,
+              {OsRegistrationItem(GURL("https://a.test/x"),
+                                  /*debug_reporting=*/false)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/false,
-              /*render_frame_id=*/GlobalRenderFrameHostId()),
+              /*render_frame_id=*/GlobalRenderFrameHostId(),
+              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
+               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
           nullptr,
       },
       {
           "within_fenced_frame",
           OsRegistration(
-              /*registration_url=*/GURL("https://a.test/x"),
-              /*debug_reporting=*/true,
+              {OsRegistrationItem(GURL("https://a.test/x"),
+                                  /*debug_reporting=*/true)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/true,
-              /*render_frame_id=*/GlobalRenderFrameHostId()),
+              /*render_frame_id=*/GlobalRenderFrameHostId(),
+              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
+               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
           nullptr,
       },
       {
           "non_suitable_registration_origin",
           OsRegistration(
-              /*registration_url=*/GURL("http://a.test/x"),
-              /*debug_reporting=*/true,
+              {OsRegistrationItem(GURL("http://a.test/x"),
+                                  /*debug_reporting=*/true)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/false,
-              /*render_frame_id=*/GlobalRenderFrameHostId()),
+              /*render_frame_id=*/GlobalRenderFrameHostId(),
+              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
+               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
           nullptr,
       },
   };
 
   for (const auto& test_case : kTestCases) {
     std::optional<AttributionDebugReport> report =
-        AttributionDebugReport::Create(test_case.registration);
+        AttributionDebugReport::Create(test_case.registration,
+                                       /*item_index=*/0);
     EXPECT_EQ(report.has_value(), test_case.expected_body != nullptr)
         << test_case.description;
     if (test_case.expected_body) {
       EXPECT_EQ(report->ReportBody(),
                 base::test::ParseJson(test_case.expected_body))
           << test_case.description;
+    }
+  }
+}
+
+TEST(AttributionDebugReportTest, RegistrationHeaderErrorDebugReports) {
+  const struct {
+    const char* description;
+    RegistrationHeaderType type;
+    bool is_within_fenced_frame;
+    const char* expected_body;
+  } kTestCases[] = {
+      {
+          "source",
+          RegistrationHeaderType::kSource,
+          false,
+          R"json([{
+            "body": {
+              "context_site": "https://c.test",
+              "header": "Attribution-Reporting-Register-Source",
+              "value": "!!!"
+            },
+            "type": "header-parsing-error"
+          }])json",
+      },
+      {
+          "trigger",
+          RegistrationHeaderType::kTrigger,
+          false,
+          R"json([{
+            "body": {
+              "context_site": "https://c.test",
+              "header": "Attribution-Reporting-Register-Trigger",
+              "value": "!!!"
+            },
+            "type": "header-parsing-error"
+          }])json",
+      },
+      {
+          "os_source",
+          RegistrationHeaderType::kOsSource,
+          false,
+          R"json([{
+            "body": {
+              "context_site": "https://c.test",
+              "header": "Attribution-Reporting-Register-OS-Source",
+              "value": "!!!"
+            },
+            "type": "header-parsing-error"
+          }])json",
+      },
+      {
+          "os_trigger",
+          RegistrationHeaderType::kOsTrigger,
+          false,
+          R"json([{
+            "body": {
+              "context_site": "https://c.test",
+              "header": "Attribution-Reporting-Register-OS-Trigger",
+              "value": "!!!"
+            },
+            "type": "header-parsing-error"
+          }])json",
+      },
+      {
+          "within_fenced_frame",
+          RegistrationHeaderType::kSource,
+          true,
+          nullptr,
+      },
+  };
+
+  const auto reporting_origin = *SuitableOrigin::Deserialize("https://r.test");
+  const auto context_origin = *SuitableOrigin::Deserialize("https://c.test");
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.description);
+    std::optional<AttributionDebugReport> report =
+        AttributionDebugReport::Create(
+            reporting_origin,
+            RegistrationHeaderError(test_case.type,
+                                    /*header_value=*/"!!!"),
+            context_origin, test_case.is_within_fenced_frame);
+    EXPECT_EQ(report.has_value(), test_case.expected_body != nullptr);
+    if (test_case.expected_body) {
+      EXPECT_EQ(report->ReportBody(),
+                base::test::ParseJson(test_case.expected_body));
     }
   }
 }

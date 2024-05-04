@@ -6,7 +6,6 @@
 #import <XCTest/XCTest.h>
 
 #import "base/ios/ios_util.h"
-#import "components/bookmarks/common/bookmark_features.h"
 #import "components/signin/public/base/consent_level.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
@@ -68,7 +67,7 @@ using chrome_test_util::SecondarySignInButton;
   [BookmarkEarlGreyUI bookmarkCurrentTabWithTitle:bookmarkTitle];
   // Sign-in+sync with identity.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:YES];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
   [BookmarkEarlGreyUI openBookmarks];
   // Tests that there is only one "Mobile Bookmarks".
   [[EarlGrey selectElementWithMatcher:grey_allOf(grey_kindOfClassName(

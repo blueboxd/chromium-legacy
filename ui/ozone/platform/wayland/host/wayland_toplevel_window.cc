@@ -7,6 +7,7 @@
 #include <aura-shell-client-protocol.h>
 #include <string>
 
+#include "base/nix/xdg_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -292,6 +293,17 @@ PlatformWindowState WaylandToplevelWindow::GetPlatformWindowState() const {
   return state_;
 }
 
+std::optional<std::string> WaylandToplevelWindow::TakeActivationToken() const {
+  if (!connection()->xdg_activation() ||
+      // xdg-activation implementation in some compositors is still buggy and
+      // Mutter crashes were observed when windows are activated during window
+      // dragging sessions. See https://crbug.com/1366504.
+      connection()->IsDragInProgress()) {
+    return std::nullopt;
+  }
+  return base::nix::TakeXdgActivationToken();
+}
+
 void WaylandToplevelWindow::Activate() {
   // Activation is supported through optional protocol extensions and hence may
   // or may not work depending on the compositor.  The details depend on the
@@ -305,12 +317,8 @@ void WaylandToplevelWindow::Activate() {
     shell_toplevel_->Activate();
   } else if (zaura_surface && zaura_surface->SupportsActivate()) {
     zaura_surface->Activate();
-  } else if (connection()->xdg_activation()) {
-    // xdg-activation implementation in some compositors is still buggy and
-    // Mutter crashes were observed when windows are activated during window
-    // dragging sessions. See https://crbug.com/1366504.
-    if (!connection()->IsDragInProgress())
-      connection()->xdg_activation()->Activate(root_surface()->surface());
+  } else if (auto token = TakeActivationToken()) {
+    connection()->xdg_activation()->Activate(root_surface()->surface(), *token);
   } else if (gtk_surface1_) {
     gtk_surface1_->RequestFocus();
   }
@@ -842,6 +850,12 @@ void WaylandToplevelWindow::StartWindowDraggingSessionIfNeeded(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
+  // Skip if `status` is same as the last request.
+  if (last_requested_immersive_status_ == status) {
+    return;
+  }
+  last_requested_immersive_status_ = std::make_optional(status);
+
   if (shell_toplevel_) {
     shell_toplevel_->SetUseImmersiveMode(status);
   } else {
@@ -882,6 +896,10 @@ void WaylandToplevelWindow::SetShadowCornersRadii(
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+PlatformWindowDelegate::State WaylandToplevelWindow::GetLatchedState() const {
+  return latched_state();
+}
 
 void WaylandToplevelWindow::RoundTripQueue() {
   connection()->RoundTripQueue();
@@ -1222,7 +1240,17 @@ void WaylandToplevelWindow::SetUpShellIntegration() {
   if (connection()->zaura_shell()) {
     if (auto* zaura_surface = root_surface()->CreateZAuraSurface()) {
       zaura_surface->set_delegate(AsWeakPtr());
-      zaura_surface->SetOcclusionTracking();
+
+      // If native window occlusion tracking is disabled (meaning compositor
+      // visibility is not controlled by occlusion) then enable the old
+      // unsynchronized occlusion pathway. Also, if the server does not support
+      // the synchronized occlusion pathway, enable the unsynchronized occlusion
+      // pathway.
+      if (!delegate()->IsNativeWindowOcclusionTrackingAlwaysEnabled() ||
+          !shell_toplevel_->IsSupportedOnAuraToplevel(
+              ZAURA_TOPLEVEL_CONFIGURE_OCCLUSION_STATE_SINCE_VERSION)) {
+        zaura_surface->SetOcclusionTracking();
+      }
     }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

@@ -18,11 +18,13 @@
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/max_event_level_reports.h"
+#include "components/attribution_reporting/os_registration.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
@@ -52,6 +54,7 @@ namespace content {
 namespace {
 
 using ::attribution_reporting::FilterPair;
+using ::attribution_reporting::OsRegistrationItem;
 using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::mojom::SourceType;
 
@@ -307,7 +310,8 @@ TriggerBuilder& TriggerBuilder::SetAggregatableTriggerData(
 }
 
 TriggerBuilder& TriggerBuilder::SetAggregatableValues(
-    attribution_reporting::AggregatableValues aggregatable_values) {
+    std::vector<attribution_reporting::AggregatableValues>
+        aggregatable_values) {
   aggregatable_values_ = std::move(aggregatable_values);
   return *this;
 }
@@ -863,8 +867,9 @@ TriggerBuilder DefaultAggregatableTriggerBuilder(
 
   return TriggerBuilder()
       .SetAggregatableTriggerData(std::move(aggregatable_trigger_data))
-      .SetAggregatableValues(*attribution_reporting::AggregatableValues::Create(
-          std::move(aggregatable_values)));
+      .SetAggregatableValues(
+          {*attribution_reporting::AggregatableValues::Create(
+              std::move(aggregatable_values), FilterPair())});
 }
 
 std::vector<AggregatableHistogramContribution>
@@ -879,14 +884,20 @@ DefaultAggregatableHistogramContributions(
 
 bool operator==(const OsRegistration& a, const OsRegistration& b) {
   const auto tie = [](const OsRegistration& r) {
-    return std::make_tuple(r.registration_url, r.top_level_origin, r.GetType());
+    return std::make_tuple(r.registration_items, r.top_level_origin,
+                           r.GetType());
   };
   return tie(a) == tie(b);
 }
 
 std::ostream& operator<<(std::ostream& out, const OsRegistration& r) {
-  return out << "{registration_url=" << r.registration_url
-             << ",top_level_origin=" << r.top_level_origin
+  out << "{registration_items=[";
+  const char* separator = "";
+  for (const OsRegistrationItem& item : r.registration_items) {
+    out << separator << item;
+    separator = ",";
+  }
+  return out << "],top_level_origin=" << r.top_level_origin
              << ",type=" << r.GetType() << "}";
 }
 

@@ -184,9 +184,7 @@ struct Conv2d {
   // `GraphInfo.id_to_operand_map`.
   uint64 output_operand_id;
 
-  // The padding of input tensor which is the explicit pad or calculated pad
-  // with `MLAutoPad` type, input sizes, filter size, strides and dilations in
-  // blink side.
+  // The padding for each spatial dimension of input.
   Padding2d padding;
   // The stride of the sliding window for each spatial dimension of input.
   Size2d strides;
@@ -410,9 +408,7 @@ struct Pool2d {
   // The dimensions of the sliding window which is supplied by user or the
   // element of input operand height and width.
   Size2d window_dimensions;
-  // The padding of input tensor which is the explicit pad or calculated pad
-  // with `MLAutoPad` type, input sizes, window dimensions, strides and
-  // dilations in blink side.
+  // The padding for each spatial dimension of input.
   Padding2d padding;
   // The element stride of the sliding window for each spatial dimension of
   // input.
@@ -517,6 +513,54 @@ struct Gather {
   uint32 axis = 0;
 };
 
+// Represents the processing direction of the input sequence for the recurrent
+// network.
+enum RecurrentNetworkDirection {
+  kForward,
+  kBackward,
+  kBoth,
+};
+
+// Represents the Gated Recurrent Unit [GRU] recurrent network.
+struct Gru {
+  // The ordering of the weight for the update (z), reset (r), new (n) gates.
+  enum GruWeightLayout {
+    kZrn,
+    kRzn,
+  };
+
+  // The id of the input operand.
+  uint64 input_operand_id;
+  // The id of the weight operand.
+  uint64 weight_operand_id;
+  // The id of the recurrent weight operand.
+  uint64 recurrent_weight_operand_id;
+  // The number of steps in the recurrent network.
+  uint32 steps;
+  // The number of features in the hidden state.
+  uint32 hidden_size;
+  // The ids of the output operands must be distinct from other operand ids.
+  array<uint64> output_operand_ids;
+
+  // The id of the bias operand.
+  uint64? bias_operand_id;
+  // The id of the recurrent bias operand.
+  uint64? recurrent_bias_operand_id;
+  // The id of the initial hidden state operand.
+  uint64? initial_hidden_state_operand_id;
+  // Indicates whether to apply the reset gate after or before matrix multiplication.
+  bool reset_after;
+  // Indicates whether to also return the entire sequence with every output from each time step.
+  bool return_sequence;
+  // The processing direction of the input sequence.
+  RecurrentNetworkDirection direction;
+  // The ordering of the weight and bias vectors for the internal gates of GRU.
+  GruWeightLayout layout;
+  // Specifies a pair of activation functions for the update, reset and new gates.
+  array<Activation, 2> activations;
+};
+
+
 // Represents general matrix multiplication (gemm) operation in the expression
 // `alpha * A * B + beta * C`.
 struct Gemm {
@@ -620,6 +664,51 @@ struct Linear {
   float alpha = 1.0;
   // A float scalar addition.
   float beta = 0;
+};
+
+// Represents an operation of Long Short-Term Memory (LSTM) recurrent network.
+struct Lstm {
+  // The ordering of the weight for the input (i), output (o), forget (f) and
+  // cell (g) gates.
+  enum WeightLayout {
+    kIofg,
+    kIfgo,
+  };
+
+  // The id of the input operand.
+  uint64 input_operand_id;
+  // The id of the weight operand.
+  uint64 weight_operand_id;
+  // The id of the recurrent weight operand.
+  uint64 recurrent_weight_operand_id;
+  // The ids of the output operands must be distinct from other operand ids.
+  array<uint64> output_operand_ids;
+
+  // The number of steps in the recurrent network.
+  uint32 steps;
+  // The number of features in the hidden state.
+  uint32 hidden_size;
+
+  // The id of the bias operand.
+  uint64? bias_operand_id;
+  // The id of the recurrent bias operand.
+  uint64? recurrent_bias_operand_id;
+  // The id of the peephole weight operand.
+  uint64? peephole_weight_operand_id;
+  // The id of the initial hidden state operand.
+  uint64? initial_hidden_state_operand_id;
+  // The id of the initial cell state operand.
+  uint64? initial_cell_state_operand_id;
+
+  // Indicates whether to return the entire sequence of outputs from each time
+  // step.
+  bool return_sequence = false;
+  // The processing direction of the input sequence.
+  RecurrentNetworkDirection direction;
+  // The ordering of both weight and bias vectors.
+  WeightLayout layout;
+  // The activation functions for the input, output and forget gates.
+  array<Activation, 3> activations;
 };
 
 // Represents a parametric relu operation whose calculation follows the
@@ -749,6 +838,27 @@ struct Transpose {
   array<uint32> permutation;
 };
 
+// Given a 2-D tensor (matrix), triangular will return a 2-D tensor
+// containing either the upper or lower triangular part of the input tensor.
+// If the input tensor has greater than 2 dimensions it is treated as a
+// batch of matrices which represented by last two dimensions and the result
+// has the same shape.
+struct Triangular {
+  // The input operand (referenced by input_operand_id) must be distinct from
+  // the output operand (referenced by output_operand_id).
+  uint64 input_operand_id;
+  uint64 output_operand_id;
+
+  // The upper indicates whether the output the upper or the lower part of
+  // the input matrix is retained. True indicates that the upper part is
+  // retained.
+  bool upper;
+  // The diagonal specifies how many diagonals above or below the main
+  // diagonals of the input matrix are retained or excluded. A value of 0
+  // means no diagonals other than the main diagonals are affected.
+  int32 diagonal;
+};
+
 // Resample the tensor values from the source to the destination spatial
 // dimensions.
 struct Resample2d {
@@ -825,12 +935,14 @@ union Operation {
   Expand expand;
   Gather gather;
   Gemm gemm;
+  Gru gru;
   HardSigmoid hard_sigmoid;
   HardSwish hard_swish;
   LayerNormalization layer_normalization;
   InstanceNormalization instance_normalization;
   LeakyRelu leaky_relu;
   Linear linear;
+  Lstm lstm;
   Matmul matmul;
   Pad pad;
   Pool2d pool2d;
@@ -847,6 +959,7 @@ union Operation {
   Split split;
   Tanh tanh;
   Transpose transpose;
+  Triangular triangular;
   Where where;
 };
 
@@ -881,12 +994,7 @@ interface WebNNGraph {
   // Called by the renderer process to carry out the computational workload of
   // the compiled graph. The key of map is the name of input/output to identify
   // the tensor in the graph, the value is the shared memory to reduce memory
-  // copy for inference. The Sync version of this method will only be called
-  // from a worker thread.
-  //
-  // TODO(crbug.com/1488162): Remove [Sync] the standard groups decides that
-  // the WebNN sync APIs are not required.
-  [Sync]
+  // copy for inference.
   Compute(map<string, mojo_base.mojom.BigBuffer> named_inputs)
       => (ComputeResult result);
 };

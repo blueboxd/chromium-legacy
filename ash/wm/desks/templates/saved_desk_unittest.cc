@@ -14,12 +14,15 @@
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/public/cpp/saved_desk_delegate.h"
+#include "ash/public/cpp/test/test_desk_profiles_delegate.h"
 #include "ash/public/cpp/test/test_saved_desk_delegate.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/style/close_button.h"
 #include "ash/style/icon_button.h"
+#include "ash/wm/desks/desk_action_button.h"
 #include "ash/wm/desks/desk_action_view.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
@@ -1327,7 +1330,7 @@ TEST_F(SavedDeskTest, IconsOrder) {
   for (size_t i = 0; i < icon_views.size() - 1; ++i) {
     int current_id;
     ASSERT_TRUE(base::StringToInt(
-        GetSavedDeskRegularIconView(icon_views[i])->icon_identifier(),
+        GetSavedDeskRegularIconView(icon_views[i])->icon_identifier().url_or_id,
         &current_id));
 
     if (i)
@@ -1441,14 +1444,18 @@ TEST_F(SavedDeskTest, IconsOrderWithInactiveTabs) {
   // with the lowest activation indices, i.e. the rest of the tabs from the
   // first browser instance.
   ASSERT_EQ(7u, icon_views.size());
-  EXPECT_EQ(kTabs1[kActiveTabIndex1].spec(),
-            GetSavedDeskRegularIconView(icon_views[0])->icon_identifier());
-  EXPECT_EQ(kTabs2[kActiveTabIndex2].spec(),
-            GetSavedDeskRegularIconView(icon_views[1])->icon_identifier());
-  EXPECT_EQ(kTabs1[0].spec(),
-            GetSavedDeskRegularIconView(icon_views[2])->icon_identifier());
-  EXPECT_EQ(kTabs1[2].spec(),
-            GetSavedDeskRegularIconView(icon_views[3])->icon_identifier());
+  EXPECT_EQ(
+      kTabs1[kActiveTabIndex1].spec(),
+      GetSavedDeskRegularIconView(icon_views[0])->icon_identifier().url_or_id);
+  EXPECT_EQ(
+      kTabs2[kActiveTabIndex2].spec(),
+      GetSavedDeskRegularIconView(icon_views[1])->icon_identifier().url_or_id);
+  EXPECT_EQ(
+      kTabs1[0].spec(),
+      GetSavedDeskRegularIconView(icon_views[2])->icon_identifier().url_or_id);
+  EXPECT_EQ(
+      kTabs1[2].spec(),
+      GetSavedDeskRegularIconView(icon_views[3])->icon_identifier().url_or_id);
 }
 
 // Tests that when two tabs are put into a desk template that have the same
@@ -1492,8 +1499,9 @@ TEST_F(SavedDeskTest, IdenticalURL) {
   // The first icon view should have the first url including the query parameter
   // as its identifier, and have a count of 2 because its representing both
   // urls.
-  EXPECT_EQ(kTabs[0].spec(),
-            GetSavedDeskRegularIconView(icon_views[0])->icon_identifier());
+  EXPECT_EQ(
+      kTabs[0].spec(),
+      GetSavedDeskRegularIconView(icon_views[0])->icon_identifier().url_or_id);
   EXPECT_EQ(2, icon_views[0]->GetCount());
   // The second icon view should have a count of 0, because there are no
   // overflow windows.
@@ -4721,4 +4729,48 @@ TEST_F(SavedDeskTest, TabbingDuringExitAnimation) {
   SendKey(ui::VKEY_TAB);
 }
 
+TEST_F(SavedDeskTest, SaveDeskFilterByProfileID) {
+  // Disable max limit for testing. This is needed since the max limit for
+  // floating workspace templates is 0.
+  desks_storage::LocalDeskDataManager::SetDisableMaxTemplateLimitForTesting(
+      true);
+  desks_storage::LocalDeskDataManager* local_desk_data_manager =
+      static_cast<desks_storage::LocalDeskDataManager*>(desk_model());
+  local_desk_data_manager->SetupFloatingWorkspaceForTest();
+  DesksController* desks_controller = DesksController::Get();
+  ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
+  uint64_t lacros_profile_id = 1001;
+
+  // Adds a dummy lacros profiles to the test delegate.
+  LacrosProfileSummary summary;
+  summary.profile_id = lacros_profile_id;
+  summary.name = u"lacros_user";
+  summary.email = u"lacros_user@gmail.com";
+  TestDeskProfilesDelegate* desk_profile_delegate =
+      static_cast<TestDeskProfilesDelegate*>(
+          Shell::Get()->GetDeskProfilesDelegate());
+  desk_profile_delegate->UpdateTestProfile(std::move(summary));
+  desk_profile_delegate->SetPrimaryProfileByProfileId(lacros_profile_id);
+  auto test_window_1 = CreateAppWindow();
+  auto test_window_2 = CreateAppWindow();
+  const int win_2_id = test_window_2->GetId();
+  // Change the profile id of `test_window_2` to be another profile id and set
+  // the profile id of `test_window_1` to be the lacros primary id.
+
+  test_window_1->SetProperty(ash::kLacrosProfileId,
+                             desk_profile_delegate->GetPrimaryProfileId());
+  test_window_2->SetProperty(ash::kLacrosProfileId,
+                             desk_profile_delegate->GetPrimaryProfileId() + 1);
+  // Open overview and save a floating workspace template.
+  ToggleOverview();
+  auto* overview_session = GetOverviewSession();
+  ASSERT_TRUE(overview_session);
+  overview_session->saved_desk_presenter()->MaybeSaveActiveDeskAsSavedDesk(
+      DeskTemplateType::kFloatingWorkspace, Shell::GetPrimaryRootWindow());
+
+  ASSERT_EQ(1ul, GetAllEntries().size());
+  const auto* app_restore_data =
+      QueryRestoreData(*GetAllEntries()[0], {}, win_2_id);
+  EXPECT_FALSE(app_restore_data);
+}
 }  // namespace ash

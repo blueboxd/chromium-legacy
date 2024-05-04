@@ -4,13 +4,14 @@
 
 import {ENTRIES, getCaller, pending, repeatUntil, RootPath, sendTestMessage} from '../test_util.js';
 
-import {remoteCall, setupAndWaitUntilReady} from './background.js';
+import {remoteCall} from './background.js';
 import {FILE_MANAGER_SWA_APP_ID, FILE_SWA_BASE_URL} from './test_data.js';
 
 /**
  * Returns 'Open in Google Docs' task descriptor.
  */
-function openDocWithDriveDescriptor(): FileTaskDescriptor {
+function openDocWithDriveDescriptor():
+    chrome.fileManagerPrivate.FileTaskDescriptor {
   const filesAppId = FILE_MANAGER_SWA_APP_ID;
   const filesTaskType = 'web';
   const actionId = `${FILE_SWA_BASE_URL}?open-web-drive-office-word`;
@@ -21,7 +22,8 @@ function openDocWithDriveDescriptor(): FileTaskDescriptor {
 /**
  * Returns 'Open with Excel' task descriptor.
  */
-function openExcelWithDriveDescriptor(): FileTaskDescriptor {
+function openExcelWithDriveDescriptor():
+    chrome.fileManagerPrivate.FileTaskDescriptor {
   const filesAppId = FILE_MANAGER_SWA_APP_ID;
   const filesTaskType = 'web';
   const actionId = `${FILE_SWA_BASE_URL}?open-web-drive-office-excel`;
@@ -32,7 +34,8 @@ function openExcelWithDriveDescriptor(): FileTaskDescriptor {
 /**
  * Returns 'Open in PowerPoint' task descriptor.
  */
-function openPowerPointWithDriveDescriptor(): FileTaskDescriptor {
+function openPowerPointWithDriveDescriptor():
+    chrome.fileManagerPrivate.FileTaskDescriptor {
   const filesAppId = FILE_MANAGER_SWA_APP_ID;
   const filesTaskType = 'web';
   const actionId = `${FILE_SWA_BASE_URL}?open-web-drive-office-powerpoint`;
@@ -47,8 +50,8 @@ function openPowerPointWithDriveDescriptor(): FileTaskDescriptor {
  *
  * @param appId Window ID.
  */
-async function getExecutedTask(
-    appId: string, expectedCount: number = 1): Promise<FileTaskDescriptor> {
+async function getExecutedTask(appId: string, expectedCount: number = 1):
+    Promise<chrome.fileManagerPrivate.FileTaskDescriptor> {
   const caller = getCaller();
 
   // Wait until a task has been executed.
@@ -63,10 +66,10 @@ async function getExecutedTask(
   });
 
   // Arguments provided for the last call to executeTask().
-  const executeTaskArgs =
-      (await remoteCall.callRemoteTestUtil<FileTaskDescriptor[][]>(
-          'staticFakeCalledArgs', appId,
-          ['chrome.fileManagerPrivate.executeTask']))[expectedCount - 1]!;
+  const executeTaskArgs = (await remoteCall.callRemoteTestUtil<
+                           chrome.fileManagerPrivate.FileTaskDescriptor[][]>(
+      'staticFakeCalledArgs', appId,
+      ['chrome.fileManagerPrivate.executeTask']))[expectedCount - 1]!;
 
   // The task descriptor is the first argument.
   return executeTaskArgs[0]!;
@@ -79,7 +82,7 @@ export async function openOfficeWordFile() {
     openType: 'launch',
   });
 
-  const appId = await setupAndWaitUntilReady(
+  const appId = await remoteCall.setupAndWaitUntilReady(
       RootPath.DRIVE, [], [ENTRIES.smallDocxHosted]);
 
   // Disable office setup flow so the dialog doesn't open when the file is
@@ -99,8 +102,8 @@ export async function openOfficeWordFile() {
 }
 
 export async function openOfficeWordFromMyFiles() {
-  const appId =
-      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.smallDocx]);
+  const appId = await remoteCall.setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.smallDocx]);
 
   // Fake chrome.fileManagerPrivate.executeTask to return
   // chrome.fileManagerPrivate.TaskResult.EMPTY.
@@ -127,8 +130,8 @@ export async function openOfficeWordFromMyFiles() {
 // Tests that "Upload to Drive" cannot be enabled if the "Upload Office To
 // Cloud" flag is disabled (test setup similar to `openOfficeWordFromMyFiles`).
 export async function uploadToDriveRequiresUploadOfficeToCloudEnabled() {
-  const appId =
-      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.smallDocx]);
+  const appId = await remoteCall.setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.smallDocx]);
   // Fake chrome.fileManagerPrivate.executeTask to return
   // chrome.fileManagerPrivate.TaskResult.EMPTY.
   const fakeData = {
@@ -156,7 +159,7 @@ export async function uploadToDriveRequiresUploadOfficeToCloudEnabled() {
 }
 
 export async function openOfficeWordFromDrive() {
-  const appId = await setupAndWaitUntilReady(
+  const appId = await remoteCall.setupAndWaitUntilReady(
       RootPath.DRIVE, [], [ENTRIES.smallDocxHosted]);
 
   // Fake chrome.fileManagerPrivate.executeTask to return
@@ -181,7 +184,7 @@ export async function openOfficeWordFromDrive() {
 }
 
 export async function openOfficeExcelFromDrive() {
-  const appId = await setupAndWaitUntilReady(
+  const appId = await remoteCall.setupAndWaitUntilReady(
       RootPath.DRIVE, [], [ENTRIES.smallXlsxPinned]);
 
   // Fake chrome.fileManagerPrivate.executeTask to return
@@ -206,7 +209,7 @@ export async function openOfficeExcelFromDrive() {
 }
 
 export async function openOfficePowerPointFromDrive() {
-  const appId = await setupAndWaitUntilReady(
+  const appId = await remoteCall.setupAndWaitUntilReady(
       RootPath.DRIVE, [], [ENTRIES.smallPptxPinned]);
 
   // Fake chrome.fileManagerPrivate.executeTask to return
@@ -231,7 +234,7 @@ export async function openOfficePowerPointFromDrive() {
 }
 
 export async function openMultipleOfficeWordFromDrive() {
-  const appId = await setupAndWaitUntilReady(
+  const appId = await remoteCall.setupAndWaitUntilReady(
       RootPath.DRIVE, [],
       [ENTRIES.smallDocx, ENTRIES.smallDocxPinned, ENTRIES.smallDocxHosted]);
 
@@ -306,8 +309,8 @@ export async function openMultipleOfficeWordFromDrive() {
 }
 
 export async function openOfficeWordFromDriveNotSynced() {
-  const appId =
-      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.smallDocx]);
+  const appId = await remoteCall.setupAndWaitUntilReady(
+      RootPath.DRIVE, [], [ENTRIES.smallDocx]);
 
   // Fake chrome.fileManagerPrivate.executeTask to return
   // chrome.fileManagerPrivate.TaskResult.OPENED.
@@ -332,8 +335,8 @@ export async function openOfficeWordFromDriveNotSynced() {
 }
 
 export async function openOfficeWordFromMyFilesOffline() {
-  const appId =
-      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.smallDocx]);
+  const appId = await remoteCall.setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.smallDocx]);
 
   // Fake chrome.fileManagerPrivate.executeTask to return
   // chrome.fileManagerPrivate.TaskResult.EMPTY.
@@ -359,7 +362,7 @@ export async function openOfficeWordFromMyFilesOffline() {
 }
 
 export async function openOfficeWordFromDriveOffline() {
-  const appId = await setupAndWaitUntilReady(
+  const appId = await remoteCall.setupAndWaitUntilReady(
       RootPath.DRIVE, [], [ENTRIES.smallDocxPinned]);
 
   // Fake chrome.fileManagerPrivate.executeTask to return
@@ -394,7 +397,7 @@ export async function officeShowNudgeGoogleDrive() {
   });
 
   // Open the Files app.
-  const appId = await setupAndWaitUntilReady(
+  const appId = await remoteCall.setupAndWaitUntilReady(
       RootPath.DRIVE, [], [ENTRIES.smallDocxPinned]);
 
   // Check that the nudge and its text is visible.

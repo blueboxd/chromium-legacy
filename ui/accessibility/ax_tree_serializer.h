@@ -111,7 +111,10 @@ class AXTreeSerializer {
   // Invalidate the subtree rooted at this node, ensuring that the entire
   // subtree is re-serialized the next time any of those nodes end up
   // being serialized.
-  void MarkSubtreeDirty(AXNodeID node);
+  void MarkSubtreeDirty(AXNodeID id);
+
+  // Invalidate a single node, ensuring that it is reserialized.
+  void MarkNodeDirty(AXNodeID id);
 
   // Return whether or not this node is in the client tree. If you call
   // this immediately after serializing, this indicates whether a given
@@ -603,11 +606,19 @@ AXTreeSerializer<AXSourceNode, AXSourceNodeVectorType>::GetIncompleteNodeIds() {
 }
 
 template <typename AXSourceNode, typename AXSourceNodeVectorType>
+void AXTreeSerializer<AXSourceNode, AXSourceNodeVectorType>::MarkNodeDirty(
+    AXNodeID id) {
+  if (ClientTreeNode* client_node = ClientTreeNodeById(id)) {
+    client_node->is_dirty = true;
+  }
+}
+
+template <typename AXSourceNode, typename AXSourceNodeVectorType>
 void AXTreeSerializer<AXSourceNode, AXSourceNodeVectorType>::MarkSubtreeDirty(
     AXNodeID id) {
-  ClientTreeNode* client_node = ClientTreeNodeById(id);
-  if (client_node)
+  if (ClientTreeNode* client_node = ClientTreeNodeById(id)) {
     MarkClientSubtreeDirty(client_node);
+  }
 }
 
 template <typename AXSourceNode, typename AXSourceNodeVectorType>
@@ -822,13 +833,13 @@ bool AXTreeSerializer<AXSourceNode, AXSourceNodeVectorType>::
 
   // Serialize this node. This fills in all of the fields in
   // AXNodeData except child_ids, which we handle below.
-  size_t serialized_node_index = out_update->nodes.size();
-  out_update->nodes.push_back(AXNodeData());
+  const size_t serialized_node_index = out_update->nodes.size();
+  out_update->nodes.emplace_back();
   {
     // Take the address of an element in a vector only within a limited
     // scope because otherwise the pointer can become invalid if the
     // vector is resized.
-    AXNodeData* serialized_node = &out_update->nodes[serialized_node_index];
+    AXNodeData* serialized_node = &out_update->nodes.back();
 
     tree_->SerializeNode(node, serialized_node);
     if (serialized_node->id == client_root_->id) {

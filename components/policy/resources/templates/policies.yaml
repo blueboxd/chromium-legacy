@@ -1215,11 +1215,25 @@ policies:
   1214: GoogleLocationServicesEnabled
   1215: ProvisionManagedClientCertificateForUser
   1216: LocalUserFilesAllowed
-  1217: DevToolsGenAiSettings
+  1217: ''
   1218: SubAppsAPIsAllowedWithoutGestureAndAuthorizationForOrigins
   1219: DefaultWebPrintingSetting
   1220: WebPrintingAllowedForUrls
   1221: WebPrintingBlockedForUrls
+  1222: DocumentScanAPITrustedExtensions
+  1223: RemoteAccessHostAllowPinAuthentication
+  1224: DownloadManagerSaveToDriveSettings
+  1225: AutomaticFullscreenAllowedForUrls
+  1226: AutomaticFullscreenBlockedForUrls
+  1227: MutationEventsEnabled
+  1228: DevToolsGenAiSettings
+  1229: CACertificatesWithConstraints
+  1230: DefaultDirectSocketsSetting
+  1231: DirectSocketsAllowedForUrls
+  1232: DirectSocketsBlockedForUrls
+  1233: ProductSpecificationsEnabled
+  1234: PrefixedVideoFullscreenApiAvailability
+  1235: PrivacySandboxIpProtectionEnabled
 atomic_groups:
   1: Homepage
   2: RemoteAccess
@@ -1272,3 +1286,4 @@ atomic_groups:
   49: ProfileSeparation
   50: FloatingSso
   51: WebPrintingSettings
+  52: DirectSocketsSettings

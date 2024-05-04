@@ -52,6 +52,10 @@ BASE_DECLARE_FEATURE(kLensRegionSearchStaticPage);
 COMPONENT_EXPORT(LENS_FEATURES)
 BASE_DECLARE_FEATURE(EnableContextMenuInLensSidePanel);
 
+// Enables the Lens overlay.
+COMPONENT_EXPORT(LENS_FEATURES)
+BASE_DECLARE_FEATURE(kLensOverlay);
+
 // The base URL for Lens.
 COMPONENT_EXPORT(LENS_FEATURES)
 extern const base::FeatureParam<std::string> kHomepageURLForLens;
@@ -191,6 +195,10 @@ extern std::string GetPreconnectKeyForLens();
 // is shown.
 COMPONENT_EXPORT(LENS_FEATURES)
 extern bool GetShouldIssueProcessPrewarmingForLens();
+
+// Returns whether the Lens overlay is enabled
+COMPONENT_EXPORT(LENS_FEATURES)
+extern bool IsLensOverlayEnabled();
 }  // namespace features
 }  // namespace lens
 

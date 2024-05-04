@@ -6,9 +6,9 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -268,8 +268,8 @@ std::vector<uint8_t> WebUsbServiceImpl::GetProtectedInterfaceClasses() const {
   } else {
     is_usb_unrestricted =
         render_frame_host_ &&
-        render_frame_host_->GetWebExposedIsolationLevel() >=
-            content::WebExposedIsolationLevel::kMaybeIsolatedApplication;
+        render_frame_host_->GetWebExposedIsolationLevel() ==
+            content::WebExposedIsolationLevel::kIsolatedApplication;
   }
   if (is_usb_unrestricted) {
     classes.clear();
@@ -400,7 +400,7 @@ void WebUsbServiceImpl::OnPermissionRevoked(const url::Origin& origin) {
   // permission.
   auto* delegate = GetContentClient()->browser()->GetUsbDelegate();
   auto* browser_context = GetBrowserContext();
-  base::EraseIf(device_clients_, [=](const auto& client) {
+  std::erase_if(device_clients_, [=](const auto& client) {
     auto* device_info =
         delegate->GetDeviceInfo(browser_context, client->device_guid());
     if (!device_info)
@@ -423,7 +423,7 @@ void WebUsbServiceImpl::OnDeviceAdded(
 
 void WebUsbServiceImpl::OnDeviceRemoved(
     const device::mojom::UsbDeviceInfo& device_info) {
-  base::EraseIf(device_clients_, [&device_info](const auto& client) {
+  std::erase_if(device_clients_, [&device_info](const auto& client) {
     return device_info.guid == client->device_guid();
   });
 
@@ -488,7 +488,7 @@ void WebUsbServiceImpl::DecrementConnectionCount() {
 }
 
 void WebUsbServiceImpl::RemoveDeviceClient(const UsbDeviceClient* client) {
-  base::EraseIf(device_clients_, [client](const auto& this_client) {
+  std::erase_if(device_clients_, [client](const auto& this_client) {
     return client == this_client.get();
   });
 }

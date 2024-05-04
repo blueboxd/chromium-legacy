@@ -119,6 +119,8 @@ std::unique_ptr<Metafile> CreateMetafile(mojom::MetafileDataType data_type) {
 #if BUILDFLAG(IS_WIN)
     case mojom::MetafileDataType::kEMF:
       return std::make_unique<Emf>();
+    case mojom::MetafileDataType::kPostScriptEmf:
+      return std::make_unique<PostScriptMetaFile>();
 #endif
   }
 }

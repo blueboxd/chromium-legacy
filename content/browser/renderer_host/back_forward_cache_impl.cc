@@ -209,7 +209,8 @@ WebSchedulerTrackedFeatures GetDisallowedWebSchedulerTrackedFeatures() {
           WebSchedulerTrackedFeature::kWebShare,
           WebSchedulerTrackedFeature::kWebSocket,
           WebSchedulerTrackedFeature::kWebTransport,
-          WebSchedulerTrackedFeature::kWebXR};
+          WebSchedulerTrackedFeature::kWebXR,
+          WebSchedulerTrackedFeature::kParserAborted};
 }
 WebSchedulerTrackedFeatures GetInjectionWebSchedulerTrackedFeatures() {
   return {WebSchedulerTrackedFeature::kInjectedJavascript,
@@ -246,7 +247,6 @@ WebSchedulerTrackedFeatures GetAllowedWebSchedulerTrackedFeatures() {
       WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore,
       // TODO(crbug.com/1357482): Figure out if this should be allowed.
       WebSchedulerTrackedFeature::kWebNfc,
-      WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet,
   };
 }
 
@@ -451,9 +451,8 @@ void MarkNoWithMultipleFeatures(BackForwardCacheCanStoreDocumentResult* result,
   BackForwardCacheCanStoreDocumentResult::BlockingDetailsMap map;
   WebSchedulerTrackedFeatures features_added;
   for (const auto& details : rfh->GetBackForwardCacheBlockingDetails()) {
-    CHECK(details->feature.has_value());
     auto feature = static_cast<blink::scheduler::WebSchedulerTrackedFeature>(
-        details->feature.value());
+        details->feature);
     // Some features might be recorded but not banned. Do not save the details
     // in this case.
     if (!features.Has(feature)) {
@@ -1785,7 +1784,7 @@ BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasonsInternal(
     // document.
     not_restored_reasons->same_origin_details =
         blink::mojom::SameOriginBfcacheNotRestoredDetails::New();
-    not_restored_reasons->same_origin_details->url = url_.spec();
+    not_restored_reasons->same_origin_details->url = url_;
     // Populate the reasons for same-origin frames.
     for (auto& name : GetDocumentResult().GetStringReasons()) {
       blink::mojom::BFCacheBlockingDetailedReasonPtr reason =

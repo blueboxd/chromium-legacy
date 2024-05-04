@@ -116,14 +116,13 @@ TEST_F(AccessibilityTest, HistogramTest) {
   {
     std::vector<ui::AXTreeUpdate> updates;
     std::vector<ui::AXEvent> events;
-    bool has_plugin_tree_source = false;
     bool had_end_of_test_event = true;
     bool had_load_complete_messages = true;
     bool need_to_send_location_changes = false;
     ScopedFreezeAXCache freeze(cache);
-    cache.SerializeDirtyObjectsAndEvents(
-        has_plugin_tree_source, updates, events, had_end_of_test_event,
-        had_load_complete_messages, need_to_send_location_changes);
+    cache.SerializeDirtyObjectsAndEvents(updates, events, had_end_of_test_event,
+                                         had_load_complete_messages,
+                                         need_to_send_location_changes);
     histogram_tester.ExpectTotalCount(
         "Accessibility.Performance.AXObjectCacheImpl.Snapshot", 1);
     histogram_tester.ExpectTotalCount(

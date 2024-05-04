@@ -158,12 +158,6 @@ class MojoURLLoaderClient::BodyBuffer final
   // mojo::DataPipeDrainer::Client
   void OnDataAvailable(const void* data, size_t num_bytes) override {
     DCHECK(draining_);
-    SCOPED_CRASH_KEY_NUMBER("OnDataAvailable", "buffered_body_size",
-                            buffered_body_.size());
-    SCOPED_CRASH_KEY_NUMBER("OnDataAvailable", "data_bytes", num_bytes);
-    SCOPED_CRASH_KEY_STRING256("OnDataAvailable", "last_loaded_url",
-                               owner_->last_loaded_url().GetString().Utf8());
-
     if (owner_->freeze_mode() == LoaderFreezeMode::kBufferIncoming) {
       owner_->DidBufferLoadWhileInBackForwardCache(num_bytes);
       if (!owner_->CanContinueBufferingWhileInBackForwardCache()) {
@@ -238,7 +232,7 @@ class MojoURLLoaderClient::BodyBuffer final
     owner_->FlushDeferredMessages();
   }
 
-  const raw_ptr<MojoURLLoaderClient, ExperimentalRenderer> owner_;
+  const raw_ptr<MojoURLLoaderClient> owner_;
   mojo::ScopedDataPipeProducerHandle writable_;
   mojo::SimpleWatcher writable_watcher_;
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;

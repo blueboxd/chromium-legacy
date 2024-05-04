@@ -63,7 +63,7 @@ _blank_unhealthy_thresholds = struct(
     ),
 )
 
-_blank_low_value_thresholds = struct(
+blank_low_value_thresholds = struct(
     fail_rate = struct(
         average = None,
     ),
@@ -101,7 +101,7 @@ def low_value_thresholds(
     thresholds = {"fail_rate": fail_rate}
     fail_if_any_none_val(thresholds)
 
-    return structs.evolve(_blank_low_value_thresholds, **thresholds)
+    return structs.evolve(blank_low_value_thresholds, **thresholds)
 
 def fail_if_any_none_val(vals):
     for k, v in vals.items():
@@ -914,7 +914,6 @@ _exempted_from_contact_builders = {
         "win11-arm64-blink-rel",
         "win11-blink-rel",
         "win11-wpt-content-shell-fyi-rel",
-        "win11-x64-fyi-rel",
         "win32-clobber-rel",
         "win32-official",
         "win_chromium_compile_dbg_ng",

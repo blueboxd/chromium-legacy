@@ -193,9 +193,6 @@ class PictureInPictureBrowserFrameView
   bool IsOverlayViewVisible() const;
 
 #if BUILDFLAG(IS_LINUX)
-  // Sets the window frame provider so that it will be used for drawing.
-  void SetWindowFrameProvider(ui::WindowFrameProvider* window_frame_provider);
-
   // Returns whether a client-side shadow should be drawn for the window.
   bool ShouldDrawFrameShadow() const;
 
@@ -307,7 +304,8 @@ class PictureInPictureBrowserFrameView
         child_dialog_observations_{this};
 
     // Tracks child dialogs that have not yet been shown.
-    base::flat_set<views::Widget*> invisible_child_dialogs_;
+    base::flat_set<raw_ptr<views::Widget, CtnExperimental>>
+        invisible_child_dialogs_;
 
     // The bounds that we forced the window to be in response to a child dialog
     // opening.

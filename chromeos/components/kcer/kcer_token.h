@@ -35,7 +35,9 @@ class COMPONENT_EXPORT(KCER) KcerToken {
   static std::unique_ptr<KcerToken> CreateWithoutNss(
       Token token,
       HighLevelChapsClient* chaps_client);
-  static std::unique_ptr<KcerToken> CreateForNss(Token token);
+  static std::unique_ptr<KcerToken> CreateForNss(
+      Token token,
+      HighLevelChapsClient* chaps_client);
 
   KcerToken() = default;
   KcerToken(const KcerToken&) = delete;
@@ -72,6 +74,7 @@ class COMPONENT_EXPORT(KCER) KcerToken {
   virtual void ImportPkcs12Cert(Pkcs12Blob pkcs12_blob,
                                 std::string password,
                                 bool hardware_backed,
+                                bool mark_as_migrated,
                                 Kcer::StatusCallback callback) = 0;
   virtual void ExportPkcs12Cert(scoped_refptr<const Cert> cert,
                                 Kcer::ExportPkcs12Callback callback) = 0;

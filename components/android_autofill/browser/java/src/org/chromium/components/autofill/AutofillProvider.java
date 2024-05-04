@@ -779,6 +779,13 @@ public class AutofillProvider {
     }
 
     @CalledByNative
+    public void cancelSession() {
+        mAutofillManager.cancel();
+        mPrefillRequest = null;
+        mRequest = null;
+    }
+
+    @CalledByNative
     public void reset() {
         hideDatalistPopup();
         mPrefillRequest = null;

@@ -89,13 +89,11 @@ class OverlayImage final : public base::RefCounted<OverlayImage> {
         base::ScopedFD available_fence_fd)
         : ScopedHardwareBufferFenceSync(std::move(handle),
                                         base::ScopedFD(),
-                                        std::move(available_fence_fd),
-                                        /*is_video=*/false),
+                                        std::move(available_fence_fd)),
           image_(std::move(image)) {}
     ~ScopedHardwareBufferFenceSyncImpl() override = default;
 
     void SetReadFence(base::ScopedFD fence_fd) override {
-      DCHECK(!image_->end_read_fence_.is_valid());
       DCHECK(!image_->previous_end_read_fence_.is_valid());
 
       image_->end_read_fence_ = std::move(fence_fd);
@@ -148,7 +146,7 @@ constexpr viz::SharedImageFormat kSupportedFormats[6]{
 // SHARED_IMAGE_USAGE_DISPLAY_READ implies AHB, so those restrictions apply, but
 // that's decided on the service side). For now getting supported format is a
 // static mechanism like this. We probably need something like
-// gpu::Capabilities.texture_target_exception_list.
+// gpu::SharedImageCapabilities.texture_target_exception_list.
 bool AHardwareBufferSupportedFormat(viz::SharedImageFormat format) {
   return base::Contains(kSupportedFormats, format);
 }
@@ -181,7 +179,8 @@ constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_SCANOUT |
-    SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_VIDEO_DECODE |
+    SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
+    SHARED_IMAGE_USAGE_VIDEO_DECODE |
     SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
     SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU |
     SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE |
@@ -602,8 +601,8 @@ void AHardwareBufferImageBacking::EndOverlayAccess() {
   DCHECK(is_overlay_accessing_);
   is_overlay_accessing_ = false;
 
+  auto fence_fd = overlay_image_->TakeEndFence();
   if (!allow_concurrent_read_write()) {
-    auto fence_fd = overlay_image_->TakeEndFence();
     read_sync_fd_ = gl::MergeFDs(std::move(read_sync_fd_), std::move(fence_fd));
   }
 }
@@ -978,6 +977,10 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
                            viz::GetSinglePlaneSharedImageFormat(buffer_format),
                            size, color_space, surface_origin, alpha_type, usage,
                            std::move(debug_label), std::move(handle));
+}
+
+SharedImageBackingType AHardwareBufferImageBackingFactory::GetBackingType() {
+  return SharedImageBackingType::kAHardwareBuffer;
 }
 
 }  // namespace gpu

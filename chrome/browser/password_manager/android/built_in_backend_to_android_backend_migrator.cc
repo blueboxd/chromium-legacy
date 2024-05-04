@@ -113,23 +113,53 @@ struct BuiltInBackendToAndroidBackendMigrator::BackendAndLoginsResults {
 
 class BuiltInBackendToAndroidBackendMigrator::MigrationMetricsReporter {
  public:
-  explicit MigrationMetricsReporter(base::StringPiece metric_infix)
-      : metric_infix_(metric_infix) {}
+  explicit MigrationMetricsReporter(MigrationType migration_type)
+      : migration_type_(migration_type),
+        metric_infix_(
+            base::StrCat({"PasswordManager.UnifiedPasswordManager.",
+                          MigrationTypeToString(migration_type), "."})) {}
   ~MigrationMetricsReporter() = default;
 
   void ReportMetrics(bool migration_succeeded) {
-    auto BuildMetricName = [this](base::StringPiece suffix) {
-      return base::StrCat({"PasswordManager.UnifiedPasswordManager.",
-                           metric_infix_, ".", suffix});
-    };
     base::TimeDelta duration = base::Time::Now() - start_;
-    base::UmaHistogramMediumTimes(BuildMetricName("Latency"), duration);
-    base::UmaHistogramBoolean(BuildMetricName("Success"), migration_succeeded);
+    base::UmaHistogramMediumTimes(metric_infix_ + "Latency", duration);
+    base::UmaHistogramBoolean(metric_infix_ + "Success", migration_succeeded);
+    base::UmaHistogramCounts1000(metric_infix_ + "UpdateLoginCount",
+                                 update_logins_count_);
+    if (migration_type_ == MigrationType::kForLocalUsers) {
+      ReportAdditionalMetricsForLocalPasswordsMigration(migration_succeeded);
+    }
   }
+
+  void ReportAdditionalMetricsForLocalPasswordsMigration(
+      bool migration_succeeded) {
+    base::UmaHistogramCounts1000(metric_infix_ + "AddLoginCount",
+                                 added_logins_count_);
+    base::UmaHistogramCounts1000(metric_infix_ + "MigratedLoginsTotalCount",
+                                 added_logins_count_ + update_logins_count_);
+    if (migration_succeeded &&
+        migration_conflict_won_by_android_count_.has_value()) {
+      base::UmaHistogramCounts1000(
+          metric_infix_ + "MergeWhereAndroidHasMostRecent",
+          migration_conflict_won_by_android_count_.value());
+    }
+  }
+
+  void SetLocalConflictsWonByAndroidCount(int count) {
+    migration_conflict_won_by_android_count_ = count;
+  }
+
+  void AddUpdatedCredential() { update_logins_count_++; }
+
+  void AddAddedCredential() { added_logins_count_++; }
 
  private:
   base::Time start_ = base::Time::Now();
+  MigrationType migration_type_;
   const std::string metric_infix_;
+  std::optional<int> migration_conflict_won_by_android_count_;
+  int added_logins_count_ = 0;
+  int update_logins_count_ = 0;
 };
 
 BuiltInBackendToAndroidBackendMigrator::BuiltInBackendToAndroidBackendMigrator(
@@ -149,7 +179,7 @@ BuiltInBackendToAndroidBackendMigrator::BuiltInBackendToAndroidBackendMigrator(
 BuiltInBackendToAndroidBackendMigrator::
     ~BuiltInBackendToAndroidBackendMigrator() = default;
 
-void BuiltInBackendToAndroidBackendMigrator::StartMigrationIfNecessary(
+void BuiltInBackendToAndroidBackendMigrator::StartAccountMigrationIfNecessary(
     bool should_attempt_upm_reenrollment) {
   // Don't try to migrate passwords if there was an attempt earlier today.
   base::TimeDelta time_passed_since_last_migration_attempt =
@@ -171,6 +201,21 @@ void BuiltInBackendToAndroidBackendMigrator::StartMigrationIfNecessary(
     PrepareForMigration(migration_type);
 }
 
+void BuiltInBackendToAndroidBackendMigrator::StartMigrationOfLocalPasswords() {
+  CHECK_EQ(MigrationType::kNone, migration_in_progress_type_);
+
+  // Don't try to migrate passwords if there was an attempt earlier today.
+  base::TimeDelta time_passed_since_last_migration_attempt =
+      base::Time::Now() -
+      base::Time::FromTimeT(prefs_->GetDouble(
+          password_manager::prefs::kTimeOfLastMigrationAttempt));
+  if (time_passed_since_last_migration_attempt < kMigrationThreshold) {
+    return;
+  }
+
+  PrepareForMigration(MigrationType::kForLocalUsers);
+}
+
 void BuiltInBackendToAndroidBackendMigrator::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {
   sync_service_ = sync_service;
@@ -184,18 +229,6 @@ BuiltInBackendToAndroidBackendMigrator::migration_in_progress_type() const {
 base::WeakPtr<BuiltInBackendToAndroidBackendMigrator>
 BuiltInBackendToAndroidBackendMigrator::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-void BuiltInBackendToAndroidBackendMigrator::UpdateMigrationVersionInPref() {
-  // TODO(crbug.com/40067770): Migrate away from `ConsentLevel::kSync` on
-  // Android.
-  if (!HasMigratedToTheAndroidBackend(prefs_) &&
-      IsSyncFeatureEnabledIncludingPasswords(sync_service_)) {
-    // TODO(crbug.com/1302299): Drop the sync metadata and only then update
-    // pref.
-  }
-  prefs_->SetInteger(prefs::kCurrentMigrationVersionToGoogleMobileServices,
-                     kRequiredMigrationVersion);
 }
 
 BuiltInBackendToAndroidBackendMigrator::MigrationType
@@ -226,17 +259,6 @@ BuiltInBackendToAndroidBackendMigrator::GetMigrationType(
                : MigrationType::kNonSyncableToBuiltInBackend;
   }
 
-  // Once the local storage is supported, the initial migration is needed.
-  bool upm_migration_for_local_needed =
-      prefs_->GetInteger(
-          password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores) ==
-      static_cast<int>(
-          password_manager::prefs::UseUpmLocalAndSeparateStoresState::
-              kOffAndMigrationPending);
-  if (upm_migration_for_local_needed) {
-    return MigrationType::kForLocalUsers;
-  }
-
   // No other migration should be executed.
   return MigrationType::kNone;
 }
@@ -247,8 +269,8 @@ void BuiltInBackendToAndroidBackendMigrator::PrepareForMigration(
                     base::Time::Now().InSecondsFSinceUnixEpoch());
   migration_in_progress_type_ = migration_type;
 
-  metrics_reporter_ = std::make_unique<MigrationMetricsReporter>(
-      MigrationTypeToString(migration_type));
+  metrics_reporter_ =
+      std::make_unique<MigrationMetricsReporter>(migration_type);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("passwords",
                                     "UnifiedPasswordManagerMigration", this);
 
@@ -306,12 +328,6 @@ void BuiltInBackendToAndroidBackendMigrator::MigrateNonSyncableData(
       base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::MigrationFinished,
                      weak_ptr_factory_.GetWeakPtr(), /*is_success=*/true);
 
-  callbacks_chain =
-      base::BindOnce(
-          &BuiltInBackendToAndroidBackendMigrator::UpdateMigrationVersionInPref,
-          weak_ptr_factory_.GetWeakPtr())
-          .Then(std::move(callbacks_chain));
-
   // All credentials are processed, because it's not possible to filter
   // only those that have non-syncable data.
   for (const auto& login : absl::get<LoginsResult>(logins_or_error)) {
@@ -326,9 +342,10 @@ void BuiltInBackendToAndroidBackendMigrator::MigrateNonSyncableData(
 
 void BuiltInBackendToAndroidBackendMigrator::RunMigrationForLocalUsers() {
   auto barrier_callback = base::BarrierCallback<BackendAndLoginsResults>(
-      2, base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::
-                            MigratePasswordsBetweenAndroidAndBuiltInBackends,
-                        weak_ptr_factory_.GetWeakPtr()));
+      2,
+      base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::
+                         MigrateLocalPasswordsBetweenAndroidAndBuiltInBackends,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   auto bind_backend_to_logins = [](PasswordStoreBackend* backend,
                                    LoginsResultOrError result) {
@@ -364,7 +381,7 @@ void BuiltInBackendToAndroidBackendMigrator::RunMigrationForLocalUsers() {
 }
 
 void BuiltInBackendToAndroidBackendMigrator::
-    MigratePasswordsBetweenAndroidAndBuiltInBackends(
+    MigrateLocalPasswordsBetweenAndroidAndBuiltInBackends(
         std::vector<BackendAndLoginsResults> results) {
   DCHECK(metrics_reporter_);
   DCHECK_EQ(2u, results.size());
@@ -382,29 +399,20 @@ void BuiltInBackendToAndroidBackendMigrator::
       (results[0].backend == android_backend_) ? results[0].GetLogins()
                                                : results[1].GetLogins();
 
-  if (!HasMigratedToTheAndroidBackend(prefs_)) {
-    MergeAndroidBackendAndBuiltInBackend(std::move(built_in_backend_logins),
-                                         std::move(android_logins));
-  } else {
-    MirrorAndroidBackendToBuiltInBackend(std::move(built_in_backend_logins),
-                                         std::move(android_logins));
-  }
+  MergeBuiltInBackendIntoAndroidBackend(std::move(built_in_backend_logins),
+                                        std::move(android_logins));
 }
 
 void BuiltInBackendToAndroidBackendMigrator::
-    MergeAndroidBackendAndBuiltInBackend(
+    MergeBuiltInBackendIntoAndroidBackend(
         PasswordFormPtrFlatSet built_in_backend_logins,
         PasswordFormPtrFlatSet android_logins) {
-  // For a form |F|, there are three cases to handle:
+  // For a form |F|, there are 2 cases to handle:
   // 1. If |F| exists only in the |built_in_backend_|, then |F| should be added
   //    to the |android_backend_|.
-  // 2. If |F| exists only in the |android_backend_|, then |F| should be added
-  //    to the |built_in_backend_|.
-  // 3. If |F| exists in both |built_in_backend_| and |android_backend_|, then
-  //    both versions should be merged by accepting the most recently created
-  //    one*, and update either |built_in_backend_| and |android_backend_|
-  //    accordingly.
-  //    * it should happen only if password values differs between backends.
+  // 2. If |F| already exists in both |android_backend_|, then
+  //    the most recent version of |F| will be kept in |android_backend_|.
+  // No changes are made to the |built_in_backend_|.
 
   // Callbacks are chained like in a stack way by passing 'callback_chain' as a
   // completion for the next operation. At the end, update pref to mark
@@ -412,13 +420,7 @@ void BuiltInBackendToAndroidBackendMigrator::
   base::OnceClosure callbacks_chain =
       base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::MigrationFinished,
                      weak_ptr_factory_.GetWeakPtr(), /*is_success=*/true);
-
-  callbacks_chain =
-      base::BindOnce(
-          &BuiltInBackendToAndroidBackendMigrator::UpdateMigrationVersionInPref,
-          weak_ptr_factory_.GetWeakPtr())
-          .Then(std::move(callbacks_chain));
-
+  int migration_conflict_won_by_android_count = 0;
   for (auto* const login : built_in_backend_logins) {
     auto android_login_iter = android_logins.find(login);
 
@@ -441,108 +443,23 @@ void BuiltInBackendToAndroidBackendMigrator::
       continue;
     }
 
-    // Passwords aren't identical. Pick the most recently created one. This
-    // is aligned with the merge sync logic in PasswordSyncBridge.
-    if (login->date_created > android_login->date_created) {
+    // Passwords aren't identical. Pick the most recentl one. The most recent is
+    // considered the one, which has the newest create, last used or modified
+    // date.
+    if (std::max({login->date_created, login->date_last_used,
+                  login->date_password_modified}) >
+        std::max({android_login->date_created, android_login->date_last_used,
+                  android_login->date_password_modified})) {
       callbacks_chain = base::BindOnce(
           &BuiltInBackendToAndroidBackendMigrator::UpdateLoginInBackend,
           weak_ptr_factory_.GetWeakPtr(), android_backend_, *login,
           std::move(callbacks_chain));
     } else {
-      callbacks_chain = base::BindOnce(
-          &BuiltInBackendToAndroidBackendMigrator::UpdateLoginInBackend,
-          weak_ptr_factory_.GetWeakPtr(), built_in_backend_, *android_login,
-          std::move(callbacks_chain));
+      migration_conflict_won_by_android_count++;
     }
   }
-
-  // At this point, we have processed all passwords from the |built_in_backend_|
-  // In addition, we also have processed all passwords from the
-  // |android_backend_| which exist in the |built_in_backend_|. What's remaining
-  // is to process passwords from |android_backend_| that don't exist in the
-  // |built_in_backend_|.
-  for (auto* const android_login : android_logins) {
-    if (built_in_backend_logins.contains(android_login)) {
-      continue;
-    }
-
-    // Add to the |built_in_backend_| any passwords from the |android_backend_|
-    // that doesn't exist in the |built_in_backend_|.
-    callbacks_chain = base::BindOnce(
-        &BuiltInBackendToAndroidBackendMigrator::AddLoginToBackend,
-        weak_ptr_factory_.GetWeakPtr(), built_in_backend_, *android_login,
-        std::move(callbacks_chain));
-  }
-
-  std::move(callbacks_chain).Run();
-}
-
-void BuiltInBackendToAndroidBackendMigrator::
-    MirrorAndroidBackendToBuiltInBackend(
-        PasswordFormPtrFlatSet built_in_backend_logins,
-        PasswordFormPtrFlatSet android_logins) {
-  // For a form |F|, there are three cases to handle:
-  // 1. If |F| exists only in the |built_in_backend_|, then |F| should be
-  // removed from the |built_in_backend_|.
-  // 2. |F| exists only in the |android_backend_|, then |F| should be added to
-  // the |built_in_backend_|.
-  // 3. |F| exists in both |built_in_backend_| and |android_backend_|, then
-  // version from |built_in_backend_| should be updated with version from the
-  // |android_backend_|.
-
-  // Callbacks are chained like in a stack way by passing 'callback_chain' as a
-  // completion for the next operation.
-  base::OnceClosure callbacks_chain =
-      base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::MigrationFinished,
-                     weak_ptr_factory_.GetWeakPtr(), /*is_success=*/true);
-
-  for (auto* const login : built_in_backend_logins) {
-    auto android_login_iter = android_logins.find(login);
-
-    if (android_login_iter == android_logins.end()) {
-      // Password from the |built_in_backend_| doesn't exist in the
-      // |android_backend_|.
-      callbacks_chain = base::BindOnce(
-          &BuiltInBackendToAndroidBackendMigrator::RemoveLoginFromBackend,
-          weak_ptr_factory_.GetWeakPtr(), built_in_backend_, *login,
-          std::move(callbacks_chain));
-      continue;
-    }
-
-    // Password from the |built_in_backend_| exists in the |android_backend_|.
-    auto* const android_login = (*android_login_iter);
-
-    if (login->password_value == android_login->password_value) {
-      // Passwords are identical, nothing else to do.
-      continue;
-    }
-
-    // Passwords aren't identical, update the built-in version to match the
-    // Android version.
-    callbacks_chain = base::BindOnce(
-        &BuiltInBackendToAndroidBackendMigrator::UpdateLoginInBackend,
-        weak_ptr_factory_.GetWeakPtr(), built_in_backend_, *android_login,
-        std::move(callbacks_chain));
-  }
-
-  // At this point, we have processed all passwords from the |built_in_backend_|
-  // In addition, we also have processed all passwords from the
-  // |android_backend_| which exist in the |built_in_backend_|. What's remaining
-  // is to process passwords from |android_backend_| that don't exist in the
-  // |built_in_backend_|.
-  for (auto* const android_login : android_logins) {
-    if (built_in_backend_logins.contains(android_login)) {
-      continue;
-    }
-
-    // Add to the |built_in_backend_| any passwords from the |android_backend_|
-    // that doesn't exist in the |built_in_backend_|.
-    callbacks_chain = base::BindOnce(
-        &BuiltInBackendToAndroidBackendMigrator::AddLoginToBackend,
-        weak_ptr_factory_.GetWeakPtr(), built_in_backend_, *android_login,
-        std::move(callbacks_chain));
-  }
-
+  metrics_reporter_->SetLocalConflictsWonByAndroidCount(
+      migration_conflict_won_by_android_count);
   std::move(callbacks_chain).Run();
 }
 
@@ -554,7 +471,8 @@ void BuiltInBackendToAndroidBackendMigrator::AddLoginToBackend(
       form,
       base::BindOnce(
           &BuiltInBackendToAndroidBackendMigrator::RunCallbackOrAbortMigration,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+          BackendOperation::kAddLogin));
 }
 
 void BuiltInBackendToAndroidBackendMigrator::UpdateLoginInBackend(
@@ -565,7 +483,8 @@ void BuiltInBackendToAndroidBackendMigrator::UpdateLoginInBackend(
       form,
       base::BindOnce(
           &BuiltInBackendToAndroidBackendMigrator::RunCallbackOrAbortMigration,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+          BackendOperation::kUpdateLogin));
 }
 
 void BuiltInBackendToAndroidBackendMigrator::RemoveLoginFromBackend(
@@ -576,27 +495,41 @@ void BuiltInBackendToAndroidBackendMigrator::RemoveLoginFromBackend(
       form,
       base::BindOnce(
           &BuiltInBackendToAndroidBackendMigrator::RunCallbackOrAbortMigration,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+          BackendOperation::kRemoveLogin));
 }
 
 void BuiltInBackendToAndroidBackendMigrator::RunCallbackOrAbortMigration(
     base::OnceClosure callback,
+    BackendOperation backend_operation,
     PasswordChangesOrError changes_or_error) {
-  PasswordChanges* changes = absl::get_if<PasswordChanges>(&changes_or_error);
   if (absl::holds_alternative<PasswordStoreBackendError>(changes_or_error)) {
     MigrationFinished(/*is_success=*/false);
     return;
   }
 
+  const PasswordChanges& changes = absl::get<PasswordChanges>(changes_or_error);
   // Nullopt changelist is returned on success by the backends that do not
   // provide exact changelist (e.g. Android). This indicates success operation
   // as well as non-empty changelist.
-  if (!changes->has_value() || !changes->value().empty()) {
+  if (!changes.has_value() || !changes.value().empty()) {
     // The step was successful, continue the migration.
+    switch (backend_operation) {
+      case BackendOperation::kAddLogin:
+        metrics_reporter_->AddAddedCredential();
+        break;
+      case BackendOperation::kUpdateLogin:
+        metrics_reporter_->AddUpdatedCredential();
+        break;
+      case BackendOperation::kRemoveLogin:
+        // No metric for removal operation.
+        break;
+    }
     std::move(callback).Run();
     return;
   }
-  // Migration failed (changelist is present but empty).
+
+  // Migration failed.
   MigrationFinished(/*is_success=*/false);
 }
 
@@ -606,22 +539,44 @@ void BuiltInBackendToAndroidBackendMigrator::MigrationFinished(
   metrics_reporter_->ReportMetrics(is_success);
   metrics_reporter_.reset();
 
-  // Reenroll previously evicted user into the experiment if the migration has
-  // succeeded.
-  if (migration_in_progress_type_ == MigrationType::kReenrollmentAttempt &&
-      is_success) {
-    prefs_->ClearPref(password_manager::prefs::
-                          kUnenrolledFromGoogleMobileServicesDueToErrors);
-    prefs_->ClearPref(password_manager::prefs::
-                          kUnenrolledFromGoogleMobileServicesAfterApiErrorCode);
-    prefs_->SetInteger(
-        prefs::kTimesReenrolledToGoogleMobileServices,
-        prefs_->GetInteger(prefs::kTimesReenrolledToGoogleMobileServices) + 1);
-    prefs_->SetInteger(prefs::kTimesAttemptedToReenrollToGoogleMobileServices,
-                       0);
+  if (is_success) {
+    prefs_->SetInteger(prefs::kCurrentMigrationVersionToGoogleMobileServices,
+                       kRequiredMigrationVersion);
+    // Reenroll previously evicted user into the experiment if the migration has
+    // succeeded.
+    switch (migration_in_progress_type_) {
+      case MigrationType::kReenrollmentAttempt:
+        prefs_->ClearPref(password_manager::prefs::
+                              kUnenrolledFromGoogleMobileServicesDueToErrors);
+        prefs_->ClearPref(
+            password_manager::prefs::
+                kUnenrolledFromGoogleMobileServicesAfterApiErrorCode);
+        prefs_->SetInteger(
+            prefs::kTimesReenrolledToGoogleMobileServices,
+            prefs_->GetInteger(prefs::kTimesReenrolledToGoogleMobileServices) +
+                1);
+        prefs_->SetInteger(
+            prefs::kTimesAttemptedToReenrollToGoogleMobileServices, 0);
+        break;
+      case MigrationType::kForLocalUsers:
+        prefs_->SetInteger(
+            prefs::kPasswordsUseUPMLocalAndSeparateStores,
+            static_cast<int>(password_manager::prefs::
+                                 UseUpmLocalAndSeparateStoresState::kOn));
+        prefs_->SetBoolean(
+            prefs::kShouldShowPostPasswordMigrationSheetAtStartup, true);
+        break;
+      case MigrationType::kNone:
+      case MigrationType::kInitialForSyncUsers:
+      case MigrationType::kNonSyncableToAndroidBackend:
+      case MigrationType::kNonSyncableToBuiltInBackend:
+        break;
+    }
   }
 
   migration_in_progress_type_ = MigrationType::kNone;
+  // TODO: b/325423333 - reconsider always setting pref to false without
+  // checking `is_success`.
   prefs_->SetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange, false);
   TRACE_EVENT_NESTABLE_ASYNC_END0("passwords",
                                   "UnifiedPasswordManagerMigration", this);

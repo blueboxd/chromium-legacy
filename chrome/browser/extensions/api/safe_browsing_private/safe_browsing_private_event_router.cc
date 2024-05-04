@@ -135,6 +135,12 @@ void AddTriggeredRuleInfoToUrlFilteringInterstitialEvent(
     triggered_rule.Set(extensions::SafeBrowsingPrivateEventRouter::kKeyAction,
                        ActionFromVerdictType(threat_info.verdict_type()));
 
+    if (threat_info.matched_url_navigation_rule().has_watermark_message()) {
+      triggered_rule.Set(
+          extensions::SafeBrowsingPrivateEventRouter::kKeyHasWatermarking,
+          true);
+    }
+
     triggered_rule_info.Append(std::move(triggered_rule));
   }
   event.Set(extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo,
@@ -578,7 +584,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
     const std::string& evidence_locker_filepath,
     const std::string& scan_id,
     const std::string& content_transfer_method) {
-  absl::optional<enterprise_connectors::ReportingSettings> settings =
+  std::optional<enterprise_connectors::ReportingSettings> settings =
       reporting_client_->GetReportingSettings();
   if (!settings.has_value() ||
       settings->enabled_event_names.count(kKeyDangerousDownloadEvent) == 0) {

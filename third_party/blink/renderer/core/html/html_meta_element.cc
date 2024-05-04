@@ -729,6 +729,7 @@ void HTMLMetaElement::ProcessContent() {
         ->OnMetaTagChanged(content_value);
   } else if (RuntimeEnabledFeatures::AppTitleEnabled(GetExecutionContext()) &&
              EqualIgnoringASCIICase(name_value, "app-title")) {
+    UseCounter::Count(&GetDocument(), WebFeature::kWebAppTitle);
     GetDocument().UpdateAppTitle();
   }
 }
@@ -780,9 +781,7 @@ void HTMLMetaElement::ProcessMetaCH(Document& document,
     return;
   }
 
-  if (!FrameFetchContext::AllowScriptFromSourceWithoutNotifying(
-          document.Url(), frame->GetContentSettingsClient(),
-          frame->GetSettings())) {
+  if (!frame->ScriptEnabled()) {
     // Do not allow configuring client hints if JavaScript is disabled.
     return;
   }

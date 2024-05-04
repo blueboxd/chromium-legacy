@@ -29,6 +29,7 @@
 
 namespace ui {
 class ColorChangeHandler;
+enum class EmojiPickerCategory;
 }  // namespace ui
 
 namespace ash {
@@ -52,7 +53,7 @@ class EmojiUI : public ui::MojoBubbleWebUIController,
   ~EmojiUI() override;
 
   static bool ShouldShow(const ui::TextInputClient* input_client);
-  static void Show();
+  static void Show(ui::EmojiPickerCategory category);
 
   // Instantiates the implementor of the mojom::PageHandler mojo interface
   // passing the pending receiver that will be internally bound.
@@ -94,6 +95,7 @@ class EmojiUI : public ui::MojoBubbleWebUIController,
       page_factory_receiver_{this};
   bool incognito_mode_ = false;
   bool no_text_field_ = false;
+  emoji_picker::mojom::Category initial_category_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 };

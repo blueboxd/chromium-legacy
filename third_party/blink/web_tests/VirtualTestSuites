@@ -172,10 +172,20 @@
     "expires": "Apr 1, 2024"
   },
   {
+    "prefix": "raster-inducing-scroll",
+    "platforms": ["Linux", "Mac"],
+    "bases": ["compositing",
+              "paint",
+              "scrollbars"],
+    "args": ["--enable-features=RasterInducingScroll"],
+    "owners": ["wangxianzhu@chromium.org"],
+    "expires": "Sep 30, 2024"
+  },
+  {
     "prefix": "attribution-reporting-in-browser-migration",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/inspector-protocol/attribution-reporting"],
-    "args": ["--enable-features=KeepAliveInBrowserMigration,AttributionReportingInBrowserMigration,AttributionReportingCrossAppWeb,PrivacySandboxAdsAPIsOverride",
+    "args": ["--enable-features=KeepAliveInBrowserMigration,AttributionReportingInBrowserMigration",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["anthonygarant@chromium.org"],
     "expires": "May 30, 2024"
@@ -198,6 +208,16 @@
     "exclusive_tests": "ALL",
     "args": ["--enable-features=AttributionReportingCrossAppWeb,PrivacySandboxAdsAPIsOverride",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "expires": "May 30, 2024"
+  },
+  {
+    "prefix": "ara-cross-app-web-in-browser-migration",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["http/tests/inspector-protocol/attribution-reporting/os"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=KeepAliveInBrowserMigration,AttributionReportingInBrowserMigration,PrivacySandboxAdsAPIsOverride,AttributionReportingCrossAppWeb",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "owners": ["anthonygarant@chromium.org"],
     "expires": "May 30, 2024"
   },
   {
@@ -234,7 +254,9 @@
     "bases": ["animations"],
     "args": ["--enable-threaded-compositing",
              "--disable-composited-antialiasing"],
-    "expires": "Jul 1, 2023"
+    "owners": ["kevers@chromium.org",
+               "blink-interactions@google.com"],
+    "expires": "Jul 1, 2024"
   },
 
   "The skipped base test requires a compositor to pass as root scrollbar scrolling",
@@ -289,7 +311,8 @@
               "compositing/filters",
               "external/wpt/performance-timeline/tentative/with-filter-options-originA.html",
               "external/wpt/soft-navigation-heuristics/disabled.html",
-              "wpt_internal/performance-timeline/performance-user-timing-mark-feature-usage.html"
+              "wpt_internal/performance-timeline/performance-user-timing-mark-feature-usage.html",
+              "wpt_internal/css/css-anchor-position/position-fallback-bounds.html"
             ],
     "exclusive_tests": ["media/stable"],
     "args": ["--stable-release-mode",
@@ -722,6 +745,11 @@
     "exclusive_tests": "ALL",
     "args": ["--disable-site-isolation-trials",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "owners": [
+      "alexmos@chromium.org",
+      "creis@chromium.org",
+      "wjmaclean@chromium.org"
+    ],
     "expires": "never"
   },
   {
@@ -730,6 +758,11 @@
     "bases": ["external/wpt/performance-timeline/tentative"],
     "args": ["--disable-site-isolation-trials",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "owners": [
+      "alexmos@chromium.org",
+      "creis@chromium.org",
+      "wjmaclean@chromium.org"
+    ],
     "expires": "never"
   },
 
@@ -746,6 +779,7 @@
     "bases": [
       "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
       "external/wpt/html/infrastructure/urls/terminology-0",
+      "external/wpt/html/semantics/embedded-content/the-iframe-element",
       "external/wpt/navigation-api/navigate-event/cross-window",
       "http/tests/security/cross-frame-access-callback-explicit-domain-ALLOW.html",
       "http/tests/security/cross-frame-access-callback-explicit-domain-DENY.html",
@@ -760,6 +794,11 @@
              "--reset-browsing-instance-between-tests",
              "--disable-features=OriginAgentClusterDefaultEnable",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "owners": [
+      "alexmos@chromium.org",
+      "creis@chromium.org",
+      "wjmaclean@chromium.org"
+    ],
     "expires": "never"
   },
   {
@@ -995,6 +1034,24 @@
     "expires": "Jan 1, 2025"
   },
   {
+    "prefix": "text-contrast-gamma",
+    "owners": ["kschmi@microsoft.com"],
+    "platforms": ["Win"],
+    "bases": [
+      "virtual/text-antialias/basic/002.html",
+      "virtual/text-antialias/basic/003.html",
+      "virtual/text-antialias/basic/004.html",
+      "virtual/text-antialias/basic/005.html",
+      "virtual/text-antialias/basic/008.html",
+      "virtual/text-antialias/basic/011.html",
+      "virtual/text-antialias/basic/012.html",
+      "virtual/text-antialias/basic/014.html"
+    ],
+    "args": ["--enable-font-antialiasing", "--enable-features=UseGammaContrastRegistrySettings",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "expires": "August 1, 2024"
+  },
+  {
     "prefix": "hdr",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
@@ -1089,16 +1146,6 @@
     "expires": "Jul 1, 2024"
   },
   {
-    "prefix": "shadow-root-clonable-disabled",
-    "owners": ["masonf@chromium.org"],
-    "platforms": ["Linux"],
-    "bases": [
-      "external/wpt/shadow-dom/shadow-root-clonable.html"
-    ],
-    "args": ["--disable-blink-features=ShadowRootClonable"],
-    "expires": "Jul 1, 2024"
-  },
-  {
     "prefix": "template-shadowroot-enabled",
     "owners": ["masonf@chromium.org"],
     "platforms": ["Linux"],
@@ -1141,7 +1188,7 @@
     "bases": [ "external/wpt/css/css-transforms" ],
     "args": ["--enable-features=BackfaceVisibilityInterop",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Jan 15, 2024"
+    "expires": "Nov 15, 2024"
   },
   {
     "prefix": "third-party-cookie-phaseout-enabled",
@@ -1373,7 +1420,7 @@
     "owners": ["view-transitions-api@chromium.org"],
     "bases": ["wpt_internal/view-transition-on-navigation"],
     "exclusive_tests": "ALL",
-    "args": ["--enable-features=ViewTransitionOnNavigation",
+    "args": ["--enable-features=ViewTransitionOnNavigation,PageSwapEvent",
              "--enable-threaded-compositing"],
     "expires": "May 1, 2024"
   },
@@ -1421,12 +1468,29 @@
     "expires": "May 1, 2024"
   },
   {
-    "prefix": "mutation-events-disabled",
+    "prefix": "mutation-events-enabled",
     "platforms": ["Linux"],
-    "bases": [],
-    "args": ["--disable-blink-features=MutationEvents",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Sep 1, 2024"
+    "owners": ["masonf@chromium.org"],
+    "bases": [
+      "fast/dom/mutation-events-usecounter.html",
+      "fast/events/mutation-events-disabled.html",
+      "dom/mutation-event-tests",
+      "external/wpt/editing/crashtests/indent-outdent-after-closing-editable-dialog-element.html",
+      "external/wpt/editing/other/move-inserted-node-from-DOMNodeInserted-during-exec-command-insertHTML.html",
+      "external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/042.html",
+      "external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/043.html",
+      "external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/044.html",
+      "external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/045.html",
+      "external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/054.html",
+      "external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/055.html",
+      "external/wpt/uievents/legacy-domevents-tests/approved/domnodeinserted.html",
+      "external/wpt/uievents/legacy-domevents-tests/approved/ProcessingInstruction.DOMCharacterDataModified.html",
+      "http/tests/inspector-protocol/console/console-dom-mutation-violations.js",
+      "http/tests/inspector-protocol/issues/mutation-events-issue.js",
+      "virtual/text-antialias/split-text-crash.xhtml"
+    ],
+    "args": ["--enable-blink-features=MutationEvents"],
+    "expires": "Mar 1, 2025"
   },
   {
     "prefix": "popover-hint-disabled",
@@ -1439,7 +1503,6 @@
       "external/wpt/html/semantics/popovers/popover-attribute-basic.html",
       "external/wpt/html/semantics/popovers/popover-beforetoggle-opening-event.html",
       "external/wpt/html/semantics/popovers/popover-change-type.html",
-      "external/wpt/html/semantics/popovers/popover-css-properties.tentative.html",
       "external/wpt/html/semantics/popovers/popover-document-open.html",
       "external/wpt/html/semantics/popovers/popover-events.html",
       "external/wpt/html/semantics/popovers/popover-focus-2.html",
@@ -1452,7 +1515,6 @@
       "external/wpt/html/semantics/popovers/popover-removal-2.html",
       "external/wpt/html/semantics/popovers/popover-removal.html",
       "external/wpt/html/semantics/popovers/popover-shadow-dom.html",
-      "external/wpt/html/semantics/popovers/popover-target-action-hover.tentative.html",
       "external/wpt/html/semantics/popovers/popover-types-with-hints.tentative.html",
       "external/wpt/html/semantics/popovers/popover-types.html",
       "external/wpt/html/semantics/popovers/popover-hint-crash.tentative.html",
@@ -1770,11 +1832,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/shared-storage",
-      "http/tests/inspector-protocol/shared-storage",
-      "http/tests/inspector-protocol/storage/shared-storage.js",
-      "http/tests/inspector-protocol/storage/shared-storage-delete.js",
-      "http/tests/inspector-protocol/storage/shared-storage-set.js",
-      "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
+      "http/tests/inspector-protocol/shared-storage"
     ],
     "exclusive_tests": [
       "external/wpt/shared-storage",
@@ -2048,10 +2106,10 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-features=Prerender2InNewTab,Prerender2AllowActivationInBackground",
+      "--enable-features=Prerender2InNewTab,Prerender2AllowActivationInBackground,LCPTimingPredictorPrerender2",
       "--disable-features=KeepAliveInBrowserMigration"
     ],
-    "owners": ["nhiroki@chromium.org"],
+    "owners": ["nhiroki@chromium.org", "yoichio@chromium.org"],
     "expires": "Jul 1, 2024"
   },
   {
@@ -2171,6 +2229,15 @@
     "expires": "Mar 1, 2024"
   },
   {
+    "prefix": "fedcm-button-and-other-account",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/credential-management/fedcm-button-and-other-account/"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=FedCmUseOtherAccount,FedCmButtonMode"],
+    "owners": ["cbiesinger@chromium.org", "yigu@chromium.org"],
+    "expires": "May 1, 2025"
+  },
+  {
     "prefix": "fedcm-multi-idp",
     "owners": ["npm@chromium.org", "web-identity-eng@google.com"],
     "platforms": ["Linux", "Mac", "Win"],
@@ -2271,14 +2338,6 @@
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
     "expires": "Apr 1, 2024"
-  },
-  {
-    "prefix": "clone-for-branch2-disabled",
-    "platforms": ["Linux"],
-    "bases": ["external/wpt/fetch/api/response"],
-    "args": ["--disable-features=ReadableStreamTeeCloneForBranch2",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Aug 1, 2023"
   },
   {
     "prefix": "longtask-from-loaf",
@@ -2532,14 +2591,30 @@
     "args": ["--enable-features=GenericSensorExtraClasses"],
     "expires": "never"
   },
+  "Run the WebNN WPTs with the WebNN service enabled. These are confusingly ",
+  "named 'gpu' tests however this really means that the WebNN Mojo service ",
+  "is used instead of the renderer-only implementation built using XNNPACK.",
   {
-    "prefix": "webnn-service-enabled",
+    "prefix": "webnn-service-with-gpu",
     "platforms": ["Win"],
     "bases": [
-      "external/wpt/webnn/gpu"
+      "external/wpt/webnn/conformance_tests/gpu"
     ],
     "exclusive_tests": "ALL",
     "args": ["--use-gpu-in-tests", "--enable-features=WebMachineLearningNeuralNetwork"],
+    "expires": "Jun 1, 2024",
+    "owners": ["rafael.cintron@microsoft.com", "ningxin.hu@intel.com", "kbr@chromium.org"]
+  },
+  "The WebNN service on Linux doesn't use the GPU (for now) and can't run ",
+  "under MSan so a separate flag configuration is defined here.",
+  {
+    "prefix": "webnn-service-without-gpu",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/webnn/conformance_tests/gpu"
+    ],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=WebMachineLearningNeuralNetwork"],
     "expires": "Jun 1, 2024",
     "owners": ["rafael.cintron@microsoft.com", "ningxin.hu@intel.com", "kbr@chromium.org"]
   },
@@ -2698,5 +2773,26 @@
              "--blink-settings=prefersDefaultScrollbarStyles=true"],
     "expires": "Feb 1, 2025",
     "owners": ["evelynn.kaplan@microsoft.com", "almaher@microsoft.com"]
+  },
+  {
+    "prefix": "pageswap",
+    "platforms": ["Linux", "Mac", "Win"],
+    "exclusive_tests": "ALL",
+    "bases": ["external/wpt/html/browsers/browsing-the-web/history-traversal/pageswap"],
+    "args": ["--enable-features=PageSwapEvent"],
+    "expires": "June 1, 2024",
+    "owners": ["khushalsagar@chromium.org", "vmpstr@chromium.org"]
+  },
+  {
+    "prefix": "popover-hover-disabled",
+    "owners": ["masonf@chromium.org"],
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/html/semantics/popovers/popover-css-properties.tentative.html",
+      "external/wpt/html/semantics/popovers/popover-target-action-hover.tentative.html"
+    ],
+    "args": ["--disable-blink-features=HTMLPopoverActionHover",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "expires": "Feb 1, 2025"
   }
 ]

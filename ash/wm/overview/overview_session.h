@@ -136,7 +136,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // Similar to the above function, but adds the window at the end of the grid.
   // This will use the spawn-item animation.
-  // TODO(afakhry): Expose |use_spawn_animation| if needed.
   void AppendItem(aura::Window* window, bool reposition, bool animate);
 
   // Like |AddItem|, but adds |window| at the correct position according to MRU
@@ -442,9 +441,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // Updates the no windows widget on each `OverviewGrid`.
   void UpdateNoWindowsWidgetOnEachGrid(bool animate, bool is_continuous_enter);
-
-  // Refreshes the bounds of the no windows widget on each OverviewGrid.
-  void RefreshNoWindowsWidgetBoundsOnEachGrid(bool animate);
 
   void OnItemAdded(aura::Window* window);
 

@@ -34,6 +34,7 @@
 #include "components/sync/service/sync_service.h"
 #include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 
+@protocol AutofillCommands;
 @class UIViewController;
 
 namespace web {
@@ -41,6 +42,8 @@ class WebState;
 }
 
 namespace autofill {
+
+struct AutofillErrorDialogContext;
 
 namespace payments {
 class IOSChromePaymentsAutofillClient;
@@ -61,6 +64,11 @@ class ChromeAutofillClientIOS : public AutofillClient {
 
   // Sets a weak reference to the view controller used to present UI.
   void SetBaseViewController(UIViewController* base_view_controller);
+
+  void set_commands_handler(id<AutofillCommands> commands_handler) {
+    commands_handler_ = commands_handler;
+  }
+  id<AutofillCommands> commands_handler() const { return commands_handler_; }
 
   // AutofillClient:
   version_info::Channel GetChannel() const override;
@@ -144,6 +152,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
                    FillingProduct main_filling_product,
                    AutofillSuggestionTriggerSource trigger_source) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
+  void ShowAutofillErrorDialog(AutofillErrorDialogContext context) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
   void DidFillOrPreviewForm(mojom::ActionPersistence action_persistence,
@@ -156,6 +165,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
   LogManager* GetLogManager() const override;
   bool IsLastQueriedField(FieldGlobalId field_id) override;
+  bool ShouldFormatForLargeKeyboardAccessory() const override;
   AutofillPlusAddressDelegate* GetPlusAddressDelegate() override;
   void OfferPlusAddressCreation(const url::Origin& main_frame_origin,
                                 PlusAddressCallback callback) override;
@@ -200,6 +210,8 @@ class ChromeAutofillClientIOS : public AutofillClient {
 
   // A weak reference to the view controller used to present UI.
   __weak UIViewController* base_view_controller_;
+
+  __weak id<AutofillCommands> commands_handler_;
 };
 
 }  // namespace autofill

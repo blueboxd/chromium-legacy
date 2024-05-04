@@ -36,6 +36,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
@@ -693,15 +694,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
 
-// TODO(crbug.com/1496683): Disabled on Lacros since asynchronou fullscreen
-// state behavior breaks the popup on fullscreen state behavior.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_OpeningPopupExitsFullscreen DISABLED_OpeningPopupExitsFullscreen
-#else
-#define MAYBE_OpeningPopupExitsFullscreen OpeningPopupExitsFullscreen
-#endif
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       MAYBE_OpeningPopupExitsFullscreen) {
+                       OpeningPopupExitsFullscreen) {
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 
@@ -713,6 +707,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   content::ExecuteScriptAsync(tab, "open('.', '', 'popup')");
   Browser* popup = ui_test_utils::WaitForBrowserToOpen();
   EXPECT_EQ(2u, browser_list->size());
+  ui_test_utils::BrowserActivationWaiter(popup).WaitForActivation();
   EXPECT_EQ(popup, browser_list->GetLastActive());
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
@@ -762,6 +757,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   EXPECT_EQ(1u, browser_list->size());
   content::ExecuteScriptAsync(tab, "open('.', '', 'popup')");
   Browser* popup = ui_test_utils::WaitForBrowserToOpen();
+  ui_test_utils::WaitForBrowserSetLastActive(popup);
   EXPECT_EQ(2u, browser_list->size());
   EXPECT_EQ(popup, browser_list->GetLastActive());
   EXPECT_EQ(tab->GetDelegate()->GetFullscreenState(tab).target_mode,

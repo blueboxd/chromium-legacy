@@ -57,19 +57,6 @@
 namespace content {
 namespace {
 
-// Controls if browser main thread context can be backed by raster decoder.
-BASE_FEATURE(kUseRasterDecoderForBrowserContext,
-             "UseRasterDecoderForBrowserContext",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool UseRasterDecoderForBrowserContext() {
-  // Using raster decoder is only possible if VideoResourceUpdater is using
-  // RasterImplementation so check that first.
-  return base::FeatureList::IsEnabled(
-             media::kRasterInterfaceInVideoResourceUpdater) &&
-         base::FeatureList::IsEnabled(kUseRasterDecoderForBrowserContext);
-}
-
 // The client id for the browser process. It must not conflict with any
 // child process client id.
 constexpr uint32_t kBrowserClientId = 0u;
@@ -77,7 +64,6 @@ constexpr uint32_t kBrowserClientId = 0u;
 scoped_refptr<viz::ContextProviderCommandBuffer> CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     bool supports_locking,
-    bool supports_gles2_interface,
     bool supports_gpu_rasterization,
     viz::command_buffer_metrics::ContextType type) {
   constexpr bool kAutomaticFlushes = false;
@@ -85,7 +71,7 @@ scoped_refptr<viz::ContextProviderCommandBuffer> CreateContextProvider(
   gpu::ContextCreationAttribs attributes;
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
-  attributes.enable_gles2_interface = supports_gles2_interface;
+  attributes.enable_gles2_interface = false;
   attributes.enable_raster_interface = true;
   attributes.enable_oop_rasterization = supports_gpu_rasterization;
 
@@ -216,16 +202,6 @@ void VizProcessTransportFactory::CreateLayerTreeFrameSink(
   gpu_channel_establish_factory_->EstablishGpuChannel(
       base::BindOnce(&VizProcessTransportFactory::OnEstablishedGpuChannel,
                      weak_ptr_factory_.GetWeakPtr(), compositor));
-}
-
-scoped_refptr<viz::ContextProvider>
-VizProcessTransportFactory::SharedMainThreadContextProvider() {
-  if (UseRasterDecoderForBrowserContext()) {
-    return nullptr;
-  }
-
-  SharedMainThreadRasterContextProvider();
-  return main_context_provider_;
 }
 
 scoped_refptr<viz::RasterContextProvider>
@@ -547,8 +523,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
     // If the worker context supports GPU rasterization then UI tiles will be
     // rasterized on the GPU.
     auto worker_context_provider = CreateContextProvider(
-        gpu_channel_host, /*supports_locking=*/true,
-        /*supports_gles2_interface=*/false, enable_gpu_rasterization,
+        gpu_channel_host, /*supports_locking=*/true, enable_gpu_rasterization,
         viz::command_buffer_metrics::ContextType::BROWSER_WORKER);
 
     // Don't observer context loss on |worker_context_provider_wrapper_| here,
@@ -570,13 +545,11 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
   }
 
   if (!main_context_provider_) {
-    bool supports_gles2 = !UseRasterDecoderForBrowserContext();
-
     // The main thread context is not used for UI tile rasterization. Other UI
     // code can use the main thread context for GPU rasterization if it's
     // enabled for tiles.
     main_context_provider_ = CreateContextProvider(
-        std::move(gpu_channel_host), /*supports_locking=*/false, supports_gles2,
+        std::move(gpu_channel_host), /*supports_locking=*/false,
         enable_gpu_rasterization,
         viz::command_buffer_metrics::ContextType::BROWSER_MAIN_THREAD);
     main_context_provider_->SetDefaultTaskRunner(resize_task_runner_);

@@ -51,9 +51,10 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   ~PasswordAutofillManager() override;
 
   // AutofillPopupDelegate implementation.
+  absl::variant<autofill::AutofillDriver*, PasswordManagerDriver*> GetDriver()
+      override;
   void OnPopupShown() override;
   void OnPopupHidden() override;
-
   void DidSelectSuggestion(const autofill::Suggestion& suggestion) override;
   void DidAcceptSuggestion(const autofill::Suggestion& suggestion,
                            const SuggestionPosition& position) override;
@@ -62,8 +63,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   bool RemoveSuggestion(const autofill::Suggestion& suggestion) override;
   void ClearPreviewedForm() override;
   autofill::FillingProduct GetMainFillingProduct() const override;
-  int32_t GetWebContentsPopupControllerAxId() const override;
-  void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
   // Invoked when a password mapping is added.
   void OnAddPasswordFillData(const autofill::PasswordFormFillData& fill_data);
@@ -199,9 +198,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   const raw_ptr<autofill::AutofillClient> autofill_client_;
 
   const raw_ptr<PasswordManagerClient> password_client_;
-
-  // If not null then it will be called in destructor.
-  base::OnceClosure deletion_callback_;
 
   // Used to track a requested favicon.
   base::CancelableTaskTracker favicon_tracker_;

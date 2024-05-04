@@ -154,9 +154,9 @@ class MODULES_EXPORT OutgoingStream final
    private:
     // We need the isolate to call |AdjustAmountOfExternalAllocatedMemory| for
     // the memory stored in |buffer_|.
-    raw_ptr<v8::Isolate, ExperimentalRenderer> isolate_;
+    raw_ptr<v8::Isolate> isolate_;
     size_t length_ = 0u;
-    raw_ptr<uint8_t, ExperimentalRenderer> buffer_ = nullptr;
+    raw_ptr<uint8_t> buffer_ = nullptr;
   };
 
   const Member<ScriptState> script_state_;
@@ -186,13 +186,13 @@ class MODULES_EXPORT OutgoingStream final
 
   // If an asynchronous write() on the underlying sink object is pending, this
   // will be non-null.
-  Member<ScriptPromiseResolver> write_promise_resolver_;
+  Member<ScriptPromiseResolverTyped<IDLPromise>> write_promise_resolver_;
 
   // If a close() on the underlying sink object is pending, this will be
   // non-null.
-  Member<ScriptPromiseResolver> close_promise_resolver_;
+  Member<ScriptPromiseResolverTyped<IDLPromise>> close_promise_resolver_;
 
-  Member<ScriptPromiseResolver> pending_operation_;
+  Member<ScriptPromiseResolverTyped<IDLPromise>> pending_operation_;
 
   State state_ = State::kOpen;
 };

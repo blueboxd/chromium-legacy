@@ -38,7 +38,6 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/api/declarative_net_request.h"
@@ -213,7 +212,7 @@ static_assert(ValidateHeaderEntries(kRequestHeaderEntries),
 void RecordRequestHeader(const std::string& header,
                          void (*record_func)(RequestHeaderType)) {
   DCHECK(IsStringLowerCaseASCII(header));
-  const auto* it = kRequestHeaderEntries.find(header);
+  const auto it = kRequestHeaderEntries.find(header);
   record_func(it != kRequestHeaderEntries.end() ? it->second
                                                 : RequestHeaderType::kOther);
 }
@@ -321,7 +320,7 @@ constexpr auto kResponseHeaderEntries =
 void RecordResponseHeader(std::string_view header,
                           void (*record_func)(ResponseHeaderType)) {
   DCHECK(IsStringLowerCaseASCII(header));
-  const auto* it = kResponseHeaderEntries.find(header);
+  const auto it = kResponseHeaderEntries.find(header);
   record_func(it != kResponseHeaderEntries.end() ? it->second
                                                  : ResponseHeaderType::kOther);
 }
@@ -348,7 +347,7 @@ std::string GetDNRNewRequestHeaderValue(net::HttpRequestHeaders* headers,
   bool has_header = headers->GetHeader(header_name, &existing_value);
 
   if (has_header && operation == dnr_api::HeaderOperation::kAppend) {
-    const auto* it = dnr::kDNRRequestHeaderAppendAllowList.find(header_name);
+    const auto it = dnr::kDNRRequestHeaderAppendAllowList.find(header_name);
     DCHECK(it != dnr::kDNRRequestHeaderAppendAllowList.end());
     return base::StrCat({existing_value, it->second, header_value});
   }

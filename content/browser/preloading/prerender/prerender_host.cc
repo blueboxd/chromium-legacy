@@ -116,19 +116,8 @@ bool PrerenderHost::AreHttpRequestHeadersCompatible(
   prerender_headers.RemoveHeader("sec-ch-viewport-height");
   potential_activation_headers.RemoveHeader("sec-ch-viewport-height");
 
-  if (PrerenderHost::IsActivationHeaderMatch(potential_activation_headers,
-                                             prerender_headers, reason)) {
-    return true;
-  }
-
-  // The headers mismatch. Analyze the headers asynchronously.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&AnalyzePrerenderActivationHeader,
-                     std::move(potential_activation_headers),
-                     std::move(prerender_headers), trigger_type,
-                     embedder_histogram_suffix));
-  return false;
+  return PrerenderHost::IsActivationHeaderMatch(potential_activation_headers,
+                                                prerender_headers, reason);
 }
 
 // static
@@ -236,15 +225,6 @@ bool PrerenderHost::IsActivationHeaderMatch(
   std::sort(potential_header_list.begin(), potential_header_list.end(), cmp);
   std::sort(prerender_header_list.begin(), prerender_header_list.end(), cmp);
 
-  // The two vectors should be exactly the same if the headers are the same.
-  if (std::equal(potential_header_list.begin(), potential_header_list.end(),
-                 prerender_header_list.begin(), prerender_header_list.end(),
-                 same_predicate)) {
-    return true;
-  }
-
-  // If the two vectors are not exactly the same, it means that header mismatch
-  // occurred.
   std::unique_ptr<std::vector<PrerenderMismatchedHeaders>> mismatched_headers =
       std::make_unique<std::vector<PrerenderMismatchedHeaders>>();
 
@@ -288,7 +268,9 @@ bool PrerenderHost::IsActivationHeaderMatch(
                                      potential_header_list_it->value);
     potential_header_list_it++;
   }
-
+  if (mismatched_headers->empty()) {
+    return true;
+  }
   reason.SetPrerenderMismatchedHeaders(std::move(mismatched_headers));
   return false;
 }
@@ -404,7 +386,7 @@ bool PrerenderHost::StartPrerendering() {
     return false;
 
   if (attributes_.prerender_navigation_handle_callback) {
-    attributes_.prerender_navigation_handle_callback.value().Run(
+    attributes_.prerender_navigation_handle_callback.Run(
         *created_navigation_handle);
   }
 
@@ -838,8 +820,7 @@ PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
   // here to be safe.
   CHECK(common_params_);
   if (attributes_.url_match_predicate) {
-    CHECK(
-        attributes_.url_match_predicate.value().Run(potential_activation.url));
+    CHECK(attributes_.url_match_predicate.Run(potential_activation.url));
   } else {
     CHECK_EQ(potential_activation.url, common_params_->url);
   }
@@ -1144,15 +1125,17 @@ void PrerenderHost::SetFailureReason(
 }
 
 bool PrerenderHost::IsUrlMatch(const GURL& url) const {
-  // If the trigger defines its predicate, respect it.
-  if (attributes_.url_match_predicate) {
-    // Triggers are not allowed to treat a cross-origin url as a matched url. It
-    // would cause security risks.
-    if (!url::IsSameOriginWith(attributes_.prerendering_url, url))
-      return false;
-    return attributes_.url_match_predicate.value().Run(url);
+  if (!attributes_.url_match_predicate) {
+    return GetInitialUrl() == url;
   }
-  return GetInitialUrl() == url;
+
+  // Triggers are not allowed to treat a cross-origin url as a matched url. It
+  // would cause security risks.
+  if (!url::IsSameOriginWith(attributes_.prerendering_url, url)) {
+    return false;
+  }
+
+  return attributes_.url_match_predicate.Run(url);
 }
 
 void PrerenderHost::OnAcceptClientHintChanged(

@@ -181,7 +181,6 @@ void LoadingDataCollector::RecordStartNavigation(
 
 void LoadingDataCollector::RecordFinishNavigation(
     NavigationId navigation_id,
-    const GURL& old_main_frame_url,
     const GURL& new_main_frame_url,
     bool is_error_page) {
   if (is_error_page) {
@@ -262,16 +261,6 @@ void LoadingDataCollector::RecordMainFrameLoadComplete(
 
   if (predictor_)
     predictor_->RecordPageRequestSummary(std::move(summary));
-}
-
-void LoadingDataCollector::RecordFirstContentfulPaint(
-    NavigationId navigation_id,
-    base::TimeTicks first_contentful_paint) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto nav_it = inflight_navigations_.find(navigation_id);
-  if (nav_it != inflight_navigations_.end())
-    nav_it->second->first_contentful_paint = first_contentful_paint;
 }
 
 bool LoadingDataCollector::ShouldRecordResourceLoad(

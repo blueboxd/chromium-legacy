@@ -11,14 +11,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device_lock.DeviceLockActivityLauncherImpl;
 import org.chromium.chrome.browser.init.ActivityProfileProvider;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator.HistoryOptInMode;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator.NoAccountSigninMode;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -32,13 +36,16 @@ import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
  *
  * <p>For most cases, the flow is contains a sign-in bottom sheet, and a history sync opt-in dialog
  * shown after sign-in completion.
- *
- * <p>TODO(https://crbug.com/1520783): Implement flow modes.
  */
 public class SigninAndHistoryOptInActivity extends AsyncInitializationActivity
         implements SigninAndHistoryOptInCoordinator.Delegate {
     private static final String ARGUMENT_ACCESS_POINT = "SigninAndHistoryOptInActivity.AccessPoint";
+    private static final String ARGUMENT_NO_ACCOUNT_SIGNIN_MODE =
+            "SigninAndHistoryOptInActivity.NoAccountSigninMode";
+    private static final String ARGUMENT_HISTORY_OPT_IN_MODE =
+            "SigninAndHistoryOptInActivity.HistoryOptInMode";
 
+    private OneshotSupplierImpl<Profile> mProfileSupplier = new OneshotSupplierImpl<>();
     private SigninAndHistoryOptInCoordinator mCoordinator;
 
     @Override
@@ -51,14 +58,16 @@ public class SigninAndHistoryOptInActivity extends AsyncInitializationActivity
 
     @Override
     protected void triggerLayoutInflation() {
-        int signinAccessPoint =
-                getIntent().getIntExtra(ARGUMENT_ACCESS_POINT, SigninAccessPoint.MAX);
+        Intent intent = getIntent();
+        int signinAccessPoint = intent.getIntExtra(ARGUMENT_ACCESS_POINT, SigninAccessPoint.MAX);
         assert signinAccessPoint != SigninAccessPoint.MAX : "Cannot find SigninAccessPoint!";
-
-        ProfileProvider profileProvider = getProfileProviderSupplier().get();
-        // TODO(https://crbug.com/1520783): Update this logic when async initialization will be
-        // supported.
-        assert profileProvider != null;
+        @NoAccountSigninMode
+        int noAccountSigninMode =
+                intent.getIntExtra(
+                        ARGUMENT_NO_ACCOUNT_SIGNIN_MODE, NoAccountSigninMode.ADD_ACCOUNT);
+        @HistoryOptInMode
+        int historyOptInMode =
+                intent.getIntExtra(ARGUMENT_HISTORY_OPT_IN_MODE, HistoryOptInMode.OPTIONAL);
 
         mCoordinator =
                 new SigninAndHistoryOptInCoordinator(
@@ -66,8 +75,10 @@ public class SigninAndHistoryOptInActivity extends AsyncInitializationActivity
                         this,
                         this,
                         DeviceLockActivityLauncherImpl.get(),
-                        profileProvider.getOriginalProfile(),
+                        mProfileSupplier,
                         getModalDialogManagerSupplier(),
+                        noAccountSigninMode,
+                        historyOptInMode,
                         signinAccessPoint);
 
         setContentView(mCoordinator.getView());
@@ -81,14 +92,22 @@ public class SigninAndHistoryOptInActivity extends AsyncInitializationActivity
 
     @Override
     protected OneshotSupplier<ProfileProvider> createProfileProvider() {
-        return new ActivityProfileProvider(getLifecycleDispatcher()) {
-            @Nullable
-            @Override
-            protected OTRProfileID createOffTheRecordProfileID() {
-                throw new IllegalStateException(
-                        "Attempting to access incognito in the sign-in & history sync opt-in flow");
-            }
-        };
+        ActivityProfileProvider profileProvider =
+                new ActivityProfileProvider(getLifecycleDispatcher()) {
+                    @Nullable
+                    @Override
+                    protected OTRProfileID createOffTheRecordProfileID() {
+                        throw new IllegalStateException(
+                                "Attempting to access incognito in the sign-in & history sync"
+                                        + " opt-in flow");
+                    }
+                };
+
+        profileProvider.onAvailable(
+                (provider) -> {
+                    mProfileSupplier.set(profileProvider.get().getOriginalProfile());
+                });
+        return profileProvider;
     }
 
     @Override
@@ -110,10 +129,23 @@ public class SigninAndHistoryOptInActivity extends AsyncInitializationActivity
         overridePendingTransition(0, R.anim.no_anim);
     }
 
+    @Override
+    protected void onDestroy() {
+        if (mCoordinator != null) {
+            mCoordinator.destroy();
+        }
+        super.onDestroy();
+    }
+
     public static @NonNull Intent createIntent(
-            Context context, @SigninAccessPoint int accessPoint) {
+            Context context,
+            @NoAccountSigninMode int noAccountSigninMode,
+            @HistoryOptInMode int historyOptInMode,
+            @SigninAccessPoint int signinAccessPoint) {
         Intent intent = new Intent(context, SigninAndHistoryOptInActivity.class);
-        intent.putExtra(ARGUMENT_ACCESS_POINT, accessPoint);
+        intent.putExtra(ARGUMENT_NO_ACCOUNT_SIGNIN_MODE, noAccountSigninMode);
+        intent.putExtra(ARGUMENT_HISTORY_OPT_IN_MODE, historyOptInMode);
+        intent.putExtra(ARGUMENT_ACCESS_POINT, signinAccessPoint);
         return intent;
     }
 }

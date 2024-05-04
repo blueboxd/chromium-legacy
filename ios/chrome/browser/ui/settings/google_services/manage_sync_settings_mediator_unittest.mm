@@ -34,9 +34,11 @@
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_setup_service_mock.h"
-#import "ios/chrome/browser/ui/authentication/cells/table_view_central_account_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/central_account_view.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/google_services/features.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
@@ -111,6 +113,13 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     mediator_.consumer = consumer_;
   }
 
+  void CreateManageSyncSettingsMediator(
+      SyncSettingsAccountState initialAccountState,
+      BOOL isEEAAccount) {
+    CreateManageSyncSettingsMediator(initialAccountState);
+    mediator_.isEEAAccount = isEEAAccount;
+  }
+
   void SimulateFirstSetupSyncOnWithConsentEnabled() {
     ON_CALL(*sync_service_mock_->GetMockUserSettings(),
             IsInitialSyncFeatureSetupComplete())
@@ -165,6 +174,8 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
 
   // Needed for the initialization of authentication service.
   IOSChromeScopedTestingLocalState local_state_;
+
+  base::test::ScopedFeatureList feature_list_;
 
   raw_ptr<syncer::MockSyncService> sync_service_mock_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
@@ -411,7 +422,9 @@ TEST_F(ManageSyncSettingsMediatorTest,
     }
     SyncSwitchItem* switch_item =
         base::apple::ObjCCastStrict<SyncSwitchItem>(item);
-    if (switch_item.type == PaymentsDataTypeItemType) {
+    if (switch_item.type == PaymentsDataTypeItemType &&
+        !base::FeatureList::IsEnabled(
+            syncer::kSyncDecoupleAddressPaymentSettings)) {
       EXPECT_FALSE(switch_item.enabled);
     } else {
       EXPECT_TRUE(switch_item.enabled);
@@ -441,32 +454,6 @@ TEST_F(ManageSyncSettingsMediatorTest,
     // by Hitstory type.
     EXPECT_FALSE(item.type == OpenTabsDataTypeItemType);
   }
-}
-
-// Tests that the account details item is showing for a signed in not syncing
-// account.
-TEST_F(ManageSyncSettingsMediatorTest,
-       CheckAccountItemForSignedInNotSyncingAccount) {
-  CreateManageSyncSettingsMediator(SyncSettingsAccountState::kSignedIn);
-  SimulateFirstSetupSyncOffWithSignedInAccount();
-
-  // Loads the Sync page.
-  [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];
-
-  // Get account item.
-  NSArray* account_item = [mediator_.consumer.tableViewModel
-      itemsInSectionWithIdentifier:AccountSectionIdentifier];
-
-  EXPECT_EQ(1UL, account_item.count);
-
-  TableViewCentralAccountItem* account_details =
-      base::apple::ObjCCastStrict<TableViewCentralAccountItem>(account_item[0]);
-
-  EXPECT_EQ(account_details.type,
-            SyncSettingsItemType::IdentityAccountItemType);
-  EXPECT_TRUE(account_details.avatarImage);
-  EXPECT_NSEQ(account_details.name, fakeSystemIdentity_.userFullName);
-  EXPECT_NSEQ(account_details.email, fakeSystemIdentity_.userEmail);
 }
 
 // Tests that the sign out item exists in the SignOutSectionIdentifier for a
@@ -548,7 +535,7 @@ TEST_F(ManageSyncSettingsMediatorTest, TestAccountStateTransitionOnSignOut) {
       hasSectionForSectionIdentifier:SyncSettingsSectionIdentifier::
                                          SignOutSectionIdentifier]);
   // Verify the number of section shown in the kSignedIn state.
-  ASSERT_EQ(4, [mediator_.consumer.tableViewModel numberOfSections]);
+  ASSERT_EQ(3, [mediator_.consumer.tableViewModel numberOfSections]);
 
   // Set sign out expectation with empty account info.
   ON_CALL(*sync_service_mock_, GetAccountInfo())
@@ -565,5 +552,102 @@ TEST_F(ManageSyncSettingsMediatorTest, TestAccountStateTransitionOnSignOut) {
 
   // Expected sections from the previous kSignedIn state should be showing and
   // no new sections are added in the kSignedOut state.
-  EXPECT_EQ(4, [mediator_.consumer.tableViewModel numberOfSections]);
+  EXPECT_EQ(3, [mediator_.consumer.tableViewModel numberOfSections]);
+}
+
+// Test that the GoogleActivityControlsItem is visible when the
+// LinkedServicesSettings flags is disabled.
+TEST_F(ManageSyncSettingsMediatorTest, TestGoogleActivityControlsItem) {
+  // Disable the LinkedServicesSettings flag.
+  feature_list_.InitAndDisableFeature(kLinkedServicesSettingIos);
+
+  // Create mediator with a signed-in account.
+  CreateManageSyncSettingsMediator(SyncSettingsAccountState::kSignedIn);
+  SimulateFirstSetupSyncOffWithSignedInAccount();
+
+  [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];
+
+  // Get section items.
+  NSArray* items = [mediator_.consumer.tableViewModel
+      itemsInSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+
+  EXPECT_EQ(GoogleActivityControlsItemType,
+            base::apple::ObjCCastStrict<TableViewItem>(items[1]).type);
+}
+
+// Test that the PersonalizeGoogleServices is visible when the
+// LinkedServicesSettings flags is disabled.
+TEST_F(ManageSyncSettingsMediatorTest, TestPersonalizeGoogleServicesItem) {
+  // Enable the LinkedServicesSettings flag.
+  feature_list_.InitAndEnableFeature(kLinkedServicesSettingIos);
+
+  // Create mediator with a signed-in account.
+  CreateManageSyncSettingsMediator(SyncSettingsAccountState::kSignedIn);
+  SimulateFirstSetupSyncOffWithSignedInAccount();
+
+  [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];
+
+  // Get section items.
+  NSArray* items = [mediator_.consumer.tableViewModel
+      itemsInSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+
+  EXPECT_EQ(PersonalizeGoogleServicesItemType,
+            base::apple::ObjCCastStrict<TableViewItem>(items[1]).type);
+}
+
+// Test that the PersonalizeGoogleServices item open the Personalized Google
+// Services settings for EEA users.
+TEST_F(ManageSyncSettingsMediatorTest, TestPersonalizeGoogleServicesItemEEA) {
+  // Enable the LinkedServicesSettings flag.
+  feature_list_.InitAndEnableFeature(kLinkedServicesSettingIos);
+
+  // Create mediator with a signed-in account.
+  CreateManageSyncSettingsMediator(SyncSettingsAccountState::kSignedIn, true);
+  SimulateFirstSetupSyncOffWithSignedInAccount();
+
+  [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];
+
+  // Create mock command handler
+  id mockCommandHandler =
+      OCMProtocolMock(@protocol(ManageSyncSettingsCommandHandler));
+  mediator_.commandHandler = mockCommandHandler;
+  OCMExpect([mockCommandHandler openPersonalizeGoogleServices]);
+
+  // Get section items.
+  NSArray* items = [mediator_.consumer.tableViewModel
+      itemsInSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+
+  // Test item behavior for EEA users.
+  [mediator_ didSelectItem:items[1] cellRect:CGRectZero];
+
+  EXPECT_OCMOCK_VERIFY(mockCommandHandler);
+}
+
+// Test that the PersonalizeGoogleServices item open the Web and App activity
+// settings for non EEA users.
+TEST_F(ManageSyncSettingsMediatorTest,
+       TestPersonalizeGoogleServicesItemNonEEA) {
+  // Enable the LinkedServicesSettings flag.
+  feature_list_.InitAndEnableFeature(kLinkedServicesSettingIos);
+
+  // Create mediator with a signed-in account.
+  CreateManageSyncSettingsMediator(SyncSettingsAccountState::kSignedIn, false);
+  SimulateFirstSetupSyncOffWithSignedInAccount();
+
+  [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];
+
+  // Create mock command handler
+  id mockCommandHandler =
+      OCMProtocolMock(@protocol(ManageSyncSettingsCommandHandler));
+  mediator_.commandHandler = mockCommandHandler;
+  OCMExpect([mockCommandHandler openWebAppActivityDialog]);
+
+  // Get section items.
+  NSArray* items = [mediator_.consumer.tableViewModel
+      itemsInSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+
+  // Test item behavior for EEA users.
+  [mediator_ didSelectItem:items[1] cellRect:CGRectZero];
+
+  EXPECT_OCMOCK_VERIFY(mockCommandHandler);
 }

@@ -15,6 +15,7 @@
 <translation id="1423007117030725713">Започните претрагу на новој Chromium картици.</translation>
 <translation id="1431818719585918472">Дозволите Chromium-у да закључа картице без архивирања.</translation>
 <translation id="1472013873724362412">Налог не функционише на Chromium-у. Контактирајте администратора домена или се пријавите помоћу обичног Google налога.</translation>
+<translation id="1503199973012840174">Chromium је застарео. Ажурирајте га да бисте били безбедни.</translation>
 <translation id="1507010443238049608">Помозите нам да побољшамо Chromium-ове функције и учинак</translation>
 <translation id="1513122820609681462">Постави Chromium као подразумевани прегледач</translation>
 <translation id="1531155317299575425">Приказује упите за пријављивање у Chromium.</translation>
@@ -50,6 +51,7 @@
 <translation id="22313767259766852">Ова адреса је тренутно сачувана у Chromium-у. Да бисте је користили у свим Google производима, сачувајте је на Google налогу, <ph name="USER_EMAIL" />.</translation>
 <translation id="2236584955986023187">То значи да ће Chromium сваки пут захтевати сајт за рачунар.</translation>
 <translation id="2313870531055795960">Проверава URL-ове са листом небезбедних сајтова који се чувају у Chromium-у. Ако неки сајт покуша да украде вашу лозинку или пробате да преузмете штетну датотеку, Chromium може да пошаље URL-ове, укључујући делове садржаја странице, у Безбедно прегледање.</translation>
+<translation id="231828342043114302">Да бисте добијали персонализовани садржај на основу интересовања, пријавите се у Chromium.</translation>
 <translation id="2374627437126809292">Chromium користи Google мапе да би вам пружао путању и локалне информације о откривеним адресама.</translation>
 <translation id="2386292341327187942">У оквир Претражите виџете унесите Chromium</translation>
 <translation id="2426113998523353159">Организација захтева да се пријавите да бисте користили Chromium.</translation>
@@ -78,7 +80,6 @@
 <translation id="3219277919172823720">Претражујте гласом у Chromium-у</translation>
 <translation id="3228349498066165585">Неки Chromium подаци још нису сачувани на Google налогу.
         Сачекајте неколико минута пре него што се одјавите. Ако се одјавите одмах, ови подаци ће бити избрисани.</translation>
-<translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="328933489847748230">{count,plural, =1{Сада се приказује 1 Chromium прозор}one{Сада се приказује {count} Chromium прозор}few{Сада се приказују {count} Chromium прозора}other{Сада се приказује {count} Chromium прозора}}</translation>
 <translation id="3344973607274501920">Chromium није успео да вам провери лозинке. Проверите интернет везу.</translation>
 <translation id="3366305173356742781">Chromium подаци на налогу</translation>
@@ -311,7 +312,6 @@
 <translation id="9059693977935746710">Не морате да запамтите ову лозинку. Чува се у Менаџеру лозинки за <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">Chromium је застарео</translation>
 <translation id="9110075932708282655">Подразумевано користите Chromium</translation>
-<translation id="9137114218472648150">Chromium је застарео. Ажурирајте на најновију верзију да бисте остали безбедни.</translation>
 <translation id="921174536258924340">Chromium није успео да провери све лозинке. Пробајте поново сутра или <ph name="BEGIN_LINK" />проверите лозинке на Google налогу.<ph name="END_LINK" /></translation>
 <translation id="971488683725792095">Аутоматски користите Chromium када додирнете линкове у порукама, документима и другим апликацијама.</translation>
 <translation id="981812233959540767">Играјте игру Chromium диносаурус</translation>

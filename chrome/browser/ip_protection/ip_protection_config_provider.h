@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ip_protection/ip_protection_config_http.h"
 #include "chrome/browser/ip_protection/ip_protection_config_provider_factory.h"
+#include "components/ip_protection/ip_protection_proxy_config_retriever.h"
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/privacy_sandbox/tracking_protection_settings_observer.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -131,7 +132,9 @@ class IpProtectionConfigProvider
 
   // Like `SetUp()`, but providing values for each of the member variables.
   void SetUpForTesting(
-      std::unique_ptr<IpProtectionConfigHttp> ip_protection_config_http_,
+      std::unique_ptr<IpProtectionProxyConfigRetriever>
+          ip_protection_proxy_config_retriever,
+      std::unique_ptr<IpProtectionConfigHttp> ip_protection_config_http,
       quiche::BlindSignAuthInterface* bsa);
 
   // Base time deltas for calculating `try_again_after`.
@@ -142,12 +145,13 @@ class IpProtectionConfigProvider
  private:
   friend class IpProtectionConfigProviderTest;
   FRIEND_TEST_ALL_PREFIXES(IpProtectionConfigProviderTest, CalculateBackoff);
-  FRIEND_TEST_ALL_PREFIXES(IpProtectionConfigProviderBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(IpProtectionConfigProviderIdentityBrowserTest,
                            BackoffTimeResetAfterProfileAvailabilityChange);
   FRIEND_TEST_ALL_PREFIXES(IpProtectionConfigProviderUserSettingBrowserTest,
                            OnIpProtectionEnabledChanged);
 
-  // Set up `ip_protection_config_http_` and `bsa_`, if not already initialized.
+  // Set up `ip_protection_config_http_`, `ip_protection_proxy_config_retriever`
+  // and `bsa_`, if not already initialized.
   // This accomplishes lazy loading of these components to break dependency
   // loops in browser startup.
   void SetUp();
@@ -189,7 +193,8 @@ class IpProtectionConfigProvider
                           std::optional<std::string> oauth_token);
   void OnGetProxyConfigCompleted(
       GetProxyListCallback callback,
-      absl::StatusOr<ip_protection::GetProxyConfigResponse> response);
+      base::expected<ip_protection::GetProxyConfigResponse, std::string>
+          response);
 
   // `FetchBlindSignedToken()` calls into the `quiche::BlindSignAuth` library to
   // request a blind-signed auth token for use at the IP Protection proxies.
@@ -257,6 +262,8 @@ class IpProtectionConfigProvider
   // scoped_refptr here.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<IpProtectionConfigHttp> ip_protection_config_http_;
+  std::unique_ptr<IpProtectionProxyConfigRetriever>
+      ip_protection_proxy_config_retriever_;
   std::unique_ptr<quiche::BlindSignAuth> blind_sign_auth_;
 
   // For testing, BlindSignAuth is accessed via its interface. In production,

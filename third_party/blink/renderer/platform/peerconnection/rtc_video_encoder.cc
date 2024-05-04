@@ -138,8 +138,8 @@ class SignaledValue {
   bool IsValid() { return event; }
 
  private:
-  raw_ptr<base::WaitableEvent, ExperimentalRenderer> event;
-  raw_ptr<int32_t, ExperimentalRenderer> val;
+  raw_ptr<base::WaitableEvent> event;
+  raw_ptr<int32_t> val;
 };
 
 class ScopedSignaledValue {
@@ -710,8 +710,7 @@ class RTCVideoEncoder::Impl : public media::VideoEncodeAccelerator::Client {
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Factory for creating VEAs, shared memory buffers, etc.
-  const raw_ptr<media::GpuVideoAcceleratorFactories, ExperimentalRenderer>
-      gpu_factories_;
+  const raw_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
 
   scoped_refptr<media::MojoVideoEncoderMetricsProviderFactory>
       encoder_metrics_provider_factory_;
@@ -812,8 +811,8 @@ class RTCVideoEncoder::Impl : public media::VideoEncodeAccelerator::Client {
 
   // webrtc::VideoEncoder encode complete callback.
   // TODO(b/257021675): Don't guard this by |lock_|
-  raw_ptr<webrtc::EncodedImageCallback, ExperimentalRenderer>
-      encoded_image_callback_ GUARDED_BY(lock_){nullptr};
+  raw_ptr<webrtc::EncodedImageCallback> encoded_image_callback_
+      GUARDED_BY(lock_){nullptr};
 
   // They are bound to |gpu_task_runner_|, which is sequence checked by
   // |sequence_checker|.
@@ -928,7 +927,6 @@ void RTCVideoEncoder::Impl::Enqueue(FrameChunk frame_chunk) {
   if (base::FeatureList::IsEnabled(
           features::kVideoEncoderLimitsFramesInEncoder) &&
       frames_in_encoder_count_ >= kMaxFramesInEncoder) {
-    CHECK_EQ(frames_in_encoder_count_, kMaxFramesInEncoder);
     DVLOG(1) << "VAE drops the input frame to reduce latency";
     base::AutoLock lock(lock_);
     if (encoded_image_callback_) {
@@ -1965,10 +1963,9 @@ int32_t RTCVideoEncoder::InitEncode(
 
   vea_config_ = media::VideoEncodeAccelerator::Config(
       pixel_format, input_visible_size, profile_,
-      media::Bitrate::ConstantBitrate(bitrate_bps));
+      media::Bitrate::ConstantBitrate(bitrate_bps),
+      codec_settings->maxFramerate, storage_type, vea_content_type);
   vea_config_->is_constrained_h264 = is_constrained_h264_;
-  vea_config_->storage_type = storage_type;
-  vea_config_->content_type = vea_content_type;
   vea_config_->spatial_layers = spatial_layers;
   vea_config_->inter_layer_pred = inter_layer_pred;
   vea_config_->drop_frame_thresh_percentage =

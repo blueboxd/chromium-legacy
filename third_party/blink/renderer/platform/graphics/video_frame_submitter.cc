@@ -23,6 +23,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/frame_sink_bundle_id.h"
 #include "gpu/command_buffer/client/raster_interface.h"
+#include "gpu/ipc/client/client_shared_image_interface.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -381,6 +382,10 @@ void VideoFrameSubmitter::OnBeginFrame(
       if (presentation_failure) {
         final_state = cc::FrameInfo::FrameFinalState::kDropped;
       } else {
+        frame_trackers_.NotifyFramePresented(
+            frame_token,
+            gfx::PresentationFeedback(feedback.timestamp, feedback.interval,
+                                      feedback.flags));
         final_state = cc::FrameInfo::FrameFinalState::kPresentedAll;
 
         // We assume that presentation feedback is reliable if
@@ -422,6 +427,7 @@ void VideoFrameSubmitter::OnBeginFrame(
   viz::BeginFrameAck current_begin_frame_ack(args, false);
   if (args.type == viz::BeginFrameArgs::MISSED || !is_rendering_) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
+    frame_trackers_.NotifyImplFrameCausedNoDamage(current_begin_frame_ack);
     frame_sorter_.AddFrameResult(
         args,
         CreateFrameInfo(cc::FrameInfo::FrameFinalState::kNoUpdateDesired));
@@ -436,6 +442,7 @@ void VideoFrameSubmitter::OnBeginFrame(
                                     args.frame_time + args.interval,
                                     args.frame_time + 2 * args.interval)) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
+    frame_trackers_.NotifyImplFrameCausedNoDamage(current_begin_frame_ack);
     frame_sorter_.AddFrameResult(
         args,
         CreateFrameInfo(cc::FrameInfo::FrameFinalState::kNoUpdateDesired));
@@ -447,6 +454,7 @@ void VideoFrameSubmitter::OnBeginFrame(
   auto video_frame = video_frame_provider_->GetCurrentFrame();
   if (!SubmitFrame(current_begin_frame_ack, std::move(video_frame))) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
+    frame_trackers_.NotifyImplFrameCausedNoDamage(current_begin_frame_ack);
     frame_sorter_.AddFrameResult(
         args,
         CreateFrameInfo(cc::FrameInfo::FrameFinalState::kNoUpdateDesired));
@@ -484,10 +492,12 @@ void VideoFrameSubmitter::DidDeleteSharedBitmap(const viz::SharedBitmapId& id) {
 
 void VideoFrameSubmitter::OnReceivedContextProvider(
     bool use_gpu_compositing,
-    scoped_refptr<viz::RasterContextProvider> context_provider) {
+    scoped_refptr<viz::RasterContextProvider> context_provider,
+    scoped_refptr<gpu::ClientSharedImageInterface> shared_image_interface) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!use_gpu_compositing) {
-    resource_provider_->Initialize(nullptr, this);
+    shared_image_interface_ = std::move(shared_image_interface);
+    resource_provider_->Initialize(nullptr, this, shared_image_interface_);
     if (frame_sink_id_.is_valid())
       StartSubmitting();
     return;
@@ -507,7 +517,8 @@ void VideoFrameSubmitter::OnReceivedContextProvider(
   }
 
   context_provider_->AddObserver(this);
-  resource_provider_->Initialize(context_provider_.get(), nullptr);
+  resource_provider_->Initialize(context_provider_.get(), nullptr,
+                                 /*shared_image_interface*/ nullptr);
 
   if (frame_sink_id_.is_valid())
     StartSubmitting();
@@ -712,6 +723,8 @@ bool VideoFrameSubmitter::SubmitFrame(
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
       std::move(compositor_frame), std::nullopt, 0);
+  frame_trackers_.NotifySubmitFrame(frame_token, false, begin_frame_ack,
+                                    last_begin_frame_args_);
   resource_provider_->ReleaseFrameResources();
 
   waiting_for_compositor_ack_ = true;
@@ -738,6 +751,8 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
       std::move(compositor_frame), std::nullopt, 0);
+  frame_trackers_.NotifySubmitFrame(frame_token, false, begin_frame_ack,
+                                    last_begin_frame_args_);
 
   // We don't set |waiting_for_compositor_ack_| here since we want to allow a
   // subsequent real frame to replace it at any time if needed.

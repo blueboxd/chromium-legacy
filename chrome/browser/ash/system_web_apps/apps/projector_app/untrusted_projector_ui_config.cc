@@ -30,9 +30,6 @@ void ChromeUntrustedProjectorUIDelegate::PopulateLoadTimeData(
   source->AddBoolean(
       "isLocalPlaybackEnabled",
       base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI));
-  source->AddBoolean(
-      "isAccountSwitchNotificationEnabled",
-      ash::features::IsProjectorAccountSwitchNotificationEnabled());
   source->AddBoolean("isMutingEnabled",
                      ash::features::IsProjectorMutingEnabled());
   source->AddBoolean("isPwaRedirectEnabled",
@@ -41,6 +38,8 @@ void ChromeUntrustedProjectorUIDelegate::PopulateLoadTimeData(
                      ash::features::IsProjectorV2Enabled());
   source->AddBoolean("isTranscriptChapterTitleEnabled",
                      ash::features::IsProjectorTranscriptChapterTitleEnabled());
+  source->AddBoolean("isDynamicColorsEnabled",
+                     ash::features::IsProjectorDynamicColorsEnabled());
 
   source->AddBoolean(
       "isInternalServerSideSpeechRecognitionEnabled",

@@ -37,9 +37,9 @@ BASE_FEATURE(kSearchEngineChoiceTrigger,
 #elif BUILDFLAG(IS_WIN)
              base::FEATURE_DISABLED_BY_DEFAULT
 #elif BUILDFLAG(IS_CHROMEOS)
-             base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #else
-             base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 
 );
@@ -54,5 +54,10 @@ const base::FeatureParam<std::string> kSearchEngineChoiceTriggerRepromptParams{
     &kSearchEngineChoiceTrigger,
     /*name=*/"reprompt",
     /*default_value=*/"{}"};
+
+const base::FeatureParam<bool> kSearchEngineChoiceTriggerSkipFor3p{
+    &kSearchEngineChoiceTrigger,
+    /*name=*/"skip_for_3p",
+    /*default_value=*/true};
 
 }  // namespace switches

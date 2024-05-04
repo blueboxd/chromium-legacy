@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/trusted_vault/trusted_vault_service_factory.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/web_data_service_factory.h"
+#include "chrome/browser/webdata_services/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/data_sharing/public/features.h"
@@ -86,9 +86,11 @@ class SyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(49 == syncer::GetNumModelTypes(),
+    static_assert(51 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
-                  "well (assuming it is already enabled).");
+                  "well (assuming it is already enabled). Check similar "
+                  "function in "
+                  "ios/c/b/sync/model/sync_service_factory_unittest.cc");
 
     syncer::ModelTypeSet datatypes;
 
@@ -185,6 +187,7 @@ class SyncServiceFactoryTest : public testing::Test {
     }
     if (base::FeatureList::IsEnabled(
             data_sharing::features::kDataSharingFeature)) {
+      datatypes.Put(syncer::COLLABORATION_GROUP);
       datatypes.Put(syncer::SHARED_TAB_GROUP_DATA);
     }
 #if BUILDFLAG(IS_ANDROID)
@@ -192,6 +195,7 @@ class SyncServiceFactoryTest : public testing::Test {
       datatypes.Put(syncer::WEB_APKS);
     }
 #endif  // BUILDFLAG(IS_ANDROID)
+    // TODO(b/322147254): Add `syncer::PLUS_ADDRESS` once it has a controller.
     return datatypes;
   }
 

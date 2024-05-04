@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
@@ -165,7 +166,7 @@ public class ChromeBackupAgentTest {
                         });
 
         MockitoAnnotations.initMocks(this);
-        Profile.setLastUsedProfileForTesting(mProfile);
+        ProfileManager.setLastUsedProfileForTesting(mProfile);
         mocker.mock(ChromeBackupAgentImplJni.TEST_HOOKS, mChromeBackupAgentJniMock);
 
         when(mChromeBackupAgentJniMock.getBoolBackupNames(mAgent))
@@ -1031,10 +1032,10 @@ public class ChromeBackupAgentTest {
                 ChromeBackupAgentImpl.getRestoreStatus(),
                 equalTo(ChromeBackupAgentImpl.RestoreStatus.RESTORE_COMPLETED));
         ChromeBackupAgentImpl.setRestoreStatus(
-                ChromeBackupAgentImpl.RestoreStatus.RESTORE_STATUS_RECORDED);
+                ChromeBackupAgentImpl.RestoreStatus.SIGNIN_TIMED_OUT);
         assertThat(
                 ChromeBackupAgentImpl.getRestoreStatus(),
-                equalTo(ChromeBackupAgentImpl.RestoreStatus.RESTORE_STATUS_RECORDED));
+                equalTo(ChromeBackupAgentImpl.RestoreStatus.SIGNIN_TIMED_OUT));
     }
 
     /**

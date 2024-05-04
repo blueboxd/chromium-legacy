@@ -9,7 +9,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "components/supervised_user/core/common/features.h"
 #import "ios/chrome/browser/overlays/model/public/web_content_area/alert_constants.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -23,7 +22,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -120,13 +118,6 @@ void TapDoneButtonOnInfobarModal() {
 @end
 
 @implementation PermissionsTestCase
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  config.features_enabled.push_back(
-      supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
-  return config;
-}
 
 #pragma mark - Helper functions
 
@@ -645,18 +636,16 @@ void TapDoneButtonOnInfobarModal() {
 
   // These settings are controlled in Family Link and would be updated through
   // Sync content settings.
-  [ChromeEarlGreyAppInterface
-           setContentSetting:ContentSetting::CONTENT_SETTING_BLOCK
-      forContentSettingsType:ContentSettingsType::MEDIASTREAM_CAMERA];
-  [ChromeEarlGreyAppInterface
-           setContentSetting:ContentSetting::CONTENT_SETTING_BLOCK
-      forContentSettingsType:ContentSettingsType::MEDIASTREAM_MIC];
+  [ChromeEarlGrey setContentSetting:ContentSetting::CONTENT_SETTING_BLOCK
+             forContentSettingsType:ContentSettingsType::MEDIASTREAM_CAMERA];
+  [ChromeEarlGrey setContentSetting:ContentSetting::CONTENT_SETTING_BLOCK
+             forContentSettingsType:ContentSettingsType::MEDIASTREAM_MIC];
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [SigninEarlGrey setIsSubjectToParentalControls:YES forIdentity:fakeIdentity];
 
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   [ChromeEarlGrey loadURL:self.testServer->GetURL(

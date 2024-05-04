@@ -199,8 +199,7 @@ class VideoCaptureControllerTest
     device_client_ = std::make_unique<media::VideoCaptureDeviceClient>(
         std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
             controller_->GetWeakPtrForIOThread(), GetIOThreadTaskRunner({})),
-        buffer_pool_,
-        mojo::PendingRemote<video_capture::mojom::VideoEffectsManager>{});
+        buffer_pool_, mojo::PendingRemote<media::mojom::VideoEffectsManager>{});
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
@@ -217,7 +216,7 @@ class VideoCaptureControllerTest
         media::VideoFrame::AllocationSize(stub_frame->format(),
                                           stub_frame->coded_size()),
         format, color_space, rotation, false /* flip_y */, base::TimeTicks(),
-        base::TimeDelta(), frame_feedback_id);
+        base::TimeDelta(), std::nullopt, frame_feedback_id);
   }
 
   BrowserTaskEnvironment task_environment_;
@@ -391,7 +390,8 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   media::VideoCaptureDevice::Client::Buffer buffer;
   const auto result_code = device_client_->ReserveOutputBuffer(
       device_format.frame_size, device_format.pixel_format,
-      arbitrary_frame_feedback_id, &buffer);
+      arbitrary_frame_feedback_id, &buffer, /*require_new_buffer_id=*/nullptr,
+      /*retire_old_buffer_id=*/nullptr);
   ASSERT_EQ(media::VideoCaptureDevice::Client::ReserveResult::kSucceeded,
             result_code);
   auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
@@ -426,7 +426,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 
   device_client_->OnIncomingCapturedBuffer(std::move(buffer), device_format,
                                            arbitrary_reference_time_,
-                                           arbitrary_timestamp_);
+                                           arbitrary_timestamp_, std::nullopt);
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
@@ -440,7 +440,9 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   media::VideoCaptureDevice::Client::Buffer buffer2;
   const auto result_code_2 = device_client_->ReserveOutputBuffer(
       device_format.frame_size, device_format.pixel_format,
-      arbitrary_frame_feedback_id_2, &buffer2);
+      arbitrary_frame_feedback_id_2, &buffer2,
+      /*require_new_buffer_id=*/nullptr,
+      /*retire_old_buffer_id=*/nullptr);
   ASSERT_EQ(media::VideoCaptureDevice::Client::ReserveResult::kSucceeded,
             result_code_2);
   auto buffer2_access = buffer2.handle_provider->GetHandleForInProcessAccess();
@@ -460,7 +462,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 
   device_client_->OnIncomingCapturedBuffer(std::move(buffer2), device_format,
                                            arbitrary_reference_time_,
-                                           arbitrary_timestamp_);
+                                           arbitrary_timestamp_, std::nullopt);
 
   // The frame should be delivered to the clients in any order.
   EXPECT_CALL(*client_a_, DoBufferReady(ControllerIDAndSize(
@@ -485,15 +487,17 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     media::VideoCaptureDevice::Client::Buffer buffer3;
     const auto result_code_3 = device_client_->ReserveOutputBuffer(
         device_format.frame_size, device_format.pixel_format,
-        arbitrary_frame_feedback_id_3, &buffer3);
+        arbitrary_frame_feedback_id_3, &buffer3,
+        /*require_new_buffer_id=*/nullptr,
+        /*retire_old_buffer_id=*/nullptr);
     ASSERT_EQ(media::VideoCaptureDevice::Client::ReserveResult::kSucceeded,
               result_code_3);
     auto buffer3_access =
         buffer3.handle_provider->GetHandleForInProcessAccess();
     memset(buffer3_access->data(), buffer_no++, buffer3_access->mapped_size());
-    device_client_->OnIncomingCapturedBuffer(std::move(buffer3), device_format,
-                                             arbitrary_reference_time_,
-                                             arbitrary_timestamp_);
+    device_client_->OnIncomingCapturedBuffer(
+        std::move(buffer3), device_format, arbitrary_reference_time_,
+        arbitrary_timestamp_, std::nullopt);
   }
   // ReserveOutputBuffer ought to fail now, because the pool is depleted.
   media::VideoCaptureDevice::Client::Buffer buffer_fail;
@@ -501,7 +505,8 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
       media::VideoCaptureDevice::Client::ReserveResult::kMaxBufferCountExceeded,
       device_client_->ReserveOutputBuffer(
           device_format.frame_size, device_format.pixel_format,
-          arbitrary_frame_feedback_id, &buffer_fail));
+          arbitrary_frame_feedback_id, &buffer_fail,
+          /*require_new_buffer_id=*/nullptr, /*retire_old_buffer_id=*/nullptr));
 
   // The new client needs to be notified of the creation of |kPoolSize| buffers;
   // the old clients only |kPoolSize - 1|.
@@ -539,19 +544,21 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   media::VideoCaptureDevice::Client::Buffer buffer3;
   const auto result_code_3 = device_client_->ReserveOutputBuffer(
       device_format.frame_size, device_format.pixel_format,
-      arbitrary_frame_feedback_id, &buffer3);
+      arbitrary_frame_feedback_id, &buffer3, /*require_new_buffer_id=*/nullptr,
+      /*retire_old_buffer_id=*/nullptr);
   ASSERT_EQ(media::VideoCaptureDevice::Client::ReserveResult::kSucceeded,
             result_code_3);
   auto buffer3_access = buffer3.handle_provider->GetHandleForInProcessAccess();
   memset(buffer3_access->data(), buffer_no++, buffer3_access->mapped_size());
   device_client_->OnIncomingCapturedBuffer(std::move(buffer3), device_format,
                                            arbitrary_reference_time_,
-                                           arbitrary_timestamp_);
+                                           arbitrary_timestamp_, std::nullopt);
 
   media::VideoCaptureDevice::Client::Buffer buffer4;
   const auto result_code_4 = device_client_->ReserveOutputBuffer(
       device_format.frame_size, device_format.pixel_format,
-      arbitrary_frame_feedback_id, &buffer4);
+      arbitrary_frame_feedback_id, &buffer4, /*require_new_buffer_id=*/nullptr,
+      /*retire_old_buffer_id=*/nullptr);
   {
     // Kill A2 via session close (posts a task to disconnect, but A2 must not
     // be sent either of these two buffers).
@@ -564,7 +571,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer4_access->data(), buffer_no++, buffer4_access->mapped_size());
   device_client_->OnIncomingCapturedBuffer(std::move(buffer4), device_format,
                                            arbitrary_reference_time_,
-                                           arbitrary_timestamp_);
+                                           arbitrary_timestamp_, std::nullopt);
   // B2 is the only client left, and is the only one that should
   // get the buffer.
   EXPECT_CALL(*client_b_, DoBufferReady(ControllerIDAndSize(
@@ -627,12 +634,13 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   media::VideoCaptureDevice::Client::Buffer buffer;
   const auto reserve_result = device_client_->ReserveOutputBuffer(
       device_format.frame_size, device_format.pixel_format,
-      arbitrary_frame_feedback_id, &buffer);
+      arbitrary_frame_feedback_id, &buffer, /*require_new_buffer_id=*/nullptr,
+      /*retire_old_buffer_id=*/nullptr);
   ASSERT_EQ(media::VideoCaptureDevice::Client::ReserveResult::kSucceeded,
             reserve_result);
   device_client_->OnIncomingCapturedBuffer(std::move(buffer), device_format,
                                            arbitrary_reference_time_,
-                                           arbitrary_timestamp_);
+                                           arbitrary_timestamp_, std::nullopt);
 
   base::RunLoop().RunUntilIdle();
 }
@@ -664,7 +672,8 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   media::VideoCaptureDevice::Client::Buffer buffer;
   const auto result_code = device_client_->ReserveOutputBuffer(
       device_format.frame_size, device_format.pixel_format,
-      arbitrary_frame_feedback_id, &buffer);
+      arbitrary_frame_feedback_id, &buffer, /*require_new_buffer_id=*/nullptr,
+      /*retire_old_buffer_id=*/nullptr);
   ASSERT_EQ(media::VideoCaptureDevice::Client::ReserveResult::kSucceeded,
             result_code);
 
@@ -673,7 +682,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
       "Test Error");
   device_client_->OnIncomingCapturedBuffer(std::move(buffer), device_format,
                                            arbitrary_reference_time_,
-                                           arbitrary_timestamp_);
+                                           arbitrary_timestamp_, std::nullopt);
 
   EXPECT_CALL(
       *client_a_,
@@ -738,12 +747,13 @@ TEST_F(VideoCaptureControllerTest, FrameFeedbackIsReportedForSequenceOfFrames) {
     media::VideoCaptureDevice::Client::Buffer buffer;
     const auto result_code = device_client_->ReserveOutputBuffer(
         arbitrary_format.frame_size, arbitrary_format.pixel_format,
-        stub_frame_feedback_id, &buffer);
+        stub_frame_feedback_id, &buffer, /*require_new_buffer_id=*/nullptr,
+        /*retire_old_buffer_id=*/nullptr);
     ASSERT_EQ(media::VideoCaptureDevice::Client::ReserveResult::kSucceeded,
               result_code);
     device_client_->OnIncomingCapturedBuffer(
         std::move(buffer), arbitrary_format, arbitrary_reference_time_,
-        arbitrary_timestamp_);
+        arbitrary_timestamp_, std::nullopt);
 
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(client_a_.get());

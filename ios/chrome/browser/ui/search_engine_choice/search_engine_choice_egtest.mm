@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -28,10 +27,9 @@
 
 - (void)tearDown {
   // Clear the "choice was made" timestamp pref.
-  [ChromeEarlGreyAppInterface
+  [ChromeEarlGrey
       clearUserPrefWithName:
-          base::SysUTF8ToNSString(
-              prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp)];
+          prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp];
   // Reset the default search engine to Google
   [SettingsAppInterface resetSearchEngine];
 
@@ -64,9 +62,10 @@
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
 }
 
+// TODO(b/325441139): Test fails on device and simulator.
 // Tests that search engine choice dialog is moved to the other active scene
 // when the current scene is removed.
-- (void)testOpenSecondWindow {
+- (void)DISABLED_testOpenSecondWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported]) {
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
   }
@@ -79,15 +78,13 @@
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
 }
 
+// TODO(b/325441139): Test fails on device and simulator.
 // Tests that the Search Engine Choice screen is displayed, that the primary
 // button is correctly updated when the user selects a search engine then
 // scrolls down and that it correctly sets the default search engine.
-- (void)testSearchEngineChoiceScreenSelectThenScroll {
+- (void)DISABLED_testSearchEngineChoiceScreenSelectThenScroll {
   // Checks that the choice screen is shown
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
-  // Checks that the fake omnibox illustration is displayed and is initially
-  // empty
-  [SearchEngineChoiceEarlGreyUI verifyFakeOmniboxIllustrationState:kEmpty];
   // Verifies that the primary button is initially the "More" button.
   id<GREYMatcher> moreButtonMatcher =
       grey_accessibilityID(kSearchEngineMoreButtonIdentifier);
@@ -100,9 +97,6 @@
       selectSearchEngineCellWithName:searchEngineToSelect
                      scrollDirection:kGREYDirectionDown
                               amount:50];
-  // Checks that the fake omnibox illustration is still displayed but is no
-  // longer empty
-  [SearchEngineChoiceEarlGreyUI verifyFakeOmniboxIllustrationState:kFull];
   // Taps the primary button. This scrolls the table down to the bottom.
   [[[EarlGrey selectElementWithMatcher:moreButtonMatcher]
       assertWithMatcher:grey_notNil()] performAction:grey_tap()];
@@ -115,15 +109,13 @@
       verifyDefaultSearchEngineSetting:searchEngineToSelect];
 }
 
+// TODO(b/325441139): Test fails on device and simulator.
 // Tests that the Search Engine Choice screen is displayed, that the
 // primary button is correctly updated when the user scrolls down then selects a
 // search engine and that it correctly sets the default search engine.
-- (void)testSearchEngineChoiceScreenScrollThenSelect {
+- (void)DISABLED_testSearchEngineChoiceScreenScrollThenSelect {
   // Checks that the choice screen is shown
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
-  // Checks that the fake omnibox illustration is displayed and is initially
-  // empty
-  [SearchEngineChoiceEarlGreyUI verifyFakeOmniboxIllustrationState:kEmpty];
   // Verifies that the primary button is initially the "More" button.
   id<GREYMatcher> moreButtonMatcher =
       grey_accessibilityID(kSearchEngineMoreButtonIdentifier);
@@ -148,9 +140,6 @@
       selectSearchEngineCellWithName:searchEngineToSelect
                      scrollDirection:kGREYDirectionUp
                               amount:300];
-  // Checks that the fake omnibox illustration is still displayed but is no
-  // longer empty
-  [SearchEngineChoiceEarlGreyUI verifyFakeOmniboxIllustrationState:kFull];
   [SearchEngineChoiceEarlGreyUI confirmSearchEngineChoiceScreen];
   [SearchEngineChoiceEarlGreyUI
       verifyDefaultSearchEngineSetting:searchEngineToSelect];

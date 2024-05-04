@@ -61,6 +61,11 @@ BASE_FEATURE(kAllowBFCacheWhenClosedMediaStreamTrack,
              "AllowBFCacheWhenClosedMediaStreamTrack",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Block all MIDI access with the MIDI_SYSEX permission
+BASE_FEATURE(kBlockMidiByDefault,
+             "BlockMidiByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kComputePressureRateObfuscationMitigation,
              "ComputePressureRateObfuscationMitigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -88,6 +93,10 @@ const base::FeatureParam<AlignFontDisplayAutoTimeoutWithLCPGoalMode>
         &kAlignFontDisplayAutoTimeoutWithLCPGoal, "intervention-mode",
         AlignFontDisplayAutoTimeoutWithLCPGoalMode::kToSwapPeriod,
         &align_font_display_auto_timeout_with_lcp_goal_modes};
+
+BASE_FEATURE(kAllowDatapipeDrainedAsBytesConsumerInBFCache,
+             "AllowDatapipeDrainedAsBytesConsumerInBFCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAllowDevToolsMainThreadDebuggerForMultipleMainFrames,
              "AllowDevToolsMainThreadDebuggerForMultipleMainFrames",
@@ -153,10 +162,24 @@ BASE_FEATURE(kAudioWorkletThreadRealtimePriority,
              "AudioWorkletThreadRealtimePriority",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// A thread pool system for effective usage of RealtimeAudioWorkletThread
+// instances.
+BASE_FEATURE(kAudioWorkletThreadPool, "AudioWorkletThreadPool",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // When enabled, extraction of unassociated listed elements includes elements
 // inside Shadow DOM.
 BASE_FEATURE(kAutofillIncludeShadowDomInUnassociatedListedElements,
              "AutofillIncludeShadowDomInUnassociatedListedElements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Autofill extracts all top level shadow DOM form elements of a
+// document. Additionally, the shadow-tree-including form control elements of a
+// form `f` include all descendants that are form controls - even those whose
+// closest shadow-tree-including form ancestor is a different form `f2` (which
+// itself is a descendant of `f`).
+BASE_FEATURE(kAutofillIncludeFormElementsInShadowDom,
+             "AutofillIncludeFormElementsInShadowDom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If disabled (default for many years), autofilling triggers KeyDown and
@@ -244,6 +267,10 @@ const base::FeatureParam<AutomaticLazyFrameLoadingToEmbedLoadingStrategy>
 BASE_FEATURE(kAvifGainmapHdrImages,
              "AvifGainmapHdrImages",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAvoidForcedLayoutOnInitialEmptyDocumentInSubframe,
+             "AvoidForcedLayoutOnInitialEmptyDocumentInSubframe",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kBackForwardCacheDWCOnJavaScriptExecution,
              "BackForwardCacheDWCOnJavaScriptExecution",
@@ -488,6 +515,18 @@ BASE_FEATURE(
 #endif
 );
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
+// Enables camera preview in permission bubble and site settings.
+BASE_FEATURE(kCameraMicPreview,
+             "CameraMicPreview",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Defers device selection until after permission is granted.
+BASE_FEATURE(kGetUserMediaDeferredDeviceSettingsSelection,
+             "GetUserMediaDeferredDeviceSettingsSelection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 // Whether to losslessly compress the resulting image after canvas hibernation.
 BASE_FEATURE(kCanvasCompressHibernatedImage,
              "CanvasCompressHibernatedImage",
@@ -574,10 +613,6 @@ BASE_FEATURE(kClientHintsViewportWidth_DEPRECATED,
              "ClientHintsViewportWidth_DEPRECATED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClipboardUnsanitizedContent,
-             "ClipboardUnsanitizedContent",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Disabling this will cause parkable strings to never be compressed.
 // This is useful for headless mode + virtual time. Since virtual time advances
 // quickly, strings may be parked too eagerly in that mode.
@@ -615,10 +650,6 @@ BASE_FEATURE(kCreateImageBitmapOrientationNone,
 BASE_FEATURE(kDOMContentLoadedWaitForAsyncScript,
              "DOMContentLoadedWaitForAsyncScript",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDecodeScriptSourceOffThread,
-             "DecodeScriptSourceOffThread",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, pages that don't specify a layout width will default to the
 // window width rather than the traditional mobile fallback width of 980px.
@@ -800,6 +831,12 @@ BASE_FEATURE(kEstablishGpuChannelAsync,
 #endif
 );
 
+// Exposes Event Timing keyboard InteractionId of composition and keypress
+// events.
+BASE_FEATURE(kEventTimingKeypressAndCompositionInteractionId,
+             "EventTimingKeypressAndCompositionInteractionId",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables unload handler deprecation via Permissions-Policy.
 // https://crbug.com/1324111
 BASE_FEATURE(kDeprecateUnload,
@@ -823,12 +860,6 @@ BASE_FEATURE(kDeprecateUnloadByAllowList,
 // the all hosts are allowed.
 const base::FeatureParam<std::string> kDeprecateUnloadAllowlist{
     &kDeprecateUnloadByAllowList, "allowlist", ""};
-
-// Enables using a 'deprecatedRenderURLReplacements' field within the a
-// Protected Audience ad auction config.
-BASE_FEATURE(kEnableDeprecatedRenderURLReplacements,
-             "EnableDeprecatedRenderURLReplacements",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables using a base::ProtectedMemory<bool> value to provide extra protection
 // against MojoJS bindings being enabled via a data-only attack.
@@ -981,6 +1012,11 @@ BASE_FEATURE(kFledgePassRecencyToGenerateBid,
 BASE_FEATURE(kFledgeSampleDebugReports,
              "FledgeSampleDebugReports",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFledgeSplitTrustedSignalsFetchingURL,
+             "FledgeSplitTrustedSignalsFetchingURL",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<base::TimeDelta> kFledgeDebugReportLockout{
     &kFledgeSampleDebugReports, "fledge_debug_report_lockout",
     base::Days(365 * 3)};
@@ -1003,9 +1039,6 @@ const base::FeatureParam<base::TimeDelta>
         "fledge_enable_filtering_debug_report_starting_from",
         base::Milliseconds(0)};
 
-BASE_FEATURE(kFledgeCustomMaxAuctionAdComponents,
-             "FledgeCustomMaxAuctionAdComponents",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int> kFledgeCustomMaxAuctionAdComponentsValue{
     &kFledgeCustomMaxAuctionAdComponents, "FledgeAdComponentLimit",
     kMaxAdAuctionAdComponentsDefault};
@@ -1267,6 +1300,10 @@ const base::FeatureParam<int> kLCPScriptObserverMaxUrlCountPerOrigin{
 const base::FeatureParam<bool> kLCPScriptObserverAdjustImageLoadPriority{
     &kLCPScriptObserver, "lcpscriptobserver_adjust_image_load_priority", false};
 
+BASE_FEATURE(kLCPTimingPredictorPrerender2,
+             "LCPTimingPredictorPrerender2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kLCPPAutoPreconnectLcpOrigin,
              "LCPPAutoPreconnectLcpOrigin",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1293,6 +1330,16 @@ const base::FeatureParam<double> kLCPPFontURLPredictorFrequencyThreshold{
 const base::FeatureParam<int> kLCPPFontURLPredictorMaxPreloadCount{
     &kLCPPFontURLPredictor, "lcpp_max_font_url_to_preload", 5};
 
+const base::FeatureParam<bool> kLCPPFontURLPredictorEnablePrefetch{
+    &kLCPPFontURLPredictor, "lcpp_enable_font_prefetch", false};
+
+// Since there should be some spaces to run prefetch, the default value
+// has been decided for 4G LTE. We found that browsers on desktops often
+// show "4g" as its effectiveType, and we expect the value is good to
+// prospect a stable connection.
+const base::FeatureParam<double> kLCPPFontURLPredictorPrefetchThresholdInMbps{
+    &kLCPPFontURLPredictor, "lcpp_font_prefetch_threshold", 5.0};
+
 BASE_FEATURE(kLCPPLazyLoadImagePreload,
              "LCPPLazyLoadImagePreload",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1308,9 +1355,6 @@ const base::FeatureParam<LcppPreloadLazyLoadImageType>
     kLCPCriticalPathPredictorPreloadLazyLoadImageType{
         &kLCPPLazyLoadImagePreload, "lcpp_preload_lazy_load_image_type",
         LcppPreloadLazyLoadImageType::kNone, &lcpp_preload_lazy_load_image};
-
-const base::FeatureParam<bool> kLCPPFontURLPredictorEnablePrefetch{
-    &kLCPPFontURLPredictor, "lcpp_enable_font_prefetch", false};
 
 BASE_FEATURE(kHttpDiskCachePrewarming,
              "HttpDiskCachePrewarming",
@@ -1535,6 +1579,10 @@ BASE_FEATURE(kNewBaseUrlInheritanceBehavior,
 
 BASE_FEATURE(kNoForcedFrameUpdatesForWebTests,
              "NoForcedFrameUpdatesForWebTests",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBFCacheOpenBroadcastChannel,
+             "BFCacheOpenBroadcastChannel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOriginAgentClusterDefaultEnabled,
@@ -1906,7 +1954,7 @@ BASE_FEATURE(kPausePagesPerBrowsingContextGroup,
 
 BASE_FEATURE(kShowHudDisplayForPausedPages,
              "ShowHudDisplayForPausedPages",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls script streaming.
 BASE_FEATURE(kScriptStreaming,
@@ -1968,10 +2016,9 @@ BASE_FEATURE(kSharedStorageAPI,
 const base::FeatureParam<int>
     kSharedStorageURLSelectionOperationInputURLSizeLimit{
         &kSharedStorageAPI, "url_selection_operation_input_url_size_limit", 8};
-const base::FeatureParam<int> kMaxSharedStorageStringLength = {
-    &kSharedStorageAPI, "MaxSharedStorageStringLength", 1024};
-const base::FeatureParam<int> kMaxSharedStorageEntriesPerOrigin = {
-    &kSharedStorageAPI, "MaxSharedStorageEntriesPerOrigin", 10000};
+// We use a max of 5 MB = 5 * 1024 * 1024 B = 5242880 B.
+const base::FeatureParam<int> kMaxSharedStorageBytesPerOrigin = {
+    &kSharedStorageAPI, "MaxSharedStorageBytesPerOrigin", 5242880};
 const base::FeatureParam<int> kMaxSharedStoragePageSize = {
     &kSharedStorageAPI, "MaxSharedStoragePageSize", 4096};
 const base::FeatureParam<int> kMaxSharedStorageCacheSize = {
@@ -2026,7 +2073,7 @@ BASE_FEATURE(kSharedStorageAPIM118,
 
 BASE_FEATURE(kSharedStorageAPIM123,
              "SharedStorageAPIM123",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSharedStorageAPIEnableWALForDatabase,
              "SharedStorageAPIEnableWALForDatabase",
@@ -2196,10 +2243,6 @@ BASE_FEATURE(kThreadedBodyLoader,
 BASE_FEATURE(kThreadedPreloadScanner,
              "ThreadedPreloadScanner",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes,
-             "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable throttling of fetch() requests from service workers in the
 // installing state.  The limit of 3 was chosen to match the limit
@@ -2401,11 +2444,6 @@ BASE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame,
              "WebRtcInitializeEncoderOnFirstFrame",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables negotiation of experimental multiplex codec in SDP.
-BASE_FEATURE(kWebRtcMultiplexCodec,
-             "WebRTC-MultiplexCodec",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kWebRtcSendPacketBatch,
              "WebRtcSendPacketBatch",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -2496,17 +2534,6 @@ bool IsSetTimeoutWithoutClampEnabled() {
   return base::FeatureList::IsEnabled(features::kSetTimeoutWithoutClamp);
 }
 
-bool IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled() {
-  static bool throttling_disabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableThrottleNonVisibleCrossOriginIframes);
-
-  return !throttling_disabled &&
-         base::FeatureList::IsEnabled(
-             features::
-                 kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes);
-}
-
 bool IsUnloadBlocklisted() {
   return base::FeatureList::IsEnabled(kUnloadBlocklisted);
 }
@@ -2532,6 +2559,10 @@ BASE_FEATURE(kTreatHTTPExpiresHeaderValueZeroAsExpiredInBlink,
 
 BASE_FEATURE(kSimplifyLoadingTransparentPlaceholderImage,
              "SimplifyLoadingTransparentPlaceholderImage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNoThrottlingVisibleAgent,
+             "NoThrottlingVisibleAgent",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

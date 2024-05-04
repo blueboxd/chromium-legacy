@@ -4,11 +4,11 @@
 
 #include <string>
 
+#include "base/containers/to_vector.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_future.h"
-#include "base/test/to_vector.h"
 #include "build/buildflag.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/chooser_bubble_testapi.h"
@@ -20,6 +20,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
@@ -121,7 +122,7 @@ class DeviceChooserExtensionBrowserTest
   }
 
   std::vector<std::string> GetPinnedExtensionNames() {
-    return base::test::ToVector(GetPinnedExtensionViews(), [](auto* view) {
+    return base::ToVector(GetPinnedExtensionViews(), [](auto* view) {
       return base::UTF16ToUTF8(view->view_controller()->GetActionName());
     });
   }

@@ -82,7 +82,7 @@ class InlineNodeForTest : public InlineNode {
   void SegmentText() {
     InlineNodeData* data = MutableData();
     data->is_bidi_enabled_ = true;
-    InlineNode::SegmentText(data);
+    InlineNode::SegmentText(data, nullptr);
   }
 
   void CollectInlines() { InlineNode::CollectInlines(MutableData()); }
@@ -670,6 +670,20 @@ TEST_F(InlineNodeTest, NeedsCollectInlinesOnSetText) {
   Element* next = GetElementById("next");
   EXPECT_FALSE(previous->GetLayoutObject()->NeedsCollectInlines());
   EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
+}
+
+// crbug.com/325306591
+// We had a crash in OffsetMapping building during SetTextWithOffset().
+TEST_F(InlineNodeTest, SetTextWithOffsetWithTextTransform) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container" style="text-transform:uppercase">&#xdf;X</div>)HTML");
+
+  Element* container = GetElementById("container");
+  auto* text = To<Text>(container->firstChild());
+
+  text->deleteData(1, 1, ASSERT_NO_EXCEPTION);
+  UpdateAllLifecyclePhasesForTest();
+  // Pass if no crash in InlineItemsBuilder.
 }
 
 struct StyleChangeData {

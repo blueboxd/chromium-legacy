@@ -8,11 +8,14 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/layout/text_decoration_offset.h"
+#include "third_party/blink/renderer/core/paint/decoration_line_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_paint_context.h"
 #include "third_party/blink/renderer/core/paint/text_paint_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/stroke_data.h"
+#include "third_party/blink/renderer/platform/graphics/styled_stroke_data.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -268,14 +271,16 @@ TextDecorationInfo::TextDecorationInfo(
     LayoutUnit width,
     const ComputedStyle& target_style,
     const InlinePaintContext* inline_context,
-    const std::optional<AppliedTextDecoration> selection_text_decoration,
+    const TextDecorationLine selection_decoration_line,
+    const Color selection_decoration_color,
     const AppliedTextDecoration* decoration_override,
     const Font* font_override,
     MinimumThickness1 minimum_thickness1,
     float scaling_factor)
     : target_style_(target_style),
       inline_context_(inline_context),
-      selection_text_decoration_(selection_text_decoration),
+      selection_decoration_line_(selection_decoration_line),
+      selection_decoration_color_(selection_decoration_color),
       decoration_override_(decoration_override),
       font_override_(font_override && font_override != &target_style.GetFont()
                          ? font_override
@@ -553,10 +558,8 @@ Color TextDecorationInfo::LineColor() const {
   // Find the matched normal and selection |AppliedTextDecoration|
   // and use the text-decoration-color from selection when it is.
   DCHECK(applied_text_decoration_);
-  if (selection_text_decoration_ &&
-      applied_text_decoration_->Lines() ==
-          selection_text_decoration_.value().Lines()) {
-    return selection_text_decoration_.value().GetColor();
+  if (applied_text_decoration_->Lines() == selection_decoration_line_) {
+    return selection_decoration_color_;
   }
 
   return applied_text_decoration_->GetColor();
@@ -675,10 +678,11 @@ gfx::RectF TextDecorationInfo::Bounds() const {
 }
 
 gfx::RectF TextDecorationInfo::BoundsForDottedOrDashed() const {
-  StrokeData stroke_data;
-  stroke_data.SetThickness(roundf(ResolvedThickness()));
-  stroke_data.SetStyle(TextDecorationStyleToStrokeStyle(DecorationStyle()));
-  return line_data_.stroke_path.value().StrokeBoundingRect(stroke_data);
+  StyledStrokeData styled_stroke;
+  styled_stroke.SetThickness(roundf(ResolvedThickness()));
+  styled_stroke.SetStyle(TextDecorationStyleToStrokeStyle(DecorationStyle()));
+  return line_data_.stroke_path.value().StrokeBoundingRect(
+      styled_stroke.ConvertToStrokeData({}));
 }
 
 // Returns the wavy bounds, which is the same size as the wavy paint rect but
@@ -728,7 +732,7 @@ Path TextDecorationInfo::PrepareDottedOrDashedStrokePath() const {
   // These coordinate transforms need to match what's happening in
   // GraphicsContext's drawLineForText and drawLine.
   gfx::PointF start_point = StartPoint();
-  return GraphicsContext::GetPathForTextLine(
+  return DecorationLinePainter::GetPathForTextLine(
       start_point, width_, ResolvedThickness(),
       TextDecorationStyleToStrokeStyle(DecorationStyle()));
 }

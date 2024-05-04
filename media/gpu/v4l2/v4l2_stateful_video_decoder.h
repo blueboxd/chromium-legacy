@@ -19,7 +19,7 @@
 
 namespace base {
 class Location;
-class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace media {
@@ -54,7 +54,7 @@ class MEDIA_GPU_EXPORT V4L2StatefulVideoDecoder : public VideoDecoderMixin {
                   bool low_delay,
                   CdmContext* cdm_context,
                   InitCB init_cb,
-                  const OutputCB& output_cb,
+                  const PipelineOutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
@@ -137,7 +137,7 @@ class MEDIA_GPU_EXPORT V4L2StatefulVideoDecoder : public VideoDecoderMixin {
   VideoCodecProfile profile_ GUARDED_BY_CONTEXT(sequence_checker_) =
       VIDEO_CODEC_PROFILE_UNKNOWN;
   VideoAspectRatio aspect_ratio_ GUARDED_BY_CONTEXT(sequence_checker_);
-  OutputCB output_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
+  PipelineOutputCB output_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
   DecodeCB flush_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
   // Set to true when the driver identifies itself as a Mediatek 8173.
   bool is_mtk8173_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
@@ -166,7 +166,7 @@ class MEDIA_GPU_EXPORT V4L2StatefulVideoDecoder : public VideoDecoderMixin {
 
   // A sequenced TaskRunner to wait for events coming from |CAPTURE_queue_| or
   // |wake_event_|.
-  scoped_refptr<base::SequencedTaskRunner> event_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> event_task_runner_;
   // Used to (try to) cancel the Tasks sent by RearmCAPTUREQueueMonitoring(),
   // and not serviced yet, when no longer needed.
   base::CancelableTaskTracker cancelable_task_tracker_

@@ -275,4 +275,22 @@ bool EnumTraits<display::mojom::VariableRefreshRateState,
   return false;
 }
 
+// static
+bool StructTraits<display::mojom::RefreshRangeNodeDataView,
+                  display::RefreshRangeNode>::
+    Read(display::mojom::RefreshRangeNodeDataView data,
+         display::RefreshRangeNode* out_range) {
+  *out_range =
+      display::RefreshRangeNode(data.refresh_rate(), data.contiguous());
+  return true;
+}
+
+// static
+bool StructTraits<display::mojom::ModesetFlagsDataView, display::ModesetFlags>::
+    Read(display::mojom::ModesetFlagsDataView data,
+         display::ModesetFlags* out_flags) {
+  *out_flags = display::ModesetFlags::FromEnumBitmask(data.bitmask());
+  return true;
+}
+
 }  // namespace mojo

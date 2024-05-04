@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/client/client_shared_image.h"
+#include <GLES2/gl2.h>
+
+#include "base/containers/contains.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace gpu {
 
@@ -77,21 +84,25 @@ void ClientSharedImage::ScopedMapping::OnMemoryDump(
 
 ClientSharedImage::ClientSharedImage(
     const Mailbox& mailbox,
-    const Metadata& metadata,
+    const SharedImageMetadata& metadata,
+    const SyncToken& sync_token,
     scoped_refptr<SharedImageInterfaceHolder> sii_holder)
     : mailbox_(mailbox),
       metadata_(metadata),
+      creation_sync_token_(sync_token),
       sii_holder_(std::move(sii_holder)) {
   CHECK(!mailbox.IsZero());
 }
 
 ClientSharedImage::ClientSharedImage(
     const Mailbox& mailbox,
-    const Metadata& metadata,
+    const SharedImageMetadata& metadata,
+    const SyncToken& sync_token,
     GpuMemoryBufferHandleInfo handle_info,
     scoped_refptr<SharedImageInterfaceHolder> sii_holder)
     : mailbox_(mailbox),
       metadata_(metadata),
+      creation_sync_token_(sync_token),
       gpu_memory_buffer_(
           GpuMemoryBufferSupport().CreateGpuMemoryBufferImplFromHandle(
               std::move(handle_info.handle),
@@ -124,5 +135,58 @@ void ClientSharedImage::SetColorSpaceOnNativeBuffer(
   gpu_memory_buffer_->SetColorSpace(color_space);
 }
 #endif
+
+uint32_t ClientSharedImage::GetTextureTarget(gfx::BufferFormat format) {
+  return NativeBufferNeedsPlatformSpecificTextureTarget(format)
+             ? GetPlatformSpecificTextureTarget()
+             : GL_TEXTURE_2D;
+}
+
+uint32_t ClientSharedImage::GetTextureTarget(gfx::BufferUsage usage,
+                                             gfx::BufferFormat format) {
+  CHECK(HasHolder());
+
+  auto capabilities = sii_holder_->Get()->GetCapabilities();
+  bool found = base::Contains(capabilities.texture_target_exception_list,
+                              gfx::BufferUsageAndFormat(usage, format));
+  return found ? gpu::GetPlatformSpecificTextureTarget() : GL_TEXTURE_2D;
+}
+
+uint32_t ClientSharedImage::GetTextureTarget(gfx::BufferUsage usage) {
+  uint32_t usages_forcing_native_buffer = SHARED_IMAGE_USAGE_SCANOUT;
+#if BUILDFLAG(IS_MAC)
+  // On Mac, WebGPU usage results in SharedImages being backed by IOSurfaces.
+  usages_forcing_native_buffer = usages_forcing_native_buffer |
+                                 SHARED_IMAGE_USAGE_WEBGPU_READ |
+                                 SHARED_IMAGE_USAGE_WEBGPU_WRITE;
+#endif
+
+  bool uses_native_buffer = this->usage() & usages_forcing_native_buffer;
+  return uses_native_buffer
+             ? GetTextureTarget(usage,
+                                viz::SinglePlaneSharedImageFormatToBufferFormat(
+                                    metadata_.format))
+             : GL_TEXTURE_2D;
+}
+
+ExportedSharedImage ClientSharedImage::Export() {
+  if (creation_sync_token_.HasData() &&
+      !creation_sync_token_.verified_flush()) {
+    sii_holder_->Get()->VerifySyncToken(creation_sync_token_);
+  }
+  return ExportedSharedImage(mailbox_, metadata_, creation_sync_token_);
+}
+
+scoped_refptr<ClientSharedImage> ClientSharedImage::ImportUnowned(
+    const ExportedSharedImage& exported_shared_image) {
+  return base::MakeRefCounted<ClientSharedImage>(
+      exported_shared_image.mailbox_, exported_shared_image.metadata_,
+      exported_shared_image.sync_token_, nullptr);
+}
+
+ExportedSharedImage::ExportedSharedImage(const Mailbox& mailbox,
+                                         const SharedImageMetadata& metadata,
+                                         const SyncToken& sync_token)
+    : mailbox_(mailbox), metadata_(metadata), sync_token_(sync_token) {}
 
 }  // namespace gpu

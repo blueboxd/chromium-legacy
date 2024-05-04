@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/shared/public/commands/autofill_bottom_sheet_commands.h"
+#import "ios/chrome/browser/shared/public/commands/autofill_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/lens_commands.h"
 #import "ios/chrome/browser/shared/public/commands/mini_map_commands.h"
@@ -94,7 +94,7 @@
   AutofillBottomSheetTabHelper* bottomSheetTabHelper =
       AutofillBottomSheetTabHelper::FromWebState(webState);
   bottomSheetTabHelper->SetAutofillBottomSheetHandler(
-      HandlerForProtocol(_commandDispatcher, AutofillBottomSheetCommands));
+      HandlerForProtocol(_commandDispatcher, AutofillCommands));
 
   if (ios::provider::IsLensSupported()) {
     LensTabHelper* lensTabHelper = LensTabHelper::FromWebState(webState);
@@ -112,22 +112,28 @@
       _downloadManagerTabHelperDelegate);
 
   DCHECK(_tabHelperDelegate);
-  NetExportTabHelper::FromWebState(webState)->SetDelegate(_tabHelperDelegate);
+  NetExportTabHelper::GetOrCreateForWebState(webState)->SetDelegate(
+      _tabHelperDelegate);
 
   id<WebContentCommands> webContentsHandler =
       HandlerForProtocol(_commandDispatcher, WebContentCommands);
   DCHECK(webContentsHandler);
-  ITunesUrlsHandlerTabHelper::FromWebState(webState)->SetWebContentsHandler(
-      webContentsHandler);
-  PassKitTabHelper::FromWebState(webState)->SetWebContentsHandler(
+  ITunesUrlsHandlerTabHelper::GetOrCreateForWebState(webState)
+      ->SetWebContentsHandler(webContentsHandler);
+  PassKitTabHelper::GetOrCreateForWebState(webState)->SetWebContentsHandler(
       webContentsHandler);
 
   DCHECK(_baseViewController);
-  AutofillTabHelper::FromWebState(webState)->SetBaseViewController(
-      _baseViewController);
+  AutofillTabHelper* autofillTabHelper =
+      AutofillTabHelper::FromWebState(webState);
+  autofillTabHelper->SetBaseViewController(_baseViewController);
+  id<AutofillCommands> autofillHandler =
+      HandlerForProtocol(_commandDispatcher, AutofillCommands);
+  autofillTabHelper->SetCommandsHandler(autofillHandler);
 
   DCHECK(_printCoordinator);
-  PrintTabHelper::FromWebState(webState)->set_printer(_printCoordinator);
+  PrintTabHelper::GetOrCreateForWebState(webState)->set_printer(
+      _printCoordinator);
 
   RepostFormTabHelper::FromWebState(webState)->SetDelegate(_repostFormDelegate);
 
@@ -138,8 +144,8 @@
   }
 
   DCHECK(_tabInsertionBrowserAgent);
-  CaptivePortalTabHelper::FromWebState(webState)->SetTabInsertionBrowserAgent(
-      _tabInsertionBrowserAgent);
+  CaptivePortalTabHelper::GetOrCreateForWebState(webState)
+      ->SetTabInsertionBrowserAgent(_tabInsertionBrowserAgent);
 
   NewTabPageTabHelper::FromWebState(webState)->SetDelegate(
       _NTPTabHelperDelegate);
@@ -197,11 +203,14 @@
 
   DownloadManagerTabHelper::FromWebState(webState)->SetDelegate(nil);
 
-  NetExportTabHelper::FromWebState(webState)->SetDelegate(nil);
+  NetExportTabHelper::GetOrCreateForWebState(webState)->SetDelegate(nil);
 
-  AutofillTabHelper::FromWebState(webState)->SetBaseViewController(nil);
+  AutofillTabHelper* autofillTabHelper =
+      AutofillTabHelper::FromWebState(webState);
+  autofillTabHelper->SetBaseViewController(nil);
+  autofillTabHelper->SetCommandsHandler(nil);
 
-  PrintTabHelper::FromWebState(webState)->set_printer(nil);
+  PrintTabHelper::GetOrCreateForWebState(webState)->set_printer(nil);
 
   RepostFormTabHelper::FromWebState(webState)->SetDelegate(nil);
 
@@ -210,8 +219,8 @@
     followTabHelper->set_follow_iph_presenter(nil);
   }
 
-  CaptivePortalTabHelper::FromWebState(webState)->SetTabInsertionBrowserAgent(
-      nil);
+  CaptivePortalTabHelper::GetOrCreateForWebState(webState)
+      ->SetTabInsertionBrowserAgent(nil);
 
   NewTabPageTabHelper::FromWebState(webState)->SetDelegate(nil);
 

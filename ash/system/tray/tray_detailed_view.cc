@@ -46,6 +46,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
+#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -165,11 +166,12 @@ void TrayDetailedView::CreateTitleRow(int string_id) {
 
 void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
-  auto scroll_content = std::make_unique<views::BoxLayoutView>();
-  scroll_content->SetOrientation(views::BoxLayout::Orientation::kVertical);
   scroller_ = AddChildView(std::make_unique<views::ScrollView>());
   scroller_->SetDrawOverflowIndicator(false);
-  scroll_content_ = scroller_->SetContents(std::move(scroll_content));
+  scroll_content_ = scroller_->SetContents(
+      views::Builder<views::FlexLayoutView>()
+          .SetOrientation(views::LayoutOrientation::kVertical)
+          .Build());
 
   auto vertical_scroll = std::make_unique<RoundedScrollBar>(
       views::ScrollBar::Orientation::kVertical);
@@ -240,9 +242,10 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
     progress_bar_ = AddChildViewAt(std::make_unique<views::ProgressBar>(),
                                    kTitleRowProgressBarIndex + 1);
     progress_bar_->SetPreferredHeight(kTitleRowProgressBarHeight);
-    progress_bar_->GetViewAccessibility().OverrideName(
+    progress_bar_->GetViewAccessibility().SetName(
         progress_bar_accessible_name_.value_or(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_PROGRESS_BAR_ACCESSIBLE_NAME)));
+            IDS_ASH_STATUS_TRAY_PROGRESS_BAR_ACCESSIBLE_NAME)),
+        ax::mojom::NameFrom::kAttribute);
     progress_bar_->SetVisible(false);
     progress_bar_->SetForegroundColor(
         AshColorProvider::Get()->GetContentLayerColor(

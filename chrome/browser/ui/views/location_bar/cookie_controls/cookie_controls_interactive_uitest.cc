@@ -28,6 +28,7 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/user_education/views/help_bubble_view.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -242,7 +243,7 @@ class CookieControlsInteractiveUiBaseTest : public InteractiveFeaturePromoTest {
     }
   }
 
-  void SetHighConfidenceForSite() {
+  void SetHighSiteEngagement() {
     // Force high site engagement.
     auto* site_engagement =
         site_engagement::SiteEngagementService::Get(browser()->profile());
@@ -304,7 +305,8 @@ class CookieControlsInteractiveUiNoFeedbackTest
   }
 };
 
-IN_PROC_BROWSER_TEST_P(CookieControlsInteractiveUiTest, BubbleOpens) {
+IN_PROC_BROWSER_TEST_P(CookieControlsInteractiveUiTest,
+                       BubbleOpensWhenIconPressed) {
   BlockThirdPartyCookies(GetParam());
   RunTestSequence(
       InstrumentTab(kWebContentsElementId),
@@ -354,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiTest,
   // Open the bubble while 3PC are blocked, but the page already has an
   // exception. Disable 3PC for the page, and confirm the exception is removed.
   BlockThirdPartyCookies();
-  SetHighConfidenceForSite();
+  SetHighSiteEngagement();
   cookie_settings()->SetCookieSettingForUserBypass(
       third_party_cookie_page_url());
   RunTestSequence(
@@ -371,9 +373,9 @@ IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiTest,
 }
 
 IN_PROC_BROWSER_TEST_P(CookieControlsInteractiveUiTest,
-                       NavigateHighConfidence) {
+                       IconAnimatesOnHighSiteEngagement) {
   BlockThirdPartyCookies(GetParam());
-  SetHighConfidenceForSite();
+  SetHighSiteEngagement();
   RunTestSequence(
       InstrumentTab(kWebContentsElementId),
       NavigateWebContents(kWebContentsElementId, third_party_cookie_page_url()),
@@ -392,11 +394,11 @@ class CookieControlsInteractiveUiWithCookieControlsIphTest
 };
 
 IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWithCookieControlsIphTest,
-                       NavigateHighConfidenceDismissIph) {
+                       ShowAndDismissIphOnHighSiteEngagement) {
   BlockThirdPartyCookies();
-  SetHighConfidenceForSite();
+  SetHighSiteEngagement();
   RunTestSequence(
-      WaitForFeatureEngagementReady(), InstrumentTab(kWebContentsElementId),
+      InstrumentTab(kWebContentsElementId),
       NavigateWebContents(kWebContentsElementId, third_party_cookie_page_url()),
       // Check that label doesn't animate.
       CheckViewProperty(kCookieControlsIconElementId,
@@ -413,11 +415,11 @@ IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWithCookieControlsIphTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWithCookieControlsIphTest,
-                       NavigateHighConfidenceOpenCookieControlsViaIph) {
+                       OpenUserBypassViaIph) {
   BlockThirdPartyCookies();
-  SetHighConfidenceForSite();
+  SetHighSiteEngagement();
   RunTestSequence(
-      WaitForFeatureEngagementReady(), InstrumentTab(kWebContentsElementId),
+      InstrumentTab(kWebContentsElementId),
       NavigateWebContents(kWebContentsElementId, third_party_cookie_page_url()),
       // Check that IPH shows, then open cookie controls bubble via IPH button.
       InAnyContext(WaitForShow(
@@ -431,11 +433,11 @@ IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWithCookieControlsIphTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWithCookieControlsIphTest,
-                       NavigateHighConfidenceOpenCookieControlsViaIcon) {
+                       OpenUserBypassViaIconWhenIphVisible) {
   BlockThirdPartyCookies();
-  SetHighConfidenceForSite();
+  SetHighSiteEngagement();
   RunTestSequence(
-      WaitForFeatureEngagementReady(), InstrumentTab(kWebContentsElementId),
+      InstrumentTab(kWebContentsElementId),
       NavigateWebContents(kWebContentsElementId, third_party_cookie_page_url()),
       // Check that IPH shows, then open cookie controls bubble via icon.
       InAnyContext(WaitForShow(
@@ -461,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWith3pcdUserBypassIphTest,
                        ShowAndHide3pcdUbIph) {
   BlockThirdPartyCookies(/*use_3pcd=*/true);
   RunTestSequence(
-      WaitForFeatureEngagementReady(), InstrumentTab(kWebContentsElementId),
+      InstrumentTab(kWebContentsElementId),
       NavigateWebContents(kWebContentsElementId, third_party_cookie_page_url()),
       InAnyContext(WaitForShow(
           user_education::HelpBubbleView::kHelpBubbleElementIdForTesting)),
@@ -474,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWith3pcdUserBypassIphTest,
                        Show3pcdUbIphAndOpenCookieControlsViaIcon) {
   BlockThirdPartyCookies(/*use_3pcd=*/true);
   RunTestSequence(
-      WaitForFeatureEngagementReady(), InstrumentTab(kWebContentsElementId),
+      InstrumentTab(kWebContentsElementId),
       NavigateWebContents(kWebContentsElementId, third_party_cookie_page_url()),
       // Check that IPH shows, then open cookie controls bubble via icon.
       InAnyContext(WaitForShow(
@@ -739,8 +741,8 @@ IN_PROC_BROWSER_TEST_P(CookieControlsInteractiveUi3pcdTest, RemoveException) {
   // Open the bubble while 3PC are blocked, but the page already has an
   // exception. Disable 3PC for the page, and confirm the exception is removed.
   BlockThirdPartyCookies(/*use_3pcd=*/true);
+  SetHighSiteEngagement();
   SetBlockAll3pcToggle(std::get<0>(GetParam()));
-  SetHighConfidenceForSite();
   cookie_settings()->SetCookieSettingForUserBypass(
       third_party_cookie_page_url());
   RunTestSequence(

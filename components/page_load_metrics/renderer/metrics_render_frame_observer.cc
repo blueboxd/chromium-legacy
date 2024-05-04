@@ -337,7 +337,8 @@ void MetricsRenderFrameObserver::DidStartNavigation(
   }
 }
 
-void MetricsRenderFrameObserver::DidSetPageLifecycleState() {
+void MetricsRenderFrameObserver::DidSetPageLifecycleState(
+    bool restoring_from_bfcache) {
   // Send current metrics, as this RenderFrame might be replaced by a new
   // RenderFrame or its process might be killed, and this might be the last
   // point we can send the metrics to the browser. See crbug.com/1150242 for
@@ -394,11 +395,7 @@ void MetricsRenderFrameObserver::DidCreateDocumentElement() {
   // be possible.
   DCHECK(!provisional_frame_resource_data_use_);
 
-  // Set `document_token_` when the document first becomes available.
-  document_token_ = render_frame()->GetWebFrame()->GetDocument().Token();
-
   Timing timing = GetTiming();
-
   page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
       CreatePageTimingSender(true /* limited_sending_mode */), CreateTimer(),
       std::move(timing.relative_timing), timing.monotonic_timing,
@@ -689,9 +686,6 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
   double start = perf.NavigationStart();
   timing->navigation_start = base::Time::FromSecondsSinceUnixEpoch(start);
   monotonic_timing.navigation_start = perf.NavigationStartAsMonotonicTime();
-  // Document token is nullopt on the first call of `GetTiming` when the
-  // document is not ready yet.
-  monotonic_timing.document_token = document_token_;
   if (perf.InputForNavigationStart() > 0.0) {
     timing->input_to_navigation_start = CreateTimeDeltaFromTimestampsInSeconds(
         start, perf.InputForNavigationStart());

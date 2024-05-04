@@ -27,6 +27,8 @@ component("crypto") {
     "ec_signature_creator_impl.h",
     "encryptor.cc",
     "encryptor.h",
+    "features.cc",
+    "features.h",
     "hkdf.cc",
     "hkdf.h",
     "hmac.cc",
@@ -72,6 +74,8 @@ component("crypto") {
   if (is_apple) {
     sources += [
       "apple_keychain.h",
+      "apple_keychain_util.h",
+      "apple_keychain_util.mm",
       "apple_keychain_v2.h",
       "apple_keychain_v2.mm",
     ]
@@ -84,6 +88,8 @@ component("crypto") {
 
     frameworks = [
       "CoreFoundation.framework",
+      "CryptoTokenKit.framework",
+      "Foundation.framework",
       "Security.framework",
     ]
   }
@@ -92,6 +98,7 @@ component("crypto") {
     sources += [
       "mac_security_services_lock.cc",
       "mac_security_services_lock.h",
+      "unexportable_key_mac.mm",
     ]
   }
   if (is_win) {
@@ -173,8 +180,12 @@ test("crypto_unittests") {
     "unexportable_key_unittest.cc",
   ]
 
-  if (is_win) {
-    sources += [ "unexportable_key_metrics_unittest.cc" ]
+  if (is_win || is_mac) {
+    sources += [
+      "apple_keychain_util_unittest.mm",
+      "unexportable_key_mac_unittest.mm",
+      "unexportable_key_metrics_unittest.cc",
+    ]
   }
 
   # Some files are built when NSS is used for the platform certificate library.
@@ -225,8 +236,14 @@ static_library("test_support") {
     sources += [
       "fake_apple_keychain_v2.h",
       "fake_apple_keychain_v2.mm",
+      "scoped_fake_apple_keychain_v2.h",
+      "scoped_fake_apple_keychain_v2.mm",
     ]
-    frameworks = [ "Foundation.framework" ]
+    frameworks = [
+      "CoreFoundation.framework",
+      "Foundation.framework",
+      "Security.framework",
+    ]
   }
 
   deps = [

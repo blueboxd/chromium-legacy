@@ -60,8 +60,11 @@
 #endif
 
 #if BUILDFLAG(IS_LINUX)
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_frame_view_paint_utils_linux.h"
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
+#include "ui/linux/linux_ui.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -431,7 +434,7 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
   // its children) from the user and accessibility tools.
   browser_view->top_container()->SetVisible(false);
   browser_view->top_container()->SetEnabled(false);
-  browser_view->top_container()->GetViewAccessibility().OverrideIsIgnored(true);
+  browser_view->top_container()->GetViewAccessibility().SetIsIgnored(true);
   browser_view->top_container()->GetViewAccessibility().OverrideIsLeaf(true);
 
   location_bar_model_ = std::make_unique<LocationBarModelImpl>(
@@ -572,7 +575,23 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
   }
 
 #if BUILDFLAG(IS_LINUX)
-  frame_background_ = std::make_unique<views::FrameBackground>();
+  auto* profile = browser_view->browser()->profile();
+  auto* linux_ui_theme = ui::LinuxUiTheme::GetForProfile(profile);
+  auto* theme_service_factory = ThemeServiceFactory::GetForProfile(profile);
+  if (linux_ui_theme && theme_service_factory->UsingSystemTheme()) {
+    bool solid_frame = !static_cast<DesktopBrowserFrameAuraLinux*>(
+                            frame->native_browser_frame())
+                            ->ShouldDrawRestoredFrameShadow();
+
+    // This may return null, but that's handled below.
+    window_frame_provider_ =
+        linux_ui_theme->GetWindowFrameProvider(solid_frame, /*tiled=*/false);
+  }
+
+  // Only one of window_frame_provider_ and frame_background_ will be used.
+  if (!window_frame_provider_) {
+    frame_background_ = std::make_unique<views::FrameBackground>();
+  }
 #endif
 
 
@@ -618,39 +637,70 @@ void PictureInPictureBrowserFrameView::OnBrowserViewInitViewsComplete() {
   const gfx::Insets insets;
 #endif
 
-  const gfx::Size initial_browser_size =
-      browser_view()->browser()->override_bounds().size();
-  if (initial_browser_size.width() >=
-          GetMinimumSize().width() + insets.width() &&
-      initial_browser_size.height() >=
-          GetMinimumSize().height() + insets.height()) {
-    return;
-  }
-
   const std::optional<blink::mojom::PictureInPictureWindowOptions> pip_options =
       browser_view()->GetDocumentPictureInPictureOptions();
 
-  if (!pip_options.has_value()) {
+  // If the request includes pip options with an inner width and height, then we
+  // need to recompute the outer size now that we can compute the correct
+  // margin.  While we know how much space we will reserve for the title bar,
+  // etc., we do not know how much the platform window will reserve until we
+  // have a Widget and can ask it.  Since we now have a Widget, do that.
+  if (!pip_options.has_value() || pip_options->width <= 0 ||
+      pip_options->height <= 0) {
+    // Request didn't specify a width and height -- whatever's fine!
     return;
   }
 
-  // Get the current display. This is needed by
-  // |AdjustPictureInPictureWindowBounds| to determine the work area
-  // dimensions and the allowed maximum window size.
+  // Convert the inner bounds in the request to outer bounds.  Note that the
+  // bounds cache might make all of this work wasted; it caches the outer size
+  // directly.  In that case, the excluded margin we compute won't be used, and
+  // probably the browser coordinates are already correct, but that's fine.
+
+  // Get the current display. This is needed by |ComputeOuterWindowBounds| to
+  // determine the work area dimensions and the allowed maximum window size.
   const BrowserWindow* const browser_window =
       browser_view()->browser()->window();
   const gfx::NativeWindow native_window =
       browser_window ? browser_window->GetNativeWindow() : gfx::NativeWindow();
   const display::Screen* const screen = display::Screen::GetScreen();
-  const display::Display display =
-      browser_window ? screen->GetDisplayNearestWindow(native_window)
-                     : screen->GetDisplayForNewWindows();
+  const gfx::Rect original_override_bounds =
+      browser_view()->browser()->override_bounds();
+  display::Display display;
+  // Use the override bounds if possible, since the NativeWindow might not be
+  // positioned properly yet.
+  if (!original_override_bounds.IsEmpty()) {
+    display =
+        screen->GetDisplayNearestPoint(original_override_bounds.top_center());
+  } else {
+    display = browser_window ? screen->GetDisplayNearestWindow(native_window)
+                             : screen->GetDisplayForNewWindows();
+  }
 
+  // Compute the margin required by both the platform and the browser frame
+  // (us) to provide the requested inner size.
+
+  // This is the area that is included in the outer size that chrome doesn't
+  // get to use.  This is called the "client area" of the widget, but it's
+  // different than what we call the client area.  The former client is chrome,
+  // while the latter client is just the part inside the frame that we draw.
+  const auto platform_border =
+      GetWidget()->GetWindowBoundsInScreen().size() -
+      GetWidget()->GetClientAreaBoundsInScreen().size();
+  // Add the amount we reserve inside the platform borders to get the total
+  // difference between the inner and outer size.
+  gfx::Size excluded_margin(
+      FrameBorderInsets().width() + platform_border.width(),
+      GetTopAreaHeight() + FrameBorderInsets().bottom() +
+          platform_border.height());
+
+  // Remember that this might ignore the pip options if the bounds cache
+  // provides the correct outer size.  This is fine; `excluded_margin` will
+  // simply be ignored and nothing will change.
   const gfx::Rect window_bounds =
-      PictureInPictureWindowManager::GetInstance()
-          ->AdjustPictureInPictureWindowBounds(
-              pip_options.value(), display,
-              GetMinimumSize() + gfx::Size(insets.width(), insets.height()));
+      PictureInPictureWindowManager::GetInstance()->CalculateOuterWindowBounds(
+          pip_options.value(), display,
+          GetMinimumSize() + gfx::Size(insets.width(), insets.height()),
+          excluded_margin);
 
   browser_view()->browser()->set_override_bounds(window_bounds);
 }
@@ -1240,15 +1290,6 @@ gfx::Size PictureInPictureBrowserFrameView::GetNonClientViewAreaSize() const {
 }
 
 #if BUILDFLAG(IS_LINUX)
-void PictureInPictureBrowserFrameView::SetWindowFrameProvider(
-    ui::WindowFrameProvider* window_frame_provider) {
-  DCHECK(window_frame_provider);
-  window_frame_provider_ = window_frame_provider;
-
-  // Only one of window_frame_provider_ and frame_background_ will be used.
-  frame_background_.reset();
-}
-
 bool PictureInPictureBrowserFrameView::ShouldDrawFrameShadow() const {
   return static_cast<DesktopBrowserFrameAuraLinux*>(
              frame()->native_browser_frame())

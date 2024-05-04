@@ -9,16 +9,22 @@
 #include <string_view>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "ash/constants/ash_switches.h"
-#include "ash/picker/model/picker_search_results.h"
+#include "ash/picker/model/picker_model.h"
+#include "ash/picker/model/picker_search_results_section.h"
 #include "ash/picker/picker_asset_fetcher.h"
 #include "ash/picker/picker_asset_fetcher_impl.h"
 #include "ash/picker/picker_copy_media.h"
 #include "ash/picker/picker_insert_media_request.h"
+#include "ash/picker/picker_rich_media.h"
 #include "ash/picker/picker_search_controller.h"
+#include "ash/picker/views/picker_icons.h"
+#include "ash/picker/views/picker_positioning.h"
 #include "ash/picker/views/picker_view.h"
 #include "ash/picker/views/picker_view_delegate.h"
+#include "ash/picker/views/picker_widget.h"
 #include "ash/public/cpp/ash_web_view_factory.h"
 #include "ash/public/cpp/picker/picker_client.h"
 #include "ash/public/cpp/picker/picker_search_result.h"
@@ -29,6 +35,9 @@
 #include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
 #include "base/hash/sha1.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/strings/utf_string_conversions.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -56,8 +65,8 @@ constexpr std::string_view kPickerFeatureTestKeyHash(
     "\x00\x89",
     base::kSHA1Length);
 
-// Time from when the insert is issued and when we give up inserting.
-constexpr base::TimeDelta kInsertMediaTimeout = base::Seconds(2);
+// Time from when a start starts to when the first set of results are published.
+constexpr base::TimeDelta kBurnInPeriod = base::Milliseconds(200);
 
 enum class PickerFeatureKeyType { kNone, kDev, kTest };
 
@@ -103,44 +112,47 @@ gfx::Rect GetFocusedWindowBounds() {
              : gfx::Rect();
 }
 
-PickerInsertMediaRequest::MediaData ResultToInsertMediaData(
+std::optional<PickerRichMedia> ResultToInsertMediaData(
     const PickerSearchResult& result) {
+  using ReturnType = std::optional<PickerRichMedia>;
   return std::visit(
       base::Overloaded{
-          [](const PickerSearchResult::TextData& data) {
-            return PickerInsertMediaRequest::MediaData::Text(data.text);
+          [](const PickerSearchResult::TextData& data) -> ReturnType {
+            return PickerTextMedia(data.text);
           },
-          [](const PickerSearchResult::EmojiData& data) {
-            return PickerInsertMediaRequest::MediaData::Text(data.emoji);
+          [](const PickerSearchResult::EmojiData& data) -> ReturnType {
+            return PickerTextMedia(data.emoji);
           },
-          [](const PickerSearchResult::SymbolData& data) {
-            return PickerInsertMediaRequest::MediaData::Text(data.symbol);
+          [](const PickerSearchResult::SymbolData& data) -> ReturnType {
+            return PickerTextMedia(data.symbol);
           },
-          [](const PickerSearchResult::EmoticonData& data) {
-            return PickerInsertMediaRequest::MediaData::Text(data.emoticon);
+          [](const PickerSearchResult::EmoticonData& data) -> ReturnType {
+            return PickerTextMedia(data.emoticon);
           },
-          [](const PickerSearchResult::GifData& data) {
-            return PickerInsertMediaRequest::MediaData::Image(data.url);
+          [](const PickerSearchResult::PngData& data) -> ReturnType {
+            return PickerImageMedia(data.png);
           },
-          [](const PickerSearchResult::BrowsingHistoryData& data) {
-            return PickerInsertMediaRequest::MediaData::Link(data.url);
+          [](const PickerSearchResult::GifData& data) -> ReturnType {
+            return PickerImageMedia(data.full_url, data.full_dimensions,
+                                    data.content_description);
           },
-      },
+          [](const PickerSearchResult::BrowsingHistoryData& data)
+              -> ReturnType { return PickerLinkMedia(data.url); },
+          [](const PickerSearchResult::FileData& data) -> ReturnType {
+            return PickerTextMedia(base::UTF8ToUTF16(data.file_path.value()));
+          },
+          [](const PickerSearchResult::CategoryData& data) -> ReturnType {
+            return std::nullopt;
+          }},
       result.data());
-}
-
-void MaybeCopyMediaToClipboard(const PickerSearchResult& result) {
-  if (const auto* gif =
-          std::get_if<PickerSearchResult::GifData>(&result.data())) {
-    CopyGifMediaToClipboard(gif->url, gif->content_description);
-  }
 }
 
 }  // namespace
 
 PickerController::PickerController() {
+  // `base::Unretained` is safe here because this class owns `asset_fetcher_`.
   asset_fetcher_ = std::make_unique<PickerAssetFetcherImpl>(base::BindRepeating(
-      &PickerController::DownloadGifToString, weak_ptr_factory_.GetWeakPtr()));
+      &PickerController::GetSharedURLLoaderFactory, base::Unretained(this)));
   if (auto* manager = ash::input_method::InputMethodManager::Get()) {
     keyboard_observation_.Observe(manager->GetImeKeyboard());
   }
@@ -177,7 +189,8 @@ void PickerController::SetClient(PickerClient* client) {
   if (client_ == nullptr) {
     search_controller_ = nullptr;
   } else {
-    search_controller_ = std::make_unique<PickerSearchController>(client_);
+    search_controller_ = std::make_unique<PickerSearchController>(
+        client_, PickerModel().GetAvailableCategories(), kBurnInPeriod);
   }
 }
 
@@ -188,9 +201,11 @@ void PickerController::ToggleWidget(
   if (widget_) {
     widget_->Close();
   } else {
-    widget_ = PickerView::CreateWidget(GetCaretBounds(), GetCursorPoint(),
-                                       GetFocusedWindowBounds(), this,
-                                       trigger_event_timestamp);
+    widget_ = PickerWidget::Create(
+        this,
+        GetPickerAnchorBounds(GetCaretBounds(), GetCursorPoint(),
+                              GetFocusedWindowBounds()),
+        trigger_event_timestamp);
     widget_->Show();
 
     feature_usage_metrics_.StartUsage();
@@ -205,11 +220,32 @@ std::unique_ptr<AshWebView> PickerController::CreateWebView(
 
 void PickerController::GetResultsForCategory(PickerCategory category,
                                              SearchResultsCallback callback) {
-  // TODO: b/316936620 - Get actual results for the category.
-  callback.Run(PickerSearchResults({{
-      PickerSearchResults::Section(u"Recently used",
-                                   {{PickerSearchResult::Text(u"😊")}}),
-  }}));
+  // TODO: b/325977099 - Get actual results for each category.
+  std::vector<ash::PickerSearchResult> recent_results;
+  switch (category) {
+    case PickerCategory::kEmojis:
+    case PickerCategory::kSymbols:
+    case PickerCategory::kEmoticons:
+    case PickerCategory::kGifs:
+      break;
+    case PickerCategory::kOpenTabs:
+    case PickerCategory::kBrowsingHistory:
+    case PickerCategory::kBookmarks:
+      recent_results.push_back(PickerSearchResult::BrowsingHistory(
+          GURL("http://crbug.com"), u"Crbug",
+          GetIconForPickerCategory(category)));
+      recent_results.push_back(PickerSearchResult::BrowsingHistory(
+          GURL("https://www.google.com/search?q=cat"), u"cat - Google Search",
+          GetIconForPickerCategory(category)));
+      break;
+    case PickerCategory::kDriveFiles:
+    case PickerCategory::kLocalFiles:
+      break;
+  }
+  callback.Run({
+      PickerSearchResultsSection(PickerSectionType::kRecentlyUsed,
+                                 recent_results),
+  });
 }
 
 void PickerController::StartSearch(const std::u16string& query,
@@ -231,10 +267,14 @@ void PickerController::InsertResultOnNextFocus(
     return;
   }
 
+  std::optional<PickerRichMedia> media_to_insert =
+      ResultToInsertMediaData(result);
+  CHECK(media_to_insert.has_value());
+
   // This cancels the previous request if there was one.
   insert_media_request_ = std::make_unique<PickerInsertMediaRequest>(
-      input_method, ResultToInsertMediaData(result), kInsertMediaTimeout,
-      base::BindOnce(&MaybeCopyMediaToClipboard, result));
+      input_method, *media_to_insert, kInsertMediaTimeout,
+      base::BindOnce(&CopyMediaToClipboard, *media_to_insert));
 }
 
 PickerAssetFetcher* PickerController::GetAssetFetcher() {
@@ -251,17 +291,9 @@ void PickerController::OnWidgetDestroying(views::Widget* widget) {
   widget_observation_.Reset();
 }
 
-void PickerController::DownloadGifToString(
-    const GURL& url,
-    base::OnceCallback<void(const std::string&)> callback) {
-  if (!client_) {
-    // TODO: b/316936723 - Add better handling of errors.
-    std::move(callback).Run(std::string());
-    return;
-  }
-  std::optional<ValidGifUrl> validated_url = ValidGifUrl::Create(url);
-  CHECK(validated_url.has_value());
-  client_->DownloadGifToString(*validated_url, std::move(callback));
+scoped_refptr<network::SharedURLLoaderFactory>
+PickerController::GetSharedURLLoaderFactory() {
+  return client_->GetSharedURLLoaderFactory();
 }
 
 }  // namespace ash

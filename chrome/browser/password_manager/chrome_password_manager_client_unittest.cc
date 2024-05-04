@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
@@ -21,8 +22,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "chrome/browser/autofill/mock_address_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
+#include "chrome/browser/keyboard_accessory/test_utils/android/mock_address_accessory_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "chrome/browser/password_manager/profile_password_store_factory.h"
@@ -31,6 +32,8 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -45,6 +48,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "components/device_reauth/mock_device_authenticator.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/core/browser/credential_cache.h"
@@ -55,10 +59,12 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/password_store/password_store_consumer.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/sync/test/test_sync_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -86,14 +92,14 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
-#include "chrome/browser/autofill/manual_filling_controller_impl.h"
-#include "chrome/browser/autofill/mock_address_accessory_controller.h"
-#include "chrome/browser/autofill/mock_credit_card_accessory_controller.h"
-#include "chrome/browser/autofill/mock_manual_filling_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
-#include "chrome/browser/autofill/mock_password_accessory_controller.h"
+#include "chrome/browser/keyboard_accessory/android/manual_filling_controller_impl.h"
+#include "chrome/browser/keyboard_accessory/android/password_accessory_controller_impl.h"
+#include "chrome/browser/keyboard_accessory/test_utils/android/mock_address_accessory_controller.h"
+#include "chrome/browser/keyboard_accessory/test_utils/android/mock_credit_card_accessory_controller.h"
+#include "chrome/browser/keyboard_accessory/test_utils/android/mock_manual_filling_controller.h"
+#include "chrome/browser/keyboard_accessory/test_utils/android/mock_password_accessory_controller.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
-#include "chrome/browser/password_manager/android/password_accessory_controller_impl.h"
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
 #include "chrome/common/chrome_switches.h"
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -150,15 +156,15 @@ FormData MakePasswordFormData() {
   return form_data;
 }
 
-std::unique_ptr<PasswordForm> MakePasswordForm() {
-  std::unique_ptr<PasswordForm> form = std::make_unique<PasswordForm>();
-  form->url = GURL("https://www.example.com/");
-  form->action = GURL("https://www.example.com/");
-  form->password_element = u"password-element";
-  form->submit_element = u"signIn";
-  form->signon_realm = "https://www.example.com/";
-  form->in_store = PasswordForm::Store::kProfileStore;
-  form->match_type = PasswordForm::MatchType::kExact;
+PasswordForm MakePasswordForm() {
+  PasswordForm form;
+  form.url = GURL("https://www.example.com/");
+  form.action = GURL("https://www.example.com/");
+  form.password_element = u"password-element";
+  form.submit_element = u"signIn";
+  form.signon_realm = "https://www.example.com/";
+  form.in_store = PasswordForm::Store::kProfileStore;
+  form.match_type = PasswordForm::MatchType::kExact;
   return form;
 }
 #endif
@@ -263,6 +269,10 @@ class FakePasswordAutofillAgent
 
   void FillIntoFocusedField(bool is_password,
                             const std::u16string& credential) override {}
+  void PreviewField(autofill::FieldRendererId field_id,
+                    const std::u16string& value) override {}
+  void FillField(autofill::FieldRendererId field_id,
+                 const std::u16string& value) override {}
   void AnnotateFieldsWithParsingResult(
       const autofill::ParsingResult& parsing_result) override {}
 
@@ -327,7 +337,8 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  public:
   ChromePasswordManagerClientTest()
       : ChromeRenderViewHostTestHarness(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        local_state_(TestingBrowserProcess::GetGlobal()) {
     scoped_feature_list_.InitAndEnableFeature(safe_browsing::kDelayedWarnings);
   }
   ~ChromePasswordManagerClientTest() override = default;
@@ -368,11 +379,12 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   }
 
   // If autofill::mojom::PasswordAutofillAgent::SetLoggingState() got called,
-  // copies its argument into |activation_flag| and returns true. Otherwise
+  // copies its argument into `activation_flag` and returns true. Otherwise
   // returns false.
   bool WasLoggingActivationMessageSent(bool* activation_flag);
 
   FakePasswordAutofillAgent fake_agent_;
+  ScopedTestingLocalState local_state_;
 
   bool metrics_enabled_ = false;
 
@@ -742,6 +754,117 @@ TEST_F(ChromePasswordManagerClientTest,
   EXPECT_FALSE(client->IsFillingEnabled(
       GURL("https://passwords.google.com/path?query=1")));
 }
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// Test that authentication is not possible if the `authenticator` is `nullptr`.
+TEST_F(ChromePasswordManagerClientTest, CanUseBiometricAuthNoAuthenticator) {
+  EXPECT_FALSE(
+      GetClient()->CanUseBiometricAuthForFilling(/*authenticator=*/nullptr));
+}
+
+// Test that authentication is not possible if the device doesn't have
+// necessary hardware for biometric authentication.
+TEST_F(ChromePasswordManagerClientTest, CanUseBiometricAuthNoBiometrics) {
+  device_reauth::MockDeviceAuthenticator authenticator;
+  // Both prefs are registered by the `PasswordManager`.
+  local_state_.Get()->SetBoolean(
+      password_manager::prefs::kHadBiometricsAvailable, false);
+  profile()->GetTestingPrefService()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, true);
+  EXPECT_FALSE(GetClient()->CanUseBiometricAuthForFilling(&authenticator));
+}
+
+// Test that authentication is not possible if the user didn't configure the
+// corresponding setting.
+TEST_F(ChromePasswordManagerClientTest, CanUseBiometricAuthSettingDisabled) {
+  device_reauth::MockDeviceAuthenticator authenticator;
+  // Both prefs are registered by the `PasswordManager`.
+  local_state_.Get()->SetBoolean(
+      password_manager::prefs::kHadBiometricsAvailable, true);
+  profile()->GetTestingPrefService()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, false);
+  EXPECT_FALSE(GetClient()->CanUseBiometricAuthForFilling(&authenticator));
+}
+
+// Test that authentication is possible if both the biometric authentication
+// hardware is available and the user configured the corresponding setting.
+TEST_F(ChromePasswordManagerClientTest, CanUseBiometricAuthSettingEnabled) {
+  device_reauth::MockDeviceAuthenticator authenticator;
+  // Both prefs are registered by the `PasswordManager`.
+  local_state_.Get()->SetBoolean(
+      password_manager::prefs::kHadBiometricsAvailable, true);
+  profile()->GetTestingPrefService()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, true);
+  EXPECT_TRUE(GetClient()->CanUseBiometricAuthForFilling(&authenticator));
+}
+
+#elif BUILDFLAG(IS_ANDROID)
+// Test that authentication is not possible if the `authenticator` is `nullptr`.
+TEST_F(ChromePasswordManagerClientTest, CanUseBiometricAuthAndroid) {
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    // Authentication is always available for automotive and the `authenticator`
+    // is always available.
+    device_reauth::MockDeviceAuthenticator authenticator;
+    EXPECT_TRUE(GetClient()->CanUseBiometricAuthForFilling(&authenticator));
+  } else {
+    EXPECT_FALSE(
+        GetClient()->CanUseBiometricAuthForFilling(/*authenticator=*/nullptr));
+  }
+}
+
+// Test that authentication is not possible if the `kBiometricTouchToFill`
+// feature is not enabled.
+TEST_F(ChromePasswordManagerClientTest,
+       CanUseBiometricAuthAndroidFeatureIsDisabled) {
+  // Authentication is always available for automotive.
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
+  device_reauth::MockDeviceAuthenticator authenticator;
+  ON_CALL(authenticator, CanAuthenticateWithBiometrics)
+      .WillByDefault(Return(true));
+  EXPECT_FALSE(GetClient()->CanUseBiometricAuthForFilling(&authenticator));
+}
+
+// Test that authentication is not possible if the
+// `CanAuthenticateWithBiometrics` returns `false` when `kBiometricTouchToFill`
+// is enabled.
+TEST_F(ChromePasswordManagerClientTest,
+       CanUseBiometricAuthAndroidAuthDisabled) {
+  // Authentication is always available for automotive.
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
+  base::test::ScopedFeatureList enabled_features(
+      password_manager::features::kBiometricTouchToFill);
+  device_reauth::MockDeviceAuthenticator authenticator;
+  ON_CALL(authenticator, CanAuthenticateWithBiometrics)
+      .WillByDefault(Return(false));
+  EXPECT_FALSE(GetClient()->CanUseBiometricAuthForFilling(&authenticator));
+}
+
+// Test that authentication is possible if the `CanAuthenticateWithBiometrics`
+// returns `true` when `kBiometricTouchToFill` is enabled.
+TEST_F(ChromePasswordManagerClientTest, CanUseBiometricAuthAndroidAuthEnabled) {
+  // Authentication is always available for automotive.
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
+  base::test::ScopedFeatureList enabled_features(
+      password_manager::features::kBiometricTouchToFill);
+  device_reauth::MockDeviceAuthenticator authenticator;
+  ON_CALL(authenticator, CanAuthenticateWithBiometrics)
+      .WillByDefault(Return(true));
+  EXPECT_TRUE(GetClient()->CanUseBiometricAuthForFilling(&authenticator));
+}
+
+#else
+// Test that authentication is not possible on other platforms.
+TEST_F(ChromePasswordManagerClientTest, CanUseBiometricAuth) {
+  device_reauth::MockDeviceAuthenticator authenticator;
+  EXPECT_FALSE(GetClient()->CanUseBiometricAuthForFilling(&authenticator));
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace {
 
@@ -1146,7 +1269,7 @@ ChromePasswordManagerClientAndroidTest::SetUpMockPwdAccessoryForClientUse(
   MockPasswordAccessoryControllerImpl* weak_mock_pwd_controller =
       mock_pwd_controller.get();
 
-  // Tie the mock accessory to the |WebContents| so that the client uses is.
+  // Tie the mock accessory to the `WebContents` so that the client uses is.
   web_contents()->SetUserData(weak_mock_pwd_controller->UserDataKey(),
                               std::move(mock_pwd_controller));
 
@@ -1278,8 +1401,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
   driver->GetPasswordManager()->OnPasswordFormsParsed(driver.get(),
                                                       {observed_form_data});
 
-  std::vector<PasswordForm> forms;
-  forms.push_back(*MakePasswordForm());
+  std::vector<PasswordForm> forms = {MakePasswordForm()};
   store_consumer->OnGetPasswordStoreResultsOrErrorFrom(mock_store,
                                                        std::move(forms));
 
@@ -1310,11 +1432,11 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
 TEST_F(ChromePasswordManagerClientAndroidTest,
        SameDocumentNavigationDoesNotClearCache) {
   auto origin = url::Origin::Create(GURL("https://example.com"));
-  auto form = MakePasswordForm();
+  std::vector<PasswordForm> forms = {MakePasswordForm()};
   GetClient()
       ->GetCredentialCacheForTesting()
       ->SaveCredentialsAndBlocklistedForOrigin(
-          {form.get()}, CredentialCache::IsOriginBlocklisted(false), origin);
+          forms, CredentialCache::IsOriginBlocklisted(false), origin);
 
   // Check that a navigation within the same document does not clear the cache.
   content::MockNavigationHandle handle(web_contents());
@@ -1459,32 +1581,32 @@ TEST_F(ChromePasswordManagerClientWithAccountStoreAndroidTest,
   GURL kURL = GURL("https://example.com");
   auto origin = url::Origin::Create(kURL);
   auto not_shared = MakePasswordForm();
-  not_shared->username_value = u"not_shared";
+  not_shared.username_value = u"not_shared";
 
   auto shared_and_notified = MakePasswordForm();
-  shared_and_notified->username_value = u"shared_and_notified";
-  shared_and_notified->type = PasswordForm::Type::kReceivedViaSharing;
-  shared_and_notified->sharing_notification_displayed = true;
+  shared_and_notified.username_value = u"shared_and_notified";
+  shared_and_notified.type = PasswordForm::Type::kReceivedViaSharing;
+  shared_and_notified.sharing_notification_displayed = true;
 
   auto shared_not_notified_profile = MakePasswordForm();
-  shared_not_notified_profile->username_value = u"shared_not_notified_profile";
-  shared_not_notified_profile->type = PasswordForm::Type::kReceivedViaSharing;
-  shared_not_notified_profile->sharing_notification_displayed = false;
-  shared_not_notified_profile->in_store = PasswordForm::Store::kProfileStore;
+  shared_not_notified_profile.username_value = u"shared_not_notified_profile";
+  shared_not_notified_profile.type = PasswordForm::Type::kReceivedViaSharing;
+  shared_not_notified_profile.sharing_notification_displayed = false;
+  shared_not_notified_profile.in_store = PasswordForm::Store::kProfileStore;
 
   auto shared_not_notified_account = MakePasswordForm();
-  shared_not_notified_account->username_value = u"shared_not_notified_account";
-  shared_not_notified_account->type = PasswordForm::Type::kReceivedViaSharing;
-  shared_not_notified_account->sharing_notification_displayed = false;
-  shared_not_notified_account->in_store = PasswordForm::Store::kAccountStore;
+  shared_not_notified_account.username_value = u"shared_not_notified_account";
+  shared_not_notified_account.type = PasswordForm::Type::kReceivedViaSharing;
+  shared_not_notified_account.sharing_notification_displayed = false;
+  shared_not_notified_account.in_store = PasswordForm::Store::kAccountStore;
 
+  std::vector<PasswordForm> forms = {not_shared, shared_and_notified,
+                                     shared_not_notified_profile,
+                                     shared_not_notified_account};
   GetClient()
       ->GetCredentialCacheForTesting()
       ->SaveCredentialsAndBlocklistedForOrigin(
-          {not_shared.get(), shared_and_notified.get(),
-           shared_not_notified_profile.get(),
-           shared_not_notified_account.get()},
-          CredentialCache::IsOriginBlocklisted(false), origin);
+          forms, CredentialCache::IsOriginBlocklisted(false), origin);
 
   MockPasswordStoreInterface* profile_store =
       static_cast<MockPasswordStoreInterface*>(
@@ -1494,10 +1616,10 @@ TEST_F(ChromePasswordManagerClientWithAccountStoreAndroidTest,
       static_cast<MockPasswordStoreInterface*>(
           GetClient()->GetAccountPasswordStore());
 
-  shared_not_notified_profile->sharing_notification_displayed = true;
-  shared_not_notified_account->sharing_notification_displayed = true;
-  EXPECT_CALL(*profile_store, UpdateLogin(*shared_not_notified_profile, _));
-  EXPECT_CALL(*account_store, UpdateLogin(*shared_not_notified_account, _));
+  shared_not_notified_profile.sharing_notification_displayed = true;
+  shared_not_notified_account.sharing_notification_displayed = true;
+  EXPECT_CALL(*profile_store, UpdateLogin(shared_not_notified_profile, _));
+  EXPECT_CALL(*account_store, UpdateLogin(shared_not_notified_account, _));
   GetClient()->MarkSharedCredentialsAsNotified(kURL);
 }
 

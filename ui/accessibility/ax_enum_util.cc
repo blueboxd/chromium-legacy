@@ -198,12 +198,12 @@ const char* ToString(ax::mojom::Role role) {
       return "dateTime";
     case ax::mojom::Role::kDefinition:
       return "definition";
-    case ax::mojom::Role::kDescriptionListDetail:
-      return "descriptionListDetail";
     case ax::mojom::Role::kDescriptionList:
       return "descriptionList";
-    case ax::mojom::Role::kDescriptionListTerm:
-      return "descriptionListTerm";
+    case ax::mojom::Role::kDescriptionListTermDeprecated:
+      return "descriptionListTermDeprecated";
+    case ax::mojom::Role::kDescriptionListDetailDeprecated:
+      return "descriptionListDetailsDeprecated";
     case ax::mojom::Role::kDesktop:
       return "desktop";
     case ax::mojom::Role::kDetails:
@@ -626,12 +626,12 @@ ax::mojom::Role StringToRole(const std::string& role) {
     return ax::mojom::Role::kDateTime;
   } else if (role == "kDefinition") {
     return ax::mojom::Role::kDefinition;
-  } else if (role == "kDescriptionListDetail") {
-    return ax::mojom::Role::kDescriptionListDetail;
   } else if (role == "kDescriptionList") {
     return ax::mojom::Role::kDescriptionList;
-  } else if (role == "kDescriptionListTerm") {
-    return ax::mojom::Role::kDescriptionListTerm;
+  } else if (role == "kDescriptionListTermDeprecated") {
+    return ax::mojom::Role::kDescriptionListTermDeprecated;
+  } else if (role == "kDescriptionListDetailDeprecated") {
+    return ax::mojom::Role::kDescriptionListDetailDeprecated;
   } else if (role == "kDesktop") {
     return ax::mojom::Role::kDesktop;
   } else if (role == "kDetails") {
@@ -1269,6 +1269,10 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "ariaBrailleLabel";
     case ax::mojom::StringAttribute::kAriaBrailleRoleDescription:
       return "ariaBrailleRoleDescription";
+    case ax::mojom::StringAttribute::kAriaNotificationAnnouncement:
+      return "ariaNotificationAnnouncement";
+    case ax::mojom::StringAttribute::kAriaNotificationId:
+      return "ariaNotificationId";
     case ax::mojom::StringAttribute::kCheckedStateDescription:
       return "checkedStateDescription";
     case ax::mojom::StringAttribute::kChildTreeId:
@@ -1348,6 +1352,10 @@ ax::mojom::StringAttribute StringToStringAttribute(
     return ax::mojom::StringAttribute::kAriaBrailleLabel;
   } else if (string_attribute == "kAriaBrailleRoleDescription") {
     return ax::mojom::StringAttribute::kAriaBrailleRoleDescription;
+  } else if (string_attribute == "kAriaNotificationAnnouncement") {
+    return ax::mojom::StringAttribute::kAriaNotificationAnnouncement;
+  } else if (string_attribute == "kAriaNotificationId") {
+    return ax::mojom::StringAttribute::kAriaNotificationId;
   } else if (string_attribute == "kCheckedStateDescription") {
     return ax::mojom::StringAttribute::kCheckedStateDescription;
   } else if (string_attribute == "kChildTreeId") {
@@ -1543,6 +1551,10 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "nextWindowFocusId";
     case ax::mojom::IntAttribute::kPreviousWindowFocusId:
       return "previousWindowFocusId";
+    case ax::mojom::IntAttribute::kAriaNotificationInterrupt:
+      return "ariaNotificationInterrupt";
+    case ax::mojom::IntAttribute::kAriaNotificationPriority:
+      return "ariaNotificationPriority";
   }
 
   return "";
@@ -1677,6 +1689,10 @@ ax::mojom::IntAttribute StringToIntAttribute(const std::string& int_attribute) {
     return ax::mojom::IntAttribute::kNextWindowFocusId;
   } else if (int_attribute == "kPreviousWindowFocusId") {
     return ax::mojom::IntAttribute::kPreviousWindowFocusId;
+  } else if (int_attribute == "kAriaNotificationInterrupt") {
+    return ax::mojom::IntAttribute::kAriaNotificationInterrupt;
+  } else if (int_attribute == "kAriaNotificationPriority") {
+    return ax::mojom::IntAttribute::kAriaNotificationPriority;
   }
 
   NOTREACHED() << "An invalid IntAttribute was provided: " << int_attribute;
@@ -2516,6 +2532,28 @@ const char* ToString(ax::mojom::Dropeffect dropeffect) {
   }
 
   return "";
+}
+
+const char* ToString(ax::mojom::AriaNotificationInterrupt interrupt) {
+  switch (interrupt) {
+    case ax::mojom::AriaNotificationInterrupt::kNone:
+      return "none";
+    case ax::mojom::AriaNotificationInterrupt::kAll:
+      return "all";
+    case ax::mojom::AriaNotificationInterrupt::kPending:
+      return "pending";
+  }
+  NOTREACHED_NORETURN();
+}
+
+const char* ToString(ax::mojom::AriaNotificationPriority priority) {
+  switch (priority) {
+    case ax::mojom::AriaNotificationPriority::kNone:
+      return "none";
+    case ax::mojom::AriaNotificationPriority::kImportant:
+      return "important";
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace ui

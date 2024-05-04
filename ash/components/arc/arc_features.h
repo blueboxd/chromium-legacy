@@ -21,6 +21,8 @@ BASE_DECLARE_FEATURE(kDocumentsProviderUnknownSizeFeature);
 BASE_DECLARE_FEATURE(kEnableArcIdleManager);
 extern const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT;
 extern const base::FeatureParam<int> kEnableArcIdleManagerDelayMs;
+extern const base::FeatureParam<bool>
+    kEnableArcIdleManagerPendingIdleReactivate;
 BASE_DECLARE_FEATURE(kEnableArcNearbyShareFuseBox);
 BASE_DECLARE_FEATURE(kEnableArcS2Idle);
 BASE_DECLARE_FEATURE(kEnableArcVmDataMigration);
@@ -67,6 +69,7 @@ BASE_DECLARE_FEATURE(kSwitchToKeyMintOnTOverride);
 BASE_DECLARE_FEATURE(kSyncInstallPriority);
 BASE_DECLARE_FEATURE(kTouchscreenEmulation);
 BASE_DECLARE_FEATURE(kUnaffiliatedDeviceArcRestriction);
+BASE_DECLARE_FEATURE(kUnthrottleOnActiveAudio);
 BASE_DECLARE_FEATURE(kUsbStorageUIFeature);
 BASE_DECLARE_FEATURE(kUseDalvikMemoryProfile);
 BASE_DECLARE_FEATURE(kUseDefaultBlockSize);

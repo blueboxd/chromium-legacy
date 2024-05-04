@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
@@ -19,10 +20,10 @@
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "extensions/browser/content_hash_reader.h"
-#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verifier/content_hash.h"
-#include "extensions/browser/content_verifier_delegate.h"
-#include "extensions/browser/content_verify_job.h"
+#include "extensions/browser/content_verifier/content_verifier.h"
+#include "extensions/browser/content_verifier/content_verifier_delegate.h"
+#include "extensions/browser/content_verifier/content_verify_job.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/test/test_extension_dir.h"
 

@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/remote_cocoa/browser/application_host.h"
 #include "components/remote_cocoa/common/application.mojom.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
@@ -210,8 +211,32 @@ void AppShimHost::OpenAppWithOverrideUrl(const GURL& override_url) {
   client_->OnShimOpenAppWithOverrideUrl(this, override_url);
 }
 
+void AppShimHost::EnableAccessibilitySupport(
+    chrome::mojom::AppShimScreenReaderSupportMode mode) {
+  content::BrowserAccessibilityState* accessibility_state =
+      content::BrowserAccessibilityState::GetInstance();
+  switch (mode) {
+    case chrome::mojom::AppShimScreenReaderSupportMode::kComplete: {
+      accessibility_state->OnScreenReaderDetected();
+      break;
+    }
+    case chrome::mojom::AppShimScreenReaderSupportMode::kPartial: {
+      if (!accessibility_state->GetAccessibilityMode().has_mode(
+              ui::kAXModeBasic.flags())) {
+        accessibility_state->AddAccessibilityModeFlags(ui::kAXModeBasic);
+      }
+      break;
+    }
+  }
+}
+
 void AppShimHost::ApplicationWillTerminate() {
   client_->OnShimWillTerminate(this);
+}
+
+void AppShimHost::NotificationPermissionStatusChanged(
+    mac_notifications::mojom::PermissionStatus status) {
+  client_->OnNotificationPermissionStatusChanged(this, status);
 }
 
 base::FilePath AppShimHost::GetProfilePath() const {

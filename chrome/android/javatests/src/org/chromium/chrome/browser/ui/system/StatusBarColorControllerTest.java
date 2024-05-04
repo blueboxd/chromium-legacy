@@ -163,7 +163,6 @@ public class StatusBarColorControllerTest {
     @Test
     @LargeTest
     @Feature({"StatusBar"})
-    @EnableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR})
     @DisableFeatures({
         ChromeFeatureList.SURFACE_POLISH,
         ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID
@@ -227,7 +226,7 @@ public class StatusBarColorControllerTest {
     @Test
     @LargeTest
     @Feature({"StatusBar"})
-    @EnableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR, ChromeFeatureList.SURFACE_POLISH})
+    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
     @DisableFeatures({ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
     public void testBrandColorNotIgnoredInStartSurfaceWithSurfacePolishEnabled() throws Exception {
@@ -504,7 +503,7 @@ public class StatusBarColorControllerTest {
                 () -> statusBarColorController.updateStatusBarColor());
         assertEquals(
                 "Wrong value returned for Tab Strip Redesign Folio.",
-                TabUiThemeUtil.getTabStripBackgroundColor(activity, false),
+                TabUiThemeUtil.getTabStripBackgroundColor(activity, false, true),
                 activity.getWindow().getStatusBarColor());
     }
 
@@ -553,7 +552,7 @@ public class StatusBarColorControllerTest {
                 "Status bar color on tablet should use the tab strip transition scrim overlay"
                         + " during a strip transition.",
                 ColorUtils.getColorWithOverlay(
-                        TabUiThemeUtil.getTabStripBackgroundColor(activity, false),
+                        TabUiThemeUtil.getTabStripBackgroundColor(activity, false, true),
                         toolbarColor,
                         0.5f),
                 activity.getWindow().getStatusBarColor());
@@ -567,7 +566,7 @@ public class StatusBarColorControllerTest {
         assertEquals(
                 "Status bar color on tablet should match the tab strip background when the tab"
                         + " strip is visible.",
-                TabUiThemeUtil.getTabStripBackgroundColor(activity, false),
+                TabUiThemeUtil.getTabStripBackgroundColor(activity, false, true),
                 activity.getWindow().getStatusBarColor());
         ToolbarFeatures.USE_TOOLBAR_BG_COLOR_FOR_STRIP_TRANSITION_SCRIM.setForTesting(false);
     }

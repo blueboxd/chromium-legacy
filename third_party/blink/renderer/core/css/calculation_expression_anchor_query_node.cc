@@ -87,14 +87,8 @@ CalculationExpressionAnchorQueryNode::Zoom(double factor) const {
 
 float CalculationExpressionAnchorQueryNode::Evaluate(
     float max_value,
-    const Length::EvaluationInput& input) const {
-  if (input.anchor_evaluator) {
-    if (const std::optional<LayoutUnit> value =
-            input.anchor_evaluator->Evaluate(*this)) {
-      return value->ToFloat();
-    }
-    return FloatValueForLength(fallback_, max_value, input);
-  }
+    const Length::EvaluationInput&) const {
+  // TODO(crbug.com//41483417): Remove CalculationExpressionAnchorQueryNode.
   return 0;
 }
 

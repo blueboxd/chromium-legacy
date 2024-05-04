@@ -101,10 +101,16 @@ gfx::ImageSkia ConstrainedScaleAndCrop(const SkBitmap& bitmap,
   const auto new_size =
       gfx::ScaleToCeiledSize(gfx::Size(bitmap_width, bitmap_height), ratio);
 
+  // target_area is a cropped area from the center.
+  const auto target_area =
+      SkIRect::MakeXYWH((new_size.width() - expected_width) / 2,
+                        (new_size.height() - expected_height) / 2,
+                        expected_width, expected_height);
+
   // Resize and only take the expected_size.
   auto resized = skia::ImageOperations::Resize(
       bitmap, skia::ImageOperations::RESIZE_LANCZOS3, new_size.width(),
-      new_size.height(), SkIRect::MakeWH(expected_width, expected_height));
+      new_size.height(), target_area);
 
   return gfx::ImageSkia::CreateFrom1xBitmap(resized);
 }
@@ -240,7 +246,8 @@ END_METADATA
 
 SetCameraBackgroundView::SetCameraBackgroundView(
     BubbleView* bubble_view,
-    VideoConferenceTrayController* controller) {
+    VideoConferenceTrayController* controller)
+    : controller_(controller) {
   SetID(BubbleViewID::kSetCameraBackgroundView);
 
   // `SetCameraBackgroundView` has 2+ children, we want to stack them
@@ -252,8 +259,20 @@ SetCameraBackgroundView::SetCameraBackgroundView(
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  AddChildView(std::make_unique<RecentlyUsedBackgroundView>(bubble_view));
+  recently_used_background_view_ =
+      AddChildView(std::make_unique<RecentlyUsedBackgroundView>(bubble_view));
   AddChildView(std::make_unique<CreateImageButton>(controller));
+}
+
+void SetCameraBackgroundView::SetBackgroundReplaceUiVisible(bool visible) {
+  // We don't want to show the SetCameraBackgroundView if there is no recently
+  // used background; instead, the webui is shown.
+  if (visible && recently_used_background_view_->children().empty()) {
+    controller_->CreateBackgroundImage();
+    return;
+  }
+
+  SetVisible(visible);
 }
 
 BEGIN_METADATA(SetCameraBackgroundView)

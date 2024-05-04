@@ -7,13 +7,15 @@
 
 #include "third_party/blink/public/mojom/shared_storage/shared_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_fencedframeconfig_usvstring.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 
 namespace blink {
-
+class ScriptPromiseResolver;
 class SharedStorageUrlWithMetadata;
 class SharedStorageRunOperationMethodOptions;
 class WorkletOptions;
@@ -23,7 +25,10 @@ class MODULES_EXPORT SharedStorageWorklet final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SharedStorageWorklet* Create(ScriptState*);
+  static SharedStorageWorklet* Create(ScriptState*,
+                                      bool cross_origin_script_allowed);
+
+  explicit SharedStorageWorklet(bool cross_origin_script_allowed);
 
   ~SharedStorageWorklet() override = default;
 
@@ -31,19 +36,21 @@ class MODULES_EXPORT SharedStorageWorklet final : public ScriptWrappable {
 
   // shared_storage_worklet.idl
   // addModule() imports ES6 module scripts.
-  ScriptPromise addModule(ScriptState*,
-                          const String& module_url,
-                          const WorkletOptions* options,
-                          ExceptionState&);
-  ScriptPromise selectURL(ScriptState*,
-                          const String& name,
-                          HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
-                          ExceptionState&);
-  ScriptPromise selectURL(ScriptState*,
-                          const String& name,
-                          HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
-                          const SharedStorageRunOperationMethodOptions* options,
-                          ExceptionState&);
+  ScriptPromiseTyped<IDLUndefined> addModule(ScriptState*,
+                                             const String& module_url,
+                                             const WorkletOptions* options,
+                                             ExceptionState&);
+  ScriptPromiseTyped<V8SharedStorageResponse> selectURL(
+      ScriptState*,
+      const String& name,
+      HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
+      ExceptionState&);
+  ScriptPromiseTyped<V8SharedStorageResponse> selectURL(
+      ScriptState*,
+      const String& name,
+      HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
+      const SharedStorageRunOperationMethodOptions* options,
+      ExceptionState&);
   ScriptPromise run(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise run(ScriptState*,
                     const String& name,
@@ -52,11 +59,12 @@ class MODULES_EXPORT SharedStorageWorklet final : public ScriptWrappable {
 
   // Helper implementation method for `sharedStorage.worklet.addModule()` and
   // for `sharedStorage.createWorklet()`.
-  ScriptPromise AddModuleHelper(ScriptState*,
-                                const String& module_url,
-                                const WorkletOptions* options,
-                                ExceptionState&,
-                                bool resolve_to_worklet);
+  void AddModuleHelper(ScriptState*,
+                       ScriptPromiseResolver*,
+                       const String& module_url,
+                       const WorkletOptions* options,
+                       ExceptionState&,
+                       bool resolve_to_worklet);
 
  private:
   // Set when addModule() was called and passed early renderer checks.
@@ -64,6 +72,8 @@ class MODULES_EXPORT SharedStorageWorklet final : public ScriptWrappable {
       worklet_host_{nullptr};
 
   bool keep_alive_after_operation_ = true;
+
+  bool cross_origin_script_allowed_ = false;
 };
 
 }  // namespace blink

@@ -550,8 +550,11 @@ TEST_F(ComboboxTest, SelectValue) {
 TEST_F(ComboboxTest, ListenerHandlesDelete) {
   auto evil_listener = std::make_unique<EvilListener>();
   ASSERT_TRUE(evil_listener->combobox());
-  ASSERT_NO_FATAL_FAILURE(
-      ComboboxTestApi(evil_listener->combobox()).PerformActionAt(2));
+  ASSERT_NO_FATAL_FAILURE({
+    ui::MenuModel* model =
+        ComboboxTestApi(evil_listener->combobox()).menu_model();
+    model->ActivatedAt(2);
+  });
   EXPECT_FALSE(evil_listener->combobox());
 }
 
@@ -888,7 +891,7 @@ TEST_F(ComboboxTest, SetTooltipTextNotifiesAccessibilityEvent) {
   EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged,
                                 ax::mojom::Role::kButton));
   EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged,
-                                ax::mojom::Role::kPopUpButton));
+                                ax::mojom::Role::kComboBoxSelect));
   EXPECT_EQ(test_tooltip_text, combobox()->GetAccessibleName());
   ui::AXNodeData data;
   combobox()->GetAccessibleNodeData(&data);

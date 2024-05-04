@@ -56,6 +56,11 @@ enum AppShimLoginItemRestoreState {
   kHidden,
 };
 
+enum AppShimScreenReaderSupportMode {
+  kPartial,
+  kComplete
+};
+
 // An entry in the profiles NSMenu.
 struct ProfileMenuItem {
   // The name to display.
@@ -115,8 +120,8 @@ interface AppShim {
 
   // Requests notification permissions from the system. This will ask the user
   // to accept permissions if not granted or denied already.
-  RequestNotificationPermission() =>
-      (mac_notifications.mojom.RequestPermissionResult result);
+  RequestNotificationPermission()
+      => (mac_notifications.mojom.RequestPermissionResult result);
 };
 
 // Interface through which the a process communicates to the browser process.
@@ -147,9 +152,17 @@ interface AppShimHost {
   // user clicks on an item in the application dock menu).
   OpenAppWithOverrideUrl(url.mojom.Url override_url);
 
+  // Sent when the user activates some mode of Assistive Technology.
+  EnableAccessibilitySupport(AppShimScreenReaderSupportMode mode);
+
   // Sent when the app is about to terminate. Used to persist what profiles
   // where open when the app was terminated.
   ApplicationWillTerminate();
+
+  // Sent any time the app detects a change in the status of its (system level)
+  // notification permission. Also sent shortly after startup.
+  NotificationPermissionStatusChanged(
+      mac_notifications.mojom.PermissionStatus status);
 };
 
 // Properties of an app shim that are specified when it connects to the browser
@@ -206,10 +219,9 @@ interface AppShimHostBootstrap {
   // process is requesting to be associated with the given profile and app_id.
   // Once the profile and app_id are stored, and all future messages from the
   // app shim relate to this app.
-  OnShimConnected(pending_receiver<AppShimHost> host_receiver,
-                  AppShimInfo app_shim_info) =>
-                      (AppShimLaunchResult launch_result,
-                       FeatureState feature_state,
-                       pending_receiver<AppShim> app_shim_receiver);
+  OnShimConnected(
+      pending_receiver<AppShimHost> host_receiver, AppShimInfo app_shim_info)
+      => (AppShimLaunchResult launch_result,
+          FeatureState feature_state,
+          pending_receiver<AppShim> app_shim_receiver);
 };
-

@@ -54,11 +54,9 @@ void FontBuilder::DidChangeWritingMode() {
 }
 
 FontFamily FontBuilder::StandardFontFamily() const {
-  FontFamily family;
   const AtomicString& standard_font_family = StandardFontFamilyName();
-  family.SetFamily(standard_font_family,
-                   FontFamily::InferredTypeFor(standard_font_family));
-  return family;
+  return FontFamily(standard_font_family,
+                    FontFamily::InferredTypeFor(standard_font_family));
 }
 
 AtomicString FontBuilder::StandardFontFamilyName() const {
@@ -214,13 +212,13 @@ void FontBuilder::SetFontOpticalSizing(OpticalSizing font_optical_sizing) {
   font_description_.SetFontOpticalSizing(font_optical_sizing);
 }
 
-void FontBuilder::SetFontPalette(scoped_refptr<FontPalette> palette) {
+void FontBuilder::SetFontPalette(scoped_refptr<const FontPalette> palette) {
   Set(PropertySetFlag::kFontPalette);
   font_description_.SetFontPalette(palette);
 }
 
 void FontBuilder::SetFontVariantAlternates(
-    scoped_refptr<FontVariantAlternates> variant_alternates) {
+    scoped_refptr<const FontVariantAlternates> variant_alternates) {
   Set(PropertySetFlag::kFontVariantAlternates);
   font_description_.SetFontVariantAlternates(variant_alternates);
 }
@@ -231,13 +229,13 @@ void FontBuilder::SetFontSmoothing(FontSmoothingMode font_smoothing_mode) {
 }
 
 void FontBuilder::SetFeatureSettings(
-    scoped_refptr<FontFeatureSettings> settings) {
+    scoped_refptr<const FontFeatureSettings> settings) {
   Set(PropertySetFlag::kFeatureSettings);
   font_description_.SetFeatureSettings(std::move(settings));
 }
 
 void FontBuilder::SetVariationSettings(
-    scoped_refptr<FontVariationSettings> settings) {
+    scoped_refptr<const FontVariationSettings> settings) {
   Set(PropertySetFlag::kVariationSettings);
   font_description_.SetVariationSettings(std::move(settings));
 }
@@ -308,12 +306,6 @@ void FontBuilder::CheckForGenericFamilyChange(
   }
 
   if (new_description.IsMonospace() == parent_description.IsMonospace()) {
-    return;
-  }
-
-  // For now, lump all families but monospace together.
-  if (new_description.GenericFamily() != FontDescription::kMonospaceFamily &&
-      parent_description.GenericFamily() != FontDescription::kMonospaceFamily) {
     return;
   }
 

@@ -203,7 +203,7 @@ float Length::NonNanCalculatedValue(float max_value,
   return result;
 }
 
-bool Length::IsContentOrIntrinsic() const {
+bool Length::HasContentOrIntrinsic() const {
   if (GetType() == kCalculated) {
     return GetCalculationValue().HasContentOrIntrinsicSize();
   }
@@ -212,14 +212,17 @@ bool Length::IsContentOrIntrinsic() const {
          GetType() == kContent;
 }
 
+bool Length::HasPercent() const {
+  if (GetType() == kCalculated) {
+    return GetCalculationValue().HasPercent();
+  }
+  return GetType() == kPercent;
+}
+
 bool Length::IsCalculatedEqual(const Length& o) const {
   return IsCalculated() &&
          (&GetCalculationValue() == &o.GetCalculationValue() ||
           GetCalculationValue() == o.GetCalculationValue());
-}
-
-bool Length::HasAnchorQueries() const {
-  return IsCalculated() && GetCalculationValue().HasAnchorQueries();
 }
 
 String Length::ToString() const {

@@ -55,7 +55,6 @@ class HarfBuzzFace final : public GarbageCollected<HarfBuzzFace> {
   HarfBuzzFace(const FontPlatformData* platform_data, uint64_t);
   HarfBuzzFace(const HarfBuzzFace&) = delete;
   HarfBuzzFace& operator=(const HarfBuzzFace&) = delete;
-  ~HarfBuzzFace();
 
   void Trace(Visitor*) const;
 
@@ -67,7 +66,7 @@ class HarfBuzzFace final : public GarbageCollected<HarfBuzzFace> {
   // Passing in specified_size in order to control selecting the right value
   // from the trak table. If not set, the size of the internal FontPlatformData
   // object will be used.
-  hb_font_t* GetScaledFont(scoped_refptr<UnicodeRangeSet>,
+  hb_font_t* GetScaledFont(const UnicodeRangeSet*,
                            VerticalLayoutCallbacks,
                            float specified_size) const;
 
@@ -91,11 +90,7 @@ class HarfBuzzFace final : public GarbageCollected<HarfBuzzFace> {
   void PrepareHarfBuzzFontData();
 
   Member<const FontPlatformData> platform_data_;
-  const uint64_t unique_id_;
-  // TODO(crbug.com/1489080): When briefly given MiraclePtr protection,
-  // these members were both found dangling.
-  hb_font_t* unscaled_font_;
-  HarfBuzzFontData* harfbuzz_font_data_;
+  Member<HarfBuzzFontData> harfbuzz_font_data_;
 };
 
 }  // namespace blink

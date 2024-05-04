@@ -203,12 +203,9 @@ TabSearchPageHandler::TabSearchPageHandler(
       tab_search_prefs::kTabOrganizationShowFRE,
       base::BindRepeating(&TabSearchPageHandler::NotifyShowFREPrefChanged,
                           base::Unretained(this), profile));
-  if (TabOrganizationUtils::GetInstance()->IsEnabled(profile)) {
-    organization_service_ =
-        TabOrganizationServiceFactory::GetForProfile(profile);
-    if (organization_service_) {
-      organization_service_->AddObserver(this);
-    }
+  organization_service_ = TabOrganizationServiceFactory::GetForProfile(profile);
+  if (organization_service_) {
+    tab_organization_observation_.Observe(organization_service_);
   }
   optimization_guide_keyed_service_ =
       OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
@@ -225,9 +222,6 @@ TabSearchPageHandler::~TabSearchPageHandler() {
                                 called_switch_to_tab_
                                     ? TabSearchCloseAction::kTabSwitch
                                     : TabSearchCloseAction::kNoAction);
-  if (organization_service_) {
-    organization_service_->RemoveObserver(this);
-  }
   for (TabOrganizationSession* session : listened_sessions_) {
     session->RemoveObserver(this);
   }
@@ -362,7 +356,8 @@ void TabSearchPageHandler::GetTabOrganizationSession(
   TabOrganizationSession* session =
       organization_service_->GetSessionForBrowser(browser);
   if (!session) {
-    session = organization_service_->CreateSessionForBrowser(browser);
+    session = organization_service_->CreateSessionForBrowser(
+        browser, TabOrganizationEntryPoint::kTabSearch);
   }
 
   if (!base::Contains(listened_sessions_, session)) {
@@ -448,9 +443,11 @@ void TabSearchPageHandler::RequestTabOrganization() {
   TabOrganizationSession* session =
       organization_service_->GetSessionForBrowser(browser);
   if (!session) {
-    session = organization_service_->CreateSessionForBrowser(browser);
+    session = organization_service_->CreateSessionForBrowser(
+        browser, TabOrganizationEntryPoint::kTabSearch);
   } else if (session->IsComplete()) {
-    session = organization_service_->ResetSessionForBrowser(browser);
+    session = organization_service_->ResetSessionForBrowser(
+        browser, TabOrganizationEntryPoint::kTabSearch);
   }
 
   if (!base::Contains(listened_sessions_, session)) {
@@ -460,7 +457,8 @@ void TabSearchPageHandler::RequestTabOrganization() {
 
   browser->profile()->GetPrefs()->SetBoolean(
       tab_search_prefs::kTabOrganizationShowFRE, false);
-  organization_service_->StartRequest(browser);
+  organization_service_->StartRequest(browser,
+                                      TabOrganizationEntryPoint::kTabSearch);
 }
 
 void TabSearchPageHandler::RemoveTabFromOrganization(
@@ -486,6 +484,27 @@ void TabSearchPageHandler::RemoveTabFromOrganization(
   }
 }
 
+void TabSearchPageHandler::RejectSession(int32_t session_id) {
+  Browser* browser = chrome::FindLastActive();
+  if (!browser || !organization_service_) {
+    return;
+  }
+
+  TabOrganizationSession* session =
+      organization_service_->GetSessionForBrowser(browser);
+  if (!session || session->session_id() != session_id) {
+    return;
+  }
+
+  for (const std::unique_ptr<TabOrganization>& organization :
+       session->tab_organizations()) {
+    organization->Reject();
+  }
+
+  organization_service_->ResetSessionForBrowser(
+      browser, TabOrganizationEntryPoint::kTabSearch, nullptr);
+}
+
 void TabSearchPageHandler::RestartSession() {
   Browser* browser = chrome::FindLastActive();
   if (!browser) {
@@ -500,13 +519,15 @@ void TabSearchPageHandler::RestartSession() {
 
   // Don't notify observers to avoid a repaint
   TabOrganizationSession* session =
-      organization_service_->ResetSessionForBrowser(browser, nullptr);
+      organization_service_->ResetSessionForBrowser(
+          browser, TabOrganizationEntryPoint::kTabSearch, nullptr);
   if (!base::Contains(listened_sessions_, session)) {
     session->AddObserver(this);
     listened_sessions_.emplace_back(session);
   }
 
-  organization_service_->StartRequest(browser);
+  organization_service_->StartRequest(browser,
+                                      TabOrganizationEntryPoint::kTabSearch);
 
   restarting_ = false;
 
@@ -1181,16 +1202,6 @@ void TabSearchPageHandler::OnChangeInFeatureCurrentlyEnabledState(
   // This logic is slightly more strict than is_now_enabled, may make a
   // difference in some edge cases.
   bool enabled = TabOrganizationUtils::GetInstance()->IsEnabled(profile);
-  if (enabled) {
-    organization_service_ =
-        TabOrganizationServiceFactory::GetForProfile(profile);
-    if (organization_service_ && !organization_service_->HasObserver(this)) {
-      organization_service_->AddObserver(this);
-    }
-  } else if (organization_service_) {
-    organization_service_->RemoveObserver(this);
-    organization_service_ = nullptr;
-  }
   page_->TabOrganizationEnabledChanged(enabled && organization_service_);
 }
 

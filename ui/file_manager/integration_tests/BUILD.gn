@@ -7,43 +7,25 @@ import("//tools/typescript/ts_library.gni")
 preprocess_folder = "$target_gen_dir/preprocessed"
 tsc_folder = "$target_gen_dir/tsc"
 
-js_files = [
-  "test_util.ts",
-
-  # File Manager.
-  "file_manager/dlp_enterprise_connectors.js",
-  "file_manager/search.js",
-  "file_manager/transfer.js",
-]
-
 ts_files = [
   "remote_call.ts",
+  "test_util.ts",
   "testcase.ts",
-
-  # "test_util.ts",
 
   # File Manager.
   "file_manager/android_photos.ts",
-
   "file_manager/background.ts",
-
   "file_manager/breadcrumbs.ts",
   "file_manager/choose_entry.ts",
   "file_manager/choose_entry_const.ts",
-
   "file_manager/context_menu.ts",
-
   "file_manager/copy_between_windows.ts",
   "file_manager/create_new_folder.ts",
   "file_manager/crostini.ts",
   "file_manager/directory_tree.ts",
-
   "file_manager/directory_tree_context_menu.ts",
-
   "file_manager/dlp.ts",
-
-  # "file_manager/dlp_enterprise_connectors.ts",
-
+  "file_manager/dlp_enterprise_connectors.ts",
   "file_manager/drive_specific.ts",
   "file_manager/file_dialog.ts",
   "file_manager/file_display.ts",
@@ -72,25 +54,18 @@ ts_files = [
   "file_manager/open_video_media_app.ts",
   "file_manager/providers.ts",
   "file_manager/quick_view.ts",
-
   "file_manager/recents.ts",
-
   "file_manager/restore_prefs.ts",
-
-  # "file_manager/search.ts",
-
+  "file_manager/search.ts",
   "file_manager/share.ts",
   "file_manager/sort_columns.ts",
   "file_manager/tab_index.ts",
   "file_manager/tasks.ts",
   "file_manager/test_data.ts",
   "file_manager/toolbar.ts",
-
-  # "file_manager/transfer.ts",
-
+  "file_manager/transfer.ts",
   "file_manager/trash.ts",
   "file_manager/traverse.ts",
-
   "file_manager/zip_files.ts",
 
   # Page Objects.
@@ -99,7 +74,7 @@ ts_files = [
 
 # TS/JS files.
 copy("copy_src") {
-  sources = js_files + ts_files
+  sources = ts_files
   outputs = [ "$preprocess_folder/{{source_target_relative}}" ]
 }
 
@@ -126,6 +101,7 @@ ts_library("build_ts") {
   composite = true
 
   definitions = [
+    "//tools/typescript/definitions/chrome_event.d.ts",
     "//tools/typescript/definitions/chrome_test.d.ts",
     "//tools/typescript/definitions/runtime.d.ts",
     "//tools/typescript/definitions/file_system.d.ts",
@@ -140,7 +116,7 @@ ts_library("build_ts") {
     ":from_files_app",
   ]
 
-  in_files = js_files + ts_files + [
+  in_files = ts_files + [
                # Copied from the Files app production to avoid duplication.
                "prod/file_manager/shared_types.ts",
              ]

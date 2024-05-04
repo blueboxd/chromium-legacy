@@ -37,6 +37,21 @@ extern const char kAutofillEnableCardArtImageDescription[];
 extern const char kAutofillEnableCardBenefitsName[];
 extern const char kAutofillEnableCardBenefitsDescription[];
 
+// Title and description for the flag to enable American Express card benefits
+// for autofill Payments UI.
+extern const char kAutofillEnableCardBenefitsForAmericanExpressName[];
+extern const char kAutofillEnableCardBenefitsForAmericanExpressDescription[];
+
+// Title and description for the flag to enable Capital One card benefits for
+// autofill Payments UI.
+extern const char kAutofillEnableCardBenefitsForCapitalOneName[];
+extern const char kAutofillEnableCardBenefitsForCapitalOneDescription[];
+
+// Title and description for the flag to enable syncing card benefits from
+// the Payments server for Payments Autofill.
+extern const char kAutofillEnableCardBenefitsSyncName[];
+extern const char kAutofillEnableCardBenefitsSyncDescription[];
+
 // Title and description for the flag to send merchant_domain as a top-level
 // parameter in card unmask requests.
 extern const char kAutofillEnableMerchantDomainInUnmaskCardRequestName[];
@@ -233,20 +248,14 @@ extern const char kDefaultBrowserVideoPromoDescription[];
 extern const char kDetectMainThreadFreezeName[];
 extern const char kDetectMainThreadFreezeDescription[];
 
+// Title and description for the flag to disable the fullscreen scrolling logic.
+extern const char kDisableFullscreenScrollingName[];
+extern const char kDisableFullscreenScrollingDescription[];
+
 // Title and description for the flag that adds the sport card to the Discover
 // feed.
 extern const char kDiscoverFeedSportCardName[];
 extern const char kDiscoverFeedSportCardDescription[];
-
-// Title and description for the flag that updates the color of the toolbar
-// based on the page's background color.
-extern const char kDynamicBackgroundColorName[];
-extern const char kDynamicBackgroundColorDescription[];
-
-// Title and description for the flag that updates the color of the toolbar
-// based on the page's theme color.
-extern const char kDynamicThemeColorName[];
-extern const char kDynamicThemeColorDescription[];
 
 // Title and description for the flag to enable the muting of compromised
 // passwords in the Password Manager.
@@ -271,11 +280,6 @@ extern const char kEnableFeedCardMenuSignInPromoDescription[];
 // parameters.
 extern const char kEnableFollowIPHExpParamsName[];
 extern const char kEnableFollowIPHExpParamsDescription[];
-
-// Title and description for the flag to enable follow management page instant
-// reload when opening.
-extern const char kEnableFollowManagementInstantReloadName[];
-extern const char kEnableFollowManagementInstantReloadDescription[];
 
 // Title and description for the flag to enable the Follow UI Updates.
 extern const char kEnableFollowUIUpdateName[];
@@ -378,11 +382,6 @@ extern const char kForceStartupSigninPromoDescription[];
 extern const char kFullscreenImprovementName[];
 extern const char kFullscreenImprovementDescription[];
 
-// Title and description for the flag to enable default browser full-screen
-// promo on omnibox copy-paste.
-extern const char kFullScreenPromoOnOmniboxCopyPasteName[];
-extern const char kFullScreenPromoOnOmniboxCopyPasteDescription[];
-
 // Title and description for the flag to enable skipping the internal impression
 // limits of the Fullscreen Promos Manager.
 extern const char kFullscreenPromosManagerSkipInternalLimitsName[];
@@ -441,10 +440,6 @@ extern const char kIOSEditMenuHideSearchWebDescription[];
 // Title and description for the flag to enable handling external action URLs.
 extern const char kIOSExternalActionURLsName[];
 extern const char kIOSExternalActionURLsDescription[];
-
-// Title and description for the flag to enable Incognito downloads education.
-extern const char kIOSIncognitoDownloadsWarningName[];
-extern const char kIOSIncognitoDownloadsWarningDescription[];
 
 // Title and description for the flag to enable the keyboard accessory upgrade.
 extern const char kIOSKeyboardAccessoryUpgradeName[];
@@ -527,10 +522,20 @@ extern const char kIPHiOSPullToRefreshFeatureDescription[];
 extern const char kIPHiOSSwipeBackForwardFeatureName[];
 extern const char kIPHiOSSwipeBackForwardFeatureDescription[];
 
+// Title and description for the flag to enable the swipe toolbar to switch tab
+// IPH.
+extern const char kIPHiOSSwipeToolbarToChangeTabFeatureName[];
+extern const char kIPHiOSSwipeToolbarToChangeTabFeatureDescription[];
+
 // Title and description for the flag to enable the swipe-to-incognito IPH on
 // the tab grid.
 extern const char kIPHiOSTabGridSwipeRightForIncognitoName[];
 extern const char kIPHiOSTabGridSwipeRightForIncognitoDescription[];
+
+// Title and description for the flag to add Linked Services Setting to the Sync
+// Settings page.
+extern const char kLinkedServicesSettingIosName[];
+extern const char kLinkedServicesSettingIosDescription[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
@@ -579,10 +584,6 @@ extern const char kNativeFindInPageDescription[];
 // Title and description for the flag to enable the new NTP omnibox layout.
 extern const char kNewNTPOmniboxLayoutName[];
 extern const char kNewNTPOmniboxLayoutDescription[];
-
-// Title and description for the flag to enable the new overflow menu.
-extern const char kNewOverflowMenuName[];
-extern const char kNewOverflowMenuDescription[];
 
 // Title and description for the flag to enable overflow menu customization
 extern const char kOverflowMenuCustomizationName[];
@@ -694,6 +695,11 @@ extern const char kOmniboxZeroSuggestPrefetchingOnSRPDescription[];
 // Title and description for the zero-suggest prefetching on any Web Page.
 extern const char kOmniboxZeroSuggestPrefetchingOnWebName[];
 extern const char kOmniboxZeroSuggestPrefetchingOnWebDescription[];
+
+// Title and description for the flag to enable the color icons in the
+// omnibox.
+extern const char kOmniboxColorIconsName[];
+extern const char kOmniboxColorIconsDescription[];
 
 // Title and description for the flag to force clipboard access to be
 // asynchronous.

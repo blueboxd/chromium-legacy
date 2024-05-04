@@ -37,7 +37,9 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/web_contents.h"
 
+namespace tab_groups {
 namespace {
+
 constexpr base::TimeDelta kDelayBeforeMetricsLogged = base::Hours(1);
 
 std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor>
@@ -100,7 +102,7 @@ void SavedTabGroupKeyedService::StoreLocalToSavedId(
 
 void SavedTabGroupKeyedService::OpenSavedTabGroupInBrowser(
     Browser* browser,
-    const base::Uuid& saved_group_guid) {
+    const base::Uuid saved_group_guid) {
   const SavedTabGroup* saved_group = model_.Get(saved_group_guid);
 
   // In the case where this function is called after confirmation of an
@@ -144,7 +146,7 @@ void SavedTabGroupKeyedService::OpenSavedTabGroupInBrowser(
   tab_strip_model_for_creation->AddToGroupForRestore(tab_indices, tab_group_id);
 
   // Update the saved tab group to link to the local group id.
-  model_.OnGroupOpenedInTabStrip(saved_group->saved_guid(), tab_group_id);
+  model_.OnGroupOpenedInTabStrip(saved_group_guid, tab_group_id);
 
   TabGroup* const tab_group =
       tab_strip_model_for_creation->group_model()->GetTabGroup(tab_group_id);
@@ -159,8 +161,7 @@ void SavedTabGroupKeyedService::OpenSavedTabGroupInBrowser(
   UpdateGroupVisualData(saved_group_guid,
                         saved_group->local_group_id().value());
 
-  listener_.ConnectToLocalTabGroup(*model_.Get(saved_group_guid),
-                                   opened_web_contents_to_uuid);
+  listener_.ConnectToLocalTabGroup(*saved_group, opened_web_contents_to_uuid);
 
   base::RecordAction(
       base::UserMetricsAction("TabGroups_SavedTabGroups_Opened"));
@@ -577,3 +578,5 @@ void SavedTabGroupKeyedService::RecordTabGroupMetrics() {
   base::UmaHistogramCounts10000("TabGroups.UnsavedTabGroupCount",
                                 total_unsaved_groups);
 }
+
+}  // namespace tab_groups

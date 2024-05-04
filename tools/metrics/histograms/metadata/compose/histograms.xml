@@ -45,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compose.ContextMenu.OpenComposeDialogResult"
-    enum="OpenComposeDialogResult" expires_after="2024-06-02">
+    enum="OpenComposeDialogResult" expires_after="2024-08-18">
   <owner>carlosk@chromium.org</owner>
   <owner>chrome-compose-frontend@google.com</owner>
   <summary>
@@ -67,7 +67,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compose.Dialog.InnerTextNodeOffsetFound"
-    enum="ComposeInnerTextNodeOffset" expires_after="2024-07-02">
+    enum="ComposeInnerTextNodeOffset" expires_after="2024-09-01">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>chrome-compose-frontend@google.com</owner>
   <summary>
@@ -90,7 +90,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compose.Dialog.InnerTextSize" units="bytes"
-    expires_after="2024-06-16">
+    expires_after="2024-08-18">
   <owner>sophey@chromium.org</owner>
   <owner>chrome-compose-frontend@google.com</owner>
   <summary>
@@ -120,32 +120,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Compose.Request.Reason" enum="ComposeRequestReason"
-    expires_after="2024-07-02">
-  <owner>cuianthony@chromium.org</owner>
-  <owner>chrome-compose-frontend@google.com</owner>
-  <summary>
-    Records the reason a Compose request is started. This includes the first
-    request from the input state, retries, updates and modifications made by the
-    user for a reuqest. Logged each time a Compose request is sent by the user
-    to the Compose service.
-  </summary>
-</histogram>
-
-<histogram name="Compose.Session.DialogShownCount.{FinalStatus}" units="count"
-    expires_after="2024-08-11">
-  <owner>perrier@chromium.org</owner>
-  <owner>chrome-compose-frontend@google.com</owner>
-  <summary>
-    Count of the number of times the Compose dialog was shown in a session where
-    {FinalStatus}. Recorded once per session when it is closed or destroyed.
-  </summary>
-  <token key="FinalStatus">
-    <variant name="Accepted" summary="the Compose response was inserted"/>
-    <variant name="Ignored" summary="the Compose response was ignored"/>
-  </token>
-</histogram>
-
 <histogram name="Compose.Session.Duration.OverOneDay" enum="BooleanYesNo"
     expires_after="2024-06-09">
   <owner>perrier@chromium.org</owner>
@@ -156,24 +130,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Compose.Session.Duration.{SessionType}" units="ms"
-    expires_after="2024-06-09">
-  <owner>perrier@chromium.org</owner>
-  <owner>chrome-compose-frontend@google.com</owner>
-  <summary>
-    The length of a ComposeSession in ms that end {SessionType}. Recorded once
-    per session when the session closes for any reason.
-  </summary>
-  <token key="SessionType">
-    <variant name="FRE" summary="on the FRE dialog"/>
-    <variant name="Ignored" summary="without an insert"/>
-    <variant name="Inserted" summary="with an insert"/>
-    <variant name="MSBB" summary="on the MSBB dialog"/>
-  </token>
-</histogram>
-
 <histogram name="Compose.Session.EvalLocation"
-    enum="ComposeSessionEvalLocation" expires_after="2024-06-29">
+    enum="ComposeSessionEvalLocation" expires_after="2024-09-01">
   <owner>harringtond@chromium.org</owner>
   <owner>chrome-compose-frontend@google.com</owner>
   <summary>
@@ -233,7 +191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compose.{ComposeEvalLocation}Request.Duration.Error"
-    units="ms" expires_after="2024-06-02">
+    units="ms" expires_after="2024-08-25">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-compose-frontend@google.com</owner>
   <summary>
@@ -257,7 +215,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compose.{ComposeEvalLocation}Request.Feedback"
-    enum="ComposeRequestFeedback" expires_after="2024-07-02">
+    enum="ComposeRequestFeedback" expires_after="2024-09-01">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-compose-frontend@google.com</owner>
   <summary>
@@ -265,6 +223,28 @@ chromium-metrics-reviews@google.com.
     feedback can no longer be modified for a request. {ComposeEvalLocation}
   </summary>
   <token key="ComposeEvalLocation" variants="ComposeEvalLocation"/>
+</histogram>
+
+<histogram name="Compose.{ComposeEvalLocation}Request.Reason"
+    enum="ComposeRequestReason" expires_after="2024-07-02">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <summary>
+    Records the reason a Compose request is started. This includes the first
+    request from the input state, retries, updates and modifications made by the
+    user for a reuqest. {ComposeEvalLocation}
+  </summary>
+  <token key="ComposeEvalLocation">
+    <variant name=""
+        summary="Logged each time a Compose request is sent. Recorded for all
+                 evaluation locations."/>
+    <variant name="OnDevice."
+        summary="Logged each time a Compose response that was evalued on
+                 device is received."/>
+    <variant name="Server."
+        summary="Logged each time a Compose response that was evalued on the
+                 server is received."/>
+  </token>
 </histogram>
 
 <histogram name="Compose.{ComposeEvalLocation}Request.Status"
@@ -308,6 +288,44 @@ chromium-metrics-reviews@google.com.
     <variant name="Ignored" summary="the Compose response was ignored"/>
   </token>
   <token key="ComposeEvalLocation" variants="ComposeEvalLocation"/>
+</histogram>
+
+<histogram
+    name="Compose.{ComposeEvalLocation}Session.DialogShownCount.{FinalStatus}"
+    units="count" expires_after="2024-08-11">
+  <owner>perrier@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <summary>
+    Count of the number of times the Compose dialog was shown in a session where
+    {FinalStatus}. Recorded once per session when it is closed or destroyed.
+    {ComposeEvalLocation} if a mix of Server and OnDevice requests were used for
+    this session, or no requests were made, then neither Server nor OnDevice
+    variant is recorded.
+  </summary>
+  <token key="ComposeEvalLocation" variants="ComposeEvalLocation"/>
+  <token key="FinalStatus">
+    <variant name="Accepted" summary="the Compose response was inserted"/>
+    <variant name="Ignored" summary="the Compose response was ignored"/>
+  </token>
+</histogram>
+
+<histogram name="Compose.{ComposeEvalLocation}Session.Duration.{SessionType}"
+    units="ms" expires_after="2024-08-25">
+  <owner>perrier@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <summary>
+    The length of a ComposeSession in ms that end {SessionType}. Recorded once
+    per session when the session closes for any reason. {ComposeEvalLocation} If
+    a mix of Server and OnDevice requests were used for this session, or no
+    requests were made, then neither Server nor OnDevice variant is recorded.
+  </summary>
+  <token key="ComposeEvalLocation" variants="ComposeEvalLocation"/>
+  <token key="SessionType">
+    <variant name="FRE" summary="on the FRE dialog"/>
+    <variant name="Ignored" summary="without an insert"/>
+    <variant name="Inserted" summary="with an insert"/>
+    <variant name="MSBB" summary="on the MSBB dialog"/>
+  </token>
 </histogram>
 
 <histogram name="Compose.{ComposeEvalLocation}Session.EventCounts"

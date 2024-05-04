@@ -160,6 +160,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     protected Context mContext;
     private final String mProductVersion;
     protected long mNativeObj;
+    protected long mNativeAssistDataObj;
     private boolean mIsHovering;
     private int mLastHoverId = View.NO_ID;
     private int mCurrentRootId;
@@ -284,7 +285,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         mDelegate.setOnScrollPositionChangedCallback(
                 () -> {
                     handleScrollPositionChanged(mAccessibilityFocusId);
-                    moveAccessibilityFocusToIdAndRefocusIfNeeded(mAccessibilityFocusId);
+                    moveAccessibilityFocusToId(mAccessibilityFocusId);
                 });
 
         AccessibilityState.addListener(this);
@@ -1125,24 +1126,41 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
         mHasFinishedLatestAccessibilitySnapshot = false;
         long beforeSnapshotTimeMs = SystemClock.elapsedRealtime();
-        mDelegate.requestAccessibilitySnapshot(
-                viewRoot,
-                () -> {
-                    viewRoot.asyncCommit();
-                    mHasFinishedLatestAccessibilitySnapshot = true;
 
-                    if (AccessibilityFeaturesMap.isEnabled(
-                            AccessibilityFeatures.ACCESSIBILITY_SNAPSHOT_STRESS_TESTS)) {
-                        long snapshotRuntimeMs =
-                                SystemClock.elapsedRealtime() - beforeSnapshotTimeMs;
-                        RecordHistogram.recordLinearCountHistogram(
-                                "Accessibility.AXTreeSnapshotter.Snapshot.EndToEndRuntime",
-                                (int) snapshotRuntimeMs,
-                                1,
-                                5 * 1000,
-                                100);
-                    }
-                });
+        // Stubbed.
+        if (ContentFeatureMap.isEnabled(ContentFeatureList.ACCESSIBILITY_UNIFIED_SNAPSHOTS)) {
+            mNativeAssistDataObj =
+                    WebContentsAccessibilityImplJni.get()
+                            .initForAssistData(
+                                    WebContentsAccessibilityImpl.this,
+                                    webContents,
+                                    new AssistDataBuilder());
+
+            WebContentsAccessibilityImplJni.get()
+                    .requestAccessibilityTreeSnapshot(
+                            mNativeAssistDataObj,
+                            viewRoot,
+                            () -> onSnapshotDoneCallback(viewRoot, beforeSnapshotTimeMs));
+        }
+
+        mDelegate.requestAccessibilitySnapshot(
+                viewRoot, () -> onSnapshotDoneCallback(viewRoot, beforeSnapshotTimeMs));
+    }
+
+    private void onSnapshotDoneCallback(ViewStructure viewRoot, long beforeSnapshotTimeMs) {
+        viewRoot.asyncCommit();
+        mHasFinishedLatestAccessibilitySnapshot = true;
+
+        if (AccessibilityFeaturesMap.isEnabled(
+                AccessibilityFeatures.ACCESSIBILITY_SNAPSHOT_STRESS_TESTS)) {
+            long snapshotRuntimeMs = SystemClock.elapsedRealtime() - beforeSnapshotTimeMs;
+            RecordHistogram.recordLinearCountHistogram(
+                    "Accessibility.AXTreeSnapshotter.Snapshot.EndToEndRuntime",
+                    (int) snapshotRuntimeMs,
+                    1,
+                    5 * 1000,
+                    100);
+        }
     }
 
     @Override
@@ -1456,7 +1474,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         // AccessibilityNodeInfoCompat for this element before.
         if (!mShouldFocusOnPageLoad) return;
         if (mAccessibilityFocusId != View.NO_ID) {
-            moveAccessibilityFocusToIdAndRefocusIfNeeded(mAccessibilityFocusId);
+            moveAccessibilityFocusToId(mAccessibilityFocusId);
         }
     }
 
@@ -1750,19 +1768,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         return true;
     }
 
-    private void moveAccessibilityFocusToIdAndRefocusIfNeeded(int newAccessibilityFocusId) {
-        // Work around a bug in the Android framework where it doesn't fully update the object
-        // with accessibility focus even if you send it a WINDOW_CONTENT_CHANGED. To work around
-        // this, clear focus and then set focus again.
-        if (newAccessibilityFocusId == mAccessibilityFocusId) {
-            sendAccessibilityEvent(
-                    newAccessibilityFocusId,
-                    AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
-            mAccessibilityFocusId = View.NO_ID;
-        }
-        moveAccessibilityFocusToId(newAccessibilityFocusId);
-    }
-
     /**
      * Send a WINDOW_CONTENT_CHANGED event after a short delay. This helps throttle such
      * events from firing too quickly during animations, for example.
@@ -1979,7 +1984,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         // using an AXTree that was cached.
         if (mDelegate.getNativeAXTree() != 0) {
             // As a workaround force the node into focus when a paint preview is showing.
-            moveAccessibilityFocusToIdAndRefocusIfNeeded(id);
+            moveAccessibilityFocusToId(id);
         }
     }
 
@@ -2179,6 +2184,17 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
                 WebContentsAccessibilityImpl caller,
                 long axTreePtr,
                 AccessibilityNodeInfoBuilder builder);
+
+        // These two methods are only used for one-off accessibility tree snapshots.
+        long initForAssistData(
+                WebContentsAccessibilityImpl caller,
+                WebContents webContents,
+                AssistDataBuilder builder);
+
+        void requestAccessibilityTreeSnapshot(
+                long nativeWebContentsAccessibilityAndroid,
+                ViewStructure viewRoot,
+                Runnable onDoneCallback);
 
         void connectInstanceToRootManager(long nativeWebContentsAccessibilityAndroid);
 

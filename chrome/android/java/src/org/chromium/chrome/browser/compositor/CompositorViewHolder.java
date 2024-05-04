@@ -8,9 +8,7 @@ import static androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRAN
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -19,7 +17,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Pair;
 import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
@@ -38,6 +35,7 @@ import androidx.core.view.accessibility.AccessibilityEventCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.customview.widget.ExploreByTouchHelper;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
@@ -184,8 +182,6 @@ public class CompositorViewHolder extends FrameLayout
     // Cache objects that should not be created frequently.
     private final Rect mCacheRect = new Rect();
     private final Point mCachePoint = new Point();
-
-    private boolean mIsInVr;
 
     private boolean mControlsResizeView;
     private boolean mInGesture;
@@ -343,46 +339,6 @@ public class CompositorViewHolder extends FrameLayout
                 }
             };
 
-    /** This view is created on demand to display debugging information. */
-    private static class DebugOverlay extends View {
-        private final List<Pair<Rect, Integer>> mRectangles = new ArrayList<>();
-        private final Paint mPaint = new Paint();
-        private boolean mFirstPush = true;
-
-        /**
-         * @param context The current Android's context.
-         */
-        public DebugOverlay(Context context) {
-            super(context);
-        }
-
-        /**
-         * Pushes a rectangle to be drawn on the screen on top of everything.
-         *
-         * @param rect The rectangle to be drawn on screen
-         * @param color The color of the rectangle
-         */
-        public void pushRect(Rect rect, int color) {
-            if (mFirstPush) {
-                mRectangles.clear();
-                mFirstPush = false;
-            }
-            mRectangles.add(new Pair<>(rect, color));
-            invalidate();
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            for (int i = 0; i < mRectangles.size(); i++) {
-                mPaint.setColor(mRectangles.get(i).second);
-                canvas.drawRect(mRectangles.get(i).first, mPaint);
-            }
-            mFirstPush = true;
-        }
-    }
-
-    private DebugOverlay mDebugOverlay;
-
     private View mUrlBar;
 
     private PrefService mPrefService;
@@ -445,7 +401,7 @@ public class CompositorViewHolder extends FrameLayout
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         setOnSystemUiVisibilityChangeListener(visibility -> handleSystemUiVisibilityChange());
-        if (ChromeFeatureList.sFullscreenInsetsApiMigration.isEnabled()) {
+        if (isFullscreenApiMigrationEnabled()) {
             setOnApplyWindowInsetsListener(
                     (view, windowInsets) -> {
                         handleSystemUiVisibilityChange();
@@ -526,9 +482,15 @@ public class CompositorViewHolder extends FrameLayout
         postDelayed(mSystemUiFullscreenResizeRunnable, delay);
     }
 
+    private static boolean isFullscreenApiMigrationEnabled() {
+        return ChromeFeatureList.sFullscreenInsetsApiMigration.isEnabled()
+                || (BuildInfo.getInstance().isAutomotive
+                        && ChromeFeatureList.sFullscreenInsetsApiMigrationOnAutomotive.isEnabled());
+    }
+
     private boolean isInFullscreenMode(int uiVisibility, View view) {
         // If the fullscreen api migration is enabled, check the updated API instead.
-        if (ChromeFeatureList.sFullscreenInsetsApiMigration.isEnabled()) {
+        if (isFullscreenApiMigrationEnabled()) {
             if (view != null
                     && view.getRootWindowInsets() != null
                     && mActivity != null
@@ -555,7 +517,7 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private boolean isLayoutFullscreen(int uiVisibility) {
-        if (ChromeFeatureList.sFullscreenInsetsApiMigration.isEnabled()) {
+        if (isFullscreenApiMigrationEnabled()) {
             if (mActivity != null
                     && mActivity.getWindow() != null
                     && mActivity.getWindow().getDecorView() != null) {
@@ -753,16 +715,13 @@ public class CompositorViewHolder extends FrameLayout
             mInGesture = false;
             tryUpdateControlsAndWebContentsSizing();
         }
-        if (!ChromeFeatureList.sDeferNotifyInMotion.isEnabled()) {
-            updateInMotion();
-        }
     }
 
     private void updateInMotion() {
         // TODO(https://crbug.com/1378716): Track fling as well.
         boolean inMotion = mInGesture || mContentViewScrolling;
         mInMotionSupplier.set(inMotion);
-        if (ChromeFeatureList.sDeferKeepScreenOnDuringGesture.isEnabled() && mContentView != null) {
+        if (mContentView != null) {
             mContentView.setDeferKeepScreenOnChanges(inMotion);
         }
     }
@@ -824,9 +783,7 @@ public class CompositorViewHolder extends FrameLayout
         // notifying in motion, should be done after this.
         boolean handled = super.dispatchTouchEvent(e);
 
-        if (ChromeFeatureList.sDeferNotifyInMotion.isEnabled()) {
-            updateInMotion();
-        }
+        updateInMotion();
         return handled;
     }
 
@@ -913,8 +870,6 @@ public class CompositorViewHolder extends FrameLayout
      */
     @VisibleForTesting
     void updateWebContentsSize(Tab tab) {
-        // When in VR, the CompositorView doesn't control the size of the WebContents.
-        if (mIsInVr) return;
         if (tab == null) return;
 
         WebContents webContents = tab.getWebContents();
@@ -1355,15 +1310,6 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void pushDebugRect(Rect rect, int color) {
-        if (mDebugOverlay == null) {
-            mDebugOverlay = new DebugOverlay(getContext());
-            addView(mDebugOverlay);
-        }
-        mDebugOverlay.pushRect(rect, color);
-    }
-
-    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mIsKeyboardShowing =
@@ -1405,12 +1351,10 @@ public class CompositorViewHolder extends FrameLayout
         onViewportChanged();
     }
 
-    @Override
     public int getTopControlsHeightPixels() {
         return mBrowserControlsManager != null ? mBrowserControlsManager.getTopControlsHeight() : 0;
     }
 
-    @Override
     public int getBottomControlsHeightPixels() {
         return mBrowserControlsManager != null
                 ? mBrowserControlsManager.getBottomControlsHeight()
@@ -1673,21 +1617,6 @@ public class CompositorViewHolder extends FrameLayout
         if (tab.getView() != tab.getContentView()) return;
 
         updateWebContentsSize(tab);
-    }
-
-    /**
-     * Called when VR is entered. The CompositorViewHolder loses control over WebContents sizing.
-     */
-    public void onEnterVr() {
-        mIsInVr = true;
-    }
-
-    /**
-     * Called when VR is exited. The CompositorViewHolder regains control over WebContents sizing.
-     */
-    public void onExitVr() {
-        mIsInVr = false;
-        tryUpdateControlsAndWebContentsSizing();
     }
 
     @Override

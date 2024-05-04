@@ -83,6 +83,12 @@ class ExoTestHelper {
       ShellSurfaceBase* shell_surface,
       gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888);
 
+  // Creates an exo::Buffer that will be backed by either GpuMemoryBuffer or
+  // MappableSI if enabled.
+  std::unique_ptr<Buffer> CreateBuffer(
+      gfx::Size buffer_size,
+      gfx::BufferFormat buffer_format = gfx::BufferFormat::RGBA_8888);
+
   std::unique_ptr<ClientControlledShellSurface>
   CreateClientControlledShellSurface(Surface* surface,
                                      bool is_modal = false,

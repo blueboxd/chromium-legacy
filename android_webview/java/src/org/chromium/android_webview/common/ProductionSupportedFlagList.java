@@ -208,6 +208,10 @@ public final class ProductionSupportedFlagList {
                 AndroidAutofillFeatures.ANDROID_AUTOFILL_BOTTOM_SHEET_WORKAROUND_NAME,
                 "Enable the workaround for autofill bottom sheet platform bug."),
         Flag.baseFeature(
+                AndroidAutofillFeatures.ANDROID_AUTOFILL_CANCEL_SESSION_ON_NAVIGATION_NAME,
+                "Enable cancelling autofill session on a new document navigation, same frame that"
+                        + " has the form"),
+        Flag.baseFeature(
                 AndroidAutofillFeatures.ANDROID_AUTOFILL_PREFILL_REQUESTS_FOR_LOGIN_FORMS_NAME,
                 "When enabled, prefill requests are supported for login forms."),
         Flag.baseFeature(
@@ -293,9 +297,6 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_USE_DE_ADDRESS_MODEL,
                 "When enabled, Autofill uses a custom address model for Germany."),
-        Flag.baseFeature(
-                AutofillFeatures.AUTOFILL_ENABLE_ZIP_ONLY_ADDRESS_FORMS,
-                "When enabled, Autofill supports forms consisting of only zip code fields."),
         Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_DEFAULT_TO_CITY_AND_NUMBER,
                 "When enabled, Autofill heuristics will prioritize filling phone numbers in "
@@ -423,10 +424,6 @@ public final class ProductionSupportedFlagList {
                 "Enables establishing the GPU channel asnchronously when requesting a new "
                         + "layer tree frame sink."),
         Flag.baseFeature(
-                BlinkFeatures.DECODE_SCRIPT_SOURCE_OFF_THREAD,
-                "If enabled, script source text will be decoded and hashed off the main"
-                        + "thread."),
-        Flag.baseFeature(
                 BaseFeatures.OPTIMIZE_DATA_URLS, "Optimizes parsing and loading of data: URLs."),
         Flag.baseFeature(
                 BlinkFeatures.PREFETCH_FONT_LOOKUP_TABLES,
@@ -493,15 +490,11 @@ public final class ProductionSupportedFlagList {
                 "Switches skia to use DMSAA instead of MSAA for tile raster"
                         + " on Android GL backend."),
         Flag.baseFeature(
-                BlinkFeatures.CSS_SPELLING_GRAMMAR_ERRORS,
-                "Enables new CSS spelling and grammar features"),
-        Flag.baseFeature(
                 BlinkFeatures.WEB_RTC_INITIALIZE_ENCODER_ON_FIRST_FRAME,
                 "Initialize VideoEncodeAccelerator on the first encode."),
         Flag.baseFeature(
                 BlinkFeatures.THREADED_BODY_LOADER,
                 "If enabled, reads and decodes navigation body data off the main thread."),
-        Flag.baseFeature(BlinkFeatures.SPARSE_OBJECT_PAINT_PROPERTIES),
         Flag.baseFeature(BlinkFeatures.HIT_TEST_OPAQUENESS),
         Flag.baseFeature(CcFeatures.USE_RECORDED_BOUNDS_FOR_TILING),
         Flag.baseFeature(BlinkFeatures.DYNAMIC_SCROLL_CULL_RECT_EXPANSION),
@@ -631,8 +624,6 @@ public final class ProductionSupportedFlagList {
                 BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
                 "Enables WebView to use the extended keyboard shortcuts added for Android U"),
         Flag.baseFeature(
-                NetFeatures.PARTITIONED_COOKIES, "Enables the Partitioned cookie attribute"),
-        Flag.baseFeature(
                 NetFeatures.SUPPORT_PARTITIONED_BLOB_URL,
                 "Enables the new Blob URL implementation needed for third-party storage"
                         + " partitioning"),
@@ -685,6 +676,12 @@ public final class ProductionSupportedFlagList {
                 ContentFeatures.QUEUE_NAVIGATIONS_WHILE_WAITING_FOR_COMMIT,
                 "If enabled, allows navigations to be queued when there is "
                         + "an existing pending commit navigation in progress."),
+        Flag.baseFeature(
+                ContentFeatures.RENDER_DOCUMENT,
+                "If enabled, same-site navigations will change RenderFrameHosts"),
+        Flag.baseFeature(
+                ContentFeatures.RENDER_DOCUMENT_COMPOSITOR_REUSE,
+                "If enabled, allows compositor to be reused on cross-RenderFrameHost navigations"),
         Flag.baseFeature("NetworkServiceCookiesHighPriorityTaskRunner"),
         Flag.baseFeature("IncreaseCoookieAccesCacheSize"),
         Flag.baseFeature("AvoidScheduleWorkDuringNativeEventProcessing"),
@@ -808,6 +805,7 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature("WebAssemblyMoreAggressiveCodeCaching"),
         Flag.baseFeature("WebAssemblyTurboshaft"),
         Flag.baseFeature("WebAssemblyTurboshaftInstructionSelection"),
+        Flag.baseFeature("WebAssemblyInlining"),
         Flag.baseFeature(
                 AwFeatures.WEBVIEW_INJECT_PLATFORM_JS_APIS,
                 "Inject platform-specific JavaScript APIs."),
@@ -887,10 +885,42 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 BlinkFeatures.BACK_FORWARD_CACHE_SEND_NOT_RESTORED_REASONS,
                 "Expose NotRestoredReasons via PerformanceNavigationTiming API."),
+        Flag.baseFeature(
+                BlinkFeatures.EVENT_TIMING_FALLBACK_TO_MODAL_DIALOG_START,
+                "Enable reporting the modal dialog start time as an alternative end time for"
+                        + " duration measurement in performance event timing."),
+        Flag.baseFeature(
+                BlinkFeatures.EVENT_TIMING_KEYPRESS_AND_COMPOSITION_INTERACTION_ID,
+                "Exposes Event Timing keyboard InteractionId of composition and keypress events."),
         Flag.baseFeature("SkipUnnecessaryThreadHopsForParseHeaders"),
         Flag.commandLine(
                 AwSwitches.WEBVIEW_FPS_COMPONENT,
                 "Enables installing the first party sets component to WebViews."),
+        Flag.commandLine(
+                AwSwitches.WEBVIEW_FORCE_DISABLE3PCS,
+                "Force disables 3rd party cookies for all apps."),
+        Flag.baseFeature(
+                "DoNotEvictOnAXLocationChange",
+                "When enabled, do not evict the bfcache entry even when AXLocationChange happens."),
+        Flag.baseFeature("PassHistogramSharedMemoryOnLaunch"),
+        Flag.baseFeature(
+                BlinkFeatures.NO_THROTTLING_VISIBLE_AGENT,
+                "Do not throttle Javascript timers to 1Hz on hidden cross-origin frames that are"
+                        + " same-agent with a visible frame."),
+        Flag.baseFeature("CreateSpareRendererOnBrowserContextCreation"),
+        Flag.baseFeature(
+                "AllowDatapipeDrainedAsBytesConsumerInBFCache",
+                "When enabled, allow pages with drained datapipe into bfcache."),
+        Flag.baseFeature(
+                AwFeatures.WEBVIEW_USE_INITIAL_NETWORK_STATE_AT_STARTUP,
+                "Use initial network state at startup"),
+        Flag.baseFeature(
+                BlinkFeatures.AUTOFILL_INCLUDE_FORM_ELEMENTS_IN_SHADOW_DOM,
+                "Extract form elements from shadow DOM"),
+        Flag.baseFeature(
+                BlinkFeatures.AUTOFILL_INCLUDE_SHADOW_DOM_IN_UNASSOCIATED_LISTED_ELEMENTS,
+                "Include elements from shadow DOM in unassociated listed elements"),
+        Flag.baseFeature("ShadowDomSupport", "Improve shadow DOM support in password manager"),
         // Add new commandline switches and features above. The final entry should have a
         // trailing comma for cleaner diffs.
     };

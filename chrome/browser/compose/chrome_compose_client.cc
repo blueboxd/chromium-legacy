@@ -5,6 +5,7 @@
 #include "chrome/browser/compose/chrome_compose_client.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -33,6 +34,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/compose/core/browser/compose_features.h"
 #include "components/compose/core/browser/compose_manager_impl.h"
@@ -111,10 +114,11 @@ ChromeComposeClient::ChromeComposeClient(content::WebContents* web_contents)
 ChromeComposeClient::~ChromeComposeClient() = default;
 
 void ChromeComposeClient::BindComposeDialog(
-    mojo::PendingReceiver<compose::mojom::ComposeClientPageHandler>
+    mojo::PendingReceiver<compose::mojom::ComposeClientUntrustedPageHandler>
         client_handler,
-    mojo::PendingReceiver<compose::mojom::ComposeSessionPageHandler> handler,
-    mojo::PendingRemote<compose::mojom::ComposeDialog> dialog) {
+    mojo::PendingReceiver<compose::mojom::ComposeSessionUntrustedPageHandler>
+        handler,
+    mojo::PendingRemote<compose::mojom::ComposeUntrustedDialog> dialog) {
   client_page_receiver_.reset();
   client_page_receiver_.Bind(std::move(client_handler));
 
@@ -142,13 +146,6 @@ void ChromeComposeClient::ShowComposeDialog(
     std::optional<autofill::AutofillClient::PopupScreenLocation>
         popup_screen_location,
     ComposeCallback callback) {
-  // Do not show multiple dialogs at the same time.
-  if (IsDialogShowing() &&
-      base::FeatureList::IsEnabled(
-          compose::features::kEnableComposeSavedStateNotification)) {
-    compose_dialog_controller_->Close();
-  }
-
   CreateOrUpdateSession(ui_entry_point, trigger_field, std::move(callback));
   if (!skip_show_dialog_for_test_) {
     // The bounds given by autofill are relative to the top level frame. Here we
@@ -171,7 +168,9 @@ bool ChromeComposeClient::HasSession(
 
 void ChromeComposeClient::ShowUI() {
   if (compose_dialog_controller_) {
-    compose_dialog_controller_->ShowUI();
+    compose_dialog_controller_->ShowUI(
+        base::BindOnce(&ChromeComposeClient::ShowSavedStateNotification,
+                       weak_ptr_factory_.GetWeakPtr()));
     compose::LogComposeDialogOpenLatency(base::TimeTicks::Now() -
                                          show_dialog_start_);
   }
@@ -205,15 +204,9 @@ void ChromeComposeClient::CloseUI(compose::mojom::CloseReason reason) {
               kFirstRunDisclaimerAcknowledgedWithInsert);
       page_ukm_tracker_->ComposeTextInserted();
       break;
-    case compose::mojom::CloseReason::kLostFocus:
-      break;
   }
 
-  if (reason != compose::mojom::CloseReason::kLostFocus) {
-    // Do not remove session when closing after showing the saved state
-    // notification.
-    RemoveActiveSession();
-  }
+  RemoveActiveSession();
 
   if (compose_dialog_controller_) {
     compose_dialog_controller_->Close();
@@ -269,7 +262,7 @@ void ChromeComposeClient::OpenComposeSettings() {
 
 void ChromeComposeClient::GetInnerText(
     content::RenderFrameHost& host,
-    absl::optional<int> node_id,
+    std::optional<int> node_id,
     content_extraction::InnerTextCallback callback) {
   content_extraction::GetInnerText(host, node_id, std::move(callback));
 }
@@ -432,6 +425,23 @@ void ChromeComposeClient::RemoveAllSessions() {
   active_compose_ids_.reset();
 }
 
+void ChromeComposeClient::ShowSavedStateNotification() {
+  // As a callback, this method may be called at anytime. But it only shows the
+  // notification for the most recently used field if valid, otherwise it noops.
+  if (!active_compose_ids_.has_value()) {
+    return;
+  }
+
+  if (autofill::AutofillDriver* driver =
+          autofill::ContentAutofillDriverFactory::FromWebContents(
+              &GetWebContents())
+              ->DriverForFrame(GetWebContents().GetPrimaryMainFrame())) {
+    driver->RendererShouldTriggerSuggestions(
+        /*field_id=*/active_compose_ids_->first,
+        autofill::AutofillSuggestionTriggerSource::kComposeDialogLostFocus);
+  }
+}
+
 ComposeSession* ChromeComposeClient::GetSessionForActiveComposeField() {
   if (active_compose_ids_.has_value()) {
     auto it = sessions_.find(active_compose_ids_.value().first);
@@ -470,20 +480,10 @@ bool ChromeComposeClient::ShouldTriggerPopup(
 
   GURL url = GetWebContents().GetPrimaryMainFrame()->GetLastCommittedURL();
 
-  bool should_trigger_popup = compose_enabling_->ShouldTriggerPopup(
+  return compose_enabling_->ShouldTriggerPopup(
       form_field_data.autocomplete_attribute, profile_, translate_manager,
       HasSession(form_field_data.global_id()),
       top_level_frame->GetLastCommittedOrigin(), form_field_data.origin, url);
-
-  if (IsDialogShowing() && should_trigger_popup &&
-      base::FeatureList::IsEnabled(
-          compose::features::kEnableComposeSavedStateNotification)) {
-    // If there is a current dialog showing and we are about to show the nudge,
-    // close the current dialog so that both are not shown at the same time.
-    compose_dialog_controller_->Close();
-  }
-
-  return should_trigger_popup;
 }
 
 bool ChromeComposeClient::ShouldTriggerContextMenu(
@@ -571,13 +571,6 @@ void ChromeComposeClient::PrimaryPageChanged(content::Page& page) {
   page_ukm_tracker_ = std::make_unique<compose::PageUkmTracker>(
       page.GetMainDocument().GetPageUkmSourceId());
 
-  if (IsDialogShowing() &&
-      base::FeatureList::IsEnabled(
-          compose::features::kEnableComposeSavedStateNotification)) {
-    // Close the dialog on navigation.
-    compose_dialog_controller_->Close();
-  }
-
   compose::ComposeTextUsageLogger::GetOrCreateForCurrentDocument(
       &page.GetMainDocument());
 }
@@ -611,15 +604,6 @@ void ChromeComposeClient::DidGetUserInteraction(
   if (IsDialogShowing() &&
       event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
     // TODO(b/318571287): Log when the dialog is closed due to scrolling.
-    compose_dialog_controller_->Close();
-  }
-}
-
-void ChromeComposeClient::OnVisibilityChanged(content::Visibility visibility) {
-  if (IsDialogShowing() && visibility != content::Visibility::VISIBLE &&
-      base::FeatureList::IsEnabled(
-          compose::features::kEnableComposeSavedStateNotification)) {
-    // Close the dialog when the WebContents is no longer visible.
     compose_dialog_controller_->Close();
   }
 }

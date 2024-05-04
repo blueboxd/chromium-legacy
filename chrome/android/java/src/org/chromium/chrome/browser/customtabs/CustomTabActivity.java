@@ -302,8 +302,8 @@ public class CustomTabActivity extends BaseCustomTabActivity {
             pageInsights.launch();
             return true;
         } else if (id == R.id.open_history_menu_id) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.APP_SPECIFIC_HISTORY)) {
-                HistoryManagerUtils.showHistoryManagerForResult(
+            if (ChromeFeatureList.sAppSpecificHistory.isEnabled()) {
+                HistoryManagerUtils.showAppSpecificHistoryManager(
                         this,
                         getTabModelSelector().isIncognitoSelected(),
                         getIntentDataProvider().getClientPackageName());
@@ -422,7 +422,8 @@ public class CustomTabActivity extends BaseCustomTabActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.APP_SPECIFIC_HISTORY)
+        super.onActivityResult(requestCode, resultCode, data);
+        if (ChromeFeatureList.sAppSpecificHistory.isEnabled()
                 && requestCode == HistoryManagerUtils.HISTORY_REQUEST_CODE
                 && resultCode == RESULT_OK) {
             LoadUrlParams params =
@@ -430,7 +431,6 @@ public class CustomTabActivity extends BaseCustomTabActivity {
                             data.getData().toString(),
                             IntentHandler.getTransitionTypeFromIntent(data, PageTransition.LINK));
             mTabProvider.getTab().loadUrl(params);
-            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 }

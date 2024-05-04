@@ -9,6 +9,8 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button_delegate.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_coordinator.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/branded_strings.h"
@@ -71,7 +74,8 @@ base::TimeDelta AvatarToolbarButton::g_iph_min_delay_after_creation =
 
 AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view)
     : ToolbarButton(base::BindRepeating(&AvatarToolbarButton::ButtonPressed,
-                                        base::Unretained(this))),
+                                        base::Unretained(this),
+                                        /*is_source_accelerator=*/false)),
       browser_(browser_view->browser()),
       creation_time_(base::TimeTicks::Now()) {
   delegate_ = std::make_unique<AvatarToolbarButtonDelegate>(this, browser_);
@@ -89,7 +93,7 @@ AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view)
   // and LabelButton image/label placement is still flipped like usual.
   SetFlipCanvasOnPaintForRTLUI(false);
 
-  GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
+  GetViewAccessibility().SetHasPopup(ax::mojom::HasPopup::kMenu);
 
   // For consistency with identity representation, we need to have the avatar on
   // the left and the (potential) user name on the right.
@@ -107,26 +111,15 @@ AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view)
 AvatarToolbarButton::~AvatarToolbarButton() = default;
 
 void AvatarToolbarButton::UpdateIcon() {
-  // If widget isn't set, the button doesn't have access to the theme provider
-  // to set colors. Defer updating until AddedToWidget(). This may get called as
-  // a result of OnUserIdentityChanged() called from the constructor when the
-  // button is not yet added to the ToolbarView's hierarchy.
   if (!GetWidget()) {
     return;
   }
 
-  const int icon_size = GetIconSize();
-  for (auto state : kButtonStates) {
-    SetImageModel(
-        state, delegate_->GetAvatarIcon(icon_size, GetForegroundColor(state)));
-  }
-  // If `OnUserIdentityChanged()` has been called and the image is not empty,
-  // show the animation. If the animation is shown, also resets the delegate's
-  // `TextState` so that the animation will not be triggered again.
-  // TODO(b/324018028): This call should be moved within the delegate.
-  delegate_->MaybeShowIdentityAnimation();
+  UpdateIconWithoutObservers();
 
-  SetInsets();
+  for (auto& observer : observer_list_) {
+    observer.OnIconUpdated();
+  }
 }
 
 void AvatarToolbarButton::Layout(PassKey) {
@@ -149,6 +142,24 @@ void AvatarToolbarButton::Layout(PassKey) {
   gfx::Size image_size = image->GetImage().size();
   image_size.Enlarge(1, 1);
   image->SetSize(image_size);
+}
+
+void AvatarToolbarButton::UpdateIconWithoutObservers() {
+  // If widget isn't set, the button doesn't have access to the theme provider
+  // to set colors. Defer updating until AddedToWidget(). This may get called as
+  // a result of OnUserIdentityChanged() called from the constructor when the
+  // button is not yet added to the ToolbarView's hierarchy.
+  if (!GetWidget()) {
+    return;
+  }
+
+  const int icon_size = GetIconSize();
+  for (auto state : kButtonStates) {
+    SetImageModel(
+        state, delegate_->GetAvatarIcon(icon_size, GetForegroundColor(state)));
+  }
+
+  SetInsets();
 }
 
 void AvatarToolbarButton::UpdateText() {
@@ -228,6 +239,41 @@ base::ScopedClosureRunner AvatarToolbarButton::ShowExplicitText(
   return delegate_->ShowExplicitText(text);
 }
 
+void AvatarToolbarButton::ResetButtonAction() {
+  explicit_button_pressed_action_.Reset();
+  reset_button_action_button_closure_ptr_ = nullptr;
+}
+
+base::ScopedClosureRunner AvatarToolbarButton::SetExplicitButtonAction(
+    base::RepeatingClosure explicit_closure) {
+  // This logic is similar to the one in
+  // `AvatarToolbarButtonDelegate::ShowExplicitText()`.
+  // TODO(b/323516037): look into how to combine those into one struct for
+  // consistency.
+
+  // If an action was already set, enforce resetting it and invalidate the
+  // existing reset closure internally.
+  if (!explicit_button_pressed_action_.is_null()) {
+    // It is safe to run the scoped closure multiple times. It is a no-op after
+    // the first time.
+    reset_button_action_button_closure_ptr_->RunAndReset();
+  }
+
+  explicit_button_pressed_action_ = std::move(explicit_closure);
+
+  base::ScopedClosureRunner closure = base::ScopedClosureRunner(
+      base::BindRepeating(&AvatarToolbarButton::ResetButtonAction,
+                          weak_ptr_factory_.GetWeakPtr()));
+  // Keep a pointer to the current active closure in case the current action was
+  // reset from another call to `SetExplicitButtonAction()`.
+  reset_button_action_button_closure_ptr_ = &closure;
+  return closure;
+}
+
+bool AvatarToolbarButton::HasExplicitButtonAction() const {
+  return !explicit_button_pressed_action_.is_null();
+}
+
 void AvatarToolbarButton::SetButtonActionDisabled(bool disabled) {
   button_action_disabled_ = disabled;
 }
@@ -265,12 +311,16 @@ void AvatarToolbarButton::MaybeShowProfileSwitchIPH() {
 }
 
 void AvatarToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
-  delegate_->OnMouseExited();
+  for (auto& observer : observer_list_) {
+    observer.OnMouseExited();
+  }
   ToolbarButton::OnMouseExited(event);
 }
 
 void AvatarToolbarButton::OnBlur() {
-  delegate_->OnBlur();
+  for (auto& observer : observer_list_) {
+    observer.OnBlur();
+  }
   ToolbarButton::OnBlur();
 }
 
@@ -289,20 +339,33 @@ void AvatarToolbarButton::SetIPHMinDelayAfterCreationForTesting(
   g_iph_min_delay_after_creation = delay;
 }
 
-void AvatarToolbarButton::ButtonPressed() {
+// static
+void AvatarToolbarButton::SetTextDurationForTesting(base::TimeDelta duration) {
+  AvatarToolbarButtonDelegate::SetTextDurationForTesting(duration);
+}
+
+void AvatarToolbarButton::ButtonPressed(bool is_source_accelerator) {
   if (button_action_disabled_) {
     return;
   }
 
-  browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      /*is_source_accelerator=*/false);
+  if (!explicit_button_pressed_action_.is_null()) {
+    explicit_button_pressed_action_.Run();
+    return;
+  }
+
+  // Default behavior, shows the profile menu.
+  ProfileMenuCoordinator::GetOrCreateForBrowser(browser_)->Show(
+      is_source_accelerator);
 }
 
 void AvatarToolbarButton::AfterPropertyChange(const void* key,
                                               int64_t old_value) {
   if (key == user_education::kHasInProductHelpPromoKey) {
-    delegate_->SetHasInProductHelpPromo(
-        GetProperty(user_education::kHasInProductHelpPromoKey));
+    for (auto& observer : observer_list_) {
+      observer.OnIPHPromoChanged(
+          GetProperty(user_education::kHasInProductHelpPromoKey));
+    }
   }
   ToolbarButton::AfterPropertyChange(key, old_value);
 }
@@ -365,6 +428,27 @@ int AvatarToolbarButton::GetIconSize() const {
 
   return features::IsChromeRefresh2023() ? kDefaultIconSizeChromeRefresh
                                          : kIconSizeForNonTouchUi;
+}
+
+void AvatarToolbarButton::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void AvatarToolbarButton::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void AvatarToolbarButton::NotifyShowNameClearedForTesting() const {
+  for (auto& observer : observer_list_) {
+    observer.OnShowNameClearedForTesting();  // IN-TEST
+  }
+}
+
+void AvatarToolbarButton::NotifyManagementTransientTextClearedForTesting()
+    const {
+  for (auto& observer : observer_list_) {
+    observer.OnShowManagementTransientTextClearedForTesting();  // IN-TEST
+  }
 }
 
 BEGIN_METADATA(AvatarToolbarButton)

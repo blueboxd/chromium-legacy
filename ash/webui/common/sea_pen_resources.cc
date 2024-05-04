@@ -17,14 +17,17 @@ void AddSeaPenStrings(content::WebUIDataSource* source) {
       {"seaPenChooseAWallpaperHeading",
        IDS_PERSONALIZATION_APP_CHOOSE_A_WALLPAPER_HEADING},
       {"seaPenLabel", IDS_SEA_PEN_LABEL},
-      {"seaPenPoweredByGoogle", IDS_SEA_PEN_POWERED_BY_GOOGLE},
+      {"seaPenPoweredByGoogleAi", IDS_SEA_PEN_POWERED_BY_GOOGLE_AI},
       {"seaPenTemplateHeading", IDS_SEA_PEN_TEMPLATE_HEADING},
       {"seaPenRecentWallpapersHeading", IDS_SEA_PEN_RECENT_WALLPAPERS_HEADING},
+      {"vcBackgroundRecentWallpapersHeading",
+       IDS_VC_BACKGROUND_RECENT_WALLPAPERS_HEADING},
       {"seaPenInspireMeButton", IDS_SEA_PEN_INSPIRE_ME_BUTTON},
       {"seaPenCreateButton", IDS_SEA_PEN_CREATE_BUTTON},
       {"seaPenRecreateButton", IDS_SEA_PEN_RECREATE_BUTTON},
       {"seaPenWallpaperPoweredByGoogle",
        IDS_SEA_PEN_WALLPAPER_POWERED_BY_GOOGLE},
+      {"vcBackgroundPoweredByGoogle", IDS_VC_BACKGROUND_POWERED_BY_GOOGLE},
       {"seaPenDeleteWallpaper", IDS_SEA_PEN_DELETE_WALLPAPER},
       {"seaPenCreateMore", IDS_SEA_PEN_CREATE_MORE},
       {"seaPenAbout", IDS_SEA_PEN_ABOUT},
@@ -45,6 +48,7 @@ void AddSeaPenStrings(content::WebUIDataSource* source) {
        IDS_SEA_PEN_WALLPAPER_TERMS_REFUSE_BUTTON},
       {"seaPenWallpaperTermsOfServiceDesc",
        IDS_SEA_PEN_WALLPAPER_TERMS_OF_SERVICE_DESC},
+      {"seaPenCreatingHighResImage", IDS_SEA_PEN_CREATING_HIGH_RES_IMAGE},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 }

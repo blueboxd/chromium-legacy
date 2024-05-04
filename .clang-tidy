@@ -6,6 +6,7 @@
                     bugprone-assert-side-effect,
                     bugprone-bool-pointer-implicit-conversion,
                     bugprone-dangling-handle,
+                    bugprone-forward-declaration-namespace,
                     bugprone-inaccurate-erase,
                     bugprone-string-constructor,
                     bugprone-string-integer-assignment,
@@ -57,4 +58,10 @@
     # https://groups.google.com/a/chromium.org/g/cxx/c/noMMTNYiM0w .
     - key:          modernize-use-emplace.IgnoreImplicitConstructors
       value:        1
+    # Use of `std::ranges::reverse_view` is inconsistent with
+    # Chromium style. Recommend `base::Reversed` instead.
+    - key:          modernize-loop-convert.MakeReverseRangeFunction
+      value:        base::Reversed
+    - key:          modernize-loop-convert.MakeReverseRangeHeader
+      value:        base/containers/adapters.h
 ...

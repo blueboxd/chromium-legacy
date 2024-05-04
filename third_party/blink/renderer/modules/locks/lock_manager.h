@@ -9,6 +9,8 @@
 
 #include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_lock_options.h"
 #include "third_party/blink/renderer/modules/locks/lock.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -20,8 +22,8 @@
 
 namespace blink {
 
+class LockManagerSnapshot;
 class NavigatorBase;
-class ScriptPromise;
 class ScriptState;
 class V8LockGrantedCallback;
 
@@ -41,17 +43,17 @@ class LockManager final : public ScriptWrappable,
   LockManager(const LockManager&) = delete;
   LockManager& operator=(const LockManager&) = delete;
 
-  ScriptPromise request(ScriptState*,
-                        const String& name,
-                        V8LockGrantedCallback*,
-                        ExceptionState&);
-  ScriptPromise request(ScriptState*,
-                        const String& name,
-                        const LockOptions*,
-                        V8LockGrantedCallback*,
-                        ExceptionState&);
+  ScriptPromiseTyped<IDLAny> request(ScriptState*,
+                                     const String& name,
+                                     V8LockGrantedCallback*,
+                                     ExceptionState&);
+  ScriptPromiseTyped<IDLAny> request(ScriptState*,
+                                     const String& name,
+                                     const LockOptions*,
+                                     V8LockGrantedCallback*,
+                                     ExceptionState&);
 
-  ScriptPromise query(ScriptState*, ExceptionState&);
+  ScriptPromiseTyped<LockManagerSnapshot> query(ScriptState*, ExceptionState&);
 
   void Trace(Visitor*) const override;
 
@@ -80,12 +82,12 @@ class LockManager final : public ScriptWrappable,
   void RemovePendingRequest(LockRequestImpl*);
   bool IsPendingRequest(LockRequestImpl*);
 
-  void QueryImpl(ScriptPromiseResolver* resolver);
+  void QueryImpl(ScriptPromiseResolverTyped<LockManagerSnapshot>* resolver);
   void RequestImpl(const LockOptions* options,
                    const String& name,
                    V8LockGrantedCallback* callback,
                    mojom::blink::LockMode mode,
-                   ScriptPromiseResolver* resolver);
+                   ScriptPromiseResolverTyped<IDLAny>* resolver);
 
   // Query the ContentSettingsClient to ensure access is allowed from
   // this context. This invokes an asynchronous IPC call.

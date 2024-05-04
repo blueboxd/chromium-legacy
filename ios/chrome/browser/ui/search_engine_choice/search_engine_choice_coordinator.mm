@@ -11,34 +11,26 @@
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
-#import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_learn_more/search_engine_choice_learn_more_coordinator.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_learn_more/search_engine_choice_learn_more_view_controller.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_mediator.h"
-#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/search_engine_choice_table_mediator.h"
-#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/search_engine_choice_table_view_controller.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_view_controller.h"
-#import "ios/chrome/browser/ui/search_engine_choice/why_am_i_seeing_this/why_am_i_seeing_this_coordinator.h"
-#import "ios/chrome/browser/ui/search_engine_choice/why_am_i_seeing_this/why_am_i_seeing_this_view_controller.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 @interface SearchEngineChoiceCoordinator () <
-    SearchEngineChoiceTableActionDelegate,
     SearchEngineChoiceActionDelegate,
-    LearnMoreCoordinatorDelegate>
+    SearchEngineChoiceLearnMoreCoordinatorDelegate>
 @end
 
 @implementation SearchEngineChoiceCoordinator {
   // The mediator that fetches the list of search engines.
-  SearchEngineChoiceTableMediator* _searchEnginesTableMediator;
-  // The view controller for the search engines table.
-  SearchEngineChoiceTableViewController* _searchEnginesTableViewController;
-  // The mediator for the search engine choice screen.
   SearchEngineChoiceMediator* _mediator;
-  // The navigation controller displaying SearchEngineChoiceViewController.
+  // The view controller for the search engines.
   SearchEngineChoiceViewController* _viewController;
   // Coordinator for the informational popup that may be displayed to the user.
-  WhyAmISeeingThisCoordinator* _whyAmISeeingThisCoordinator;
+  SearchEngineChoiceLearnMoreCoordinator*
+      _searchEngineChoiceLearnMoreCoordinator;
   // Whether the screen is being shown in the FRE.
   BOOL _firstRun;
   // First run screen delegate.
@@ -73,26 +65,16 @@
 
 - (void)start {
   [super start];
-
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
-  _searchEnginesTableViewController =
-      [[SearchEngineChoiceTableViewController alloc]
-          initWithStyle:ChromeTableViewStyle()];
-  _searchEnginesTableMediator = [[SearchEngineChoiceTableMediator alloc]
+  _viewController =
+      [[SearchEngineChoiceViewController alloc] initWithFirstRunMode:_firstRun];
+  _viewController.actionDelegate = self;
+  _mediator = [[SearchEngineChoiceMediator alloc]
       initWithTemplateURLService:ios::TemplateURLServiceFactory::
                                      GetForBrowserState(browserState)
                      prefService:browserState->GetPrefs()];
-  _searchEnginesTableMediator.consumer = _searchEnginesTableViewController;
-  _searchEnginesTableViewController.delegate = self;
-
-  _viewController = [[SearchEngineChoiceViewController alloc]
-      initWithSearchEngineTableViewController:_searchEnginesTableViewController
-                                       forFRE:_firstRun];
-  _viewController.actionDelegate = self;
-
-  _mediator = [[SearchEngineChoiceMediator alloc] init];
   _mediator.consumer = _viewController;
-
+  _viewController.mutator = _mediator;
   _viewController.modalInPresentation = YES;
   if (_firstRun) {
     BOOL animated = self.baseNavigationController.topViewController != nil;
@@ -118,44 +100,28 @@
                            completion:nil];
   }
 
-  [_whyAmISeeingThisCoordinator stop];
-  _whyAmISeeingThisCoordinator = nil;
-  _searchEnginesTableViewController.delegate = nil;
-  _searchEnginesTableViewController = nil;
-  [_searchEnginesTableMediator disconnect];
-  _searchEnginesTableMediator.consumer = nil;
-  _searchEnginesTableMediator = nil;
+  [_searchEngineChoiceLearnMoreCoordinator stop];
+  _searchEngineChoiceLearnMoreCoordinator = nil;
   [_mediator disconnect];
+  _mediator.consumer = nil;
   _mediator = nil;
+  _viewController.mutator = nil;
   _viewController = nil;
   _baseNavigationController = nil;
   _first_run_delegate = nil;
   [super stop];
 }
 
-#pragma mark - SearchEngineChoiceTableActionDelegate
-
-- (void)selectSearchEngineAtRow:(NSInteger)row {
-  _searchEnginesTableMediator.selectedRow = row;
-  [_mediator
-      setSelectedItem:_searchEnginesTableViewController.searchEngines[row]];
-  _viewController.didUserSelectARow = YES;
-  [_viewController updatePrimaryActionButton];
-}
-
-- (void)didReachBottom {
-  _searchEnginesTableViewController.didReachBottom = YES;
-  [_viewController updatePrimaryActionButton];
-}
-
 #pragma mark - SearchEngineChoiceViewControllerDelegate
 
 - (void)showLearnMore {
-  _whyAmISeeingThisCoordinator = [[WhyAmISeeingThisCoordinator alloc]
-      initWithBaseViewController:_viewController
-                         browser:self.browser];
-  _whyAmISeeingThisCoordinator.delegate = self;
-  [_whyAmISeeingThisCoordinator start];
+  _searchEngineChoiceLearnMoreCoordinator =
+      [[SearchEngineChoiceLearnMoreCoordinator alloc]
+          initWithBaseViewController:_viewController
+                             browser:self.browser];
+  _searchEngineChoiceLearnMoreCoordinator.presentationFormSheet = _firstRun;
+  _searchEngineChoiceLearnMoreCoordinator.delegate = self;
+  [_searchEngineChoiceLearnMoreCoordinator start];
   if (_firstRun) {
     search_engines::RecordChoiceScreenEvent(
         search_engines::SearchEngineChoiceScreenEvents::
@@ -174,16 +140,16 @@
     search_engines::RecordChoiceScreenEvent(
         search_engines::SearchEngineChoiceScreenEvents::kDefaultWasSet);
   }
-  [_searchEnginesTableMediator saveDefaultSearchEngine];
+  [_mediator saveDefaultSearchEngine];
   [self dismissChoiceScreen];
 }
 
-#pragma mark - LearnMoreCoordinatorDelegate
+#pragma mark - SearchEngineChoiceLearnMoreCoordinatorDelegate
 
 - (void)learnMoreDidDismiss {
-  [_whyAmISeeingThisCoordinator stop];
-  _whyAmISeeingThisCoordinator.delegate = nil;
-  _whyAmISeeingThisCoordinator = nil;
+  [_searchEngineChoiceLearnMoreCoordinator stop];
+  _searchEngineChoiceLearnMoreCoordinator.delegate = nil;
+  _searchEngineChoiceLearnMoreCoordinator = nil;
 }
 
 #pragma mark - Private

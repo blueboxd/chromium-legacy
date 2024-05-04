@@ -16,13 +16,14 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator.EntryPoint;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetMediator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerDelegate;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerLaunchMode;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.device_lock.DeviceLockActivityLauncher;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.SyncService;
 import org.chromium.ui.base.WindowAndroid;
@@ -101,23 +102,20 @@ public class SendTabToSelfCoordinator {
     /** Performs sign-in for the promo shown to signed-out users. */
     private static class SendTabToSelfAccountPickerDelegate implements AccountPickerDelegate {
         private final Runnable mOnSignInCompleteCallback;
-        private final Profile mProfile;
+        private final SigninManager mSigninManager;
 
         public SendTabToSelfAccountPickerDelegate(
-                Runnable onSignInCompleteCallback, Profile profile) {
+                Runnable onSignInCompleteCallback, SigninManager signinManager) {
             mOnSignInCompleteCallback = onSignInCompleteCallback;
-            mProfile = profile;
+            mSigninManager = signinManager;
         }
 
         @Override
-        public void destroy() {}
+        public void onAccountPickerDestroy() {}
 
         @Override
-        public void signIn(
-                CoreAccountInfo accountInfo,
-                Callback<GoogleServiceAuthError> onSignInErrorCallback) {
-            SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(mProfile);
-            signinManager.signin(
+        public void signIn(CoreAccountInfo accountInfo, AccountPickerBottomSheetMediator mediator) {
+            mSigninManager.signin(
                     accountInfo,
                     SigninAccessPoint.SEND_TAB_TO_SELF_PROMO,
                     new SigninManager.SignInCallback() {
@@ -127,8 +125,25 @@ public class SendTabToSelfCoordinator {
                         }
 
                         @Override
-                        public void onSignInAborted() {}
+                        public void onSignInAborted() {
+                            mediator.switchToTryAgainView();
+                        }
                     });
+        }
+
+        @Override
+        public void isAccountManaged(CoreAccountInfo accountInfo, Callback<Boolean> callback) {
+            mSigninManager.isAccountManaged(accountInfo, callback);
+        }
+
+        @Override
+        public void setUserAcceptedAccountManagement(boolean confirmed) {
+            mSigninManager.setUserAcceptedAccountManagement(confirmed);
+        }
+
+        @Override
+        public String extractDomainName(String accountEmail) {
+            return mSigninManager.extractDomainName(accountEmail);
         }
 
         @Override
@@ -189,9 +204,11 @@ public class SendTabToSelfCoordinator {
                             mWindowAndroid,
                             mController,
                             new SendTabToSelfAccountPickerDelegate(
-                                    this::onSignInComplete, mProfile),
+                                    this::onSignInComplete,
+                                    IdentityServicesProvider.get().getSigninManager(mProfile)),
                             new BottomSheetStrings(),
-                            mDeviceLockActivityLauncher);
+                            mDeviceLockActivityLauncher,
+                            AccountPickerLaunchMode.DEFAULT);
                     return;
                 }
         }

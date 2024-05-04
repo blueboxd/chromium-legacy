@@ -52,10 +52,8 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Features;
-import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.loading_modal.LoadingModalDialogCoordinator;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerBackendException;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerError;
@@ -127,6 +125,8 @@ public class PasswordManagerHelperTest {
 
     private LoadingModalDialogCoordinator.Observer mLoadingDialogCoordinatorObserver;
 
+    private PasswordManagerHelper mPasswordManagerHelper;
+
     @Before
     public void setUp() throws PasswordCheckBackendException, CredentialManagerBackendException {
         // TODO(crbug.com/1511244): Parametrize the tests for account and local storage.
@@ -135,7 +135,7 @@ public class PasswordManagerHelperTest {
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJniMock);
         mJniMocker.mock(PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeJniMock);
-        Profile.setLastUsedProfileForTesting(mProfile);
+        mPasswordManagerHelper = new PasswordManagerHelper(mProfile);
         when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefService);
         when(mPrefService.getBoolean(Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS))
                 .thenReturn(false);
@@ -250,7 +250,7 @@ public class PasswordManagerHelperTest {
         when(mPasswordManagerUtilBridgeJniMock.canUseUPMBackend(true, mPrefService))
                 .thenReturn(true);
 
-        assertTrue(PasswordManagerHelper.canUseUpm());
+        assertTrue(mPasswordManagerHelper.canUseUpm());
     }
 
     @Test
@@ -259,7 +259,7 @@ public class PasswordManagerHelperTest {
         when(mSyncServiceMock.isEngineInitialized()).thenReturn(true);
         when(mSyncServiceMock.hasSyncConsent()).thenReturn(true);
 
-        assertFalse(PasswordManagerHelper.canUseUpm());
+        assertFalse(mPasswordManagerHelper.canUseUpm());
     }
 
     @Test
@@ -267,7 +267,7 @@ public class PasswordManagerHelperTest {
         when(mSyncServiceMock.isEngineInitialized()).thenReturn(false);
         when(mSyncServiceMock.hasSyncConsent()).thenReturn(true);
 
-        assertFalse(PasswordManagerHelper.canUseUpm());
+        assertFalse(mPasswordManagerHelper.canUseUpm());
     }
 
     @Test
@@ -275,7 +275,7 @@ public class PasswordManagerHelperTest {
         when(mSyncServiceMock.isEngineInitialized()).thenReturn(true);
         when(mSyncServiceMock.hasSyncConsent()).thenReturn(false);
 
-        assertFalse(PasswordManagerHelper.canUseUpm());
+        assertFalse(mPasswordManagerHelper.canUseUpm());
     }
 
     @Test
@@ -284,7 +284,7 @@ public class PasswordManagerHelperTest {
         when(mSyncServiceMock.hasSyncConsent()).thenReturn(true);
         when(mSyncServiceMock.getAuthError()).thenReturn(State.INVALID_GAIA_CREDENTIALS);
 
-        assertFalse(PasswordManagerHelper.canUseUpm());
+        assertFalse(mPasswordManagerHelper.canUseUpm());
     }
 
     @Test
@@ -297,7 +297,7 @@ public class PasswordManagerHelperTest {
 
         when(mBackendSupportHelperMock.isBackendPresent()).thenReturn(false);
 
-        assertFalse(PasswordManagerHelper.canUseUpm());
+        assertFalse(mPasswordManagerHelper.canUseUpm());
     }
 
     @Test
@@ -314,7 +314,7 @@ public class PasswordManagerHelperTest {
         when(mBackendSupportHelperMock.isBackendPresent()).thenReturn(true);
         when(mBackendSupportHelperMock.isUpdateNeeded()).thenReturn(true);
 
-        assertTrue(PasswordManagerHelper.canUseUpm());
+        assertTrue(mPasswordManagerHelper.canUseUpm());
     }
 
     @Test
@@ -330,11 +330,10 @@ public class PasswordManagerHelperTest {
                         new CredentialManagerBackendException(
                                 "", CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED));
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -354,10 +353,9 @@ public class PasswordManagerHelperTest {
                         new PasswordCheckBackendException(
                                 "", CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED));
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_EMAIL_ADDRESS);
 
@@ -377,10 +375,9 @@ public class PasswordManagerHelperTest {
                         new PasswordCheckBackendException(
                                 "", CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED));
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_NO_EMAIL_ADDRESS);
 
@@ -394,11 +391,10 @@ public class PasswordManagerHelperTest {
         when(mBackendSupportHelperMock.isBackendPresent()).thenReturn(true);
         when(mBackendSupportHelperMock.isUpdateNeeded()).thenReturn(false);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -412,10 +408,9 @@ public class PasswordManagerHelperTest {
         when(mBackendSupportHelperMock.isBackendPresent()).thenReturn(true);
         when(mBackendSupportHelperMock.isUpdateNeeded()).thenReturn(false);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_EMAIL_ADDRESS);
 
@@ -429,10 +424,9 @@ public class PasswordManagerHelperTest {
         when(mBackendSupportHelperMock.isBackendPresent()).thenReturn(true);
         when(mBackendSupportHelperMock.isUpdateNeeded()).thenReturn(false);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_NO_EMAIL_ADDRESS);
 
@@ -477,7 +471,7 @@ public class PasswordManagerHelperTest {
 
         when(mPrefService.getBoolean(Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS))
                 .thenReturn(true);
-        PasswordManagerHelper.resetUpmUnenrollment();
+        mPasswordManagerHelper.resetUpmUnenrollment();
 
         verify(mPrefService)
                 .setBoolean(
@@ -494,7 +488,7 @@ public class PasswordManagerHelperTest {
 
         when(mPrefService.getBoolean(Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS))
                 .thenReturn(false);
-        PasswordManagerHelper.resetUpmUnenrollment();
+        mPasswordManagerHelper.resetUpmUnenrollment();
 
         // If the pref isn't set, don't touch the pref!
         verify(mPrefService, never())
@@ -507,11 +501,10 @@ public class PasswordManagerHelperTest {
     public void testShowPasswordSettingsSyncingPasswordsLaunchesNewUIForAccount() {
         chooseToSyncPasswordsWithoutCustomPassphrase();
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -532,11 +525,10 @@ public class PasswordManagerHelperTest {
         when(mPasswordManagerUtilBridgeJniMock.canUseUPMBackend(false, mPrefService))
                 .thenReturn(false);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 mockContext,
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -551,11 +543,10 @@ public class PasswordManagerHelperTest {
         when(mSyncServiceMock.isSyncFeatureEnabled()).thenReturn(false);
         Context mockContext = mock(Context.class);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 mockContext,
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -571,11 +562,10 @@ public class PasswordManagerHelperTest {
         when(mPasswordManagerUtilBridgeJniMock.canUseUPMBackend(false, mPrefService))
                 .thenReturn(true);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -603,11 +593,10 @@ public class PasswordManagerHelperTest {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         setUpSuccessfulIntentFetchingForAccount();
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -631,11 +620,10 @@ public class PasswordManagerHelperTest {
                 .thenReturn(true);
         setUpSuccessfulIntentFetchingForLocal();
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -659,11 +647,10 @@ public class PasswordManagerHelperTest {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         returnErrorWhenFetchingIntentForAccount(CredentialManagerError.UNCATEGORIZED);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -688,11 +675,10 @@ public class PasswordManagerHelperTest {
                 .thenReturn(true);
         returnErrorWhenFetchingIntentForLocal(CredentialManagerError.UNCATEGORIZED);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -717,11 +703,10 @@ public class PasswordManagerHelperTest {
         setUpSuccessfulIntentFetchingForAccount();
         doThrow(CanceledException.class).when(mPendingIntentMock).send();
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -746,11 +731,10 @@ public class PasswordManagerHelperTest {
         setUpSuccessfulIntentFetchingForLocal();
         doThrow(CanceledException.class).when(mPendingIntentMock).send();
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -761,10 +745,9 @@ public class PasswordManagerHelperTest {
     public void testLaunchesPasswordCheckupSync() {
         chooseToSyncPasswordsWithoutCustomPassphrase();
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_EMAIL_ADDRESS);
 
@@ -781,10 +764,9 @@ public class PasswordManagerHelperTest {
         when(mPasswordManagerUtilBridgeJniMock.canUseUPMBackend(false, mPrefService))
                 .thenReturn(true);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_NO_EMAIL_ADDRESS);
 
@@ -800,10 +782,9 @@ public class PasswordManagerHelperTest {
     public void testPasswordCheckupIntentForAccountCalledIfSuccess() throws CanceledException {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         setUpSuccessfulCheckupIntentFetching(mPendingIntentMock, TEST_EMAIL_ADDRESS);
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_EMAIL_ADDRESS);
         verify(mPendingIntentMock).send();
@@ -815,10 +796,9 @@ public class PasswordManagerHelperTest {
                 .thenReturn(true);
 
         setUpSuccessfulCheckupIntentFetching(mPendingIntentMock, TEST_NO_EMAIL_ADDRESS);
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_NO_EMAIL_ADDRESS);
         verify(mPendingIntentMock).send();
@@ -839,10 +819,9 @@ public class PasswordManagerHelperTest {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         setUpSuccessfulCheckupIntentFetching(mPendingIntentMock, TEST_EMAIL_ADDRESS);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_EMAIL_ADDRESS);
 
@@ -864,10 +843,9 @@ public class PasswordManagerHelperTest {
                 .thenReturn(true);
         setUpSuccessfulCheckupIntentFetching(mPendingIntentMock, TEST_NO_EMAIL_ADDRESS);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_NO_EMAIL_ADDRESS);
 
@@ -892,10 +870,9 @@ public class PasswordManagerHelperTest {
                 new PasswordCheckBackendException("", CredentialManagerError.UNCATEGORIZED),
                 TEST_EMAIL_ADDRESS);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_EMAIL_ADDRESS);
 
@@ -921,10 +898,9 @@ public class PasswordManagerHelperTest {
                 new PasswordCheckBackendException("", CredentialManagerError.UNCATEGORIZED),
                 TEST_NO_EMAIL_ADDRESS);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_NO_EMAIL_ADDRESS);
 
@@ -949,10 +925,9 @@ public class PasswordManagerHelperTest {
                 new ApiException(new Status(CommonStatusCodes.DEVELOPER_ERROR)),
                 TEST_EMAIL_ADDRESS);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_EMAIL_ADDRESS);
 
@@ -977,10 +952,9 @@ public class PasswordManagerHelperTest {
                 new ApiException(new Status(CommonStatusCodes.DEVELOPER_ERROR)),
                 TEST_NO_EMAIL_ADDRESS);
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_NO_EMAIL_ADDRESS);
 
@@ -996,7 +970,7 @@ public class PasswordManagerHelperTest {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         setUpSuccessfulRunPasswordCheckup();
 
-        PasswordManagerHelper.runPasswordCheckupInBackground(
+        mPasswordManagerHelper.runPasswordCheckupInBackground(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 TEST_EMAIL_ADDRESS,
                 mock(Callback.class),
@@ -1018,7 +992,7 @@ public class PasswordManagerHelperTest {
         returnErrorWhenRunningPasswordCheckup(
                 new PasswordCheckBackendException("", CredentialManagerError.UNCATEGORIZED));
 
-        PasswordManagerHelper.runPasswordCheckupInBackground(
+        mPasswordManagerHelper.runPasswordCheckupInBackground(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 TEST_EMAIL_ADDRESS,
                 mock(Callback.class),
@@ -1040,7 +1014,7 @@ public class PasswordManagerHelperTest {
         returnErrorWhenRunningPasswordCheckup(
                 new ApiException(new Status(CommonStatusCodes.DEVELOPER_ERROR)));
 
-        PasswordManagerHelper.runPasswordCheckupInBackground(
+        mPasswordManagerHelper.runPasswordCheckupInBackground(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 TEST_EMAIL_ADDRESS,
                 mock(Callback.class),
@@ -1059,7 +1033,7 @@ public class PasswordManagerHelperTest {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         setUpSuccessfulGetBreachedCredentialsCount();
 
-        PasswordManagerHelper.getBreachedCredentialsCount(
+        mPasswordManagerHelper.getBreachedCredentialsCount(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 TEST_EMAIL_ADDRESS,
                 mock(Callback.class),
@@ -1080,7 +1054,7 @@ public class PasswordManagerHelperTest {
         returnErrorWhenGettingBreachedCredentialsCount(
                 new PasswordCheckBackendException("", CredentialManagerError.UNCATEGORIZED));
 
-        PasswordManagerHelper.getBreachedCredentialsCount(
+        mPasswordManagerHelper.getBreachedCredentialsCount(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 TEST_EMAIL_ADDRESS,
                 mock(Callback.class),
@@ -1101,7 +1075,7 @@ public class PasswordManagerHelperTest {
         returnErrorWhenGettingBreachedCredentialsCount(
                 new ApiException(new Status(CommonStatusCodes.DEVELOPER_ERROR)));
 
-        PasswordManagerHelper.getBreachedCredentialsCount(
+        mPasswordManagerHelper.getBreachedCredentialsCount(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 TEST_EMAIL_ADDRESS,
                 mock(Callback.class),
@@ -1125,10 +1099,9 @@ public class PasswordManagerHelperTest {
         setUpSuccessfulCheckupIntentFetching(mPendingIntentMock, TEST_EMAIL_ADDRESS);
         doThrow(CanceledException.class).when(mPendingIntentMock).send();
 
-        PasswordManagerHelper.showPasswordCheckup(
+        mPasswordManagerHelper.showPasswordCheckup(
                 ContextUtils.getApplicationContext(),
                 PasswordCheckReferrer.SAFETY_CHECK,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 TEST_EMAIL_ADDRESS);
 
@@ -1139,7 +1112,7 @@ public class PasswordManagerHelperTest {
     public void testShowsLoadingDialogOnPasswordCheckup() throws CanceledException {
         chooseToSyncPasswordsWithoutCustomPassphrase();
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1154,7 +1127,7 @@ public class PasswordManagerHelperTest {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         setUpSuccessfulCheckupIntentFetching(mPendingIntentMock, TEST_EMAIL_ADDRESS);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1171,7 +1144,7 @@ public class PasswordManagerHelperTest {
         setUpSuccessfulCheckupIntentFetching(mPendingIntentMock, TEST_EMAIL_ADDRESS);
         doThrow(CanceledException.class).when(mPendingIntentMock).send();
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1189,7 +1162,7 @@ public class PasswordManagerHelperTest {
                 new PasswordCheckBackendException("", CredentialManagerError.UNCATEGORIZED),
                 TEST_EMAIL_ADDRESS);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1207,7 +1180,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.CANCELLED);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1225,7 +1198,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.TIMED_OUT);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1242,7 +1215,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1259,7 +1232,7 @@ public class PasswordManagerHelperTest {
     public void testShowsLoadingDialogOnPasswordSettings() throws CanceledException {
         chooseToSyncPasswordsWithoutCustomPassphrase();
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1275,7 +1248,7 @@ public class PasswordManagerHelperTest {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         setUpSuccessfulIntentFetchingForAccount();
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1292,7 +1265,7 @@ public class PasswordManagerHelperTest {
         setUpSuccessfulIntentFetchingForAccount();
         doThrow(CanceledException.class).when(mPendingIntentMock).send();
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1308,7 +1281,7 @@ public class PasswordManagerHelperTest {
         chooseToSyncPasswordsWithoutCustomPassphrase();
         returnErrorWhenFetchingIntentForAccount(CredentialManagerError.API_ERROR);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1326,7 +1299,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.CANCELLED);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1344,7 +1317,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.TIMED_OUT);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1361,7 +1334,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1381,7 +1354,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.PENDING);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1400,7 +1373,7 @@ public class PasswordManagerHelperTest {
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
         when(mLoadingModalDialogCoordinator.isImmediatelyDismissable()).thenReturn(true);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1420,7 +1393,7 @@ public class PasswordManagerHelperTest {
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
         when(mLoadingModalDialogCoordinator.isImmediatelyDismissable()).thenReturn(false);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1441,7 +1414,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.CANCELLED);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1457,7 +1430,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1477,7 +1450,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.TIMED_OUT);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1493,7 +1466,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1514,7 +1487,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.PENDING);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1533,7 +1506,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.PENDING);
 
-        PasswordManagerHelper.launchTheCredentialManager(
+        mPasswordManagerHelper.launchTheCredentialManager(
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSyncServiceMock,
                 mLoadingModalDialogCoordinator,
@@ -1550,7 +1523,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.PENDING);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1568,7 +1541,7 @@ public class PasswordManagerHelperTest {
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
         when(mLoadingModalDialogCoordinator.isImmediatelyDismissable()).thenReturn(true);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1588,7 +1561,7 @@ public class PasswordManagerHelperTest {
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
         when(mLoadingModalDialogCoordinator.isImmediatelyDismissable()).thenReturn(false);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1608,7 +1581,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.CANCELLED);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1624,7 +1597,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1644,7 +1617,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.TIMED_OUT);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1660,7 +1633,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.SHOWN);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1683,7 +1656,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.PENDING);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1701,7 +1674,7 @@ public class PasswordManagerHelperTest {
         when(mLoadingModalDialogCoordinator.getState())
                 .thenReturn(LoadingModalDialogCoordinator.State.PENDING);
 
-        PasswordManagerHelper.launchPasswordCheckup(
+        mPasswordManagerHelper.launchPasswordCheckup(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 Optional.of(TEST_EMAIL_ADDRESS),
                 mLoadingModalDialogCoordinator,
@@ -1718,7 +1691,7 @@ public class PasswordManagerHelperTest {
                 new PasswordCheckBackendException("", CredentialManagerError.UNCATEGORIZED);
         returnErrorWhenRunningPasswordCheckup(expectedException);
 
-        PasswordManagerHelper.runPasswordCheckupInBackground(
+        mPasswordManagerHelper.runPasswordCheckupInBackground(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 TEST_EMAIL_ADDRESS,
                 mock(Callback.class),
@@ -1732,7 +1705,7 @@ public class PasswordManagerHelperTest {
                 new PasswordCheckBackendException("", CredentialManagerError.UNCATEGORIZED);
         returnErrorWhenGettingBreachedCredentialsCount(expectedException);
 
-        PasswordManagerHelper.getBreachedCredentialsCount(
+        mPasswordManagerHelper.getBreachedCredentialsCount(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 TEST_EMAIL_ADDRESS,
                 mock(Callback.class),
@@ -1763,11 +1736,10 @@ public class PasswordManagerHelperTest {
                 new ApiException(new Status(CommonStatusCodes.INTERNAL_ERROR));
         returnApiExceptionWhenFetchingIntentForAccount(returnedException);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -1794,11 +1766,10 @@ public class PasswordManagerHelperTest {
                 new ApiException(new Status(CommonStatusCodes.INTERNAL_ERROR));
         returnApiExceptionWhenFetchingIntentForLocal(returnedException);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -1832,11 +1803,10 @@ public class PasswordManagerHelperTest {
                         new Status(new ConnectionResult(ConnectionResult.API_UNAVAILABLE), ""));
         returnApiExceptionWhenFetchingIntentForAccount(returnedException);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -1864,11 +1834,10 @@ public class PasswordManagerHelperTest {
                         new Status(new ConnectionResult(ConnectionResult.API_UNAVAILABLE), ""));
         returnApiExceptionWhenFetchingIntentForLocal(returnedException);
 
-        PasswordManagerHelper.showPasswordSettings(
+        mPasswordManagerHelper.showPasswordSettings(
                 ContextUtils.getApplicationContext(),
                 ManagePasswordsReferrer.CHROME_SETTINGS,
                 mSettingsLauncherMock,
-                mSyncServiceMock,
                 mModalDialogManagerSupplier,
                 /* managePasskeys= */ false);
 
@@ -1876,7 +1845,6 @@ public class PasswordManagerHelperTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.PASSKEY_MANAGEMENT_USING_ACCOUNT_SETTINGS_ANDROID)
     public void testUseAccountSettings() {
         when(mSyncServiceMock.isEngineInitialized()).thenReturn(false);
 
@@ -1884,7 +1852,6 @@ public class PasswordManagerHelperTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.PASSKEY_MANAGEMENT_USING_ACCOUNT_SETTINGS_ANDROID)
     public void testCannotUseAccountSettingsWithNoBackend() {
         when(mSyncServiceMock.isEngineInitialized()).thenReturn(false);
 

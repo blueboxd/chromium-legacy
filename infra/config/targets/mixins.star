@@ -296,15 +296,6 @@ targets.mixin(
 )
 
 targets.mixin(
-    name = "chrome-refresh-2023",
-    args = [
-        # All features to be launched under CR2023.
-        # See go/chrome-cr2023-testing-on-bots
-        "--enable-features=ChromeRefresh2023,ChromeRefreshSecondary2023,ChromeWebuiRefresh2023,Cr2023ActionChips,Cr2023ActionChipsIcons,kOmniboxCR23SteadyStateIcons,OmniboxExpandedLayout,OmniboxExpandedStateColors,OmniboxExpandedStateHeight,OmniboxExpandedStateShape,OmniboxExpandedStateSuggestIcons,OmniboxSteadyStateBackgroundColor,OmniboxSteadyStateHeight,OmniboxSteadyStateTextColor,OmniboxSuggestionHoverFillShape,IPH_DesktopCustomizeChromeRefresh",
-    ],
-)
-
-targets.mixin(
     name = "chrome-swarming-pool",
     swarming = targets.swarming(
         dimensions = {
@@ -421,9 +412,17 @@ targets.mixin(
 )
 
 targets.mixin(
-    name = "chromeos-tast-fieldtrial-enabled",
+    name = "chromeos-tast-public-builder",
     skylab = targets.skylab(
-        args = ["-var=setup.FieldTrialConfig=enable"],
+        args = [
+            # FieldTrial is disabled on ChromeOS builders but not in this builder.
+            # Notify Tast to handle the different UI by that.
+            "tast.setup.FieldTrialConfig=enable",
+
+            # Tests using the default gaia pool cannot be run by public builders.
+            # These variables are fed by private bundles, thus not for public builders.
+            "maybemissingvars=ui\\.(gaiaPoolDefault|signinProfileTestExtensionManifestKey)",
+        ],
     ),
 )
 
@@ -497,6 +496,15 @@ targets.mixin(
 targets.mixin(
     name = "ci_only",
     ci_only = True,
+)
+
+targets.mixin(
+    name = "chromium-tests-oslogin",
+    swarming = targets.swarming(
+        dimensions = {
+            "pool": "chromium.tests.oslogin",
+        },
+    ),
 )
 
 targets.mixin(
@@ -993,13 +1001,23 @@ targets.mixin(
 )
 
 targets.mixin(
+    name = "mac_14_x64",
+    swarming = targets.swarming(
+        dimensions = {
+            "cpu": "x86-64",
+            "os": "Mac-14",
+        },
+    ),
+)
+
+targets.mixin(
     name = "mac_arm64_apple_m1_gpu_experimental",
     swarming = targets.swarming(
         dimensions = {
             "cpu": "arm64",
             "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
-            "os": "Mac-13.4",
+            "os": "Mac-14.3.1",
             "pool": "chromium.tests",
             "display_attached": "1",
         },
@@ -1016,6 +1034,21 @@ targets.mixin(
             "os": "Mac-13.5.2",
             "pool": "chromium.tests",
             "display_attached": "1",
+        },
+    ),
+)
+
+targets.mixin(
+    name = "mac_arm64_apple_m2_retina_gpu_experimental",
+    swarming = targets.swarming(
+        dimensions = {
+            "cpu": "arm64",
+            "gpu": "apple:m2",
+            "mac_model": "Mac14,7",
+            "os": "Mac-14.3.1",
+            "pool": "chromium.tests.gpu",
+            "display_attached": "1",
+            "hidpi": "1",
         },
     ),
 )
@@ -1050,7 +1083,7 @@ targets.mixin(
     swarming = targets.swarming(
         dimensions = {
             "cpu": "x86-64",
-            "os": "Mac-13.5",
+            "os": "Mac-14",
         },
     ),
 )
@@ -1084,7 +1117,7 @@ targets.mixin(
         dimensions = {
             "cpu": "x86-64",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5",
+            "os": "Mac-14.3.1",
             "display_attached": "1",
         },
     ),
@@ -1126,7 +1159,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.5",
+            "os": "Mac-14.3.1",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },
@@ -1252,7 +1285,7 @@ targets.mixin(
     name = "nvidia_geforce_gtx_1660",
     swarming = targets.swarming(
         dimensions = {
-            "gpu": "10de:2184-31.0.15.4601",
+            "gpu": "10de:2184",
         },
     ),
 )
@@ -1325,6 +1358,17 @@ targets.mixin(
     swarming = targets.swarming(
         dimensions = {
             "device_type": "oriole",
+            "os": "Android",
+        },
+    ),
+)
+
+# Pixel 8
+targets.mixin(
+    name = "shiba",
+    swarming = targets.swarming(
+        dimensions = {
+            "device_type": "shiba",
             "os": "Android",
         },
     ),
@@ -1559,7 +1603,7 @@ targets.mixin(
             targets.cipd_package(
                 package = "chromium/android_webview/tools/cts_archive",
                 location = "android_webview/tools/cts_archive",
-                revision = "Tonx5t-WDQ4lYRaMNn3IEzzOeyaIgtQ0d1ZAv0lRlwEC",
+                revision = "UYQZhJpB3MWpJIAcesI-M1bqRoTghiKCYr_SD9tPDewC",
             ),
         ],
     ),
@@ -1664,6 +1708,9 @@ targets.mixin(
     swarming = targets.swarming(
         dimensions = {
             "display_attached": "1",
+            # Screen scaling is mostly to ensure that pixel test output is
+            # consistent.
+            "screen_scaling_percent": "100",
             "cpu": "arm64",
             "gpu": "qcom:043a-27.20.1870.0",
             "os": "Windows-11-22621.3007",
@@ -1685,6 +1732,9 @@ targets.mixin(
     name = "win-arm64",
     swarming = targets.swarming(
         dimensions = {
+            # Certain tests require 100 percent screen scaling, and all devices
+            # should be configured for this.
+            "screen_scaling_percent": "100",
             "cpu": "arm64",
             "os": "Windows-11",
         },
@@ -1704,12 +1754,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15e5188j",
+        "15e204a",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15e5188j",
+                name = "xcode_ios_15e204a",
                 path = "Xcode.app",
             ),
         ],

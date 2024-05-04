@@ -33,6 +33,10 @@ const char kDynamicSchedulerPercentile[] = "percentile";
 
 namespace features {
 
+BASE_FEATURE(kBackdropFilterMirrorEdgeMode,
+             "BackdropFilterMirrorEdgeMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kUseDrmBlackFullscreenOptimization,
              "UseDrmBlackFullscreenOptimization",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -269,8 +273,8 @@ BASE_FEATURE(kOnBeginFrameThrottleVideo,
              );
 
 BASE_FEATURE(kSharedBitmapToSharedImage,
-             "SharedBitmapToSharedImage_NotToBeEnabled",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             "SharedBitmapToSharedImage",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // Used to enable the HintSession::Mode::BOOST mode. BOOST mode try to force
 // the ADPF(Android Dynamic Performance Framework) to give Chrome more CPU
 // resources during a scroll.
@@ -320,7 +324,7 @@ BASE_FEATURE(kUseDisplaySDRMaxLuminanceNits,
 // cases in production.
 BASE_FEATURE(kInvalidateLocalSurfaceIdPreCommit,
              "InvalidateLocalSurfaceIdPreCommit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // On mac, when the RenderWidgetHostViewMac is hidden, also hide the
 // DelegatedFrameHost. Among other things, it unlocks the compositor frames,
@@ -348,6 +352,22 @@ BASE_FEATURE(kSingleVideoFrameRateThrottling,
 BASE_FEATURE(kBatchMainThreadReleaseCallbacks,
              "BatchMainThreadReleaseCallbacks",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, snapshot the root surface when it is evicted.
+BASE_FEATURE(kSnapshotEvictedRootSurface,
+             "SnapshotEvictedRootSurface",
+// TODO(edcourtney): Enable for Android.
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
+
+// The scale to use for root surface snapshots on eviction. See
+// `kSnapshotEvictedRootSurface`.
+const base::FeatureParam<double> kSnapshotEvictedRootSurfaceScale{
+    &kSnapshotEvictedRootSurface, "scale", 0.4};
 
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
@@ -490,6 +510,13 @@ bool IsOnBeginFrameAcksEnabled() {
 bool ShouldDrawImmediatelyWhenInteractive() {
   return base::FeatureList::IsEnabled(
       features::kDrawImmediatelyWhenInteractive);
+}
+
+std::optional<double> SnapshotEvictedRootSurfaceScale() {
+  if (!base::FeatureList::IsEnabled(kSnapshotEvictedRootSurface)) {
+    return std::nullopt;
+  }
+  return kSnapshotEvictedRootSurfaceScale.Get();
 }
 
 }  // namespace features

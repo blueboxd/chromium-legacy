@@ -10,6 +10,7 @@
 
 #include "base/check_op.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/media_preview/media_preview_metrics.h"
 #include "chrome/browser/ui/views/media_preview/media_view.h"
 #include "chrome/browser/ui/views/media_preview/scroll_media_preview.h"
 #include "components/user_prefs/user_prefs.h"
@@ -107,11 +108,19 @@ void ActiveDevicesMediaCoordinator::UpdateMediaCoordinatorList() {
       stream_type_,
       base::BindOnce(
           &ActiveDevicesMediaCoordinator::GotDeviceIdsOpenedForWebContents,
-          base::Unretained(this)));
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ActiveDevicesMediaCoordinator::GotDeviceIdsOpenedForWebContents(
     std::vector<std::string> active_device_ids) {
+  if (view_type_ == MediaCoordinator::ViewType::kCameraOnly) {
+    media_preview_metrics::RecordPageInfoCameraNumInUseDevices(
+        active_device_ids.size());
+  } else {
+    media_preview_metrics::RecordPageInfoMicNumInUseDevices(
+        active_device_ids.size());
+  }
+
   if (active_device_ids.empty()) {
     media_coordinators_.clear();
     separators_.clear();

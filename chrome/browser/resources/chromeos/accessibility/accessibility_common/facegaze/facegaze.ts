@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 import {TestImportManager} from '/common/testing/test_import_manager.js';
-
-import {MediapipeAvailability} from '../third_party/mediapipe/availability/mediapipe_availability.js';
-import {FaceLandmarkerResult} from '../third_party/mediapipe/task_vision/vision.js';
+import type {FaceLandmarkerResult} from '/third_party/mediapipe/vision.js';
 
 import {GestureHandler} from './gesture_handler.js';
 import {MouseController} from './mouse_controller.js';
@@ -16,10 +14,15 @@ export class FaceGaze {
   private gestureHandler_: GestureHandler;
   private onInitCallbackForTest_: (() => void)|undefined;
   private initialized_ = false;
+  declare private cameraStreamReadyPromise_: Promise<void>;
+  private cameraStreamReadyResolver_?: () => void;
 
   constructor() {
     this.mouseController_ = new MouseController();
     this.gestureHandler_ = new GestureHandler(this.mouseController_);
+    this.cameraStreamReadyPromise_ = new Promise(resolve => {
+      this.cameraStreamReadyResolver_ = resolve;
+    });
     this.init_();
   }
 
@@ -40,12 +43,6 @@ export class FaceGaze {
   }
 
   private connectToWebCam_(): void {
-    if (!MediapipeAvailability.isAvailable()) {
-      // Mediapipe is required to interpret camera data, so only connect to
-      // the webcam if mediapipe is available.
-      return;
-    }
-
     // Open camera_stream.html, which will connect to the webcam and pass
     // FaceLandmarker results back to the background page. Use chrome.windows
     // API to ensure page is opened in Ash-chrome.
@@ -58,6 +55,8 @@ export class FaceGaze {
       chrome.runtime.onMessage.addListener(message => {
         if (message.type === 'faceLandmarkerResult') {
           this.processFaceLandmarkerResult_(message.result);
+        } else if (message.type === 'cameraStreamReadyForTesting') {
+          this.cameraStreamReadyResolver_!();
         }
 
         return false;

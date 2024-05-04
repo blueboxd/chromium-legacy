@@ -126,8 +126,8 @@ CommercePushNotificationClient::GetShoppingService() {
 }
 
 bookmarks::BookmarkModel* CommercePushNotificationClient::GetBookmarkModel() {
-  return ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
-      GetLastUsedBrowserState());
+  return ios::LocalOrSyncableBookmarkModelFactory::
+      GetDedicatedUnderlyingModelForBrowserState(GetLastUsedBrowserState());
 }
 
 void CommercePushNotificationClient::HandleNotificationInteraction(

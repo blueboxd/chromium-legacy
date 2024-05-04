@@ -12,8 +12,8 @@
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
-#import "components/bookmarks/common/storage_type.h"
 #import "components/sync/base/features.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
@@ -36,7 +36,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_xcui_actions.h"
@@ -336,10 +335,8 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   // reset even if the test failed.
   if ([self isRunningTest:@selector
             (testTabGridItemContextMenuAddToBookmarkGreyed)]) {
-    [ChromeEarlGreyAppInterface
-        setBoolValue:YES
-         forUserPref:base::SysUTF8ToNSString(
-                         bookmarks::prefs::kEditBookmarksEnabled)];
+    [ChromeEarlGrey setBoolValue:YES
+                     forUserPref:bookmarks::prefs::kEditBookmarksEnabled];
   }
 
   // Shutdown network process after tests run to avoid hanging from
@@ -671,6 +668,39 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   [ChromeEarlGreyUI assertHistoryHasNoEntries];
 }
 
+// Tests that the user interface style is respected after a drag and drop.
+- (void)testTraitCollection {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse2];
+
+  [ChromeEarlGreyUI openTabGrid];
+
+  GREYAssert(chrome_test_util::LongPressCellAndDragToOffsetOf(
+                 IdentifierForCellAtIndex(0), 0, IdentifierForCellAtIndex(1), 0,
+                 CGVectorMake(0.5, 0.5)),
+             @"Failed to DND cell on window");
+
+  GREYMatchesBlock match = ^BOOL(UIView* element) {
+    return element.traitCollection.userInterfaceStyle ==
+           UIUserInterfaceStyleLight;
+  };
+
+  GREYDescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"Wrong style"];
+  };
+
+  id<GREYMatcher> matcher =
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:match
+                                           descriptionBlock:describe];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          IdentifierForCellAtIndex(0))]
+      assertWithMatcher:matcher];
+}
+
 #pragma mark - Recent Tabs
 
 // Tests reopening a closed tab from an incognito tab.
@@ -839,8 +869,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests the Add to Bookmarks action on a tab grid item's context menu.
-// TODO(crbug.com/1519535): Test is failing on iPhone and iPad.
-- (void)DISABLED_testTabGridItemContextMenuAddToBookmarks {
+- (void)testTabGridItemContextMenuAddToBookmarks {
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 
@@ -853,6 +882,10 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
       l10n_util::GetPluralStringFUTF16(IDS_IOS_BOOKMARKS_BULK_SAVED, 1));
   [self waitForSnackBarMessageText:snackbarMessage
       triggeredByTappingItemWithMatcher:AddToBookmarksButton()];
+
+  // The snackbar disappearance might have been faster than the context menu
+  // disappearance. Wait for it to disappear.
+  [self waitForContextMenuToDisappear];
 
   [self longPressTabWithTitle:kTitle1];
 
@@ -869,17 +902,14 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:base::SysUTF8ToNSString(_URL1.spec())
                                   name:kTitle1
-                             inStorage:bookmarks::StorageType::
-                                           kLocalOrSyncable];
+                             inStorage:BookmarkModelType::kLocalOrSyncable];
 }
 
 // Tests that Add to Bookmarks action is greyed out when editBookmarksEnabled
 // pref is set to false.
 - (void)testTabGridItemContextMenuAddToBookmarkGreyed {
-  [ChromeEarlGreyAppInterface
-      setBoolValue:NO
-       forUserPref:base::SysUTF8ToNSString(
-                       bookmarks::prefs::kEditBookmarksEnabled)];
+  [ChromeEarlGrey setBoolValue:NO
+                   forUserPref:bookmarks::prefs::kEditBookmarksEnabled];
 
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
@@ -892,10 +922,8 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [ChromeEarlGreyAppInterface
-      setBoolValue:YES
-       forUserPref:base::SysUTF8ToNSString(
-                       bookmarks::prefs::kEditBookmarksEnabled)];
+  [ChromeEarlGrey setBoolValue:YES
+                   forUserPref:bookmarks::prefs::kEditBookmarksEnabled];
 }
 
 // Tests the Share action on a tab grid item's context menu.
@@ -1626,16 +1654,14 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:base::SysUTF8ToNSString(_URL1.spec())
                                   name:kTitle1
-                             inStorage:bookmarks::StorageType::
-                                           kLocalOrSyncable];
+                             inStorage:BookmarkModelType::kLocalOrSyncable];
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:base::SysUTF8ToNSString(_URL4.spec())
                                   name:kTitle4
-                             inStorage:bookmarks::StorageType::
-                                           kLocalOrSyncable];
+                             inStorage:BookmarkModelType::kLocalOrSyncable];
   [BookmarkEarlGrey
       verifyAbsenceOfBookmarkWithURL:base::SysUTF8ToNSString(_URL2.spec())
-                           inStorage:bookmarks::StorageType::kLocalOrSyncable];
+                           inStorage:BookmarkModelType::kLocalOrSyncable];
 }
 
 // Tests adding items to the readinglist from the tab grid edit mode.
@@ -2275,8 +2301,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
 // Tests that add to bookmarks action works successfully from the long press
 // context menu on search results.
-// TODO(crbug.com/1519535): Test is failing on iPhone and iPad.
-- (void)DISABLED_testSearchOpenTabsContextMenuAddToBookmarks {
+- (void)testSearchOpenTabsContextMenuAddToBookmarks {
   [self loadTestURLsInNewTabs];
   [ChromeEarlGreyUI openTabGrid];
 
@@ -2797,7 +2822,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
   // Sign-in with fake identity.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
@@ -2819,8 +2844,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 // sheet but only the history opt-in.
 // kReplaceSyncPromosWithSignInPromos is enabled.
 - (void)testPromoInTabsFromOtherDevicesListensToSignin {
-  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
-                                enableSync:NO];
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
 
   [ChromeEarlGreyUI openTabGrid];
   [[EarlGrey selectElementWithMatcher:TabGridOtherDevicesPanelButton()]
@@ -3063,6 +3087,22 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 - (void)waitForSnackBarMessageText:(NSString*)snackBarLabel
     triggeredByTappingItemWithMatcher:(id<GREYMatcher>)matcher {
   WaitForSnackbarTriggeredByTappingItem(snackBarLabel, matcher);
+}
+
+- (void)waitForContextMenuToDisappear {
+  ConditionBlock wait_for_disappearance = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_kindOfClassName(
+                                                @"_UIContextMenuContainerView"),
+                                            grey_sufficientlyVisible(), nil)]
+        assertWithMatcher:grey_nil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kWaitForUIElementTimeout, wait_for_disappearance),
+             @"Context menu did not disappear.");
 }
 
 // Verifies that the tab grid has exactly `expectedCount` tabs.

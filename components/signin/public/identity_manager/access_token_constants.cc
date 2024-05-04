@@ -87,6 +87,9 @@ const std::set<std::string> GetUnconsentedOAuth2Scopes() {
       GaiaConstants::kOptimizationGuideServiceGetHintsOAuth2Scope,
       GaiaConstants::kOptimizationGuideServiceModelExecutionOAuth2Scope,
 
+      // Required by Omnibox / DocumentSuggestionsService.
+      GaiaConstants::kCloudSearchQueryOAuth2Scope,
+
     // Required by ChromeOS only.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       GaiaConstants::kAssistantOAuth2Scope,
@@ -109,7 +112,7 @@ const std::set<std::string> GetUnconsentedOAuth2Scopes() {
   };
 // clang-format on
   std::string plus_address_scope =
-      plus_addresses::kEnterprisePlusAddressOAuthScope.Get();
+      plus_addresses::features::kEnterprisePlusAddressOAuthScope.Get();
   if (!plus_address_scope.empty()) {
     allowlist.insert(plus_address_scope);
   }

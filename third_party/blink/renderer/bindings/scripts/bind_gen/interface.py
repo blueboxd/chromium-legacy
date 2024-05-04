@@ -1107,11 +1107,10 @@ def make_check_security_of_return_value(cg_context):
 def make_cooperative_scheduling_safepoint(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    node = TextNode("scheduler::CooperativeSchedulingManager::Instance()"
-                    "->Safepoint();")
+    node = TextNode("BINDINGS_COOPERATIVE_SCHEDULING_SAFEPOINT();")
     node.accumulate(
         CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
+            "third_party/blink/renderer/platform/bindings/cooperative_scheduling_helpers.h"
         ]))
     return node
 
@@ -2198,6 +2197,7 @@ def make_constructor_function_def(cg_context, function_name):
         # installation context-by-context. So, we check the exposure and may
         # throw a TypeError if not exposed. For the case of multiple overloads,
         # the overload resolution is already exposure sensitive.
+        body.append(make_constructor_entry(cg_context))
         if cg_context.constructor.exposure.is_context_dependent():
             body.append(
                 CxxUnlikelyIfNode(cond=expr_not(
@@ -2207,7 +2207,6 @@ def make_constructor_function_def(cg_context, function_name):
                                         "\"Illegal constructor\");"),
                                       T("return;"),
                                   ]))
-        body.append(make_constructor_entry(cg_context))
         body.append(EmptyNode())
 
     body.extend([
@@ -3293,6 +3292,13 @@ def make_named_property_getter_callback(cg_context, function_name):
                 TextNode("// \"Return OrdinaryGetOwnProperty(O, P).\""),
                 TextNode("return;  // Do not intercept."),
             ]),
+        TextNode("""\
+% if interface.identifier == "HTMLFormElement":
+// At this point we know that the named property exists.
+// We then UseCount whether the original property was shadowed or not.
+${blink_receiver}->UseCountPropertyAccess(${v8_property_name}, ${info});
+% endif\
+"""),
         TextNode("""\
 // "If operation was defined without an identifier, then set value to the result
 //  of performing the steps listed in the interface description to determine the
@@ -5165,6 +5171,14 @@ ${prototype_object}->Delete(
     ${v8_context}, V8AtomicString(${isolate}, "constructor")).ToChecked();
 """))
 
+    if class_like.is_async_iterator or class_like.is_sync_iterator:
+        nodes.append(
+            TextNode("""\
+// V8 defines "constructor" property on the prototype object by default.
+${prototype_object}->Delete(
+    ${v8_context}, V8AtomicString(${isolate}, "constructor")).ToChecked();
+"""))
+
     if interface and interface.iterable and not interface.iterable.key_type:
         conditional = expr_from_exposure(interface.iterable.exposure)
         if not conditional.is_always_true:
@@ -6375,7 +6389,8 @@ const WrapperTypeInfo ${class_name}::wrapper_type_info_{{
             v8_bridge_class_name(class_like.inherited))
     else:
         wrapper_type_info_of_inherited = "nullptr"
-    if class_like.is_interface:
+    if (class_like.is_interface or class_like.is_async_iterator
+            or class_like.is_sync_iterator):
         wrapper_type_prototype = "WrapperTypeInfo::kWrapperTypeObjectPrototype"
     else:
         wrapper_type_prototype = "WrapperTypeInfo::kWrapperTypeNoPrototype"

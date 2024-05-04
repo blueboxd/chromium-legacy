@@ -852,6 +852,7 @@
 <translation id="7589661784326793847">Samo trenutak</translation>
 <translation id="7600126690270271294">srpski</translation>
 <translation id="7603724359189955920">Mreže</translation>
+<translation id="7624010287655004652">Zaključao ga je drugi mobilni operater.</translation>
 <translation id="7627790789328695202">Ups, već postoji fajl <ph name="FILE_NAME" />. Promijenite mu naziv i pokušajte ponovo.</translation>
 <translation id="7628656427739290098">Završeno je <ph name="PERCENT" />%.</translation>
 <translation id="7649070708921625228">Pomoć</translation>
@@ -884,7 +885,7 @@
     <ph name="MARKUP_4" />izbrišite fajlove iz foldera Preuzimanja<ph name="MARKUP_5" /></translation>
 <translation id="7794058097940213561">Formatiranje uređaja</translation>
 <translation id="7799329977874311193">HTML dokument</translation>
-<translation id="7801354353640549019">Uređaji Chromebook</translation>
+<translation id="7801354353640549019">Chromebook računari</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7806708061868529807">hebrejski</translation>
 <translation id="78104721049218340">tajlandski s tastaturom kedmanee</translation>
@@ -1018,7 +1019,6 @@
 <translation id="8698877009525468705">Fajl je povjerljiv i podložan ograničenjima po pravilima administratora.</translation>
 <translation id="8712637175834984815">Razumijem</translation>
 <translation id="8713112442029511308">malteški</translation>
-<translation id="8714138378966541668">Zaključao je pružalac usluga</translation>
 <translation id="8714406895390098252">Biciklo</translation>
 <translation id="8719721339511222681">Odabran je unos <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">hrvatska</translation>

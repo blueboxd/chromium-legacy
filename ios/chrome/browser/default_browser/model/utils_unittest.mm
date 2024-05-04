@@ -71,6 +71,9 @@ NSString* const kLastTimeUserInteractedWithFullscreenPromo =
 // Test key in storage for counting past default browser promo interactions.
 NSString* const kGenericPromoInteractionCount = @"genericPromoInteractionCount";
 
+// Test Key in storage for counting all past default browser promo displays.
+NSString* const kDisplayedFullscreenPromoCount = @"displayedPromoCount";
+
 class DefaultBrowserUtilsTest : public PlatformTest {
  protected:
   void SetUp() override { ClearDefaultBrowserPromoData(); }
@@ -79,13 +82,16 @@ class DefaultBrowserUtilsTest : public PlatformTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
+// Overwrite local storage with the provided interaction information.
 void SimulateUserInteractionWithFullscreenPromo(const base::TimeDelta& timeAgo,
-                                                int count) {
+                                                int count,
+                                                int totalCount) {
   NSDictionary<NSString*, NSObject*>* values = @{
     kUserHasInteractedWithFullscreenPromo : @YES,
     kLastTimeUserInteractedWithFullscreenPromo : (base::Time::Now() - timeAgo)
         .ToNSDate(),
-    kGenericPromoInteractionCount : [NSNumber numberWithInt:count]
+    kGenericPromoInteractionCount : [NSNumber numberWithInt:count],
+    kDisplayedFullscreenPromoCount : [NSNumber numberWithInt:totalCount]
   };
   SetValuesInStorage(values);
 }
@@ -164,12 +170,14 @@ TEST_F(DefaultBrowserUtilsTest,
 
   EXPECT_FALSE(UserInFullscreenPromoCooldown());
 
-  LogUserInteractionWithNonModalPromo();
+  LogUserInteractionWithNonModalPromo(UserInteractionWithNonModalPromoCount(),
+                                      DisplayedFullscreenPromoCount());
   EXPECT_TRUE(UserInFullscreenPromoCooldown());
 
   ClearDefaultBrowserPromoData();
   LogUserInteractionWithTailoredFullscreenPromo();
-  LogUserInteractionWithNonModalPromo();
+  LogUserInteractionWithNonModalPromo(UserInteractionWithNonModalPromoCount(),
+                                      DisplayedFullscreenPromoCount());
   EXPECT_TRUE(UserInFullscreenPromoCooldown());
 }
 
@@ -205,12 +213,14 @@ TEST_F(DefaultBrowserUtilsTest,
 
   EXPECT_FALSE(UserInNonModalPromoCooldown());
 
-  LogUserInteractionWithNonModalPromo();
+  LogUserInteractionWithNonModalPromo(UserInteractionWithNonModalPromoCount(),
+                                      DisplayedFullscreenPromoCount());
   EXPECT_EQ(UserInteractionWithNonModalPromoCount(), 1);
   EXPECT_TRUE(UserInNonModalPromoCooldown());
   EXPECT_FALSE(UserInFullscreenPromoCooldown());
 
-  LogUserInteractionWithNonModalPromo();
+  LogUserInteractionWithNonModalPromo(UserInteractionWithNonModalPromoCount(),
+                                      DisplayedFullscreenPromoCount());
   EXPECT_EQ(UserInteractionWithNonModalPromoCount(), 2);
   EXPECT_TRUE(UserInNonModalPromoCooldown());
   EXPECT_FALSE(UserInFullscreenPromoCooldown());
@@ -226,15 +236,35 @@ TEST_F(DefaultBrowserUtilsTest,
 
   EXPECT_FALSE(UserInNonModalPromoCooldown());
 
-  LogUserInteractionWithNonModalPromo();
+  LogUserInteractionWithNonModalPromo(UserInteractionWithNonModalPromoCount(),
+                                      DisplayedFullscreenPromoCount());
   EXPECT_EQ(UserInteractionWithNonModalPromoCount(), 1);
   EXPECT_TRUE(UserInNonModalPromoCooldown());
   EXPECT_TRUE(UserInFullscreenPromoCooldown());
 
-  LogUserInteractionWithNonModalPromo();
+  LogUserInteractionWithNonModalPromo(UserInteractionWithNonModalPromoCount(),
+                                      DisplayedFullscreenPromoCount());
   EXPECT_EQ(UserInteractionWithNonModalPromoCount(), 2);
   EXPECT_TRUE(UserInNonModalPromoCooldown());
   EXPECT_TRUE(UserInFullscreenPromoCooldown());
+}
+
+// Tests logging user interactions with a non-modal promo multiple times with
+// the same current interactions count doesn't over-increment the value.
+TEST_F(DefaultBrowserUtilsTest,
+       LogNonModalUserInteractionMultipleTimesSameArguments) {
+  feature_list_.InitWithFeatures(
+      {/*enabled=*/},
+      {/*disabled=*/kNonModalDefaultBrowserPromoCooldownRefactor});
+
+  LogUserInteractionWithNonModalPromo(2, 2);
+  EXPECT_EQ(3, 3);
+
+  LogUserInteractionWithNonModalPromo(2, 2);
+  EXPECT_EQ(3, 3);
+
+  LogUserInteractionWithNonModalPromo(2, 2);
+  EXPECT_EQ(3, 3);
 }
 
 // Tests that the cooldown refactor flag is enabled.
@@ -360,23 +390,29 @@ TEST_F(DefaultBrowserUtilsTest,
                                  {/*disabled=*/feature_engagement::
                                       kDefaultBrowserEligibilitySlidingWindow});
 
-  // Test with multiple interactions.
+  // Test when there are no interaction recorded yet.
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(kMoreThan6Hours, 1);
+
+  // Test that logging first run doesn't affect it.
+  LogUserInteractionWithFirstRunPromo(true);
+  EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
+
+  // Test with multiple interactions.
+  SimulateUserInteractionWithFullscreenPromo(kMoreThan6Hours, 1, 2);
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(kMoreThan14Days, 2);
+  SimulateUserInteractionWithFullscreenPromo(kMoreThan14Days, 2, 3);
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test with a single, more distant interaction.
   ClearDefaultBrowserPromoData();
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(k6Months, 1);
+  SimulateUserInteractionWithFullscreenPromo(k6Months, 1, 2);
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test with a single, even more distant interaction.
   ClearDefaultBrowserPromoData();
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(k2Years, 1);
+  SimulateUserInteractionWithFullscreenPromo(k2Years, 1, 2);
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
 }
 
@@ -391,44 +427,72 @@ TEST_F(DefaultBrowserUtilsTest,
       feature_engagement::kDefaultBrowserEligibilitySlidingWindow,
       feature_params);
 
-  // Test with multiple interactions.
+  // Test when there are no interaction recorded yet.
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(kMoreThan6Hours, 1);
+
+  // Test that logging first run doesn't affect it.
+  LogUserInteractionWithFirstRunPromo(true);
+  EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
+
+  // Test with multiple interactions.
+  SimulateUserInteractionWithFullscreenPromo(kMoreThan6Hours, 1, 2);
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(kMoreThan14Days, 2);
+  SimulateUserInteractionWithFullscreenPromo(kMoreThan14Days, 2, 3);
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test with a single, more distant interaction (but still within the sliding
   // window limit).
   ClearDefaultBrowserPromoData();
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(k6Months, 1);
+  SimulateUserInteractionWithFullscreenPromo(k6Months, 1, 2);
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test with a single interaction that's outside the sliding window limit.
   ClearDefaultBrowserPromoData();
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(k2Years, 1);
+  SimulateUserInteractionWithFullscreenPromo(k2Years, 1, 2);
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test with multiple interactions, some within and some outside the sliding
   // window limit.
   ClearDefaultBrowserPromoData();
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(k5Years, 1);
+  SimulateUserInteractionWithFullscreenPromo(k5Years, 1, 2);
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(k2Years, 2);
+  SimulateUserInteractionWithFullscreenPromo(k2Years, 2, 3);
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(k6Months, 3);
+  SimulateUserInteractionWithFullscreenPromo(k6Months, 3, 4);
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
-  SimulateUserInteractionWithFullscreenPromo(kMoreThan14Days, 4);
+  SimulateUserInteractionWithFullscreenPromo(kMoreThan14Days, 4, 5);
+  EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
+}
+
+// Tests that sliding window experiment doesn't not affect the cooldown from
+// FRE.
+TEST_F(DefaultBrowserUtilsTest, CooldownFromFRESlidingWindowEnabled) {
+  base::FieldTrialParams feature_params;
+  feature_params["sliding-window-days"] = "365";
+  feature_list_.InitAndEnableFeatureWithParameters(
+      feature_engagement::kDefaultBrowserEligibilitySlidingWindow,
+      feature_params);
+
+  // Test when there are no interaction recorded yet.
+  EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
+
+  // Test that logging first run doesn't affect it.
+  LogUserInteractionWithFirstRunPromo(true);
+  EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
+
+  // Test that logging a generic promo interaction will affect it.
+  LogUserInteractionWithFullscreenPromo();
+  LogFullscreenDefaultBrowserPromoDisplayed();
   EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
 }
 
 // Test `CalculatePromoStatistics` when feature flag is disabled.
 TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_FlagDisabled) {
-  feature_list_.InitWithFeatures({},
-                                 {kDefaultBrowserTriggerCriteriaExperiment});
+  feature_list_.InitWithFeatures(
+      {}, {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.promoDisplayCount);
@@ -456,8 +520,8 @@ TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_FlagDisabled) {
 
 // Test `CalculatePromoStatistics` when feature flag is enabled.
 TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_FlagEnabled) {
-  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment}, {});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.promoDisplayCount);
@@ -487,8 +551,8 @@ TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_FlagEnabled) {
 
 // Test `CalculatePromoStatistics` for chrome open metrics.
 TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_ChromeOpen) {
-  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment}, {});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.chromeColdStartCount);
@@ -561,8 +625,8 @@ TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_ChromeOpen) {
 
 // Test `CalculatePromoStatistics` for active day count metrics.
 TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_ActiveDayCount) {
-  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment}, {});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.activeDayCount);
@@ -610,8 +674,8 @@ TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_ActiveDayCount) {
 // Test `CalculatePromoStatistics` for password manager use.
 TEST_F(DefaultBrowserUtilsTest,
        CalculatePromoStatisticsTest_PasswordManagerUseCount) {
-  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment}, {});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.passwordManagerUseCount);
@@ -649,8 +713,8 @@ TEST_F(DefaultBrowserUtilsTest,
 // Test `CalculatePromoStatistics` for omnibox use count.
 TEST_F(DefaultBrowserUtilsTest,
        CalculatePromoStatisticsTest_OmniboxClipboardUseCount) {
-  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment}, {});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.omniboxClipboardUseCount);
@@ -686,8 +750,8 @@ TEST_F(DefaultBrowserUtilsTest,
 
 // Test `CalculatePromoStatistics` for bookmark use count.
 TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_BookmarkUseCount) {
-  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment}, {});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.bookmarkUseCount);
@@ -713,7 +777,7 @@ TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_BookmarkUseCount) {
   }
 
   // Adding current timestamp should be counted.
-  LogBookmarkUseForDefaultBrowserPromo();
+  LogBookmarkUseForCriteriaExperiment();
 
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
@@ -723,8 +787,8 @@ TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_BookmarkUseCount) {
 
 // Test `CalculatePromoStatistics` for autofill use count.
 TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_AutofillUseCount) {
-  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment}, {});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.autofillUseCount);
@@ -762,8 +826,8 @@ TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_AutofillUseCount) {
 // Test `CalculatePromoStatistics` for pinned or remote tab use.
 TEST_F(DefaultBrowserUtilsTest,
        CalculatePromoStatisticsTest_SpecialTabUseCount) {
-  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
-                                 {});
+  feature_list_.InitWithFeatures(
+      {feature_engagement::kDefaultBrowserTriggerCriteriaExperiment}, {});
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
     EXPECT_EQ(0, promo_stats.specialTabsUseCount);
@@ -790,12 +854,11 @@ TEST_F(DefaultBrowserUtilsTest,
   }
 
   // Adding current timestamp should be counted.
-  LogRemoteTabsUsedForDefaultBrowserPromo();
-  LogPinnedTabsUsedForDefaultBrowserPromo();
+  LogRemoteTabsUseForCriteriaExperiment();
 
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
-    EXPECT_EQ(3, promo_stats.specialTabsUseCount);
+    EXPECT_EQ(2, promo_stats.specialTabsUseCount);
   }
 }
 
@@ -851,72 +914,153 @@ TEST_F(DefaultBrowserUtilsTest, IsChromeLikelyDefaultBrowser) {
 TEST_F(DefaultBrowserUtilsTest, IsChromePotentiallyNoLongerDefaultBrowser) {
   // Initial test with no kLastHTTPURLOpenTime value recorded.
   EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 
-  NSDate* two_days_ago =
-      (base::Time::Now() - base::Days(2) + base::Minutes(10)).ToNSDate();
-  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, two_days_ago);
+  NSDate* under_four_days_ago =
+      (base::Time::Now() - base::Days(4) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, under_four_days_ago);
   EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 
-  NSDate* six_days_ago =
-      (base::Time::Now() - base::Days(6) + base::Minutes(10)).ToNSDate();
-  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, six_days_ago);
+  NSDate* over_four_days_ago =
+      (base::Time::Now() - base::Days(4) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, over_four_days_ago);
   EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 
-  NSDate* eight_days_ago =
-      (base::Time::Now() - base::Days(8) + base::Minutes(10)).ToNSDate();
-  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, eight_days_ago);
+  NSDate* under_seven_days_ago =
+      (base::Time::Now() - base::Days(7) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, under_seven_days_ago);
   EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 
-  NSDate* twelve_days_ago =
-      (base::Time::Now() - base::Days(12) + base::Minutes(10)).ToNSDate();
-  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, twelve_days_ago);
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  NSDate* over_seven_days_ago =
+      (base::Time::Now() - base::Days(7) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, over_seven_days_ago);
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 
-  NSDate* sixteen_days_ago =
-      (base::Time::Now() - base::Days(16) + base::Minutes(10)).ToNSDate();
-  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, sixteen_days_ago);
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  NSDate* under_ten_days_ago =
+      (base::Time::Now() - base::Days(10) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, under_ten_days_ago);
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 
-  NSDate* twenty_five_days_ago =
-      (base::Time::Now() - base::Days(25) + base::Minutes(10)).ToNSDate();
-  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, twenty_five_days_ago);
+  NSDate* over_ten_days_ago =
+      (base::Time::Now() - base::Days(10) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, over_ten_days_ago);
   EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 
-  NSDate* thirty_days_ago =
-      (base::Time::Now() - base::Days(30) + base::Minutes(10)).ToNSDate();
-  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, thirty_days_ago);
+  NSDate* under_fourteen_days_ago =
+      (base::Time::Now() - base::Days(14) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, under_fourteen_days_ago);
   EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 
-  NSDate* fifty_days_ago =
-      (base::Time::Now() - base::Days(50) + base::Minutes(10)).ToNSDate();
-  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, fifty_days_ago);
+  NSDate* over_fourteen_days_ago =
+      (base::Time::Now() - base::Days(14) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, over_fourteen_days_ago);
   EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser21To7());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser28To14());
-  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser35To14());
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+
+  NSDate* under_twenty_one_days_ago =
+      (base::Time::Now() - base::Days(21) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, under_twenty_one_days_ago);
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+
+  NSDate* over_twenty_one_days_ago =
+      (base::Time::Now() - base::Days(21) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, over_twenty_one_days_ago);
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+
+  NSDate* under_twenty_eight_days_ago =
+      (base::Time::Now() - base::Days(28) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, under_twenty_eight_days_ago);
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+
+  NSDate* over_twenty_eight_days_ago =
+      (base::Time::Now() - base::Days(28) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, over_twenty_eight_days_ago);
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+
+  NSDate* under_thirty_five_days_ago =
+      (base::Time::Now() - base::Days(35) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, under_thirty_five_days_ago);
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+
+  NSDate* over_thirty_five_days_ago =
+      (base::Time::Now() - base::Days(35) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, over_thirty_five_days_ago);
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+
+  NSDate* under_fourty_two_days_ago =
+      (base::Time::Now() - base::Days(42) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, under_fourty_two_days_ago);
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_TRUE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+
+  NSDate* over_fourty_two_days_ago =
+      (base::Time::Now() - base::Days(42) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kLastHTTPURLOpenTime, over_fourty_two_days_ago);
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(10, 4));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(21, 7));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
+  EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
 }
 }  // namespace

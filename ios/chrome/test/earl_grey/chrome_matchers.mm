@@ -137,10 +137,6 @@ id<GREYMatcher> NavigationBarCancelButton() {
   return [ChromeMatchersAppInterface navigationBarCancelButton];
 }
 
-id<GREYMatcher> CloseButton() {
-  return [ChromeMatchersAppInterface closeButton];
-}
-
 id<GREYMatcher> ForwardButton() {
   return [ChromeMatchersAppInterface forwardButton];
 }
@@ -937,14 +933,12 @@ id<GREYMatcher> ManualFallbackCreditCardTableViewMatcher() {
   return [ChromeMatchersAppInterface manualFallbackCreditCardTableViewMatcher];
 }
 
-// Returns a matcher for the button to open password settings in manual
-id<GREYMatcher> ManualFallbackManageCreditCardsMatcher() {
-  return [ChromeMatchersAppInterface manualFallbackManageCreditCardsMatcher];
+id<GREYMatcher> ManualFallbackManagePaymentMethodsMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackManagePaymentMethodsMatcher];
 }
 
-// Returns a matcher for the button to add credit cards settings in manual
-id<GREYMatcher> ManualFallbackAddCreditCardsMatcher() {
-  return [ChromeMatchersAppInterface manualFallbackAddCreditCardsMatcher];
+id<GREYMatcher> ManualFallbackAddPaymentMethodMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackAddPaymentMethodMatcher];
 }
 
 id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher() {

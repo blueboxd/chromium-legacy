@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "content/public/browser/global_routing_id.h"
@@ -92,6 +93,10 @@ struct WebRequestInfo {
   // Fill in response data for this request.
   void AddResponseInfoFromResourceResponse(
       const network::mojom::URLResponseHead& response);
+
+  // Erases all actions in `dnr_actions` that are associated with the given
+  // `extension_id`.
+  void EraseDNRActionsForExtension(const ExtensionId& extension_id);
 
   // A unique identifier for this request.
   const uint64_t id;

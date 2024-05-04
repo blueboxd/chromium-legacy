@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -21,6 +22,8 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/style/typography.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
@@ -33,11 +36,11 @@ constexpr int kHoverCardWidth = 240;
 
 // Hover card margins.
 // TODO(crbug.com/1351778): Move to a base hover card class.
-constexpr int kHorizontalMargin = 18;
-constexpr int kVerticalMargin = 10;
+constexpr int kHorizontalMargin = 12;
+constexpr int kVerticalMargin = 12;
 
 // Maximum number of lines that a label occupies.
-constexpr int kHoverCardLavelMaxLines = 2;
+constexpr int kHoverCardLabelMaxLines = 3;
 
 std::u16string GetSiteAccessTitle(
     ToolbarActionViewController::HoverCardState::SiteAccess state) {
@@ -150,9 +153,14 @@ ToolbarActionHoverCardBubbleView::ToolbarActionHoverCardBubbleView(
   layout->SetCollapseMargins(true);
 
   // Set up content.
-  auto create_label = [](int context, gfx::Insets insets) {
-    auto label =
-        std::make_unique<FadeLabelView>(kHoverCardLavelMaxLines, context);
+  auto create_label = [](int context, int text_style,
+                         std::optional<ui::ColorId> color_id,
+                         gfx::Insets insets) {
+    auto label = std::make_unique<FadeLabelView>(kHoverCardLabelMaxLines,
+                                                 context, text_style);
+    if (color_id) {
+      label->SetEnabledColorId(color_id.value());
+    }
     label->SetProperty(views::kMarginsKey, insets);
     label->SetProperty(
         views::kFlexBehaviorKey,
@@ -168,24 +176,33 @@ ToolbarActionHoverCardBubbleView::ToolbarActionHoverCardBubbleView(
     return separator;
   };
 
-  title_label_ = AddChildView(
-      create_label(CONTEXT_TAB_HOVER_CARD_TITLE,
-                   gfx::Insets::VH(kVerticalMargin, kHorizontalMargin)));
+  title_label_ = AddChildView(create_label(
+      CONTEXT_TAB_HOVER_CARD_TITLE, views::style::STYLE_BODY_3_EMPHASIS,
+      /*color_id=*/std::nullopt,
+      gfx::Insets::VH(kVerticalMargin, kHorizontalMargin)));
+  action_title_label_ = AddChildView(create_label(
+      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_BODY_4,
+      /*color_id=*/kColorTabHoverCardSecondaryText,
+      gfx::Insets::TLBR(0, kHorizontalMargin, kVerticalMargin,
+                        kHorizontalMargin)));
 
   site_access_separator_ = AddChildView(create_separator());
-  site_access_title_label_ = AddChildView(
-      create_label(CONTEXT_TAB_HOVER_CARD_TITLE,
-                   gfx::Insets::TLBR(kVerticalMargin, kHorizontalMargin, 0,
-                                     kHorizontalMargin)));
-  site_access_description_label_ = AddChildView(
-      create_label(views::style::CONTEXT_DIALOG_BODY_TEXT,
-                   gfx::Insets::TLBR(0, kHorizontalMargin, kVerticalMargin,
-                                     kHorizontalMargin)));
+  site_access_title_label_ = AddChildView(create_label(
+      CONTEXT_TAB_HOVER_CARD_TITLE, views::style::STYLE_BODY_3_EMPHASIS,
+      /*color_id=*/std::nullopt,
+      gfx::Insets::TLBR(kVerticalMargin, kHorizontalMargin, 0,
+                        kHorizontalMargin)));
+  site_access_description_label_ = AddChildView(create_label(
+      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_BODY_4,
+      /*color_id=*/kColorTabHoverCardSecondaryText,
+      gfx::Insets::TLBR(0, kHorizontalMargin, kVerticalMargin,
+                        kHorizontalMargin)));
 
   policy_separator_ = AddChildView(create_separator());
-  policy_label_ = AddChildView(
-      create_label(views::style::CONTEXT_DIALOG_BODY_TEXT,
-                   gfx::Insets::VH(kVerticalMargin, kHorizontalMargin)));
+  policy_label_ = AddChildView(create_label(
+      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_BODY_4,
+      /*color_id=*/kColorTabHoverCardSecondaryText,
+      gfx::Insets::VH(kVerticalMargin, kHorizontalMargin)));
 
   // Set up widget.
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -204,12 +221,28 @@ ToolbarActionHoverCardBubbleView::ToolbarActionHoverCardBubbleView(
 }
 
 void ToolbarActionHoverCardBubbleView::UpdateCardContent(
-    const ToolbarActionViewController* action_controller,
+    const std::u16string& extension_name,
+    const std::u16string& action_title,
+    ToolbarActionViewController::HoverCardState state,
     content::WebContents* web_contents) {
-  title_label_->SetData(
-      {action_controller->GetActionName(), /*is_filename=*/false});
+  title_label_->SetData({extension_name, /*is_filename=*/false});
 
-  HoverCardState state = action_controller->GetHoverCardState(web_contents);
+  // We need to adjust the bottom margin of `title_label_` depending on
+  // `action_title_` visibility.
+  if (action_title.empty()) {
+    title_label_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets::VH(kVerticalMargin, kHorizontalMargin));
+    action_title_label_->SetVisible(false);
+  } else {
+    title_label_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets::TLBR(kVerticalMargin, kHorizontalMargin, 0,
+                          kHorizontalMargin));
+    action_title_label_->SetData({action_title, /*is_filename=*/false});
+    action_title_label_->SetVisible(true);
+  }
+
   bool show_site_access_labels =
       state.site_access !=
       HoverCardState::SiteAccess::kExtensionDoesNotWantAccess;
@@ -235,6 +268,7 @@ void ToolbarActionHoverCardBubbleView::UpdateCardContent(
 
 void ToolbarActionHoverCardBubbleView::SetTextFade(double percent) {
   title_label_->SetFade(percent);
+  action_title_label_->SetFade(percent);
   site_access_title_label_->SetFade(percent);
   site_access_description_label_->SetFade(percent);
   policy_label_->SetFade(percent);
@@ -243,6 +277,15 @@ void ToolbarActionHoverCardBubbleView::SetTextFade(double percent) {
 std::u16string ToolbarActionHoverCardBubbleView::GetTitleTextForTesting()
     const {
   return title_label_->GetText();
+}
+
+std::u16string ToolbarActionHoverCardBubbleView::GetActionTitleTextForTesting()
+    const {
+  return action_title_label_->GetText();
+}
+
+bool ToolbarActionHoverCardBubbleView::IsActionTitleVisible() const {
+  return action_title_label_->GetVisible();
 }
 
 bool ToolbarActionHoverCardBubbleView::IsSiteAccessSeparatorVisible() const {

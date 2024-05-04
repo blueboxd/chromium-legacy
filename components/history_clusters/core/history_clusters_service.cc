@@ -37,7 +37,6 @@
 #include "components/history_clusters/core/history_clusters_types.h"
 #include "components/history_clusters/core/history_clusters_util.h"
 #include "components/history_clusters/core/on_device_clustering_backend.h"
-#include "components/optimization_guide/core/entity_metadata_provider.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/prefs/pref_service.h"
 #include "components/site_engagement/core/site_engagement_score_provider.h"
@@ -63,12 +62,6 @@ base::Value::Dict KeywordsCacheToDict(
     base::Value::Dict cluster_keyword_dict;
     cluster_keyword_dict.Set("type", pair.second.type);
     cluster_keyword_dict.Set("score", pair.second.score);
-    base::Value::List entity_collections_list;
-    for (std::string entity : pair.second.entity_collections) {
-      entity_collections_list.Append(entity);
-    }
-    cluster_keyword_dict.Set("entity_collections",
-                             std::move(entity_collections_list));
     keyword_dict.Set(base::UTF16ToUTF8(pair.first),
                      std::move(cluster_keyword_dict));
   }
@@ -91,19 +84,11 @@ HistoryClustersService::KeywordMap DictToKeywordsCache(
     if (!type || !score) {
       continue;
     }
-    std::vector<std::string> entity_collections;
-    const base::Value::List* entity_collections_list =
-        entry_dict.FindList("entity_collections");
-    if (entity_collections_list) {
-      for (const auto& val : *entity_collections_list) {
-        entity_collections.push_back(val.GetString());
-      }
-    }
     keyword_map.insert(std::make_pair(
         base::UTF8ToUTF16(pair.first),
         history::ClusterKeywordData(
             static_cast<history::ClusterKeywordData::ClusterKeywordType>(*type),
-            *score, entity_collections)));
+            *score)));
   }
 
   return keyword_map;
@@ -116,7 +101,6 @@ constexpr base::TimeDelta kAllKeywordsCacheRefreshAge = base::Hours(2);
 HistoryClustersService::HistoryClustersService(
     const std::string& application_locale,
     history::HistoryService* history_service,
-    optimization_guide::EntityMetadataProvider* entity_metadata_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     site_engagement::SiteEngagementScoreProvider* engagement_score_provider,
     TemplateURLService* template_url_service,
@@ -154,8 +138,7 @@ HistoryClustersService::HistoryClustersService(
   backend_ = FileClusteringBackend::CreateIfEnabled();
   if (!backend_) {
     backend_ = std::make_unique<OnDeviceClusteringBackend>(
-        entity_metadata_provider, engagement_score_provider,
-        optimization_guide_decider, JourneysMidBlocklist());
+        engagement_score_provider, optimization_guide_decider);
   }
 
   LoadCachesFromPrefs();
@@ -171,14 +154,12 @@ base::WeakPtr<HistoryClustersService> HistoryClustersService::GetWeakPtr() {
 void HistoryClustersService::Shutdown() {}
 
 bool HistoryClustersService::IsJourneysEnabledAndVisible() const {
-  const bool rename_journeys = base::FeatureList::IsEnabled(kRenameJourneys);
   const bool journeys_is_managed =
       pref_service_->IsManagedPreference(prefs::kVisible);
-  // When history_clusters::kRenameJourneys is enabled, history clusters are
-  // always visible unless the visibility prefs is set to false by policy.
+  // History clusters are always visible unless the visibility prefs is
+  // set to false by policy.
   return is_journeys_feature_flag_enabled_ &&
-         (pref_service_->GetBoolean(prefs::kVisible) ||
-          (rename_journeys && !journeys_is_managed));
+         (pref_service_->GetBoolean(prefs::kVisible) || !journeys_is_managed);
 }
 
 // static

@@ -39,7 +39,7 @@
 <translation id="1297922636971898492">Google ड्राइव्ह आत्ता उपलब्ध नाही. Google ड्राइव्ह एकदा परत आल्यानंतर अपलोड करणे आपोआप रीस्टार्ट होईल.</translation>
 <translation id="1306130176943817227">हटवू शकत नाही. आयटम वापरात आहे.</translation>
 <translation id="1307931752636661898">Linux फाइल पाहू शकत नाही</translation>
-<translation id="1313405956111467313">स्वयंचलित प्रॉक्सी कॉंफिगरेशन</translation>
+<translation id="1313405956111467313">ऑटोमॅटिक प्रॉक्सी कॉन्फिगरेशन</translation>
 <translation id="134645005685694099">फाइल सिंक करणे सुरू ठेवण्यासाठी तुमच्या डिव्हाइसमध्ये पुरेशी स्टोरेज जागा नाही. नवीन फाइल यापुढे आपोआप सिंक केल्या जाणार नाहीत.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">फाइल किंवा डिरेक्टरी वापरण्यायोग्य नाही.</translation>
@@ -79,7 +79,7 @@
 <translation id="164969095109328410">Chrome डिव्हाइस</translation>
 <translation id="1661207570040737402">तुम्ही तुमचे पूर्ण Shared Drive Google Workspace स्टोरेज वापरले आहे.</translation>
 <translation id="1661867754829461514">पिन गहाळ आहे </translation>
-<translation id="166439687370499867">शेअर केलेल्या नेटवर्कची कॉंफिगरेशन बदलण्याची परवानगी नाही</translation>
+<translation id="166439687370499867">शेअर केलेल्या नेटवर्कची कॉन्फिगरेशन बदलण्याची परवानगी नाही</translation>
 <translation id="1665611772925418501">फाइल सुधारली जाऊ शकली नाही.</translation>
 <translation id="1673103856845176271">फाइलमध्ये सुरक्षिततेच्या कारणांमुळे प्रवेश करता येऊ शकला नाही.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -142,7 +142,7 @@
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले, कनेक्ट करा</translation>
 <translation id="2141347188420181405"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, तुमच्या अ‍ॅडमिनिस्ट्रेटर ने ब्लॉक केलेले नेटवर्क, तपशील</translation>
 <translation id="2142680004883808240">फोनेटिक YaZHert कीबोर्डसह रशियन</translation>
-<translation id="2143778271340628265">व्यक्तिचलित प्रॉक्झी कॉंफिगरेशन</translation>
+<translation id="2143778271340628265">मॅन्युअल प्रॉक्सी कॉन्फिगरेशन</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2163152940313951844">चुकीचा वर्ण: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2178056538281447670">Microsoft 365</translation>
@@ -797,7 +797,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="7135561821015524160">कन्नड फोनेटिक</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7162080671816799010">ऑथेंटिकेशन सर्व्हर ओळख प्रमाणित करण्यासाठी 'विषयाच्या पर्यायी नावाची जुळणी' किंवा 'डोमेन सफिक्स जुळणी' उपलब्ध नाही</translation>
-<translation id="7165320105431587207">नेटवर्क कॉंफिगर करण्यात अयशस्वी</translation>
+<translation id="7165320105431587207">नेटवर्क कॉन्फिगर करता आले नाही</translation>
 <translation id="7170041865419449892">रेंजच्या बाहेर</translation>
 <translation id="7179579940054351344"><ph name="NON_RESTRICTED_DESTINATIONS" /> वगळता सर्व वेबसाइट आणि URLs ना फाइलचा अ‍ॅक्सेस आहे</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
@@ -852,6 +852,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="7589661784326793847">फक्त एक सेकंद प्रतीक्षा करा</translation>
 <translation id="7600126690270271294">सर्बियन</translation>
 <translation id="7603724359189955920">ग्रिड</translation>
+<translation id="7624010287655004652">दुसऱ्या मोबाइल पुरवठादाराने लॉक केले आहे</translation>
 <translation id="7627790789328695202">अरेरे, <ph name="FILE_NAME" /> आधीपासून अस्तित्वात आहे. हे पुनर्नामित करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="7628656427739290098"><ph name="PERCENT" />% पूर्ण झाले.</translation>
 <translation id="7649070708921625228">मदत</translation>
@@ -1018,7 +1019,6 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="8698877009525468705">ही फाइल गोपनीय आहे आणि अ‍ॅडमिनिस्ट्रेटर धोरणाच्या निर्बंधांच्या अधीन आहे.</translation>
 <translation id="8712637175834984815">समजले</translation>
 <translation id="8713112442029511308">माल्टीज</translation>
-<translation id="8714138378966541668">पुरवठादाराने लॉक केले आहे</translation>
 <translation id="8714406895390098252">सायकल</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> निवडले.</translation>
 <translation id="872537912056138402">क्रोएशियन</translation>

@@ -594,6 +594,8 @@ std::string SetAllowedPref(Profile* profile,
     DCHECK(value.is_bool());
   } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
     DCHECK(value.is_bool());
+  } else if (pref_name == prefs::kDocumentScanAPITrustedExtensions) {
+    DCHECK(value.is_list());
   } else if (pref_name == ash::prefs::kEnableAutoScreenLock) {
     DCHECK(value.is_bool());
   } else if (pref_name == prefs::kLanguagePreloadEngines) {
@@ -2089,16 +2091,16 @@ AutotestPrivateGetLacrosInfoFunction::ToLacrosState(
       return api::autotest_private::LacrosState::kStopped;
     case crosapi::BrowserManager::State::PREPARING_FOR_LAUNCH:
       return api::autotest_private::LacrosState::kPreparingForLaunch;
-    case crosapi::BrowserManager::State::WAITING_OWNER_FETCH:
-      return api::autotest_private::LacrosState::kWaitingOwnerFetch;
     case crosapi::BrowserManager::State::PRE_LAUNCHED:
       return api::autotest_private::LacrosState::kPreLaunched;
     case crosapi::BrowserManager::State::STARTING:
       return api::autotest_private::LacrosState::kStarting;
     case crosapi::BrowserManager::State::RUNNING:
       return api::autotest_private::LacrosState::kRunning;
-    case crosapi::BrowserManager::State::TERMINATING:
-      return api::autotest_private::LacrosState::kTerminating;
+    case crosapi::BrowserManager::State::WAITING_FOR_MOJO_DISCONNECTED:
+      return api::autotest_private::LacrosState::kWaitingForMojoDisconnected;
+    case crosapi::BrowserManager::State::WAITING_FOR_PROCESS_TERMINATED:
+      return api::autotest_private::LacrosState::kWaitingForProcessTerminated;
   }
 }
 
@@ -4809,7 +4811,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
 
     // If PWA is already loaded, call callback immediately.
     Installable installable =
-        app_banner_manager_->GetInstallableWebAppCheckResultForTesting();
+        app_banner_manager_->GetInstallableWebAppCheckResult();
     if (installable == Installable::kYes_Promotable ||
         installable == Installable::kYes_ByUserRequest) {
       observation_.Reset();
@@ -4822,10 +4824,10 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
 
   ~PWABannerObserver() override {}
 
-  void OnInstallableWebAppStatusUpdated() override {
-    Installable installable =
-        app_banner_manager_->GetInstallableWebAppCheckResultForTesting();
-    switch (installable) {
+  void OnInstallableWebAppStatusUpdated(
+      webapps::InstallableWebAppCheckResult result,
+      const std::optional<webapps::WebAppBannerData>& data) override {
+    switch (result) {
       case Installable::kNo:
         [[fallthrough]];
       case Installable::kNo_AlreadyInstalled:
@@ -4845,7 +4847,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
   }
 
  private:
-  using Installable = webapps::AppBannerManager::InstallableWebAppCheckResult;
+  using Installable = webapps::InstallableWebAppCheckResult;
 
   base::ScopedObservation<webapps::AppBannerManager,
                           webapps::AppBannerManager::Observer>

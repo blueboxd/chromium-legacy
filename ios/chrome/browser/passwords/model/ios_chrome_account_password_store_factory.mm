@@ -10,20 +10,21 @@
 #import "base/check.h"
 #import "base/functional/callback_helpers.h"
 #import "base/no_destructor.h"
+#import "components/affiliations/core/browser/affiliation_service.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
 #import "components/password_manager/core/browser/affiliation/affiliations_prefetcher.h"
 #import "components/password_manager/core/browser/password_store/login_database.h"
 #import "components/password_manager/core/browser/password_store/password_store_built_in_backend.h"
 #import "components/password_manager/core/browser/password_store_factory_util.h"
+#import "ios/chrome/browser/affiliations/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/model/credentials_cleaner_runner_factory.h"
-#import "ios/chrome/browser/passwords/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_affiliations_prefetcher_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 
+using affiliations::AffiliationService;
 using password_manager::AffiliatedMatchHelper;
-using password_manager::AffiliationService;
 
 // static
 scoped_refptr<password_manager::PasswordStoreInterface>
@@ -72,7 +73,8 @@ IOSChromeAccountPasswordStoreFactory::BuildServiceInstanceFor(
   auto password_store = base::MakeRefCounted<password_manager::PasswordStore>(
       std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
           std::move(login_db),
-          syncer::WipeModelUponSyncDisabledBehavior::kAlways));
+          syncer::WipeModelUponSyncDisabledBehavior::kAlways,
+          browser_state->GetPrefs()));
 
   AffiliationService* affiliation_service =
       IOSChromeAffiliationServiceFactory::GetForBrowserState(context);

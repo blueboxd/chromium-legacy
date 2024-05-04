@@ -181,7 +181,7 @@ void WebTestBrowserMainRunner::Initialize() {
   CHECK(browser_context_path_for_web_tests_.CreateUniqueTempDir());
   CHECK(!browser_context_path_for_web_tests_.GetPath().MaybeAsASCII().empty());
   command_line.AppendSwitchASCII(
-      switches::kContentShellDataPath,
+      switches::kContentShellUserDataDir,
       browser_context_path_for_web_tests_.GetPath().MaybeAsASCII());
 
   command_line.AppendSwitch(switches::kIgnoreCertificateErrors);
@@ -296,6 +296,9 @@ void WebTestBrowserMainRunner::Initialize() {
 
   // Always run with fake FedCM UI.
   command_line.AppendSwitch(switches::kUseFakeUIForFedCM);
+
+  // Always run with fake digital identity credential UI.
+  command_line.AppendSwitch(switches::kUseFakeUIForDigitalIdentity);
 
   // Enable the deprecated WebAuthn Mojo Testing API.
   command_line.AppendSwitch(switches::kEnableWebAuthDeprecatedMojoTestingApi);

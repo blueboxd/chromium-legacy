@@ -159,7 +159,9 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
     PrioritizeAndMergeNewVariant(current_request_variant, type);
   }
 
-  raw_ptr<EmbeddedPermissionPromptBaseView> prompt_view = nullptr;
+  RebuildRequests();
+
+  EmbeddedPermissionPromptBaseView* prompt_view = nullptr;
 
   switch (embedded_prompt_variant_) {
     case Variant::kAsk:
@@ -207,7 +209,6 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
   }
 
   if (prompt_view) {
-    RebuildRequests();
     prompt_view_tracker_.SetView(prompt_view);
     content_scrim_widget_ =
         EmbeddedPermissionPromptContentScrimView::CreateScrimWidget(
@@ -243,6 +244,8 @@ void EmbeddedPermissionPrompt::AllowThisTime() {
 
 void EmbeddedPermissionPrompt::Dismiss() {
   delegate_->Dismiss();
+  permissions::PermissionUmaUtil::RecordElementAnchoredBubbleDismiss(
+      delegate()->Requests(), permissions::DismissedReason::DISMISSED_X_BUTTON);
   delegate_->FinalizeCurrentRequests();
 }
 
@@ -275,8 +278,11 @@ void EmbeddedPermissionPrompt::ShowSystemSettings() {
 }
 
 void EmbeddedPermissionPrompt::DismissScrim() {
+  permissions::PermissionUmaUtil::RecordElementAnchoredBubbleDismiss(
+      delegate()->Requests(), permissions::DismissedReason::DISMISSED_SCRIM);
   CloseView();
-  Dismiss();
+  delegate_->Dismiss();
+  delegate_->FinalizeCurrentRequests();
 }
 
 base::WeakPtr<permissions::PermissionPrompt::Delegate>

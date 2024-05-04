@@ -14,12 +14,15 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.CoreMatchers.allOf;
 
+import static org.chromium.base.test.transit.LogicalElement.sharedUiThreadLogicalElement;
+import static org.chromium.base.test.transit.LogicalElement.unscopedUiThreadLogicalElement;
 import static org.chromium.base.test.transit.ViewElement.sharedViewElement;
 
 import androidx.annotation.StringRes;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.NoMatchingViewException;
 
+import org.chromium.base.test.transit.Condition;
 import org.chromium.base.test.transit.Elements;
 import org.chromium.base.test.transit.TransitStation;
 import org.chromium.base.test.transit.TravelException;
@@ -46,6 +49,18 @@ public abstract class HubBaseStation extends TransitStation {
             sharedViewElement(
                     allOf(isDescendantOfA(withId(R.id.hub_toolbar)), withId(R.id.pane_switcher)));
 
+    public static final ViewElement REGULAR_TOGGLE_TAB_BUTTON =
+            sharedViewElement(
+                    allOf(
+                            withContentDescription(
+                                    R.string.accessibility_tab_switcher_standard_stack)));
+
+    public static final ViewElement INCOGNITO_TOGGLE_TAB_BUTTON =
+            sharedViewElement(
+                    allOf(
+                            withContentDescription(
+                                    R.string.accessibility_tab_switcher_incognito_stack)));
+
     protected final ChromeTabbedActivityTestRule mChromeTabbedActivityTestRule;
 
     /**
@@ -65,8 +80,32 @@ public abstract class HubBaseStation extends TransitStation {
         elements.declareView(HUB_PANE_HOST);
         elements.declareView(HUB_MENU_BUTTON);
 
-        elements.declareEnterCondition(new HubIsEnabled());
-        elements.declareEnterCondition(new HubLayoutShowing());
+        Condition incognitoTabsExist =
+                new UiThreadCondition() {
+                    @Override
+                    public boolean check() {
+                        return mChromeTabbedActivityTestRule.tabsCount(/* incognito= */ true) > 0;
+                    }
+
+                    @Override
+                    public String buildDescription() {
+                        return "Incognito tabs exist";
+                    }
+                };
+
+        elements.declareViewIf(REGULAR_TOGGLE_TAB_BUTTON, incognitoTabsExist);
+        elements.declareViewIf(INCOGNITO_TOGGLE_TAB_BUTTON, incognitoTabsExist);
+
+        elements.declareLogicalElement(
+                unscopedUiThreadLogicalElement(
+                        "HubFieldTrial Hub is enabled", HubFieldTrial::isHubEnabled));
+        elements.declareLogicalElement(
+                sharedUiThreadLogicalElement(
+                        "LayoutManager is showing TAB_SWITCHER (Hub)", this::isHubLayoutShowing));
+        elements.declareLogicalElement(
+                unscopedUiThreadLogicalElement(
+                        "LayoutManager is not in transition to or from TAB_SWITCHER (Hub)",
+                        this::isHubLayoutNotInTransition));
     }
 
     /**
@@ -83,10 +122,7 @@ public abstract class HubBaseStation extends TransitStation {
                         mChromeTabbedActivityTestRule,
                         /* incognito= */ false,
                         /* isOpeningTab= */ false);
-        return Trip.travelSync(this, destination, (t) -> {
-          t.addCondition(new HubLayoutNotShowing());
-          Espresso.pressBack();
-        });
+        return Trip.travelSync(this, destination, (t) -> Espresso.pressBack());
     }
 
     /**
@@ -96,7 +132,7 @@ public abstract class HubBaseStation extends TransitStation {
      */
     public <T extends HubBaseStation> T selectPane(@PaneId int paneId,
         Class<T> expectedDestination) {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         if (getPaneId() == paneId) {
             return expectedDestination.cast(this);
@@ -121,46 +157,27 @@ public abstract class HubBaseStation extends TransitStation {
                 });
     }
 
-    private class HubIsEnabled extends UiThreadCondition {
-        @Override
-        public boolean check() {
-            return HubFieldTrial.isHubEnabled();
-        }
-
-        @Override
-        public String buildDescription() {
-            return "HubFieldTrial Hub is enabled";
-        }
+    /** Convenience method to select the Regular Tab Switcher pane. */
+    public HubTabSwitcherStation selectRegularTabList() {
+        return selectPane(PaneId.TAB_SWITCHER, HubTabSwitcherStation.class);
     }
 
-    private class HubLayoutShowing extends UiThreadCondition {
-        @Override
-        public boolean check() {
-            LayoutManager layoutManager =
-                    mChromeTabbedActivityTestRule.getActivity().getLayoutManager();
-            return layoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER)
-                    && !layoutManager.isLayoutStartingToShow(LayoutType.TAB_SWITCHER)
-                    && !layoutManager.isLayoutStartingToHide(LayoutType.TAB_SWITCHER);
-        }
-
-        @Override
-        public String buildDescription() {
-            return "LayoutManager is showing TAB_SWITCHER (Hub)";
-        }
+    /** Convenience method to select the Incognito Tab Switcher pane. */
+    public HubIncognitoTabSwitcherStation selectIncognitoTabList() {
+        return selectPane(PaneId.INCOGNITO_TAB_SWITCHER, HubIncognitoTabSwitcherStation.class);
     }
 
-    protected class HubLayoutNotShowing extends UiThreadCondition {
-        @Override
-        public boolean check() {
-            LayoutManager layoutManager =
-                    mChromeTabbedActivityTestRule.getActivity().getLayoutManager();
-            return !layoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
-        }
+    private boolean isHubLayoutShowing() {
+        LayoutManager layoutManager =
+                mChromeTabbedActivityTestRule.getActivity().getLayoutManager();
+        return layoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
+    }
 
-        @Override
-        public String buildDescription() {
-            return "LayoutManager is not showing TAB_SWITCHER (Hub)";
-        }
+    private boolean isHubLayoutNotInTransition() {
+        LayoutManager layoutManager =
+                mChromeTabbedActivityTestRule.getActivity().getLayoutManager();
+        return !layoutManager.isLayoutStartingToShow(LayoutType.TAB_SWITCHER)
+                && !layoutManager.isLayoutStartingToHide(LayoutType.TAB_SWITCHER);
     }
 
     private void clickPaneSwitcherForPaneWithContentDescription(

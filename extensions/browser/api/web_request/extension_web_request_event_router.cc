@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string_view>
+#include <vector>
 
 #include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
@@ -16,7 +17,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
@@ -33,8 +33,10 @@
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/common/api/web_request/web_request_activity_log_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_id.h"
@@ -49,7 +51,7 @@ namespace extensions {
 
 namespace {
 
-namespace activity_log = activity_log_web_request_constants;
+namespace activity_log = web_request_activity_log_constants;
 namespace declarative_keys = declarative_webrequest_constants;
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
@@ -195,7 +197,7 @@ WebRequestEventRouter::EventTypes GetEventTypeFromEventName(
     return WebRequestEventRouter::kInvalidEvent;
   }
 
-  const auto* it = kRequestStageMap.find(event_name);
+  const auto it = kRequestStageMap.find(event_name);
   return it == kRequestStageMap.end() ? WebRequestEventRouter::kInvalidEvent
                                       : it->second;
 }
@@ -276,7 +278,7 @@ void SendOnMessageEventOnUI(
 
   auto event = std::make_unique<Event>(
       histogram_value, event_name, std::move(event_args), browser_context,
-      /*restrict_to_context_type=*/absl::nullopt, GURL(),
+      /*restrict_to_context_type=*/std::nullopt, GURL(),
       EventRouter::USER_GESTURE_UNKNOWN, std::move(event_filtering_info));
   event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
@@ -1660,7 +1662,7 @@ bool WebRequestEventRouter::AddEventListener(
     // the *same order* in the extension. In practice, this should pretty much
     // always be the case, because we require listeners to be set up
     // synchronously.
-    size_t erased = base::EraseIf(
+    size_t erased = std::erase_if(
         listeners, [browser_context, extension_id, sub_event_name](
                        const std::unique_ptr<EventListener>& listener) {
           return listener->id.browser_context == browser_context &&

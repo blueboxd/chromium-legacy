@@ -362,7 +362,7 @@ const LogicalAnchorQuery* AnchorEvaluatorImpl::AnchorQuery() const {
 }
 
 std::optional<LayoutUnit> AnchorEvaluatorImpl::Evaluate(
-    const CalculationExpressionNode& node) const {
+    const CalculationExpressionNode& node) {
   DCHECK(node.IsAnchorQuery());
   const auto& anchor_query = To<CalculationExpressionAnchorQueryNode>(node);
   switch (anchor_query.Type()) {
@@ -480,8 +480,6 @@ std::optional<LayoutUnit> AnchorEvaluatorImpl::EvaluateAnchor(
     const AnchorSpecifierValue& anchor_specifier,
     CSSAnchorValue anchor_value,
     float percentage) const {
-  has_anchor_functions_ = true;
-
   if (!AllowAnchor()) {
     return std::nullopt;
   }
@@ -513,8 +511,6 @@ std::optional<LayoutUnit> AnchorEvaluatorImpl::EvaluateAnchor(
 std::optional<LayoutUnit> AnchorEvaluatorImpl::EvaluateAnchorSize(
     const AnchorSpecifierValue& anchor_specifier,
     CSSAnchorSizeValue anchor_size_value) const {
-  has_anchor_functions_ = true;
-
   if (!AllowAnchorSize()) {
     return std::nullopt;
   }
@@ -556,7 +552,6 @@ AnchorEvaluatorImpl::GetAdditionalFallbackBoundsRect() const {
 
 std::optional<LayoutUnit> AnchorEvaluatorImpl::GetPhysicalAnchorCenterOffset(
     bool is_y_axis) {
-  using AnchorScope = Length::AnchorScope;
   AnchorScope anchor_scope(
       is_y_axis ? AnchorScope::Mode::kTop : AnchorScope::Mode::kLeft, this);
   // Parameter `percentage` is unused for any non-percentage anchor value.

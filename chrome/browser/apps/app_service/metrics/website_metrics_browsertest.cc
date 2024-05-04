@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/apps/app_service/metrics/website_metrics.h"
+
 #include <memory>
 #include <optional>
 #include <set>
@@ -12,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/metrics/website_metrics.h"
 #include "chrome/browser/apps/app_service/metrics/website_metrics_browser_test_mixin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -30,6 +31,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/webapps/browser/banners/installable_web_app_check_result.h"
+#include "components/webapps/browser/banners/web_app_banner_data.h"
 #include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -70,8 +73,11 @@ class TestWebsiteMetrics : public WebsiteMetrics {
   }
 
   void OnInstallableWebAppStatusUpdated(
-      content::WebContents* web_contents) override {
-    WebsiteMetrics::OnInstallableWebAppStatusUpdated(web_contents);
+      content::WebContents* web_contents,
+      webapps::InstallableWebAppCheckResult result,
+      const std::optional<webapps::WebAppBannerData>& data) override {
+    WebsiteMetrics::OnInstallableWebAppStatusUpdated(web_contents, result,
+                                                     data);
     if (webcontents_to_ukm_key_.find(web_contents) ==
             webcontents_to_ukm_key_.end() ||
         webcontents_to_ukm_key_[web_contents] != ukm_key_) {

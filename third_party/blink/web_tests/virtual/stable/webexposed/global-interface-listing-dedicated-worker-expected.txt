@@ -1518,12 +1518,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface ReadableStream
 [Worker]     attribute @@toStringTag
 [Worker]     getter locked
+[Worker]     method @@asyncIterator
 [Worker]     method cancel
 [Worker]     method constructor
 [Worker]     method getReader
 [Worker]     method pipeThrough
 [Worker]     method pipeTo
 [Worker]     method tee
+[Worker]     method values
 [Worker] interface ReadableStreamBYOBReader
 [Worker]     attribute @@toStringTag
 [Worker]     getter closed
@@ -1574,6 +1576,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter referrer
 [Worker]     getter referrerPolicy
 [Worker]     getter signal
+[Worker]     getter targetAddressSpace
 [Worker]     getter url
 [Worker]     method arrayBuffer
 [Worker]     method blob
@@ -3395,6 +3398,18 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onerror
 [Worker]     setter onmessage
 [Worker]     setter onopen
+[Worker] interface WebSocketError : DOMException
+[Worker]     attribute @@toStringTag
+[Worker]     getter closeCode
+[Worker]     getter reason
+[Worker]     method constructor
+[Worker] interface WebSocketStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter closed
+[Worker]     getter opened
+[Worker]     getter url
+[Worker]     method close
+[Worker]     method constructor
 [Worker] interface WebTransport
 [Worker]     attribute @@toStringTag
 [Worker]     getter closed

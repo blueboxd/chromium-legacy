@@ -352,13 +352,12 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
   BookmarkModelTest(const BookmarkModelTest&) = delete;
   BookmarkModelTest& operator=(const BookmarkModelTest&) = delete;
 
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
+  void BookmarkModelLoaded(bool ids_reassigned) override {
     // We never load from the db, so that this should never get invoked.
     NOTREACHED();
   }
 
-  void BookmarkNodeMoved(BookmarkModel* model,
-                         const BookmarkNode* old_parent,
+  void BookmarkNodeMoved(const BookmarkNode* old_parent,
                          size_t old_index,
                          const BookmarkNode* new_parent,
                          size_t new_index) override {
@@ -366,8 +365,7 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
     observer_details_.Set(old_parent, new_parent, old_index, new_index, false);
   }
 
-  void BookmarkNodeAdded(BookmarkModel* model,
-                         const BookmarkNode* parent,
+  void BookmarkNodeAdded(const BookmarkNode* parent,
                          size_t index,
                          bool added_by_user) override {
     ++added_count_;
@@ -375,15 +373,13 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
                           added_by_user);
   }
 
-  void OnWillRemoveBookmarks(BookmarkModel* model,
-                             const BookmarkNode* parent,
+  void OnWillRemoveBookmarks(const BookmarkNode* parent,
                              size_t old_index,
                              const BookmarkNode* node) override {
     ++before_remove_count_;
   }
 
-  void BookmarkNodeRemoved(BookmarkModel* model,
-                           const BookmarkNode* parent,
+  void BookmarkNodeRemoved(const BookmarkNode* parent,
                            size_t old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override {
@@ -392,58 +388,50 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
                           false);
   }
 
-  void BookmarkNodeChanged(BookmarkModel* model,
-                           const BookmarkNode* node) override {
+  void BookmarkNodeChanged(const BookmarkNode* node) override {
     ++changed_count_;
     observer_details_.Set(node, nullptr, static_cast<size_t>(-1),
                           static_cast<size_t>(-1), false);
   }
 
-  void OnWillChangeBookmarkNode(BookmarkModel* model,
-                                const BookmarkNode* node) override {
+  void OnWillChangeBookmarkNode(const BookmarkNode* node) override {
     ++before_change_count_;
   }
 
-  void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                     const BookmarkNode* node) override {
+  void BookmarkNodeChildrenReordered(const BookmarkNode* node) override {
     ++reordered_count_;
   }
 
-  void OnWillReorderBookmarkNode(BookmarkModel* model,
-                                 const BookmarkNode* node) override {
+  void OnWillReorderBookmarkNode(const BookmarkNode* node) override {
     ++before_reorder_count_;
   }
 
-  void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                  const BookmarkNode* node) override {
+  void BookmarkNodeFaviconChanged(const BookmarkNode* node) override {
     // We never attempt to load favicons, so that this method never
     // gets invoked.
   }
 
-  void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override {
+  void ExtensiveBookmarkChangesBeginning() override {
     ++extensive_changes_beginning_count_;
   }
 
-  void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override {
+  void ExtensiveBookmarkChangesEnded() override {
     ++extensive_changes_ended_count_;
   }
 
   void BookmarkAllUserNodesRemoved(
-      BookmarkModel* model,
       const std::set<GURL>& removed_urls) override {
     ++all_bookmarks_removed_;
     all_bookmarks_removed_details_.emplace_back(removed_urls);
   }
 
-  void OnWillRemoveAllUserBookmarks(BookmarkModel* model) override {
-    ++before_remove_all_count_;
-  }
+  void OnWillRemoveAllUserBookmarks() override { ++before_remove_all_count_; }
 
-  void GroupedBookmarkChangesBeginning(BookmarkModel* model) override {
+  void GroupedBookmarkChangesBeginning() override {
     ++grouped_changes_beginning_count_;
   }
 
-  void GroupedBookmarkChangesEnded(BookmarkModel* model) override {
+  void GroupedBookmarkChangesEnded() override {
     ++grouped_changes_ended_count_;
   }
 
@@ -521,16 +509,6 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
  protected:
-  // Set `model_` to a new model with a new client whose storage state for uma
-  // is storage_state.
-  void ResetModel(metrics::StorageStateForUma storage_state) {
-    model_->RemoveObserver(this);
-    auto client = std::make_unique<TestBookmarkClient>();
-    client->SetStorageStateForUma(storage_state);
-    model_ = TestBookmarkClient::CreateModelWithClient(std::move(client));
-    model_->AddObserver(this);
-  }
-
   base::test::ScopedFeatureList features_{
       syncer::kEnableBookmarkFoldersForAccountStorage};
   std::unique_ptr<BookmarkModel> model_;
@@ -575,39 +553,6 @@ TEST_F(BookmarkModelTest, InitialState) {
   EXPECT_TRUE(bb_node->id() != other_node->id());
   EXPECT_TRUE(bb_node->id() != mobile_node->id());
   EXPECT_TRUE(other_node->id() != mobile_node->id());
-}
-
-// Tests recording Bookmarks.Storage.TimeToLoadAtStartup2 histogram for account
-// storage.
-TEST_F(BookmarkModelTest, LoadModelWithAccountStorage) {
-  ResetModel(metrics::StorageStateForUma::kAccount);
-
-  histogram_tester()->ExpectTotalCount("Bookmarks.Storage.TimeToLoadAtStartup2",
-                                       1);
-  histogram_tester()->ExpectTotalCount(
-      "Bookmarks.Storage.TimeToLoadAtStartup2.AccountStorage", 1);
-}
-
-// Tests recording Bookmarks.Storage.TimeToLoadAtStartup2 histogram for local
-// storage not syncing.
-TEST_F(BookmarkModelTest, LoadModelWithLocalStorageNotSyncing) {
-  ResetModel(metrics::StorageStateForUma::kLocalOnly);
-
-  histogram_tester()->ExpectTotalCount("Bookmarks.Storage.TimeToLoadAtStartup2",
-                                       1);
-  histogram_tester()->ExpectTotalCount(
-      "Bookmarks.Storage.TimeToLoadAtStartup2.LocalStorage", 1);
-}
-
-// Tests recording Bookmarks.Storage.TimeToLoadAtStartup2 histogram for local
-// storage syncing.
-TEST_F(BookmarkModelTest, LoadModelWithLocalStorageSyncing) {
-  ResetModel(metrics::StorageStateForUma::kSyncEnabled);
-
-  histogram_tester()->ExpectTotalCount("Bookmarks.Storage.TimeToLoadAtStartup2",
-                                       1);
-  histogram_tester()->ExpectTotalCount(
-      "Bookmarks.Storage.TimeToLoadAtStartup2.LocalStorageSyncing", 1);
 }
 
 TEST_F(BookmarkModelTest, AddURL) {
@@ -658,11 +603,30 @@ TEST_F(BookmarkModelTest, AddNewURL) {
                              testing::Ne(model_->mobile_node()->id())));
 }
 
-// Tests recording user action when adding a bookmark in account storage.
-TEST_F(BookmarkModelTest, AddNewURLAccountStorage) {
-  ResetModel(metrics::StorageStateForUma::kAccount);
+// Tests recording user action when adding a bookmark in account storage when
+// a dedicated BookmarkModel instance is used for account bookmarks.
+TEST_F(BookmarkModelTest,
+       AddNewURLAccountStorageOnDedicatedBookmarkModelInstance) {
+  // TestBookmarkClient exercises the regular `Load()` codepath, so pretend here
+  // that `LoadAccountBookmarksFileAsLocalOrSyncableBookmarks()` was used
+  // instead.
+  model_
+      ->SetLoadedAccountBookmarksFileAsLocalOrSyncableBookmarksForUmaForTest();
 
   model_->AddNewURL(model_->bookmark_bar_node(), 0, u"title",
+                    GURL("http://foo.com"));
+  EXPECT_EQ(1, user_action_tester()->GetActionCount("Bookmarks.Added"));
+  EXPECT_EQ(1, user_action_tester()->GetActionCount(
+                   "Bookmarks.Added.AccountStorage"));
+}
+
+// Tests recording user action when adding a bookmark in account storage when
+// a shared BookmarkModel instance is used for account bookmarks and
+// local-or-syncable ones.
+TEST_F(BookmarkModelTest,
+       AddNewURLAccountStorageOnSharedBookmarkModelInstance) {
+  model_->CreateAccountPermanentFolders();
+  model_->AddNewURL(model_->account_bookmark_bar_node(), 0, u"title",
                     GURL("http://foo.com"));
   EXPECT_EQ(1, user_action_tester()->GetActionCount("Bookmarks.Added"));
   EXPECT_EQ(1, user_action_tester()->GetActionCount(
@@ -672,8 +636,6 @@ TEST_F(BookmarkModelTest, AddNewURLAccountStorage) {
 // Tests recording user action when adding a bookmark in local storage not
 // syncing.
 TEST_F(BookmarkModelTest, AddNewURLLocalStorageNotSyncing) {
-  ResetModel(metrics::StorageStateForUma::kLocalOnly);
-
   model_->AddNewURL(model_->bookmark_bar_node(), 0, u"title",
                     GURL("http://foo.com"));
   EXPECT_EQ(1, user_action_tester()->GetActionCount("Bookmarks.Added"));
@@ -683,7 +645,8 @@ TEST_F(BookmarkModelTest, AddNewURLLocalStorageNotSyncing) {
 
 // Tests recording user action when adding a bookmark in local storage syncing.
 TEST_F(BookmarkModelTest, AddNewURLLocalStorageSyncing) {
-  ResetModel(metrics::StorageStateForUma::kSyncEnabled);
+  static_cast<TestBookmarkClient*>(model_->client())
+      ->SetIsSyncFeatureEnabledIncludingBookmarksForUma(true);
 
   model_->AddNewURL(model_->bookmark_bar_node(), 0, u"title",
                     GURL("http://foo.com"));
@@ -694,9 +657,9 @@ TEST_F(BookmarkModelTest, AddNewURLLocalStorageSyncing) {
 
 // Tests recording user action when adding a folder in account storage.
 TEST_F(BookmarkModelTest, AddNewFolderAccountStorage) {
-  ResetModel(metrics::StorageStateForUma::kAccount);
+  model_->CreateAccountPermanentFolders();
 
-  model_->AddFolder(model_->mobile_node(), 0, u"title");
+  model_->AddFolder(model_->account_mobile_node(), 0, u"title");
   EXPECT_EQ(1, user_action_tester()->GetActionCount("Bookmarks.FolderAdded"));
   EXPECT_EQ(1, user_action_tester()->GetActionCount(
                    "Bookmarks.FolderAdded.AccountStorage"));
@@ -705,19 +668,16 @@ TEST_F(BookmarkModelTest, AddNewFolderAccountStorage) {
 // Tests recording user action when adding a folder in local storage not
 // syncing.
 TEST_F(BookmarkModelTest, AddNewFolderLocalStorageNotSyncing) {
-  ResetModel(metrics::StorageStateForUma::kLocalOnly);
-
   model_->AddFolder(model_->mobile_node(), 0, u"title");
   EXPECT_EQ(1, user_action_tester()->GetActionCount("Bookmarks.FolderAdded"));
   EXPECT_EQ(1, user_action_tester()->GetActionCount(
                    "Bookmarks.FolderAdded.LocalStorage"));
-  histogram_tester()->ExpectTotalCount("Bookmarks.Storage.TimeToLoadAtStartup2",
-                                       1);
 }
 
 // Tests recording user action when adding a folder in local storage syncing.
 TEST_F(BookmarkModelTest, AddNewFolderLocalStorageSyncing) {
-  ResetModel(metrics::StorageStateForUma::kSyncEnabled);
+  static_cast<TestBookmarkClient*>(model_->client())
+      ->SetIsSyncFeatureEnabledIncludingBookmarksForUma(true);
 
   model_->AddFolder(model_->mobile_node(), 0, u"title");
   EXPECT_EQ(1, user_action_tester()->GetActionCount("Bookmarks.FolderAdded"));
@@ -2182,6 +2142,8 @@ TEST(BookmarkModelLoadTest, NodesPopulatedOnLoad) {
   // This is necessary to ensure the save completes.
   task_environment.FastForwardUntilNoTasksRemain();
 
+  base::HistogramTester histogram_tester;
+
   // Recreate the model and ensure GetBookmarksMatching() returns the url that
   // was added.
   model =
@@ -2191,6 +2153,9 @@ TEST(BookmarkModelLoadTest, NodesPopulatedOnLoad) {
 
   ASSERT_EQ(1u, model->bookmark_bar_node()->children().size());
   EXPECT_EQ(node_url, model->bookmark_bar_node()->children()[0]->url());
+
+  histogram_tester.ExpectTotalCount("Bookmarks.Storage.TimeToLoadAtStartup2",
+                                    1);
 }
 
 TEST(BookmarkModelLoadTest, NodesPopulatedIncludingAccountNodesOnLoad) {
@@ -2612,39 +2577,31 @@ class BookmarkModelFaviconTest : public testing::Test,
   void ClearUpdatedNodes() { updated_nodes_.clear(); }
 
  protected:
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
-  }
+  void BookmarkModelLoaded(bool ids_reassigned) override {}
 
-  void BookmarkNodeMoved(BookmarkModel* model,
-                         const BookmarkNode* old_parent,
+  void BookmarkNodeMoved(const BookmarkNode* old_parent,
                          size_t old_index,
                          const BookmarkNode* new_parent,
                          size_t new_index) override {}
 
-  void BookmarkNodeAdded(BookmarkModel* model,
-                         const BookmarkNode* parent,
+  void BookmarkNodeAdded(const BookmarkNode* parent,
                          size_t index,
                          bool added_by_user) override {}
 
-  void BookmarkNodeRemoved(BookmarkModel* model,
-                           const BookmarkNode* parent,
+  void BookmarkNodeRemoved(const BookmarkNode* parent,
                            size_t old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override {}
 
-  void BookmarkNodeChanged(BookmarkModel* model,
-                           const BookmarkNode* node) override {}
+  void BookmarkNodeChanged(const BookmarkNode* node) override {}
 
-  void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                  const BookmarkNode* node) override {
+  void BookmarkNodeFaviconChanged(const BookmarkNode* node) override {
     updated_nodes_.push_back(node);
   }
 
-  void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                     const BookmarkNode* node) override {}
+  void BookmarkNodeChildrenReordered(const BookmarkNode* node) override {}
 
   void BookmarkAllUserNodesRemoved(
-      BookmarkModel* model,
       const std::set<GURL>& removed_urls) override {}
 
   std::unique_ptr<BookmarkModel> model_;
@@ -2752,6 +2709,9 @@ class BookmarkDualModelTest : public testing::Test {
         account_model_(TestBookmarkClient::CreateModel()) {
     local_or_syncable_observation_.Observe(local_or_syncable_model_.get());
     account_observation_.Observe(account_model_.get());
+
+    scoped_feature_list_.InitAndDisableFeature(
+        syncer::kEnableBookmarkFoldersForAccountStorage);
   }
 
  protected:
@@ -2763,6 +2723,7 @@ class BookmarkDualModelTest : public testing::Test {
       local_or_syncable_observation_{&local_or_syncable_observer_};
   base::ScopedObservation<BookmarkModel, BookmarkModelObserver>
       account_observation_{&account_observer_};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(BookmarkDualModelTest, MoveToOtherModel) {
@@ -2777,29 +2738,24 @@ TEST_F(BookmarkDualModelTest, MoveToOtherModel) {
 
   testing::Sequence local_or_syncable_sequence;
   EXPECT_CALL(local_or_syncable_observer_,
-              OnWillRemoveBookmarks(local_or_syncable_model_.get(), mobile_node,
-                                    0, folder))
+              OnWillRemoveBookmarks(mobile_node, 0, folder))
       .InSequence(local_or_syncable_sequence);
   std::set<GURL> removed_urls{GURL("http://foo.com"), GURL("http://bar.com")};
   EXPECT_CALL(local_or_syncable_observer_,
-              BookmarkNodeRemoved(local_or_syncable_model_.get(), mobile_node,
-                                  0, folder, removed_urls))
+              BookmarkNodeRemoved(mobile_node, 0, folder, removed_urls))
       .InSequence(local_or_syncable_sequence);
 
   testing::Sequence account_sequence;
-  EXPECT_CALL(account_observer_,
-              BookmarkNodeAdded(account_model_.get(), dest_folder, 0, true))
+  EXPECT_CALL(account_observer_, BookmarkNodeAdded(dest_folder, 0, true))
       .InSequence(account_sequence);
   const BookmarkNode* captured_foo_parent = nullptr;
-  EXPECT_CALL(account_observer_,
-              BookmarkNodeAdded(account_model_.get(), testing::_, 0, true))
+  EXPECT_CALL(account_observer_, BookmarkNodeAdded(testing::_, 0, true))
       .InSequence(account_sequence)
-      .WillOnce(testing::SaveArg<1>(&captured_foo_parent));
+      .WillOnce(testing::SaveArg<0>(&captured_foo_parent));
   const BookmarkNode* captured_bar_parent = nullptr;
-  EXPECT_CALL(account_observer_,
-              BookmarkNodeAdded(account_model_.get(), testing::_, 1, true))
+  EXPECT_CALL(account_observer_, BookmarkNodeAdded(testing::_, 1, true))
       .InSequence(account_sequence)
-      .WillOnce(testing::SaveArg<1>(&captured_bar_parent));
+      .WillOnce(testing::SaveArg<0>(&captured_bar_parent));
 
   const BookmarkNode* moved_folder =
       local_or_syncable_model_->MoveToOtherModelWithNewNodeIdsAndUuids(

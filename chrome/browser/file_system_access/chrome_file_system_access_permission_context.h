@@ -219,12 +219,6 @@ class ChromeFileSystemAccessPermissionContext
     return GetPersistedGrantStatus(origin);
   }
 
-  bool RevokeActiveGrantsForTesting(
-      const url::Origin& origin,
-      base::FilePath file_path = base::FilePath()) {
-    return RevokeActiveGrants(origin, std::move(file_path));
-  }
-
   std::vector<std::unique_ptr<Object>> GetExtendedPersistedObjectsForTesting(
       const url::Origin& origin) {
     return GetExtendedPersistedObjects(origin);
@@ -233,10 +227,6 @@ class ChromeFileSystemAccessPermissionContext
   PersistedGrantType GetPersistedGrantTypeForTesting(
       const url::Origin& origin) {
     return GetPersistedGrantType(origin);
-  }
-
-  bool OriginHasExtendedPermissionForTesting(const url::Origin& origin) {
-    return OriginHasExtendedPermission(origin);
   }
 
   bool HasExtendedPermissionForTesting(const url::Origin& origin,
@@ -279,10 +269,18 @@ class ChromeFileSystemAccessPermissionContext
   // usage icon/bubble).
   void RevokeGrants(const url::Origin& origin);
 
+  // Revokes all the active grants in `active_permissions_map_`. This method is
+  // currently used by the browsing data clearning code.
+  void RevokeAllActiveGrants();
+
   // Returns whether active or extended grants exist for the origin of the given
   // type.
   bool OriginHasReadAccess(const url::Origin& origin);
   bool OriginHasWriteAccess(const url::Origin& origin);
+
+  // Returns whether the origin has extended permission enabled via user
+  // opt-in or by having an actively installed PWA.
+  bool OriginHasExtendedPermission(const url::Origin& origin);
 
   // Enable or disable extended permissions as a result of user
   // interaction with the File System Access Page Info UI.
@@ -298,6 +296,12 @@ class ChromeFileSystemAccessPermissionContext
   void TriggerTimersForTesting();
 
   void SetOriginHasExtendedPermissionForTesting(const url::Origin& origin);
+
+  bool RevokeActiveGrantsForTesting(
+      const url::Origin& origin,
+      base::FilePath file_path = base::FilePath()) {
+    return RevokeActiveGrants(origin, std::move(file_path));
+  }
 
   scoped_refptr<content::FileSystemAccessPermissionGrant>
   GetExtendedReadPermissionGrantForTesting(const url::Origin& origin,
@@ -452,9 +456,6 @@ class ChromeFileSystemAccessPermissionContext
                                                    const base::FilePath& path,
                                                    GrantType grant_type);
 
-  // Returns whether the origin has extended permission enabled via user
-  // opt-in or by having an actively installed PWA.
-  bool OriginHasExtendedPermission(const url::Origin& origin);
   // Removes extended permissions for grants. Does not update the content
   // setting type for extended permissions.
   // This method should only be called for an origin that already has extended

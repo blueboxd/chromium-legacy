@@ -29,6 +29,7 @@ ValidatingAuthenticator::ValidatingAuthenticator(
   DCHECK(!remote_jid_.empty());
   DCHECK(validation_callback_);
   DCHECK(current_authenticator_);
+  ChainStateChangeAfterAcceptedWithUnderlying(*current_authenticator_);
 }
 
 ValidatingAuthenticator::~ValidatingAuthenticator() = default;
@@ -144,6 +145,14 @@ void ValidatingAuthenticator::UpdateState(base::OnceClosure resume_callback) {
   } else {
     std::move(resume_callback).Run();
   }
+}
+
+void ValidatingAuthenticator::NotifyStateChangeAfterAccepted() {
+  state_ = current_authenticator_->state();
+  if (state_ == REJECTED) {
+    rejection_reason_ = current_authenticator_->rejection_reason();
+  }
+  Authenticator::NotifyStateChangeAfterAccepted();
 }
 
 }  // namespace remoting::protocol

@@ -46,7 +46,6 @@
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
-#include "components/omnibox/browser/autocomplete_scoring_model_service.h"
 #include "components/omnibox/browser/autocomplete_scoring_signals_annotator.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/bookmark_scoring_signals_annotator.h"
@@ -75,11 +74,14 @@
 #include "components/omnibox/browser/zero_suggest_verbatim_match_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_starter_pack_data.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "net/http/http_util.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/omnibox_proto/chrome_searchbox_stats.pb.h"
@@ -95,6 +97,10 @@
 #include "components/omnibox/browser/actions/history_clusters_action.h"
 #include "components/omnibox/browser/history_cluster_provider.h"
 #include "components/open_from_clipboard/clipboard_recent_content_generic.h"
+#endif
+
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+#include "components/omnibox/browser/autocomplete_scoring_model_service.h"
 #endif
 
 namespace {
@@ -233,7 +239,7 @@ AutocompleteController::OldResult::OldResult(UpdateType update_type,
 
   if (update_type == UpdateType::kSyncPass ||
       update_type == UpdateType::kAsyncPass) {
-    matches_to_transfer.Swap(result);
+    matches_to_transfer.SwapMatchesWith(result);
   } else {
     result->ClearMatches();
   }
@@ -468,6 +474,12 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // Providers assume synchronous inputs (`omit_asynchronous_matches() ==
   // true`) are not zero-suggest ones. See crbug.com/1339425.
   DCHECK(!input.omit_asynchronous_matches() || !input.IsZeroSuggest());
+
+  // Use a zero-suggest input as the signal that zero-prefix suggestions could
+  // have been shown in the autocomplete session.
+  if (input.IsZeroSuggest()) {
+    internal_result_.set_zero_prefix_enabled_in_session(true);
+  }
 
   triggered_feature_service_->ResetInput();
 
@@ -814,9 +826,20 @@ void AutocompleteController::
 void AutocompleteController::SetMatchDestinationURL(
     AutocompleteMatch* match) const {
   TRACE_EVENT0("omnibox", "AutocompleteController::SetMatchDestinationURL");
-  auto url = ComputeURLFromSearchTermsArgs(
-      match->GetTemplateURL(template_url_service_, false),
-      *match->search_terms_args);
+  const TemplateURL* turl = match->GetTemplateURL(template_url_service_, false);
+  const std::string search_terms =
+      base::UTF16ToUTF8(match->search_terms_args->search_terms);
+  // Append an extra header to navigations from the @gemini scope.
+  if (turl &&
+      turl->starter_pack_id() == TemplateURLStarterPackData::kAskGoogle &&
+      net::HttpUtil::IsValidHeaderValue(search_terms)) {
+    DCHECK(net::HttpUtil::IsValidHeaderName(kOmniboxGeminiHeader));
+    match->extra_headers = kOmniboxGeminiHeader;
+    match->extra_headers += ":";
+    match->extra_headers += search_terms;
+  }
+
+  auto url = ComputeURLFromSearchTermsArgs(turl, *match->search_terms_args);
   if (url.is_valid()) {
     match->destination_url = std::move(url);
   }
@@ -826,11 +849,20 @@ void AutocompleteController::SetMatchDestinationURL(
 }
 
 GURL AutocompleteController::ComputeURLFromSearchTermsArgs(
-    TemplateURL* template_url,
+    const TemplateURL* template_url,
     const TemplateURLRef::SearchTermsArgs& search_terms_args) const {
   if (!template_url) {
     return GURL();
   }
+
+  // Skip search term replacement when in the @gemini scope.
+  // TODO(crbug.com/41494524): Replace this logic with a proper fix to support
+  // keywords that do not do search term replacement in omnibox.
+  if (template_url->starter_pack_id() ==
+      TemplateURLStarterPackData::kAskGoogle) {
+    return GURL(OmniboxFieldTrial::kGeminiUrlOverride.Get());
+  }
+
   return GURL(template_url->url_ref().ReplaceSearchTerms(
       search_terms_args, template_url_service_->search_terms_data()));
 }
@@ -1233,17 +1265,9 @@ void AutocompleteController::AttachActions() {
 #endif
   }
   internal_result_.TrimOmniboxActions(input_.IsZeroSuggest());
-
-  // TODO(crbug.com/1477861): Eliminate the NTP realbox check when realbox UI
-  //  is fixed for this feature. For now the *IncludeRealbox feature param is
-  //  defaulted to true so that developers see realbox issues but they can
-  //  be prevented in experiments.
-  if (OmniboxFieldTrial::IsActionsUISimplificationEnabled() &&
-      (OmniboxFieldTrial::kActionsUISimplificationIncludeRealbox.Get() ||
-       input_.current_page_classification() !=
-           metrics::OmniboxEventProto::NTP_REALBOX)) {
-    internal_result_.SplitActionsToSuggestions();
-  }
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  internal_result_.SplitActionsToSuggestions();
+#endif
 }
 
 void AutocompleteController::UpdateAssociatedKeywords(
@@ -1424,8 +1448,7 @@ void AutocompleteController::UpdateSearchboxStats(AutocompleteResult* result) {
     ExtendMatchSubtypes(*match, &subtypes);
 
     if (input_.IsZeroSuggest()) {
-      result->set_zero_prefix_enabled_in_session(true);
-      // Count any suggestions that constitute zero-prefix suggestions.
+      // Count the zero-prefix suggestions in the result set.
       if (subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_HISTORY) ||
           subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS) ||
           subtypes.contains(
@@ -1557,8 +1580,13 @@ void AutocompleteController::NotifyChanged() {
   metrics_.OnNotifyChanged(last_result_for_logging_,
                            internal_result_.GetMatchDedupComparators());
 
-  published_result_.Swap(&internal_result_);
-  internal_result_.CopyFrom(published_result_);
+  // Swap matches from `internal_result_` to `published_result_` and copy them
+  // back from `published_result_` to `internal_result_`. This allows
+  // `published_result_` to retain `java_match_` and the computed
+  // `matching_java_tab_` which otherwise would have been lost if
+  // `internal_result_` simply copied matches from `internal_result_`.
+  published_result_.SwapMatchesWith(&internal_result_);
+  internal_result_.CopyMatchesFrom(published_result_);
 
   last_result_for_logging_ = internal_result_.GetMatchDedupComparators();
 
@@ -1688,6 +1716,10 @@ AutocompleteController::GetOmniboxPositionExperimentStatsV2() const {
 
 bool AutocompleteController::ShouldRunProvider(
     AutocompleteProvider* provider) const {
+  if (!provider) {
+    return false;
+  }
+
   if (input_.InKeywordMode()) {
     // Only a subset of providers are run when we're in a starter pack keyword
     // mode. Try to grab the TemplateURL to determine if we're in starter pack
@@ -1743,18 +1775,19 @@ bool AutocompleteController::ShouldRunProvider(
         case AutocompleteProvider::TYPE_DOCUMENT:
           return !(omnibox_feature_configs::LimitKeywordModeSuggestions::Get()
                        .limit_document_suggestions) ||
-                 base::StartsWith(keyword_turl->url(),
-                                  "https://drive.google.com",
-                                  base::CompareCase::INSENSITIVE_ASCII);
+                 (keyword_turl &&
+                  base::StartsWith(keyword_turl->url(),
+                                   "https://drive.google.com",
+                                   base::CompareCase::INSENSITIVE_ASCII));
 
         // Don't run on device head provider.
         case AutocompleteProvider::TYPE_ON_DEVICE_HEAD:
           return !(omnibox_feature_configs::LimitKeywordModeSuggestions::Get()
                        .limit_on_device_head_suggestions);
 
-        // Otherwise, all other providers should still run.
+        // Treat all other providers as usual.
         default:
-          return true;
+          break;
       }
     }
   }
@@ -1858,8 +1891,9 @@ void AutocompleteController::RunBatchUrlScoringModel(OldResult& old_result) {
                                  relevance_heap.size());
 
     // Record how long it took to execute the model for all eligible matches.
-    base::UmaHistogramTimes("Omnibox.URLScoringModelExecuted.ElapsedTime",
-                            elapsed_timer.Elapsed());
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Omnibox.URLScoringModelExecuted.ElapsedTime", elapsed_timer.Elapsed(),
+        base::Microseconds(1), base::Milliseconds(3), 100);
   }
 
   while (!relevance_heap.empty()) {
@@ -1938,8 +1972,9 @@ void AutocompleteController::RunBatchUrlScoringModelWithStableSearches(
                                results.size());
 
   // Record how long it took to execute the model for all eligible matches.
-  base::UmaHistogramTimes("Omnibox.URLScoringModelExecuted.ElapsedTime",
-                          elapsed_timer.Elapsed());
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Omnibox.URLScoringModelExecuted.ElapsedTime", elapsed_timer.Elapsed(),
+      base::Microseconds(1), base::Milliseconds(3), 100);
 
   // Record whether the model was executed for at least one eligible match.
   provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
@@ -2038,8 +2073,9 @@ void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
                                results.size());
 
   // Record how long it took to execute the model for all eligible matches.
-  base::UmaHistogramTimes("Omnibox.URLScoringModelExecuted.ElapsedTime",
-                          elapsed_timer.Elapsed());
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Omnibox.URLScoringModelExecuted.ElapsedTime", elapsed_timer.Elapsed(),
+      base::Microseconds(1), base::Milliseconds(3), 100);
 
   // Record whether the model was executed for at least one eligible match.
   provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(

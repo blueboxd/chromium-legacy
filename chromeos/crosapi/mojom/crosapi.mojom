@@ -81,6 +81,7 @@ import "chromeos/crosapi/mojom/network_change.mojom";
 import "chromeos/crosapi/mojom/networking_attributes.mojom";
 import "chromeos/crosapi/mojom/networking_private.mojom";
 import "chromeos/crosapi/mojom/one_drive_notification_service.mojom";
+import "chromeos/crosapi/mojom/one_drive_integration_service.mojom";
 import "chromeos/crosapi/mojom/power.mojom";
 import "chromeos/crosapi/mojom/network_settings_service.mojom";
 import "chromeos/crosapi/mojom/parent_access.mojom";
@@ -159,8 +160,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 133
-// Next method id: 135
+// Next version: 134
+// Next method id: 136
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -565,6 +566,12 @@ interface Crosapi {
   BindOneDriveNotificationService@132(
       pending_receiver<OneDriveNotificationService> receiver);
 
+  // Binds the OneDrive integration service which is used by Lacros to observe
+  // OneDrive mount path changes. Added in M124.
+  [MinVersion=133]
+  BindOneDriveIntegrationService@135(
+    pending_receiver<OneDriveIntegrationService> receiver);
+
   // Binds the Parent Access UI to allow Lacros to request parent access
   // from Ash when needed.
   [MinVersion=97]
@@ -905,8 +912,8 @@ enum MetricsReportingManaged {
 // future compatibility, to avoid assumptions about where on disk the directory
 // is located.
 //
-// Next version: 35
-// Next id: 11
+// Next version: 36
+// Next id: 12
 [Stable]
 struct DefaultPaths {
   // The default (non-configurable) directory for documents. For example,
@@ -920,6 +927,10 @@ struct DefaultPaths {
   // The (non-configurable) path of the mount point for drive in ChromeOS. For
   // example, /media/fuse/drivefs-<hash>.
   [MinVersion=23] mojo_base.mojom.FilePath? drivefs@2;
+
+  // The path of the mount point for OneDrive in ChromeOS. For example,
+  // /media/fuse/fusebox/fsp.<hash>.
+  [MinVersion=35] mojo_base.mojom.FilePath? onedrive@11;
 
   // The (non-configurable) path of the software user NSS database. For
   // example, /home/chronos/u-<hash>/.pki/nssdb.
@@ -1003,8 +1014,8 @@ struct DeviceProperties {
 // Entropy variables which need to be kept in sync between Ash and Lacros
 // throughout a session.
 //
-// Next version: 1
-// Next id: 3
+// Next version: 2
+// Next id: 4
 [Stable]
 struct EntropySource {
   // Metrics service low entropy source of ash chrome.
@@ -1015,6 +1026,13 @@ struct EntropySource {
 
   // Metrics service pseudo low entropy source of ash chrome.
   int32 pseudo_low_entropy@2;
+
+  // The limited entropy randomization source used by ash chrome, provided by
+  // the metrics service. This field should not be null, but is required to be
+  // optional by mojo for backward compatibility. See
+  // https://chromium.googlesource.com/chromium/src/mojo/+/HEAD/public/tools/bindings/README.md#versioned-structs
+  [MinVersion=1]
+  string? limited_entropy_randomization_source@3;
 };
 
 [Stable, Extensible]
@@ -1135,8 +1153,8 @@ enum OpenUrlFrom {
 // parameters here. If a new parameter is added and its value is only known
 // after the user has logged in, please update BrowserPostLoginParams as well.
 //
-// Next version: 77
-// Next id: 77
+// Next version: 79
+// Next id: 79
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -1586,6 +1604,17 @@ struct BrowserInitParams {
   // chrome.
   [MinVersion=76]
   uint64 limited_entropy_synthetic_trial_seed@76;
+
+  // If true, captive portal signin windows are opened as a popup window.
+  [MinVersion=77]
+  bool is_captive_portal_popup_window_enabled@77;
+
+  // Set to true when the
+  // `chromeos::features::kFileSystemProviderCloudFileSystem` flag is enabled
+  // in Ash.
+  [MinVersion=78]
+  bool is_file_system_provider_cloud_file_system_enabled@78;
+
 };
 
 // BrowserPostLoginParams is the subset of parameters in BrowserInitParams
@@ -1735,8 +1764,8 @@ struct OpenUrlParams {
 // has accidentally become a kitchen sink for different features. This was not
 // intentional.
 //
-// Next MinVersion: 77.
-// Next ID: 23
+// Next MinVersion: 78.
+// Next ID: 24
 //
 [Stable, Uuid="4e04dc16-b34c-40fd-9e3f-3c55c2c6cf91",
  RenamedFrom="crosapi.mojom.LacrosChromeService"]
@@ -1903,6 +1932,11 @@ interface BrowserService {
   // Opens the Lacros profile manger window.
   [MinVersion=74]
   OpenProfileManager@21();
+
+  // Opens the specified URL in a browser popup window using the captive portal
+  // signin profile.
+  [MinVersion=77]
+  OpenCaptivePortalSignin@23(url.mojom.Url url) => (CreationResult result);
 };
 
 // TODO(crbug.com/1180712): move to its own file. Currently due to circular

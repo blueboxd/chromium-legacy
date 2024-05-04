@@ -4,19 +4,40 @@
 
 #include "ash/wm/window_restore/pine_controller.h"
 
+#include "ash/birch/birch_model.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
+#include "ash/display/screen_ash.h"
 #include "ash/public/cpp/image_util.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
+#include "ash/style/system_dialog_delegate_view.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_restore/pine_contents_data.h"
 #include "ash/wm/window_restore/window_restore_util.h"
+#include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "chromeos/ui/base/display_util.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/layout/flex_layout.h"
 
 namespace ash {
 
 namespace {
+
+// TODO(sophiewen): Remove these when we get assets from UX.
+constexpr int kOnboardingMessageWidth = 500;
+constexpr int kOnboardingMessageHeight = 200;
 
 // Records the UMA metrics for the pine screenshot taken on the last shutdown.
 // Resets the prefs used to store the metrics across shutdowns.
@@ -38,11 +59,98 @@ void RecordPineScreenshotMetrics(PrefService* local_state) {
              prefs::kPineScreenshotEncodeAndSaveDuration);
 }
 
+bool ShouldShowPineImage(const gfx::ImageSkia& pine_image) {
+  if (pine_image.isNull()) {
+    return false;
+  }
+
+  const gfx::Size image_size = pine_image.size();
+  const bool is_image_landscape = image_size.width() > image_size.height();
+
+  // TODO(minch|sammiequon): The pine dialog will only be shown inside the
+  // primary display for now. Change the logic here if it changes.
+  const display::Display display_with_pine =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  const bool is_display_landscape = chromeos::IsLandscapeOrientation(
+      chromeos::GetDisplayCurrentOrientation(display_with_pine));
+
+  // Show the image only if the pine image and the display showing it both have
+  // the same orientation.
+  return is_image_landscape == is_display_landscape;
+}
+
+PrefService* GetActivePrefService() {
+  return Shell::Get()->session_controller()->GetActivePrefService();
+}
+
+// Returns true if this is the first time login and we should show the pine
+// onboarding message.
+bool ShouldShowPineOnboarding() {
+  PrefService* prefs = GetActivePrefService();
+  return prefs && prefs->GetBoolean(prefs::kShouldShowPineOnboarding);
+}
+
 }  // namespace
 
 PineController::PineController() = default;
 
 PineController::~PineController() = default;
+
+void PineController::MaybeShowPineOnboardingMessage(bool restore_on) {
+  if (onboarding_widget_) {
+    return;
+  }
+
+  // Comment out this block while testing.
+  if (!ShouldShowPineOnboarding()) {
+    return;
+  }
+
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  params.parent =
+      root_window->GetChildById(ash::kShellWindowId_SystemModalContainer);
+  gfx::Rect centered_bounds(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          root_window));
+  centered_bounds.ClampToCenteredSize(
+      gfx::Size(kOnboardingMessageWidth, kOnboardingMessageHeight));
+  params.bounds = centered_bounds;
+  params.name = "PineOnboardingWidget";
+  onboarding_widget_ = std::make_unique<views::Widget>(std::move(params));
+
+  auto* dialog = onboarding_widget_->SetContentsView(
+      std::make_unique<SystemDialogDelegateView>());
+  // Since no additional view was set, the buttons will be center aligned.
+  dialog->SetButtonContainerAlignment(views::LayoutAlignment::kCenter);
+  dialog->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical)
+      .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetCollapseMargins(true);
+  dialog->SetTitleText(l10n_util::GetStringUTF16(
+      restore_on ? IDS_ASH_PINE_ONBOARDING_RESTORE_ON_TITLE
+                 : IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_TITLE));
+  dialog->SetDescription(l10n_util::GetStringUTF16(
+      restore_on ? IDS_ASH_PINE_ONBOARDING_RESTORE_ON_DESCRIPTION
+                 : IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_DESCRIPTION));
+  dialog->SetAcceptButtonText(l10n_util::GetStringUTF16(
+      restore_on ? IDS_ASH_PINE_ONBOARDING_RESTORE_ON_ACCEPT
+                 : IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_ACCEPT));
+  if (restore_on) {
+    // If the user had the restore pref set as "Ask every time", don't show the
+    // Cancel button.
+    dialog->SetCancelButtonVisible(false);
+  } else {
+    dialog->SetCancelButtonText(
+        l10n_util::GetStringUTF16(IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_CANCEL));
+  }
+
+  onboarding_widget_->Show();
+  GetActivePrefService()->SetBoolean(prefs::kShouldShowPineOnboarding, false);
+}
 
 void PineController::MaybeStartPineOverviewSessionDevAccelerator() {
   auto data = std::make_unique<PineContentsData>();
@@ -50,10 +158,11 @@ void PineController::MaybeStartPineOverviewSessionDevAccelerator() {
 
   // Chrome.
   data->apps_infos.emplace_back(
-      "mgndgikekgjfcpckkfioiadnlibdjbkf", /*tab_title=*/"Cnn",
-      std::vector<std::string>{"https://www.cnn.com/",
-                               "https://www.youtube.com/",
-                               "https://www.google.com/"});
+      "mgndgikekgjfcpckkfioiadnlibdjbkf", /*tab_title=*/u"Chrome",
+      std::vector<GURL>{
+          GURL("https://www.cnn.com/"), GURL("https://www.reddit.com/"),
+          GURL("https://www.youtube.com/"), GURL("https://www.waymo.com/"),
+          GURL("https://www.google.com/")});
   // Camera.
   data->apps_infos.emplace_back("njfbnohfdkmbmnjapinfcopialeghnmh");
   // Settings.
@@ -64,16 +173,16 @@ void PineController::MaybeStartPineOverviewSessionDevAccelerator() {
   data->apps_infos.emplace_back("oabkinaljpjeilageghcdlnekhphhphl");
   // Chrome.
   data->apps_infos.emplace_back(
-      "mgndgikekgjfcpckkfioiadnlibdjbkf", /*tab_title=*/"Maps",
-      std::vector<std::string>{"https://www.google.com/maps/"});
-  // Files.
-  data->apps_infos.emplace_back("fkiggjmkendpmbegkagpmagjepfkpmeb");
-  // Chrome.
-  data->apps_infos.emplace_back(
-      "mgndgikekgjfcpckkfioiadnlibdjbkf", /*tab_title=*/"Twitter",
-      std::vector<std::string>{"https://www.twitter.com/",
-                               "https://www.youtube.com/",
-                               "https://www.google.com/"});
+      "mgndgikekgjfcpckkfioiadnlibdjbkf", /*tab_title=*/u"Maps",
+      std::vector<GURL>{GURL("https://www.google.com/maps/")});
+  // // Files.
+  // data->apps_infos.emplace_back("fkiggjmkendpmbegkagpmagjepfkpmeb");
+  // // Chrome.
+  // data->apps_infos.emplace_back(
+  //     "mgndgikekgjfcpckkfioiadnlibdjbkf", /*tab_title=*/u"Twitter",
+  //     std::vector<GURL>{GURL("https://www.twitter.com/"),
+  //                       GURL("https://www.youtube.com/"),
+  //                       GURL("https://www.google.com/")});
 
   MaybeStartPineOverviewSession(std::move(data));
 }
@@ -97,8 +206,6 @@ void PineController::MaybeStartPineOverviewSession(
 
   pine_contents_data_ = std::move(pine_contents_data);
 
-  // TODO(minch|sammiequon): Record the metrics on start up when determining
-  // whether to show the pine dialog.
   RecordPineScreenshotMetrics(Shell::Get()->local_state());
   image_util::DecodeImageFile(
       base::BindOnce(&PineController::OnPineImageDecoded,
@@ -114,12 +221,33 @@ void PineController::MaybeEndPineOverviewSession() {
 
 void PineController::OnPineImageDecoded(const gfx::ImageSkia& pine_image) {
   CHECK(pine_contents_data_);
-  pine_contents_data_->image = pine_image;
+
+  if (ShouldShowPineImage(pine_image)) {
+    pine_contents_data_->image = pine_image;
+  }
 
   StartPineOverviewSession();
 }
 
 void PineController::StartPineOverviewSession() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceBirchFetch)) {
+    LOG(WARNING) << "Forcing Birch data fetch";
+    Shell::Get()->birch_model()->RequestBirchDataFetch(base::BindOnce([]() {
+      // Dump the items that were fetched.
+      LOG(WARNING) << "All items:";
+      auto all_items = Shell::Get()->birch_model()->GetAllItems();
+      for (const auto& item : all_items) {
+        LOG(WARNING) << item->ToString();
+      }
+      // Dump the items for display.
+      LOG(WARNING) << "Items for display:";
+      auto display_items = Shell::Get()->birch_model()->GetItemsForDisplay();
+      for (const auto& item : display_items) {
+        LOG(WARNING) << item->ToString();
+      }
+    }));
+  }
   // TODO(sammiequon): Add a new start action for this type of overview session.
   OverviewController::Get()->StartOverview(OverviewStartAction::kAccelerator,
                                            OverviewEnterExitType::kPine);

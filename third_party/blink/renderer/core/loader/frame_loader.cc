@@ -531,7 +531,7 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript()) {
     if (request.GetOriginWindow()
-            ->CheckAndGetJavascriptUrl(request.JavascriptWorld().get(), url,
+            ->CheckAndGetJavascriptUrl(request.JavascriptWorld(), url,
                                        frame_->DeprecatedLocalOwner())
             .empty()) {
       return false;
@@ -843,7 +843,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   using CSPDisposition = network::mojom::CSPDisposition;
   CSPDisposition should_check_main_world_csp =
       ContentSecurityPolicy::ShouldBypassMainWorldDeprecated(
-          request.JavascriptWorld().get())
+          request.JavascriptWorld())
           ? CSPDisposition::DO_NOT_CHECK
           : CSPDisposition::CHECK;
 
@@ -879,7 +879,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
       request.GetInputStartTime(), request.HrefTranslate().GetString(),
       request.Impression(), request.GetInitiatorFrameToken(),
       request.TakeSourceLocation(),
-      request.TakeInitiatorPolicyContainerKeepAliveHandle(),
+      request.TakeInitiatorNavigationStateKeepAliveHandle(),
       request.IsContainerInitiated(), request.IsFullscreenRequested());
 }
 

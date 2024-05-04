@@ -230,7 +230,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                         getCompositorViewHolderSupplier(),
                         getTabContentManagerSupplier(),
                         this::getSnackbarManager,
-                        getEdgeToEdgeSupplier(),
+                        mEdgeToEdgeControllerSupplier,
                         getActivityType(),
                         this::isInOverviewMode,
                         this::isWarmOnResume,
@@ -244,7 +244,8 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                         mBackPressManager,
                         () -> mTabController,
                         () -> mMinimizationManagerHolder.getMinimizationManager(),
-                        () -> mFeatureOverridesManager);
+                        () -> mFeatureOverridesManager,
+                        getBaseChromeLayout());
         return mBaseCustomTabRootUiCoordinator;
     }
 

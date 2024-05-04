@@ -57,7 +57,9 @@
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_tree_id.h"
+#include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/gfx/geometry/quad_f.h"
 
 namespace gfx {
@@ -129,7 +131,7 @@ class NameSource {
   bool superseded = false;
   bool invalid = false;
   ax::mojom::blink::NameFrom type = ax::mojom::blink::NameFrom::kNone;
-  const raw_ref<const QualifiedName, ExperimentalRenderer> attribute;
+  const raw_ref<const QualifiedName> attribute;
   AtomicString attribute_value;
   AXTextSource native_source = kAXTextFromNativeSourceUninitialized;
   AXRelatedObjectVector related_objects;
@@ -152,7 +154,7 @@ class DescriptionSource {
   bool invalid = false;
   ax::mojom::blink::DescriptionFrom type =
       ax::mojom::blink::DescriptionFrom::kNone;
-  const raw_ref<const QualifiedName, ExperimentalRenderer> attribute;
+  const raw_ref<const QualifiedName> attribute;
   AtomicString attribute_value;
   AXTextSource native_source = kAXTextFromNativeSourceUninitialized;
   AXRelatedObjectVector related_objects;
@@ -1508,6 +1510,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Serialization implemented in specific subclasses.
   virtual void SerializeMarkerAttributes(ui::AXNodeData* node_data) const;
+
+  void SerializeImageDataAttributes(ui::AXNodeData* node_data) const;
+  void SerializeTextInsertionDeletionOffsetAttributes(
+      ui::AXNodeData* node_data) const;
 
  private:
   bool ComputeCanSetFocusAttribute() const;

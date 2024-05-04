@@ -173,6 +173,9 @@ class CONTENT_EXPORT PrefetchContainer {
   // The type of this prefetch. Controls how the prefetch is handled.
   const PrefetchType& GetPrefetchType() const { return prefetch_type_; }
 
+  // The origin and that initiates the prefetch request.
+  const url::Origin& GetReferringOrigin() const { return referring_origin_; }
+
   // Whether or not an isolated network context is required to the next
   // prefetch.
   bool IsIsolatedNetworkContextRequiredForCurrentPrefetch() const;
@@ -275,6 +278,12 @@ class CONTENT_EXPORT PrefetchContainer {
   // response, and not serve any prefetched resources.
   void SetIsDecoy(bool is_decoy) { is_decoy_ = is_decoy; }
   bool IsDecoy() const { return is_decoy_; }
+
+  // Whether this prefetch is potentially contaminated by cross-site state.
+  // If so, it may need special handling for privacy.
+  // See https://crbug.com/1439246.
+  bool IsCrossSiteContaminated() const { return is_cross_site_contaminated_; }
+  void MarkCrossSiteContaminated();
 
   // Allows for |PrefetchCookieListener|s to be reigsitered for
   // `GetCurrentSinglePrefetchToPrefetch()`.
@@ -406,10 +415,14 @@ class CONTENT_EXPORT PrefetchContainer {
   bool HasPreloadingAttempt() { return !!attempt_; }
   base::WeakPtr<PreloadingAttempt> preloading_attempt() { return attempt_; }
 
-  // Simulates a prefetch container that reaches the interceptor. It sets the
-  // `attempt_` to the correct state: `PreloadingEligibility::kEligible`,
+  // Simulates a prefetch container that has started its request. It sets the
+  //`attempt_` to the correct state: `PreloadingEligibility::kEligible`,
   // `PreloadingHoldbackStatus::kAllowed` and
   // `PreloadingTriggeringOutcome::kReady`.
+  void SimulateAttemptAtRequestStartForTest();
+  // Simulates a prefetch container that reaches the interceptor. Similar to
+  // |SimulateAttemptAtRequestStartForTest| but also marks the prefetch as
+  // completed.
   void SimulateAttemptAtInterceptorForTest();
   void DisablePrecogLoggingForTest() { attempt_ = nullptr; }
 
@@ -558,10 +571,12 @@ class CONTENT_EXPORT PrefetchContainer {
 
   // The ID of the RenderFrameHost/Document that triggered the prefetch.
   const GlobalRenderFrameHostId referring_render_frame_host_id_;
-  // The origin of the page that requested the prefetch.
+
+  // The origin and URL that initiates the prefetch request.
+  // In regards to referring_url_hash_, it is stored as a hash and used by
+  // metrics for equality checks. For renderer-initiated prefetch, these are
+  // calculated by referring RenderFrameHost's LastCommitted(Origin|URL).
   const url::Origin referring_origin_;
-  // The URL of the page that requested the prefetch, stored as a hash as we
-  // just need it for equality checks for metrics.
   const size_t referring_url_hash_;
 
   // The key used to match this PrefetchContainer, including the URL that was
@@ -651,6 +666,11 @@ class CONTENT_EXPORT PrefetchContainer {
 
   // The result of probe when checked on navigation.
   std::optional<PrefetchProbeResult> probe_result_;
+
+  // If set, this prefetch's timing might be affected by cross-site state, so
+  // further processing may need to affect how the response is processed to make
+  // inferences about this logic less practical.
+  bool is_cross_site_contaminated_ = false;
 
   // Reference to metrics related to the page that considered using this
   // prefetch.

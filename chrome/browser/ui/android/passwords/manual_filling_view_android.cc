@@ -20,10 +20,10 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/android/features/keyboard_accessory/internal/jni/ManualFillingComponentBridge_jni.h"
 #include "chrome/android/features/keyboard_accessory/public/jni/UserInfoField_jni.h"
-#include "chrome/browser/autofill/manual_filling_controller.h"
-#include "chrome/browser/autofill/manual_filling_controller_impl.h"
 #include "chrome/browser/keyboard_accessory/android/accessory_sheet_data.h"
 #include "chrome/browser/keyboard_accessory/android/accessory_sheet_enums.h"
+#include "chrome/browser/keyboard_accessory/android/manual_filling_controller.h"
+#include "chrome/browser/keyboard_accessory/android/manual_filling_controller_impl.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -312,16 +312,13 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
                                                      &usernames);
   base::android::AppendJavaStringArrayToStringVector(env, j_passwords,
                                                      &passwords);
-  std::vector<password_manager::PasswordForm> password_forms(usernames.size());
-  std::vector<raw_ptr<const password_manager::PasswordForm, VectorExperimental>>
-      credentials;
+  std::vector<password_manager::PasswordForm> credentials(usernames.size());
   for (unsigned int i = 0; i < usernames.size(); ++i) {
-    password_forms[i].url = origin.GetURL();
-    password_forms[i].username_value = base::ASCIIToUTF16(usernames[i]);
-    password_forms[i].password_value = base::ASCIIToUTF16(passwords[i]);
-    password_forms[i].match_type =
+    credentials[i].url = origin.GetURL();
+    credentials[i].username_value = base::ASCIIToUTF16(usernames[i]);
+    credentials[i].password_value = base::ASCIIToUTF16(passwords[i]);
+    credentials[i].match_type =
         password_manager::PasswordForm::MatchType::kExact;
-    credentials.push_back(&password_forms[i]);
   }
   return ChromePasswordManagerClient::FromWebContents(web_contents)
       ->GetCredentialCacheForTesting()

@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.pdf.PdfUtils;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
@@ -69,6 +70,7 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.MimeTypeUtils;
 import org.chromium.ui.widget.Toast;
 import org.chromium.url.GURL;
 
@@ -139,7 +141,8 @@ public class DownloadUtils {
 
         // If the profile is off-the-record and it does not exist, then do not start the activity.
         if (OTRProfileID.isOffTheRecord(otrProfileID)
-                && !Profile.getLastUsedRegularProfile().hasOffTheRecordProfile(otrProfileID)) {
+                && !ProfileManager.getLastUsedRegularProfile()
+                        .hasOffTheRecordProfile(otrProfileID)) {
             return false;
         }
 
@@ -173,8 +176,8 @@ public class DownloadUtils {
         if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
             Profile profile =
                     otrProfileID == null
-                            ? Profile.getLastUsedRegularProfile()
-                            : Profile.getLastUsedRegularProfile()
+                            ? ProfileManager.getLastUsedRegularProfile()
+                            : ProfileManager.getLastUsedRegularProfile()
                                     .getOffTheRecordProfile(
                                             otrProfileID, /* createIfNeeded= */ true);
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
@@ -207,7 +210,7 @@ public class DownloadUtils {
         OTRProfileID otrProfileID = OTRProfileID.deserializeWithoutVerify(serializedId);
 
         return otrProfileID == null
-                || Profile.getLastUsedRegularProfile().hasOffTheRecordProfile(otrProfileID);
+                || ProfileManager.getLastUsedRegularProfile().hasOffTheRecordProfile(otrProfileID);
     }
 
     /**
@@ -488,6 +491,13 @@ public class DownloadUtils {
         if (messageUiController != null
                 && messageUiController.isDownloadInterstitialItem(
                         new GURL(originalUrl), downloadGuid)) {
+            return;
+        }
+        // TODO(https://crbug.com/327680567): Ensure the pdf page is opened in the intended window.
+        if (PdfUtils.useAndroidPdfViewer() && newMimeType.equals(MimeTypeUtils.PDF_MIME_TYPE)) {
+            LoadUrlParams params = new LoadUrlParams(filePath);
+            ChromeAsyncTabLauncher delegate = new ChromeAsyncTabLauncher(/* incognito= */ false);
+            delegate.launchNewTab(params, TabLaunchType.FROM_CHROME_UI, /* parent= */ null);
             return;
         }
         boolean canOpen =

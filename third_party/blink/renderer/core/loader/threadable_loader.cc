@@ -346,16 +346,13 @@ void ThreadableLoader::CachedMetadataReceived(
 }
 
 void ThreadableLoader::DataReceived(Resource* resource,
-                                    const char* data,
-                                    size_t data_length) {
+                                    base::span<const char> data) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
 
   checker_.DataReceived();
 
-  // TODO(junov): Fix the ThreadableLoader ecosystem to use size_t. Until then,
-  // we use safeCast to trap potential overflows.
-  client_->DidReceiveData(data, base::checked_cast<unsigned>(data_length));
+  client_->DidReceiveData(data);
 }
 
 void ThreadableLoader::NotifyFinished(Resource* resource) {
@@ -407,6 +404,7 @@ void ThreadableLoader::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   visitor->Trace(resource_fetcher_);
   visitor->Trace(timeout_timer_);
+  visitor->Trace(resource_loader_options_);
   RawResourceClient::Trace(visitor);
 }
 

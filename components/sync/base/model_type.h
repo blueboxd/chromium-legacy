@@ -156,7 +156,15 @@ enum ModelType {
   // Data related to tab group sharing.
   SHARED_TAB_GROUP_DATA,
 
-  LAST_USER_MODEL_TYPE = SHARED_TAB_GROUP_DATA,
+  // Special datatype to notify client about People Group changes. Read-only on
+  // the client.
+  COLLABORATION_GROUP,
+
+  // Origin-specific email addresses forwarded from the user's account.
+  // Read-only on the client.
+  PLUS_ADDRESS,
+
+  LAST_USER_MODEL_TYPE = PLUS_ADDRESS,
 
   // ---- Control Types ----
   // An object representing a set of Nigori keys.
@@ -248,7 +256,9 @@ enum class ModelTypeForHistograms {
   kAutofillWalletCredential = 61,
   kWebApks = 62,
   kSharedTabGroupData = 63,
-  kMaxValue = kSharedTabGroupData,
+  kCollaborationGroup = 64,
+  kPlusAddresses = 65,
+  kMaxValue = kPlusAddresses,
 };
 
 // Used to mark the type of EntitySpecifics that has no actual data.
@@ -276,11 +286,11 @@ constexpr ModelTypeSet UserTypes() {
 
 // User types which are not user-controlled.
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
-  return {DEVICE_INFO,
-          USER_CONSENTS,
-          SECURITY_EVENTS,
-          SEND_TAB_TO_SELF,
-          SUPERVISED_USER_SETTINGS,
+  // TODO(b/322147254): `PLUS_ADDRESS` isn't bound to a `UserSelectableType` and
+  // always considered enabled. Revise once a product decision about the opt-out
+  // has been made.
+  return {DEVICE_INFO,     USER_CONSENTS,    PLUS_ADDRESS,
+          SECURITY_EVENTS, SEND_TAB_TO_SELF, SUPERVISED_USER_SETTINGS,
           SHARING_MESSAGE};
 }
 

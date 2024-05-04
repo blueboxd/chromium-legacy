@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/buildflags.h"
 #include "components/viz/common/features.h"
@@ -86,7 +87,7 @@ void ConvertToTiledOzoneOverlaySurface(
   ozone_candidate->color_space = overlay_candidate.color_space;
   ozone_candidate->display_rect = overlay_candidate.display_rect;
   ozone_candidate->crop_rect = gfx::RectF(1.0, 1.0);
-  ozone_candidate->clip_rect = absl::nullopt;
+  ozone_candidate->clip_rect = std::nullopt;
   ozone_candidate->is_opaque = overlay_candidate.is_opaque;
   ozone_candidate->opacity = overlay_candidate.opacity;
   ozone_candidate->plane_z_order = overlay_candidate.plane_z_order;
@@ -215,6 +216,17 @@ bool OverlayProcessorOzone::IsOverlaySupported() const {
 
 bool OverlayProcessorOzone::NeedsSurfaceDamageRectList() const {
   return true;
+}
+
+bool OverlayProcessorOzone::SupportsFlipRotateTransform() const {
+  // TODO(petermcneeley): Test and enable for ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return false;
+#elif BUILDFLAG(IS_CASTOS)
+  return false;
+#else
+  return false;
+#endif
 }
 
 void OverlayProcessorOzone::CheckOverlaySupportImpl(

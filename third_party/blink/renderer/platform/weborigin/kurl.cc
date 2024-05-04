@@ -116,7 +116,7 @@ class KURLCharsetConverter final : public url::CharsetConverter {
   }
 
  private:
-  raw_ptr<const WTF::TextEncoding, ExperimentalRenderer> encoding_;
+  raw_ptr<const WTF::TextEncoding> encoding_;
 };
 
 }  // namespace
@@ -385,6 +385,10 @@ String KURL::Host() const {
   return ComponentString(parsed_.host);
 }
 
+StringView KURL::HostView() const {
+  return ComponentStringView(parsed_.host);
+}
+
 uint16_t KURL::Port() const {
   if (!is_valid_ || parsed_.port.is_empty())
     return 0;
@@ -574,7 +578,7 @@ wtf_size_t FindHostEnd(const String& host, bool is_special) {
 
 void KURL::SetHost(const String& input) {
   String host = RemoveURLWhitespace(input);
-  wtf_size_t value_end = FindHostEnd(host, IsHierarchical());
+  wtf_size_t value_end = FindHostEnd(host, IsStandard());
   String truncated_host = host.Substring(0, value_end);
   StringUTF8Adaptor host_utf8(truncated_host);
   url::Replacements<char> replacements;
@@ -589,7 +593,7 @@ void KURL::SetHostAndPort(const String& input) {
   // theoretically should be doing.
 
   String orig_host_and_port = RemoveURLWhitespace(input);
-  wtf_size_t value_end = FindHostEnd(orig_host_and_port, IsHierarchical());
+  wtf_size_t value_end = FindHostEnd(orig_host_and_port, IsStandard());
   String host_and_port = orig_host_and_port.Substring(0, value_end);
 
   // This logic for handling IPv6 addresses is adapted from ParseServerInfo in
@@ -803,7 +807,29 @@ bool HasInvalidURLEscapeSequences(const String& string) {
   return url::HasInvalidURLEscapeSequences(string_utf8.AsStringPiece());
 }
 
+bool KURL::CanSetHostOrPort() const {
+  return IsHierarchical();
+}
+
+bool KURL::CanSetPathname() const {
+  return IsHierarchical();
+}
+
+bool KURL::CanRemoveHost() const {
+  if (url::IsUsingStandardCompliantNonSpecialSchemeURLParsing()) {
+    return IsHierarchical() && !IncludesCredentials() && !HasPort();
+  }
+  return false;
+}
+
 bool KURL::IsHierarchical() const {
+  if (url::IsUsingStandardCompliantNonSpecialSchemeURLParsing()) {
+    return IsStandard() || (IsValid() && !HasOpaquePath());
+  }
+  return IsStandard();
+}
+
+bool KURL::IsStandard() const {
   if (string_.IsNull() || parsed_.scheme.is_empty())
     return false;
   return string_.Is8Bit()

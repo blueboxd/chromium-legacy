@@ -12,6 +12,7 @@
 #include "base/check_op.h"
 #include "base/functional/callback_helpers.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/content_extraction/inner_text.h"
 #include "chrome/common/compose/compose.mojom.h"
 #include "components/autofill/core/common/unique_ids.h"
@@ -40,7 +41,7 @@ struct InnerTextResult;
 class InnerTextProvider {
  public:
   virtual void GetInnerText(content::RenderFrameHost& host,
-                            absl::optional<int> node_id,
+                            std::optional<int> node_id,
                             content_extraction::InnerTextCallback callback) = 0;
 
  protected:
@@ -65,7 +66,8 @@ class ComposeState;
 //
 //  This should be owned (indirectly) by the WebContents passed into its
 //  constructor, and the `executor` MUST outlive that WebContents.
-class ComposeSession : public compose::mojom::ComposeSessionPageHandler {
+class ComposeSession
+    : public compose::mojom::ComposeSessionUntrustedPageHandler {
  public:
   // The callback to Autofill. When run, it fills the passed string into the
   // form field on which it was triggered.
@@ -82,9 +84,9 @@ class ComposeSession : public compose::mojom::ComposeSessionPageHandler {
   ~ComposeSession() override;
 
   // Binds this to a Compose webui.
-  void Bind(
-      mojo::PendingReceiver<compose::mojom::ComposeSessionPageHandler> handler,
-      mojo::PendingRemote<compose::mojom::ComposeDialog> dialog);
+  void Bind(mojo::PendingReceiver<
+                compose::mojom::ComposeSessionUntrustedPageHandler> handler,
+            mojo::PendingRemote<compose::mojom::ComposeUntrustedDialog> dialog);
 
   // ComposeSessionPageHandler
   // Tracks that there was a user action to cancel an input edit in the current
@@ -139,7 +141,7 @@ class ComposeSession : public compose::mojom::ComposeSessionPageHandler {
   // Saves the user feedback supplied form the UI to include in quality logs.
   void SetUserFeedback(compose::mojom::UserFeedback feedback) override;
 
-  // Non-ComposeSessionPageHandler Methods
+  // Non-ComposeSessionUntrustedPageHandler Methods
 
   // Notifies the session that a new dialog is opening and starts refreshing
   // inner text. Calls Compose immediately if the initial input is valid.
@@ -196,12 +198,14 @@ class ComposeSession : public compose::mojom::ComposeSessionPageHandler {
   void ModelExecutionCallback(
       const base::ElapsedTimer& request_start,
       int request_id,
+      compose::ComposeRequestReason request_reason,
       bool was_input_edited,
       optimization_guide::OptimizationGuideModelStreamingExecutionResult
           result);
   void ModelExecutionProgress(optimization_guide::StreamingResponse result);
   void ModelExecutionComplete(
       base::TimeDelta request_delta,
+      compose::ComposeRequestReason request_reason,
       bool was_input_edited,
       optimization_guide::OptimizationGuideModelStreamingExecutionResult
           result);
@@ -212,13 +216,18 @@ class ComposeSession : public compose::mojom::ComposeSessionPageHandler {
 
   // Makes compose or rewrite request.
   void MakeRequest(optimization_guide::proto::ComposeRequest request,
+                   compose::ComposeRequestReason request_reason,
                    bool is_input_edited);
 
   // RequestWithSession can either be called synchronously or on a later event
-  // loop
+  // loop.
   void RequestWithSession(
       const optimization_guide::proto::ComposeRequest& request,
+      compose::ComposeRequestReason request_reason,
       bool is_input_edited);
+
+  // Callback for processing a timeout error for Compose request with `id`.
+  void ComposeRequestTimeout(int id);
 
   // This function is bound to the callback for requesting inner-text.
   // `request_id` is used to identify the request.
@@ -234,8 +243,9 @@ class ComposeSession : public compose::mojom::ComposeSessionPageHandler {
   // Outlives `this`.
   raw_ptr<optimization_guide::OptimizationGuideModelExecutor> executor_;
 
-  mojo::Receiver<compose::mojom::ComposeSessionPageHandler> handler_receiver_;
-  mojo::Remote<compose::mojom::ComposeDialog> dialog_remote_;
+  mojo::Receiver<compose::mojom::ComposeSessionUntrustedPageHandler>
+      handler_receiver_;
+  mojo::Remote<compose::mojom::ComposeUntrustedDialog> dialog_remote_;
 
   // Initialized during construction, and always remains valid during the
   // lifetime of ComposeSession.
@@ -275,6 +285,9 @@ class ComposeSession : public compose::mojom::ComposeSessionPageHandler {
 
   // Tracks how long a session has been open.
   std::unique_ptr<base::ElapsedTimer> session_duration_;
+
+  // Map for managing client-side request timeouts.
+  base::flat_map<int, std::unique_ptr<base::OneShotTimer>> request_timeouts_;
 
   // ComposeSession is owned by WebContentsUserData, so `web_contents_` outlives
   // `this`.

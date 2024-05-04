@@ -107,22 +107,6 @@ TEST_F(LoadingDataCollectorTest, ShouldRecordMainFrameLoad) {
   EXPECT_FALSE(collector_->ShouldRecordResourceLoad(*https_request_with_port));
 }
 
-// Resource loaded after FCP event is recorded by default.
-TEST_F(LoadingDataCollectorTest, ShouldRecordSubresourceLoadAfterFCP) {
-  auto navigation_id = GetNextId();
-  GURL url("http://www.google.com");
-
-  collector_->RecordStartNavigation(navigation_id, ukm::SourceId(), url,
-                                    base::TimeTicks::Now());
-  collector_->RecordFirstContentfulPaint(navigation_id, base::TimeTicks::Now());
-
-  // Protocol.
-  auto http_image_request =
-      CreateResourceLoadInfo("http://www.google.com/cat.png",
-                             network::mojom::RequestDestination::kImage);
-  EXPECT_TRUE(collector_->ShouldRecordResourceLoad(*http_image_request));
-}
-
 TEST_F(LoadingDataCollectorTest, ShouldRecordSubresourceLoad) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -203,7 +187,7 @@ TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
 
   collector_->RecordStartNavigation(navigation_id, ukm::SourceId(), url,
                                     base::TimeTicks::Now());
-  collector_->RecordFinishNavigation(navigation_id, url, url,
+  collector_->RecordFinishNavigation(navigation_id, url,
                                      /* is_error_page */ false);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
   auto* page_request_summary =
@@ -307,7 +291,7 @@ TEST_F(LoadingDataCollectorTest, SimpleRedirect) {
        "https://facebook.com/google"});
 
   GURL new_url("https://facebook.com/google");
-  collector_->RecordFinishNavigation(navigation_id, url, new_url,
+  collector_->RecordFinishNavigation(navigation_id, new_url,
                                      /* is_error_page */ false);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
   EXPECT_EQ(url, collector_->inflight_navigations_[navigation_id]->initial_url);
@@ -334,7 +318,7 @@ TEST_F(LoadingDataCollectorTest, RecordStartNavigationMissing) {
                                     base::TimeTicks::Now());
 
   // collector_->RecordStartNavigtion(navigation_id) is missing.
-  collector_->RecordFinishNavigation(navigation_id, url, new_url,
+  collector_->RecordFinishNavigation(navigation_id, new_url,
                                      /* is_error_page */ false);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
   EXPECT_EQ(url, collector_->inflight_navigations_[navigation_id]->initial_url);
@@ -347,7 +331,7 @@ TEST_F(LoadingDataCollectorTest, RecordFailedNavigation) {
   collector_->RecordStartNavigation(navigation_id, ukm::SourceId(), url,
                                     base::TimeTicks::Now());
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
-  collector_->RecordFinishNavigation(navigation_id, url, url,
+  collector_->RecordFinishNavigation(navigation_id, url,
                                      /* is_error_page */ true);
   EXPECT_TRUE(collector_->inflight_navigations_.empty());
 }

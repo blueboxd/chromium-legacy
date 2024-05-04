@@ -168,6 +168,8 @@ WebGPUSwapBufferProvider::NewOrRecycledSwapBuffer(
   }
 
   if (unused_swap_buffers_.empty()) {
+    // These SharedImages are read and written by WebGPU clients and can then be
+    // sent off to the display compositor.
     uint32_t usage = gpu::SHARED_IMAGE_USAGE_WEBGPU_READ |
                      gpu::SHARED_IMAGE_USAGE_WEBGPU_WRITE |
                      gpu::SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
@@ -176,8 +178,9 @@ WebGPUSwapBufferProvider::NewOrRecycledSwapBuffer(
       usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
     }
     auto client_shared_image = sii->CreateSharedImage(
-        Format(), size, PredefinedColorSpaceToGfxColorSpace(color_space_),
-        kTopLeft_GrSurfaceOrigin, alpha_mode, usage, "WebGPUSwapBufferProvider",
+        {Format(), size, PredefinedColorSpaceToGfxColorSpace(color_space_),
+         kTopLeft_GrSurfaceOrigin, alpha_mode, usage,
+         "WebGPUSwapBufferProvider"},
         gpu::kNullSurfaceHandle);
     CHECK(client_shared_image);
     gpu::SyncToken creation_token = sii->GenUnverifiedSyncToken();
@@ -267,7 +270,6 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUSwapBufferProvider::GetNewTexture(
     // the layer is promoted to an overlay. Make sure we have fallback /
     // emulation paths to keep the rendering correct in that cases.
     layer_->SetPremultipliedAlpha(true);
-    layer_->SetHdrMetadata(hdr_metadata_);
 
     if (client_) {
       client_->SetNeedsCompositingUpdate();
@@ -330,6 +332,7 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
       Format(), IsOverlayCandidate(),
       viz::TransferableResource::ResourceSource::kWebGPUSwapBuffer);
   out_resource->color_space = PredefinedColorSpaceToGfxColorSpace(color_space_);
+  out_resource->hdr_metadata = hdr_metadata_;
 
   // This holds a ref on the SwapBuffers that will keep it alive until the
   // mailbox is released (and while the release callback is running).

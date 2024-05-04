@@ -8,7 +8,10 @@
 #include <stdint.h>
 #include <memory>
 
+#include "third_party/blink/renderer/bindings/core/v8/async_iterable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_async_iterator_readable_stream.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream_iterator_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
@@ -45,7 +48,10 @@ class WritableStream;
 
 // C++ implementation of ReadableStream.
 // See https://streams.spec.whatwg.org/#rs-model for background.
-class CORE_EXPORT ReadableStream : public ScriptWrappable {
+class CORE_EXPORT ReadableStream
+    : public ScriptWrappable,
+      public ValueAsyncIterable<ReadableStream,
+                                ReadableStreamIteratorOptions*> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -241,6 +247,11 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
                                                      ReadableStream*,
                                                      ExceptionState&);
 
+  // https://streams.spec.whatwg.org/#readable-stream-cancel
+  static v8::Local<v8::Promise> Cancel(ScriptState*,
+                                       ReadableStream*,
+                                       v8::Local<v8::Value> reason);
+
   //
   // Functions exported for use by TransformStream. Not part of the standard.
   //
@@ -285,6 +296,8 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   class PullAlgorithm;
   class CancelAlgorithm;
   class ReadHandleImpl;
+  class IterationSource;
+  class IterationReadRequest;
 
   // https://streams.spec.whatwg.org/#rs-constructor
   void InitInternal(ScriptState*,
@@ -302,11 +315,6 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
 
   // https://streams.spec.whatwg.org/#readable-stream-add-read-request
   static void AddReadRequest(ScriptState*, ReadableStream*, ReadRequest*);
-
-  // https://streams.spec.whatwg.org/#readable-stream-cancel
-  static v8::Local<v8::Promise> Cancel(ScriptState*,
-                                       ReadableStream*,
-                                       v8::Local<v8::Value> reason);
 
   // https://streams.spec.whatwg.org/#readable-stream-close
   static void Close(ScriptState*, ReadableStream*);
@@ -357,6 +365,16 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   Member<ReadableStreamGenericReader> reader_;
   TraceWrapperV8Reference<v8::Value> stored_error_;
   std::unique_ptr<ReadableStreamTransferringOptimizer> transferring_optimizer_;
+
+  // ValueAsyncIterable<ReadableStream> overrides:
+  using IterationSourceBase =
+      ValueAsyncIterable<ReadableStream,
+                         ReadableStreamIteratorOptions*>::IterationSource;
+  IterationSourceBase* CreateIterationSource(
+      ScriptState* script_state,
+      IterationSourceBase::Kind kind,
+      ReadableStreamIteratorOptions* options,
+      ExceptionState& exception_state) override;
 };
 
 }  // namespace blink

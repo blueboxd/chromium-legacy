@@ -169,30 +169,10 @@ BASE_FEATURE(kPageContentAnnotations,
 BASE_FEATURE(kRemotePageMetadata,
              "RemotePageMetadata",
              enabled_by_default_desktop_only);
-
-// Enables the page entities model to be annotated on every page load.
-BASE_FEATURE(kPageEntitiesPageContentAnnotations,
-             "PageEntitiesPageContentAnnotations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables the page visibility model to be annotated on every page load.
 BASE_FEATURE(kPageVisibilityPageContentAnnotations,
              "PageVisibilityPageContentAnnotations",
              base::FEATURE_ENABLED_BY_DEFAULT);
-// Enables the text embedding model to be annotated on every page load.
-BASE_FEATURE(kTextEmbeddingPageContentAnnotations,
-             "TextEmbeddingPageContentAnnotations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// This feature flag does not allow for the entities model to load the name and
-// prefix filters.
-BASE_FEATURE(kPageEntitiesModelBypassFilters,
-             "PageEntitiesModelBypassFilters",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// This feature flag enables resetting the entities model on shutdown.
-BASE_FEATURE(kPageEntitiesModelResetOnShutdown,
-             "PageEntitiesModelResetOnShutdown",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables push notification of hints.
 BASE_FEATURE(kPushNotifications,
@@ -423,27 +403,39 @@ bool IsModelQualityLoggingEnabled() {
 }
 
 bool IsModelQualityLoggingEnabledForFeature(
-    proto::ModelExecutionFeature feature_name) {
+    proto::ModelExecutionFeature feature) {
   if (!IsModelQualityLoggingEnabled()) {
     return false;
   }
 
-  if (feature_name ==
-      proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST) {
+  // Always disable logging for test features.
+  if (feature ==
+          proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED ||
+      feature == proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST) {
     return false;
   }
 
-  std::string param_name =
-      base::ToLowerASCII(proto::ModelExecutionFeature_Name(feature_name));
-  bool default_value = true;
-
-  // Disable logging for test feature.
-  if (feature_name ==
-      proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST) {
-    default_value = false;
+  bool default_logging_enabled = false;
+  switch (feature) {
+    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE:
+    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION:
+    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH:
+      // Enable logging when you have approvals. For new features please
+      // consult with components/optimization_guide/core/model_quality/OWNERS to
+      // discuss if you need logging or not for your feature.
+      default_logging_enabled = true;
+      break;
+    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
+    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST:
+      // Logging disabled.
+      NOTREACHED();
+      break;
   }
+
+  std::string param_name =
+      base::ToLowerASCII(proto::ModelExecutionFeature_Name(feature));
   return GetFieldTrialParamByFeatureAsBool(kModelQualityLogging, param_name,
-                                           default_value);
+                                           default_logging_enabled);
 }
 
 bool IsRemoteFetchingEnabled() {
@@ -689,24 +681,11 @@ bool ShouldExtractRelatedSearches() {
   return kContentAnnotationsExtractRelatedSearchesParam.Get();
 }
 
-bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale) {
-  return base::FeatureList::IsEnabled(kPageEntitiesPageContentAnnotations) &&
-         IsSupportedLocaleForFeature(locale,
-                                     kPageEntitiesPageContentAnnotations);
-}
-
 bool ShouldExecutePageVisibilityModelOnPageContent(const std::string& locale) {
   return base::FeatureList::IsEnabled(kPageVisibilityPageContentAnnotations) &&
          IsSupportedLocaleForFeature(locale,
                                      kPageVisibilityPageContentAnnotations,
                                      /*default_value=*/"en");
-}
-
-bool ShouldExecuteTextEmbeddingModelOnPageContent(const std::string& locale) {
-  return (base::FeatureList::IsEnabled(kTextEmbeddingPageContentAnnotations) ||
-          TextEmbeddingBatchAnnotationsEnabled()) &&
-         IsSupportedLocaleForFeature(locale,
-                                     kTextEmbeddingPageContentAnnotations);
 }
 
 bool RemotePageMetadataEnabled(const std::string& locale,
@@ -783,15 +762,9 @@ bool PageContentAnnotationValidationEnabledForType(AnnotationType type) {
 
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   switch (type) {
-    case AnnotationType::kPageEntities:
-      return cmd->HasSwitch(
-          switches::kPageContentAnnotationsValidationPageEntities);
     case AnnotationType::kContentVisibility:
       return cmd->HasSwitch(
           switches::kPageContentAnnotationsValidationContentVisibility);
-    case AnnotationType::kTextEmbedding:
-      return cmd->HasSwitch(
-          switches::kPageContentAnnotationsValidationTextEmbedding);
     default:
       NOTREACHED();
       break;
@@ -907,6 +880,15 @@ base::TimeDelta GetOnDeviceModelIdleTimeout() {
                                        "on_device_model_service_idle_timeout",
                                        base::Minutes(1)};
   return kOnDeviceModelServiceIdleTimeout.Get();
+}
+
+base::TimeDelta GetOnDeviceModelExecutionValidationStartupDelay() {
+  static const base::FeatureParam<base::TimeDelta>
+      kOnDeviceModelExecutionValidationStartupDelay{
+          &kOptimizationGuideOnDeviceModel,
+          "on_device_model_execution_validation_startup_delay",
+          base::Seconds(5)};
+  return kOnDeviceModelExecutionValidationStartupDelay.Get();
 }
 
 int GetOnDeviceModelMinTokensForContext() {
@@ -1078,6 +1060,19 @@ bool GetOnDeviceModelRetractRepeats() {
       &kOptimizationGuideOnDeviceModel, "on_device_model_retract_repeats",
       true};
   return kOnDeviceModelRetractRepeats.Get();
+}
+
+int GetOnDeviceModelDefaultTopK() {
+  static const base::FeatureParam<int> kTopK{
+      &optimization_guide::features::kOptimizationGuideOnDeviceModel,
+      "on_device_model_topk", 3};
+  return kTopK.Get();
+}
+
+double GetOnDeviceModelDefaultTemperature() {
+  static const base::FeatureParam<double> kTemperature{
+      &kOptimizationGuideOnDeviceModel, "on_device_model_temperature", 0.8};
+  return kTemperature.Get();
 }
 
 }  // namespace features

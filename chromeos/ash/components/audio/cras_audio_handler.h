@@ -108,6 +108,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   static constexpr int32_t kSystemAecGroupIdNotAvailable = -1;
 
+  // Maximum number of connected input or output audio devices to record
+  // histogram metrics.
+  static constexpr uint32_t kMaxAudioDevicesCount = 10;
+
   enum class InputMuteChangeMethod {
     kKeyboardButton,
     kPhysicalShutter,
@@ -168,6 +172,44 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
       "ChromeOS.AudioSelection.Input.UserOverrideSystemNotSwitchTimeElapsed";
   static constexpr char kUserOverrideSystemNotSwitchOutputAudio[] =
       "ChromeOS.AudioSelection.Output.UserOverrideSystemNotSwitchTimeElapsed";
+
+  // A series of histogram metrics to record the audio device count when the
+  // system selection decision is made after audio device has changed.
+  static constexpr char kSystemSwitchInputAudioDeviceCount[] =
+      "ChromeOS.AudioSelection.Input.SystemSwitchAudio.AudioDeviceCount";
+  static constexpr char kSystemNotSwitchInputAudioDeviceCount[] =
+      "ChromeOS.AudioSelection.Input.SystemNotSwitchAudio.AudioDeviceCount";
+  static constexpr char kSystemSwitchOutputAudioDeviceCount[] =
+      "ChromeOS.AudioSelection.Output.SystemSwitchAudio.AudioDeviceCount";
+  static constexpr char kSystemNotSwitchOutputAudioDeviceCount[] =
+      "ChromeOS.AudioSelection.Output.SystemNotSwitchAudio.AudioDeviceCount";
+
+  // A series of histogram metrics to record the audio device types when the
+  // system selection decision is made after audio device has changed.
+  static constexpr char kSystemSwitchInputAudioDeviceSet[] =
+      "ChromeOS.AudioSelection.Input.SystemSwitchAudio.AudioDeviceSet";
+  static constexpr char kSystemNotSwitchInputAudioDeviceSet[] =
+      "ChromeOS.AudioSelection.Input.SystemNotSwitchAudio.AudioDeviceSet";
+  static constexpr char kSystemSwitchOutputAudioDeviceSet[] =
+      "ChromeOS.AudioSelection.Output.SystemSwitchAudio.AudioDeviceSet";
+  static constexpr char kSystemNotSwitchOutputAudioDeviceSet[] =
+      "ChromeOS.AudioSelection.Output.SystemNotSwitchAudio.AudioDeviceSet";
+
+  // A series of histogram metrics to record the before and after condition
+  // of audio device types when the system selection decision is made after
+  // audio device has changed.
+  static constexpr char kSystemSwitchInputBeforeAndAfterAudioDeviceSet[] =
+      "ChromeOS.AudioSelection.Input.SystemSwitchAudio."
+      "BeforeAndAfterAudioDeviceSet";
+  static constexpr char kSystemNotSwitchInputBeforeAndAfterAudioDeviceSet[] =
+      "ChromeOS.AudioSelection.Input.SystemNotSwitchAudio."
+      "BeforeAndAfterAudioDeviceSet";
+  static constexpr char kSystemSwitchOutputBeforeAndAfterAudioDeviceSet[] =
+      "ChromeOS.AudioSelection.Output.SystemSwitchAudio."
+      "BeforeAndAfterAudioDeviceSet";
+  static constexpr char kSystemNotSwitchOutputBeforeAndAfterAudioDeviceSet[] =
+      "ChromeOS.AudioSelection.Output.SystemNotSwitchAudio."
+      "BeforeAndAfterAudioDeviceSet";
 
   class AudioObserver {
    public:
@@ -255,6 +297,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
     // Called when num-stream-ignore-ui-gains state is changed.
     virtual void OnNumStreamIgnoreUiGainsChanged(int32_t num);
+
+    // Called when number of ARC streams is changed.
+    virtual void OnNumberOfArcStreamsChanged(int32_t num);
 
    protected:
     AudioObserver();
@@ -379,6 +424,14 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Gets the audio devices back in |device_list|.
   void GetAudioDevices(AudioDeviceList* device_list) const;
+
+  // Gets the simple usage input or output audio devices.
+  static AudioDeviceList GetSimpleUsageAudioDevices(
+      const AudioDeviceMap& audio_devices,
+      bool is_input);
+
+  const AudioDeviceMap& GetAudioDevicesMapForTesting(
+      bool is_current_device) const;
 
   // Gets the primary active output device in |device|.
   // Returns true if the primary active output device is successfully obtained.
@@ -642,6 +695,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   int32_t NumberOfNonChromeOutputStreams() const;
   int32_t NumberOfChromeOutputStreams() const;
+  int32_t NumberOfArcStreams() const;
+
+  // Simulate number of ARC streams changing in a test.
+  void SetNumberOfArcStreamsForTesting(int32_t num);
 
  protected:
   CrasAudioHandler(
@@ -671,6 +728,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void SpeakOnMuteDetected() override;
   void NumberOfNonChromeOutputStreamsChanged() override;
   void NumStreamIgnoreUiGains(int32_t num) override;
+  void NumberOfArcStreamsChanged() override;
 
   // AudioPrefObserver overrides.
   void OnAudioPolicyPrefChanged() override;
@@ -752,6 +810,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void GetNumberOfOutputStreams();
 
   void GetNumberOfNonChromeOutputStreams();
+
+  // Calls CRAS over D-Bus to get the number of ARC streams.
+  void GetNumberOfArcStreams();
 
   // Updates the current audio nodes list and switches the active device
   // if needed.
@@ -885,6 +946,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void HandleGetNumberOfNonChromeOutputStreams(
       std::optional<int32_t> num_output_streams);
 
+  // Handle dbus callback for GetNumberOfArcStreams.
+  void HandleGetNumberOfArcStreams(std::optional<int32_t> num_arc_streams);
+
   // Calling dbus to get system AEC supported flag.
   void GetSystemAecSupported();
 
@@ -939,7 +1003,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Record the histogram of system decision of switching or not switching after
   // audio device is added or removed. Only record if there are more than one
   // available devices.
-  void MaybeRecordSystemSwitchDecision(bool is_input, bool is_switched);
+  void MaybeRecordSystemSwitchDecisionAndContext(bool is_input,
+                                                 bool is_switched);
 
   // Clear the timer of system switch/not switch decision.
   void ResetSystemSwitchTimestamp(bool is_input);
@@ -963,6 +1028,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Audio data and state.
   AudioDeviceMap audio_devices_;
+
+  // Previous audio devices before new device is connected or current device is
+  // disconnected. Used for histogram purpose to understand the context when the
+  // system makes a switch or not switch decision.
+  AudioDeviceMap previous_audio_devices_;
 
   bool output_mute_on_ = false;
   bool input_mute_on_ = false;
@@ -1040,6 +1110,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   cras::DisplayRotation display_rotation_ = cras::DisplayRotation::ROTATE_0;
 
   int num_stream_ignore_ui_gains_ = 0;
+
+  int32_t num_arc_streams_ = 0;
 
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_{this};
 };

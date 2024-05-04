@@ -7,6 +7,7 @@ import 'chrome://customize-chrome-side-panel.top-chrome/cards.js';
 import type {CardsElement} from 'chrome://customize-chrome-side-panel.top-chrome/cards.js';
 import {CartHandlerRemote} from 'chrome://customize-chrome-side-panel.top-chrome/chrome_cart.mojom-webui.js';
 import {ChromeCartProxy} from 'chrome://customize-chrome-side-panel.top-chrome/chrome_cart_proxy.js';
+import {CustomizeChromeAction} from 'chrome://customize-chrome-side-panel.top-chrome/common.js';
 import type {CustomizeChromePageRemote, ModuleSettings} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
@@ -170,10 +171,12 @@ suite('CardsTest', () => {
         /*modulesVisible=*/ true);
 
     const cards = getCardsMap();
-    const fooCheckbox = cards.get('foo name')!.querySelector('cr-checkbox')!;
+    const fooCheckbox = cards.get('foo name')!.querySelector('cr-checkbox');
+    assertTrue(!!fooCheckbox);
 
     // Act.
     fooCheckbox.click();
+    await fooCheckbox.updateComplete;
 
     // Assert.
     assertDeepEquals(['foo', true], handler.getArgs('setModuleDisabled')[0]);
@@ -184,6 +187,7 @@ suite('CardsTest', () => {
 
     // Act.
     fooCheckbox.click();
+    await fooCheckbox.updateComplete;
 
     // Assert.
     assertDeepEquals(['foo', false], handler.getArgs('setModuleDisabled')[1]);
@@ -250,6 +254,7 @@ suite('CardsTest', () => {
       const discountCheckbox: CrCheckboxElement =
           cartCardOptionName.nextElementSibling! as CrCheckboxElement;
       discountCheckbox.click();
+      await discountCheckbox.updateComplete;
 
       // Assert.
       assertEquals(1, cartHandler.getCallCount('setDiscountEnabled'));
@@ -399,6 +404,7 @@ suite('CardsTest', () => {
       const cartCheckbox: CrCheckboxElement =
           cartCardOptionName.nextElementSibling! as CrCheckboxElement;
       cartCheckbox.click();
+      await cartCheckbox.updateComplete;
 
       // Assert.
       assertEquals(1, handler.getCallCount('setModuleDisabled'));
@@ -408,6 +414,7 @@ suite('CardsTest', () => {
 
       // Act.
       cartCheckbox.click();
+      await cartCheckbox.updateComplete;
 
       // Assert.
       assertEquals(2, handler.getCallCount('setModuleDisabled'));
@@ -473,6 +480,7 @@ suite('CardsTest', () => {
       const discountCheckbox: CrCheckboxElement =
           discountCardOptionName.nextElementSibling! as CrCheckboxElement;
       discountCheckbox.click();
+      await discountCheckbox.updateComplete;
 
       // Assert.
       assertEquals(1, cartHandler.getCallCount('setDiscountEnabled'));
@@ -480,6 +488,7 @@ suite('CardsTest', () => {
 
       // Act.
       discountCheckbox.click();
+      await discountCheckbox.updateComplete;
 
       // Assert.
       assertEquals(2, cartHandler.getCallCount('setDiscountEnabled'));
@@ -590,5 +599,21 @@ suite('CardsTest', () => {
           assertCardCheckedStatus(cards, 'History Cluster', false);
           assertCardCheckedStatus(cards, 'bar name', false);
         });
+  });
+
+  suite('Metrics', () => {
+    test('Clicking show cards toggle sets metric', async () => {
+      getToggleElement().click();
+      await callbackRouterRemote.$.flushForTesting();
+      await waitAfterNextRender(customizeCards);
+
+      assertEquals(
+          1, metrics.count('NewTabPage.CustomizeChromeSidePanelAction'));
+      assertEquals(
+          1,
+          metrics.count(
+              'NewTabPage.CustomizeChromeSidePanelAction',
+              CustomizeChromeAction.SHOW_CARDS_TOGGLE_CLICKED));
+    });
   });
 });

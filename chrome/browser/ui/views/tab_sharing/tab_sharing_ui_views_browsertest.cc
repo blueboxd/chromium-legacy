@@ -33,8 +33,10 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -66,8 +68,8 @@ infobars::ContentInfoBarManager* GetInfoBarManager(Browser* browser, int tab) {
       GetWebContents(browser, tab));
 }
 
-ConfirmInfoBarDelegate* GetDelegate(Browser* browser, int tab) {
-  return static_cast<ConfirmInfoBarDelegate*>(
+TabSharingInfoBarDelegate* GetDelegate(Browser* browser, int tab) {
+  return static_cast<TabSharingInfoBarDelegate*>(
       GetInfoBarManager(browser, tab)->infobars()[0]->delegate());
 }
 
@@ -77,36 +79,37 @@ std::u16string GetInfobarMessageText(Browser* browser, int tab) {
 
 bool HasSecondaryButton(Browser* browser, int tab) {
   return GetDelegate(browser, tab)->GetButtons() &
-         ConfirmInfoBarDelegate::InfoBarButton::BUTTON_CANCEL;
+         TabSharingInfoBarDelegate::InfoBarButton::BUTTON_CANCEL;
 }
 
 std::u16string GetSecondaryButtonLabel(Browser* browser, int tab) {
   DCHECK(HasSecondaryButton(browser, tab));  // Test error otherwise.
   return GetDelegate(browser, tab)
-      ->GetButtonLabel(ConfirmInfoBarDelegate::InfoBarButton::BUTTON_CANCEL);
+      ->GetButtonLabel(TabSharingInfoBarDelegate::InfoBarButton::BUTTON_CANCEL);
 }
 
 ui::ImageModel GetSecondaryButtonImage(Browser* browser, int tab) {
   DCHECK(HasSecondaryButton(browser, tab));  // Test error otherwise.
   return GetDelegate(browser, tab)
-      ->GetButtonImage(ConfirmInfoBarDelegate::InfoBarButton::BUTTON_CANCEL);
+      ->GetButtonImage(TabSharingInfoBarDelegate::InfoBarButton::BUTTON_CANCEL);
 }
 
 bool SecondaryButtonIsEnabled(Browser* browser, int tab) {
   DCHECK(HasSecondaryButton(browser, tab));  // Test error otherwise.
   return GetDelegate(browser, tab)
-      ->GetButtonEnabled(ConfirmInfoBarDelegate::InfoBarButton::BUTTON_CANCEL);
+      ->GetButtonEnabled(
+          TabSharingInfoBarDelegate::InfoBarButton::BUTTON_CANCEL);
 }
 
 bool HasTertiaryButton(Browser* browser, int tab) {
   return GetDelegate(browser, tab)->GetButtons() &
-         ConfirmInfoBarDelegate::InfoBarButton::BUTTON_EXTRA;
+         TabSharingInfoBarDelegate::InfoBarButton::BUTTON_EXTRA;
 }
 
 std::u16string GetTertiaryButtonLabel(Browser* browser, int tab) {
   DCHECK(HasTertiaryButton(browser, tab));  // Test error otherwise.
   return GetDelegate(browser, tab)
-      ->GetButtonLabel(ConfirmInfoBarDelegate::InfoBarButton::BUTTON_EXTRA);
+      ->GetButtonLabel(TabSharingInfoBarDelegate::InfoBarButton::BUTTON_EXTRA);
 }
 
 std::u16string GetExpectedSwitchToMessage(Browser* browser, int tab) {

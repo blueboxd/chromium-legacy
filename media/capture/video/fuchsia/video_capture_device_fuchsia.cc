@@ -377,7 +377,8 @@ void VideoCaptureDeviceFuchsia::ProcessNewFrame(
   Client::Buffer buffer;
   Client::ReserveResult result = client_->ReserveOutputBuffer(
       capture_format.frame_size, capture_format.pixel_format,
-      /*frame_feedback_id=*/0, &buffer);
+      /*frame_feedback_id=*/0, &buffer, /*require_new_buffer_id=*/nullptr,
+      /*retire_old_buffer_id=*/nullptr);
   if (result != Client::ReserveResult::kSucceeded) {
     DLOG(WARNING) << "Failed to allocate output buffer for a video frame";
     return;
@@ -432,7 +433,7 @@ void VideoCaptureDeviceFuchsia::ProcessNewFrame(
 
   client_->OnIncomingCapturedBufferExt(
       std::move(buffer), capture_format, gfx::ColorSpace(), reference_time,
-      timestamp, gfx::Rect(visible_size), VideoFrameMetadata());
+      timestamp, std::nullopt, gfx::Rect(visible_size), VideoFrameMetadata());
 
   // Frame buffer is returned to the device by dropping the |frame_info|.
 }

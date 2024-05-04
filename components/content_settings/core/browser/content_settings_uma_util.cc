@@ -129,6 +129,8 @@ constexpr auto kHistogramValue = base::MakeFixedFlatMap<ContentSettingsType,
     {ContentSettingsType::TOP_LEVEL_TPCD_TRIAL, 115},
     {ContentSettingsType::AUTOMATIC_FULLSCREEN, 116},
     {ContentSettingsType::SUB_APP_INSTALLATION_PROMPTS, 117},
+    {ContentSettingsType::SPEAKER_SELECTION, 118},
+    {ContentSettingsType::DIRECT_SOCKETS, 119},
 
     // As mentioned at the top, please don't forget to update ContentType in
     // enums.xml when you add entries here!
@@ -190,7 +192,7 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting) {
                     static_cast<size_t>(ContentSettingsType::NUM_TYPES),
                 "Update content settings histogram lookup");
 
-  auto* found = kHistogramValue.find(content_setting);
+  auto found = kHistogramValue.find(content_setting);
   if (found != kHistogramValue.end()) {
     DCHECK_NE(found->second, -1)
         << "Used for deprecated settings: " << static_cast<int>(found->first);

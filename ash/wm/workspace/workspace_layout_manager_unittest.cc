@@ -1073,6 +1073,41 @@ TEST_F(WorkspaceLayoutManagerTest,
   EXPECT_EQ(old_bounds, pip_window->GetBoundsInScreen());
 }
 
+// Tests no crash after keyboard bounds change. Regression test for
+// b/325673844.
+TEST_F(WorkspaceLayoutManagerTest,
+       NoCrashAfterKeyboardDisplacingBoundsChanged) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  WindowState* window_state = WindowState::Get(window.get());
+  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  window_state->OnWMEvent(&snap_left);
+  const gfx::Rect bounds_without_vk(window->GetBoundsInScreen());
+
+  // Show the virtual keyboard. Test the bounds are updated.
+  SetVirtualKeyboardEnabled(true);
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  keyboard_controller->ShowKeyboard(true);
+  EXPECT_TRUE(window_state->IsSnapped());
+  gfx::Rect bounds_with_vk(GetPrimaryDisplay().work_area());
+  bounds_with_vk.set_width(bounds_with_vk.width() / 2);
+  EXPECT_EQ(bounds_with_vk, window->GetBoundsInScreen());
+  EXPECT_NE(bounds_without_vk, bounds_with_vk);
+
+  // Hide the virtual keyboard. Test the bounds are restored to the initial
+  // snapped bounds.
+  keyboard_controller->HideKeyboardByUser();
+  EXPECT_TRUE(window_state->IsSnapped());
+  EXPECT_EQ(bounds_without_vk, window->GetBoundsInScreen());
+
+  // Test that click on the caption button does not crash.
+  const gfx::Rect window_bounds(window->GetBoundsInScreen());
+  const gfx::Point drag_point(window_bounds.CenterPoint().x(),
+                              window_bounds.y() + 10);
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(drag_point);
+  event_generator->ClickLeftButton();
+}
+
 // Following "Solo" tests were originally written for BaseLayoutManager.
 using WorkspaceLayoutManagerSoloTest = AshTestBase;
 
@@ -2300,6 +2335,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitViewTest) {
   // still be the same as the container bounds.
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   split_view_controller()->SnapWindow(window2.get(), SnapPosition::kSecondary);
+
+  // The split view divider is also a child of the default desk container. Spin
+  // the run loop here so that the post task to close the divider widget when
+  // snapping two windows gets run.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(4U, default_container()->children().size());
   for (aura::Window* child : default_container()->children()) {

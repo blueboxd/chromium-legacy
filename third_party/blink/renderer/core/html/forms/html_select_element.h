@@ -205,14 +205,29 @@ class CORE_EXPORT HTMLSelectElement final
 
   // SlottedButton and SlottedDatalist return the first child <button> or
   // <datalist> in the light dom tree. If this select is in a state where the
-  // <button> or <datalist> won't be rendered, such as a <select multiple>, then
-  // nullptr will be returned.
+  // <button> or <datalist> can't be rendered, such as a <select multiple>, then
+  // nullptr will be returned. Since these methods are called during style
+  // calculation to compute internal pseudo-classes, the value of the appearance
+  // property is not checked.
   HTMLButtonElement* SlottedButton() const;
   HTMLDataListElement* SlottedDatalist() const;
+
+  // FirstChildDatalist returns the first child <datalist> of this <select>.
+  // Unlike SlottedDatalist(), it will return the first child <datalist>
+  // regardless of slotting or any other state in the element, which is useful
+  // in cases where we aren't allowed to recalc slot assignment.
+  HTMLDataListElement* FirstChildDatalist() const;
+  void RecalcFirstChildDatalist();
+
+  // This method returns true if the computed style is appearance:bikeshed and
+  // the SelectType supports alternate rendering based on appearance:bikeshed.
+  bool IsAppearanceBikeshed() const;
 
   void DefaultEventHandler(Event&) override;
 
  private:
+  class SelectMutationObserver;
+
   mojom::blink::FormControlType FormControlType() const override;
   const AtomicString& FormControlTypeAsString() const override;
 
@@ -314,6 +329,8 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLSlotElement> option_slot_;
   Member<HTMLOptionElement> last_on_change_option_;
   Member<HTMLOptionElement> suggested_option_;
+  Member<SelectMutationObserver> mutation_observer_;
+  Member<HTMLDataListElement> first_child_datalist_;
   bool uses_menu_list_ = true;
   bool is_multiple_;
   mutable bool should_recalc_list_items_;

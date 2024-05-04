@@ -940,9 +940,9 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
     // Since server card saves upload address information, they are only offered
     // when addresses are being synced. Enable CONTACT_INFO in transport mode.
     enabled_features.push_back(syncer::kSyncDecoupleAddressPaymentSettings);
+    enabled_features.push_back(switches::kExplicitBrowserSigninUIOnDesktop);
     enabled_features.push_back(
         syncer::kSyncEnableContactInfoDataTypeInTransportMode);
-    disabled_features.push_back(switches::kUnoDesktop);
     feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
@@ -2349,8 +2349,7 @@ class SaveCardBubbleViewsAccountChipFooterBrowserTest
   void SetUp() override {
     std::vector<base::test::FeatureRef> enabled_features = {
         features::kAutofillUpstream};
-    std::vector<base::test::FeatureRef> disabled_features = {
-        features::kAutofillEnableNewSaveCardBubbleUi};
+    std::vector<base::test::FeatureRef> disabled_features = {};
     if (AccountChipFooterIsEnabled()) {
       enabled_features.push_back(
           features::kAutofillEnableUserAvatarInSaveCardFooter);

@@ -46,7 +46,7 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
                   bool low_delay,
                   CdmContext* cdm_context,
                   InitCB init_cb,
-                  const OutputCB& output_cb,
+                  const PipelineOutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
@@ -121,7 +121,7 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
   void HandleDequeuedOutputBuffers(Buffer buffer);
   void HandleDequeuedInputBuffers(Buffer buffer);
 
-  // Callback for VideoFrame destructor observer that will enqueue the output
+  // Callback for frame destructor observer that will enqueue the output
   // buffer after it is done being used.
   void EnqueueDecodedOutputBufferByFrameID(uint64_t frame_id);
 
@@ -144,7 +144,7 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
 
   // Callback obtained from Initialize() to be called after every frame
   // has finished decoding and is ready for the client to display.
-  OutputCB output_cb_ GUARDED_BY_CONTEXT(decoder_sequence_checker_);
+  PipelineOutputCB output_cb_ GUARDED_BY_CONTEXT(decoder_sequence_checker_);
 
   // Hold the callback that came in with the EOS signal until the rest of the
   // frames have finished decoding.
@@ -193,13 +193,6 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
 
   // The decode request decode loop needs to keep this alive.
   std::optional<DecodeRequest> current_decode_request_;
-
-  base::CancelableTaskTracker cancelable_output_queue_tracker_;
-  base::CancelableTaskTracker cancelable_input_queue_tracker_;
-
-  // Workers that block and wait for buffers to be ready to be dequeued.
-  scoped_refptr<base::SequencedTaskRunner> input_queue_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> output_queue_task_runner_;
 
   // Queue holding surfaces in display order.
   std::queue<scoped_refptr<StatelessDecodeSurface>> display_queue_;

@@ -27,10 +27,10 @@
 #include "chrome/browser/password_manager/android/password_store_android_backend_dispatcher_bridge.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_receiver_bridge.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
+#include "components/affiliations/core/browser/fake_affiliation_service.h"
+#include "components/affiliations/core/browser/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation/affiliations_prefetcher.h"
-#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
-#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -45,6 +45,8 @@
 namespace password_manager {
 namespace {
 
+using affiliations::FakeAffiliationService;
+using affiliations::MockAffiliationService;
 using testing::_;
 using testing::ElementsAre;
 using testing::ElementsAreArray;
@@ -2088,6 +2090,24 @@ TEST_F(PasswordStoreAndroidAccountBackendTest,
   EXPECT_CALL(mock_reply,
               Run(VariantWith<PasswordChanges>(Optional(IsEmpty()))));
   RunUntilIdle();
+}
+
+TEST_F(PasswordStoreAndroidAccountBackendTest, RecordPasswordStoreMetrics) {
+  base::HistogramTester histogram_tester;
+  backend().InitBackend(
+      /*affiliated_match_helper=*/nullptr,
+      PasswordStoreAndroidAccountBackend::RemoteChangesReceived(),
+      base::NullCallback(), base::DoNothing());
+
+  backend().RecordAddLoginAsyncCalledFromTheStore();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordStore.AccountBackend.AddLoginCalledOnStore",
+      true, 1);
+
+  backend().RecordUpdateLoginAsyncCalledFromTheStore();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordStore.AccountBackend.UpdateLoginCalledOnStore",
+      true, 1);
 }
 
 // Test suite to verify there is no unenrollment for most of the errors except

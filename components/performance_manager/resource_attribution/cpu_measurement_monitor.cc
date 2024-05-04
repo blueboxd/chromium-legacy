@@ -12,6 +12,8 @@
 
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/overloaded.h"
@@ -29,6 +31,7 @@
 #include "components/performance_manager/public/resource_attribution/frame_context.h"
 #include "components/performance_manager/public/resource_attribution/worker_context.h"
 #include "components/performance_manager/resource_attribution/graph_change.h"
+#include "components/performance_manager/resource_attribution/node_data_describers.h"
 #include "components/performance_manager/resource_attribution/worker_client_pages.h"
 #include "content/public/common/process_type.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -429,9 +432,7 @@ base::Value::Dict CPUMeasurementMonitor::DescribeContextData(
     const CPUTimeResult& result = it->second;
     const base::TimeDelta measurement_interval =
         result.metadata.measurement_time - result.start_time;
-    dict.Set("algorithm", static_cast<int>(result.metadata.algorithm));
-    dict.Set("measurement_time", performance_manager::TimeSinceEpochToValue(
-                                     result.metadata.measurement_time));
+    dict.Merge(DescribeResultMetadata(result.metadata));
     dict.Set("measurement_interval",
              performance_manager::TimeDeltaToValue(measurement_interval));
     dict.Set("cumulative_cpu",
@@ -463,7 +464,7 @@ void CPUMeasurementMonitor::CPUMeasurement::MeasureAndDistributeCPUUsage(
     const NodeSplitSet& extra_nodes,
     const NodeSplitSet& nodes_to_skip,
     std::map<ResourceContext, CPUTimeResult>& measurement_deltas) {
-  // TODO(crbug.com/1471683): Handle final CPU usage of a process.
+  // TODO(crbug.com/325330345): Handle final CPU usage of a process.
   //
   // There isn't a good way to get the process CPU usage after it exits here:
   //
@@ -491,14 +492,10 @@ void CPUMeasurementMonitor::CPUMeasurement::MeasureAndDistributeCPUUsage(
   //
   // So it's not possible to attribute the final CPU usage of a process to its
   // frames without a refactor of PerformanceManager to keep the FrameNodes
-  // alive slightly longer.
+  // alive slightly longer, or keeping a snapshot of the frame topology using
+  // FrameContext until after the ChildProcessTerminationInfo is received, and
+  // using that snapshot to distribute the measurements.
   //
-  // A better and more complete way to handle this would be to update the CPU
-  // usage of a PageNode every time a frame or worker is created or deleted.
-  // This would keep the estimate up to date with the page topology, which is
-  // important to avoid under-estimating the CPU usage of pages that create a
-  // lot of short-lived iframes.
-
   // Assume that the previous measurement was taken at time A
   // (`last_measurement_time_`), and the current measurement is being taken at
   // time B (TimeTicks::Now()). Since a measurement is taken in the
@@ -566,7 +563,17 @@ void CPUMeasurementMonitor::CPUMeasurement::MeasureAndDistributeCPUUsage(
   const base::TimeTicks measurement_interval_end = base::TimeTicks::Now();
   CHECK(!measurement_interval_start.is_null());
   CHECK(!measurement_interval_end.is_null());
-  CHECK_LE(process_node->GetLaunchTime(), measurement_interval_start);
+  // TODO(https://crbug.com/326201232): Turn this back into a CHECK or remove it
+  // after figuring out why it's being hit in production sometimes.
+  if (process_node->GetLaunchTime() > measurement_interval_start) {
+    SCOPED_CRASH_KEY_NUMBER(
+        "CPUMeasurement", "process_start",
+        (process_node->GetLaunchTime() - base::TimeTicks()).InNanoseconds());
+    SCOPED_CRASH_KEY_NUMBER(
+        "CPUMeasurement", "interval_start",
+        (measurement_interval_start - base::TimeTicks()).InNanoseconds());
+    base::debug::DumpWithoutCrashing();
+  }
   if (measurement_interval_start == measurement_interval_end) {
     // No time has passed to measure.
     return;

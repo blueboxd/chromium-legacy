@@ -808,6 +808,10 @@ const char kTimeTicksAtUnixEpoch[] = "time-ticks-at-unix-epoch";
 const char kUseFakeCodecForPeerConnection[] =
     "use-fake-codec-for-peer-connection";
 
+// Bypass the digital-identity-credential OS call. Simulate the user
+// accepting the OS-presented dialog.
+const char kUseFakeUIForDigitalIdentity[] = "use-fake-ui-for-digital-identity";
+
 // Bypass the FedCM account selection dialog. If a value is provided for
 // this switch, that account ID is selected, otherwise the first account
 // is chosen.
@@ -897,12 +901,6 @@ const char kWebOtpBackendAuto[] = "web-otp-backend-auto";
 // Disables encryption of RTP Media for WebRTC. When Chrome embeds Content, it
 // ignores this switch on its stable and beta channels.
 const char kDisableWebRtcEncryption[]      = "disable-webrtc-encryption";
-
-// Disables HW decode acceleration for WebRTC.
-const char kDisableWebRtcHWDecoding[]       = "disable-webrtc-hw-decoding";
-
-// Disables HW encode acceleration for WebRTC.
-const char kDisableWebRtcHWEncoding[] = "disable-webrtc-hw-encoding";
 
 // Enables negotiation of encrypted header extensions from RFC 6904 for SRTP
 // in WebRTC.

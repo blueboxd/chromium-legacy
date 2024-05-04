@@ -9,6 +9,7 @@
 
 #include <array>
 
+#include "base/containers/enum_set.h"
 #include "base/containers/flat_map.h"
 #include "ui/display/types/display_types_export.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -145,15 +146,22 @@ enum ConfigurationType {
 
 // A flag to allow ui/display and ozone to adjust the behavior of display
 // configurations.
-enum ModesetFlag {
+enum class ModesetFlag {
   // At least one of kTestModeset and kCommitModeset must be set.
-  kTestModeset = 1 << 0,
-  kCommitModeset = 1 << 1,
+  kTestModeset,
+  kCommitModeset,
   // When |kSeamlessModeset| is set, the commit (or test) will succeed only if
   // the submitted configuration can be completed without visual artifacts such
   // as blanking.
-  kSeamlessModeset = 1 << 2,
+  kSeamlessModeset,
+
+  kMinValue = kTestModeset,
+  kMaxValue = kSeamlessModeset,
 };
+
+// A bitmask of flags as defined in display::ModesetFlag.
+using ModesetFlags =
+    base::EnumSet<ModesetFlag, ModesetFlag::kMinValue, ModesetFlag::kMaxValue>;
 
 enum VariableRefreshRateState {
   kVrrDisabled = 0,
@@ -161,6 +169,22 @@ enum VariableRefreshRateState {
   kVrrNotCapable = 2,
   kVrrLast = kVrrNotCapable,
 };
+
+// A sequence of RefreshRangeNode structs represents the refresh rates that
+// a display can support switching to without incurring a full modeset.
+struct RefreshRangeNode {
+  RefreshRangeNode() : refresh_rate(0.0f), contiguous(false) {}
+  explicit RefreshRangeNode(float refresh_rate)
+      : refresh_rate(refresh_rate), contiguous(false) {}
+  RefreshRangeNode(float refresh_rate, bool contiguous)
+      : refresh_rate(refresh_rate), contiguous(contiguous) {}
+  float refresh_rate;
+  // If true, then any refresh rate between this RefreshRangeNode and the next
+  // one in the sequence is supported.
+  bool contiguous;
+};
+
+using RefreshRange = std::vector<RefreshRangeNode>;
 
 // Defines the float values closest to repeating decimal scale factors.
 constexpr float kDsf_1_777 = 1.77777779102325439453125f;

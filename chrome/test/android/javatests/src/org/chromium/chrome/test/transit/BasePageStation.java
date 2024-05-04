@@ -30,6 +30,9 @@ public abstract class BasePageStation extends TransitStation {
     // tab switcher, even though the tab switcher's toolbar is drawn over it.
     public static final ViewElement TAB_SWITCHER_BUTTON =
             unscopedViewElement(withId(R.id.tab_switcher_button));
+    public static final ViewElement MENU_BUTTON =
+            unscopedViewElement(withId(R.id.menu_button_wrapper));
+    public static final ViewElement MENU_BUTTON2 = unscopedViewElement(withId(R.id.menu_button));
 
     protected final ChromeTabbedActivityTestRule mChromeTabbedActivityTestRule;
     protected final boolean mIncognito;
@@ -43,11 +46,13 @@ public abstract class BasePageStation extends TransitStation {
     @Override
     public void declareElements(Elements.Builder elements) {
         elements.declareView(TAB_SWITCHER_BUTTON);
+        elements.declareView(MENU_BUTTON);
+        elements.declareView(MENU_BUTTON2);
     }
 
     /** Long presses the tab switcher button to open the action menu. */
     public TabSwitcherActionMenuFacility openTabSwitcherActionMenu() {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         TabSwitcherActionMenuFacility menu =
                 new TabSwitcherActionMenuFacility(this, mChromeTabbedActivityTestRule);
@@ -55,18 +60,16 @@ public abstract class BasePageStation extends TransitStation {
     }
 
     public PageAppMenuFacility openAppMenu() {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         PageAppMenuFacility menu = new PageAppMenuFacility(this, mChromeTabbedActivityTestRule);
 
-        // TODO(crbug.com/1489724): Put a real trigger, the app menu doesn't currently show on the
-        // screen.
-        return StationFacility.enterSync(menu, (e) -> {});
+        return StationFacility.enterSync(menu, e -> MENU_BUTTON2.perform(click()));
     }
 
     /** Opens the tab switcher by pressing the toolbar tab switcher button. */
     public <T extends TabSwitcherStation> T openTabSwitcher(Class<T> expectedDestination) {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         T destination;
         if (mIncognito) {
@@ -83,7 +86,7 @@ public abstract class BasePageStation extends TransitStation {
 
     /** Opens the hub by pressing the toolbar tab switcher button. */
     public <T extends HubBaseStation> T openHub(Class<T> expectedDestination) {
-        recheckEnterConditions();
+        recheckActiveConditions();
 
         T destination =
                 expectedDestination.cast(

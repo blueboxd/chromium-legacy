@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tabbed_mode;
 
 import android.os.Bundle;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -47,8 +48,6 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.desktop_site.DesktopSiteSettingsIPHController;
 import org.chromium.chrome.browser.dragdrop.ChromeTabbedOnDragListener;
-import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
-import org.chromium.chrome.browser.feature_guide.notifications.FeatureType;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedFollowIntroController;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ActivityType;
@@ -91,6 +90,7 @@ import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxDialogControlle
 import org.chromium.chrome.browser.privacy_sandbox.TrackingProtectionNoticeController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadLaterIPHController;
+import org.chromium.chrome.browser.readaloud.ReadAloudIPHController;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextIPHController;
@@ -154,6 +154,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     private StatusIndicatorCoordinator.StatusIndicatorObserver mStatusIndicatorObserver;
     private OfflineIndicatorControllerV2 mOfflineIndicatorController;
     private OfflineIndicatorInProductHelpController mOfflineIndicatorInProductHelpController;
+    private ReadAloudIPHController mReadAloudIPHController;
     private ReadLaterIPHController mReadLaterIPHController;
     private DesktopSiteSettingsIPHController mDesktopSiteSettingsIPHController;
     private WebFeedFollowIntroController mWebFeedFollowIntroController;
@@ -181,6 +182,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     private final OneshotSupplier<HubManager> mHubManagerSupplier;
     private TouchEventObserver mDragDropTouchObserver;
     private ViewGroup mCoordinator;
+    private final ObservableSupplier<EdgeToEdgeController> mEdgeToEdgeControllerSupplier;
 
     /**
      * A common {@link CallbackController} used for being notified when {@link TabSwitcher} or
@@ -272,8 +274,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * @param backPressManager The {@link BackPressManager} handling back press.
      * @param savedInstanceState The saved bundle for the last recorded state.
      * @param multiInstanceManager Manages multi-instance mode.
-     * @param overviewIncognitoSupplier An optional incognito state for the overview. When not set,
-     *     the tab model is used to determine incognito state.
+     * @param overviewColorSupplier Notifies when the overview color changes.
+     * @param baseChromeLayout The base view hosting Chrome that certain views (e.g. the omnibox
+     *     suggestion list) will position themselves relative to. If null, the content view will be
+     *     used.
      */
     public TabbedRootUiCoordinator(
             @NonNull AppCompatActivity activity,
@@ -324,7 +328,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @NonNull BackPressManager backPressManager,
             @Nullable Bundle savedInstanceState,
             @Nullable MultiInstanceManager multiInstanceManager,
-            @Nullable BooleanSupplier overviewIncognitoSupplier) {
+            @Nullable ObservableSupplier<Integer> overviewColorSupplier,
+            @Nullable View baseChromeLayout) {
         super(
                 activity,
                 onOmniboxFocusChangedListener,
@@ -368,7 +373,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 initializeUiWithIncognitoColors,
                 backPressManager,
                 savedInstanceState,
-                overviewIncognitoSupplier);
+                overviewColorSupplier,
+                baseChromeLayout);
         mControlContainerHeightResource = controlContainerHeightResource;
         mInsetObserverViewSupplier = insetObserverViewSupplier;
         mBackButtonShouldCloseTabFn = backButtonShouldCloseTabFn;
@@ -398,12 +404,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         mHubManagerSupplier = hubManagerSupplier;
         mStatusBarColorController.setAllowToolbarColorOnTablets(
                 ToolbarFeatures.shouldUseToolbarBgColorForStripTransitionScrim());
+        mEdgeToEdgeControllerSupplier = edgeToEdgeSupplier;
     }
 
     @Override
     public void onDestroy() {
-        FeatureNotificationUtils.unregisterIPHCallback(FeatureType.DEFAULT_BROWSER);
-
         if (mSystemUiCoordinator != null) mSystemUiCoordinator.destroy();
 
         if (mOfflineIndicatorController != null) {
@@ -431,6 +436,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
         if (mToolbarButtonInProductHelpController != null) {
             mToolbarButtonInProductHelpController.destroy();
+        }
+
+        if (mReadAloudIPHController != null) {
+            mReadAloudIPHController.destroy();
         }
 
         if (mWebFeedFollowIntroController != null) {
@@ -499,7 +508,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         mActivity.getWindow(),
                         mTabModelSelectorSupplier.get(),
                         mLayoutManagerSupplier,
-                        mFullscreenManager);
+                        mFullscreenManager,
+                        mEdgeToEdgeControllerSupplier);
     }
 
     @Override
@@ -820,14 +830,23 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         mWindowAndroid,
                         mAppMenuCoordinator,
                         mActivityLifecycleDispatcher,
-                        mProfileSupplier,
+                        profile,
                         mActivityTabProvider,
                         mIsInOverviewModeSupplier,
                         mToolbarManager.getMenuButtonView(),
                         mToolbarManager.getSecurityIconView());
+        mReadAloudIPHController =
+                new ReadAloudIPHController(
+                        mActivity,
+                        profile,
+                        getToolbarManager().getMenuButtonView(),
+                        mAppMenuCoordinator.getAppMenuHandler(),
+                        mActivityTabProvider,
+                        mReadAloudControllerSupplier);
         mReadLaterIPHController =
                 new ReadLaterIPHController(
                         mActivity,
+                        profile,
                         getToolbarManager().getMenuButtonView(),
                         mAppMenuCoordinator.getAppMenuHandler());
 
@@ -894,16 +913,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
 
         if (!didTriggerPromo) {
-            didTriggerPromo = FeatureNotificationUtils.willShowIPH(FeatureType.DEFAULT_BROWSER);
-            FeatureNotificationUtils.registerIPHCallback(
-                    FeatureType.DEFAULT_BROWSER,
-                    () -> {
-                        DefaultBrowserPromoUtils.prepareLaunchPromoIfNeeded(
-                                mActivity, mWindowAndroid, /* ignoreMaxCount= */ true);
-                    });
-        }
-
-        if (!didTriggerPromo) {
             didTriggerPromo = triggerPromo(profile, intentWithEffect);
         }
 
@@ -920,6 +929,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                     && MultiWindowUtils.shouldShowManageWindowsMenu()) {
                 MultiInstanceIphController.maybeShowInProductHelp(
                         mActivity,
+                        profile,
                         getToolbarManager().getMenuButtonView(),
                         mAppMenuCoordinator.getAppMenuHandler(),
                         R.id.manage_all_windows_menu_id);
@@ -942,6 +952,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             mOfflineIndicatorInProductHelpController =
                     new OfflineIndicatorInProductHelpController(
                             mActivity,
+                            profile,
                             mToolbarManager,
                             mAppMenuCoordinator.getAppMenuHandler(),
                             mStatusIndicatorCoordinator);
@@ -963,6 +974,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         mAppBannerInProductHelpController =
                 AppBannerInProductHelpControllerFactory.createAppBannerInProductHelpController(
                         mActivity,
+                        profile,
                         mAppMenuCoordinator.getAppMenuHandler(),
                         () -> mToolbarManager.getMenuButtonView(),
                         R.id.add_to_homescreen_id);
@@ -986,6 +998,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             mWebFeedFollowIntroController =
                     new WebFeedFollowIntroController(
                             mActivity,
+                            profile,
                             mAppMenuCoordinator.getAppMenuHandler(),
                             mActivityTabProvider,
                             mToolbarManager.getMenuButtonView(),
@@ -1008,6 +1021,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 PageZoomIPHController mPageZoomIPHController =
                         new PageZoomIPHController(
                                 mActivity,
+                                profile,
                                 mAppMenuCoordinator.getAppMenuHandler(),
                                 mToolbarManager.getMenuButtonView());
                 mPageZoomIPHController.showColdStartIPH();

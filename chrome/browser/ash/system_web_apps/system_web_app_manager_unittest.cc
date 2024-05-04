@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -214,6 +215,11 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
         FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
+
+  void AwaitSystemWebAppCommandsCompletePostStartup() {
+    base::RunLoop().RunUntilIdle();
+    provider().command_manager().AwaitAllCommandsCompleteForTesting();
+  }
 };
 
 // Test that changing the set of System Apps uninstalls apps.
@@ -387,6 +393,44 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_FALSE(IsInstalled(AppUrl1()));
   EXPECT_TRUE(IsInstalled(AppUrl2()));
   EXPECT_TRUE(IsInstalled(kAppUrl3));
+}
+
+TEST_F(SystemWebAppManagerTest, UpdateOnVersionChangeEvenIfIconsBroken) {
+  const std::vector<web_app::ExternalInstallOptions>& install_requests =
+      externally_managed_app_manager().install_requests();
+
+  system_web_app_manager().SetUpdatePolicy(
+      SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+
+  {
+    SystemWebAppDelegateMap system_apps;
+    system_apps.emplace(
+        SystemWebAppType::SETTINGS,
+        std::make_unique<UnittestingSystemAppDelegate>(
+            SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
+            GetApp1WebAppInfoFactory()));
+    system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
+  }
+  system_web_app_manager().set_current_version(base::Version("1.0.0.0"));
+  StartAndWaitForAppsToSynchronize();
+
+  EXPECT_EQ(1u, externally_managed_app_manager().install_requests().size());
+  EXPECT_TRUE(install_requests.front().force_reinstall);
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+
+  // Simulate something going wrong in the interim.
+  system_web_app_manager().set_icons_are_broken(true);
+  // Must be greater than `kInstallFailureAttempts` constant.
+  profile()->GetPrefs()->SetInteger(
+      prefs::kSystemWebAppInstallFailureCount,
+      SystemWebAppManager::kInstallFailureAttempts + 1);
+
+  system_web_app_manager().set_current_version(base::Version("1.0.0.1"));
+  StartAndWaitForAppsToSynchronize();
+
+  EXPECT_EQ(2u, externally_managed_app_manager().install_requests().size());
+  EXPECT_TRUE(install_requests.back().force_reinstall);
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
 }
 
 TEST_F(SystemWebAppManagerTest, RetryBrokenIcons) {
@@ -811,22 +855,22 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
   externally_managed_app_manager().SetDropRequestsForTesting(true);
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
 
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
 
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
 
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   // 1 successful, 1 abandoned, and 3 more abanonded retries is 5.
@@ -844,7 +888,7 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().set_current_version(base::Version("2.0.0.0"));
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   EXPECT_EQ(5u, install_requests.size());
 
@@ -852,8 +896,7 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().set_current_version(base::Version("3.0.0.0"));
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
-  provider().command_manager().AwaitAllCommandsCompleteForTesting();
+  AwaitSystemWebAppCommandsCompletePostStartup();
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   EXPECT_EQ(6u, install_requests.size());
@@ -892,22 +935,22 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstallsLocaleChange) {
   // We use RunUntilIdle because the install requests are dropped, so
   // on_app_synchronized() won't be called.
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
 
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
 
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
 
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   // 1 successful, 1 abandoned, and 3 more abanonded retries is 5.
@@ -924,7 +967,7 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstallsLocaleChange) {
   externally_managed_app_manager().SetDropRequestsForTesting(false);
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
   EXPECT_EQ(5u, install_requests.size());
 
@@ -932,8 +975,7 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstallsLocaleChange) {
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().set_current_locale("fr/fr");
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
-  provider().command_manager().AwaitAllCommandsCompleteForTesting();
+  AwaitSystemWebAppCommandsCompletePostStartup();
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 }
 
@@ -966,7 +1008,7 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
   externally_managed_app_manager().SetDropRequestsForTesting(true);
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   EXPECT_EQ(2u, install_requests.size());
@@ -975,7 +1017,7 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
 
   system_web_app_manager().ResetForTesting();
   system_web_app_manager().Start();
-  base::RunLoop().RunUntilIdle();
+  AwaitSystemWebAppCommandsCompletePostStartup();
   externally_managed_app_manager().ClearSynchronizeRequestsForTesting();
 
   // Retry a few times, but not until abandonment.

@@ -828,9 +828,8 @@ class ScopedNewFrameInterfaceProviderExerciser {
     EXPECT_TRUE(frame->GetWebFrame()->GetCurrentHistoryItem().IsNull());
   }
 
-  raw_ptr<FrameCreationObservingRendererClient, ExperimentalRenderer>
-      frame_creation_observer_;
-  raw_ptr<TestRenderFrame, ExperimentalRenderer> frame_ = nullptr;
+  raw_ptr<FrameCreationObservingRendererClient> frame_creation_observer_;
+  raw_ptr<TestRenderFrame> frame_ = nullptr;
   std::optional<std::string> html_override_for_first_load_;
   GURL first_committed_url_;
 
@@ -923,8 +922,8 @@ class RenderFrameRemoteInterfacesTest : public RenderViewTest {
 
  private:
   // Owned by RenderViewTest.
-  raw_ptr<FrameCreationObservingRendererClient, ExperimentalRenderer>
-      frame_creation_observer_ = nullptr;
+  raw_ptr<FrameCreationObservingRendererClient> frame_creation_observer_ =
+      nullptr;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -1200,7 +1199,101 @@ void NavigateAndWait(content::TestRenderFrame* frame,
   waiter.Wait();
 }
 
+class FakeContentSettingsClient : public blink::WebContentSettingsClient {
+ public:
+  FakeContentSettingsClient() = default;
+
+  void DidNotAllowImage() override { ++did_not_allow_image_count_; }
+  void DidNotAllowScript() override { ++did_not_allow_script_count_; }
+
+  int did_not_allow_image_count_ = 0;
+  int did_not_allow_script_count_ = 0;
+};
+
 }  // namespace
+
+// Checks that when images are blocked, the ContentSettingsAgent receives a
+// callback.
+TEST_F(RenderFrameImplTest, ContentSettingsCallbackImageBlocked) {
+  // Create a fake content settings client to track image blocked callbacks.
+  FakeContentSettingsClient fake_content_settings_client;
+  GetMainRenderFrame()->GetWebFrame()->SetContentSettingsClient(
+      &fake_content_settings_client);
+
+  // Navigate to a URL that consists of a red square.
+  std::string data_url_contents =
+      "data:image/"
+      "png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZAQMAAAD+JxcgAAAAA1BMVEX/"
+      "AAAZ4gk3AAAAC0lEQVR4AWMYSAAAAH0AAVFwgb4AAAAASUVORK5CYII=";
+
+  auto common_params = blink::CreateCommonNavigationParams();
+  common_params->url = GURL(data_url_contents);
+  common_params->navigation_type =
+      blink::mojom::NavigationType::DIFFERENT_DOCUMENT;
+  blink::mojom::CommitNavigationParamsPtr commit_params =
+      blink::CreateCommitNavigationParams();
+  commit_params->content_settings->allow_image = false;
+  content::TestRenderFrame* frame =
+      static_cast<TestRenderFrame*>(GetMainRenderFrame());
+
+  NavigateAndWait(frame, common_params->Clone(), commit_params->Clone(),
+                  web_view_);
+
+  EXPECT_EQ(1, fake_content_settings_client.did_not_allow_image_count_);
+}
+
+// Checks that when script is blocked, the ContentSettingsAgent receives a
+// callback.
+TEST_F(RenderFrameImplTest, ContentSettingsCallbackScriptBlocked) {
+  // Create a fake content settings client to track script blocked callbacks.
+  FakeContentSettingsClient fake_content_settings_client;
+  GetMainRenderFrame()->GetWebFrame()->SetContentSettingsClient(
+      &fake_content_settings_client);
+
+  // Navigate to a URL with script disabled.
+  auto common_params = GetCommonParamsForContentSettingsTest();
+  common_params->navigation_type =
+      blink::mojom::NavigationType::DIFFERENT_DOCUMENT;
+  blink::mojom::CommitNavigationParamsPtr commit_params =
+      blink::CreateCommitNavigationParams();
+  commit_params->content_settings->allow_script = false;
+  content::TestRenderFrame* frame =
+      static_cast<TestRenderFrame*>(GetMainRenderFrame());
+
+  NavigateAndWait(frame, common_params->Clone(), commit_params->Clone(),
+                  web_view_);
+  EXPECT_TRUE(HasText(GetMainFrame(), "JS_DISABLED"));
+  EXPECT_FALSE(HasText(GetMainFrame(), "JS_ENABLED"));
+
+  EXPECT_EQ(1, fake_content_settings_client.did_not_allow_script_count_);
+}
+
+// Checks that when script is allowed, the ContentSettingsAgent does not receive
+// a callback.
+TEST_F(RenderFrameImplTest, ContentSettingsCallbackScriptAllowed) {
+  // Create a fake content settings client to track script blocked callbacks.
+  FakeContentSettingsClient fake_content_settings_client;
+  GetMainRenderFrame()->GetWebFrame()->SetContentSettingsClient(
+      &fake_content_settings_client);
+
+  // Navigate to a URL with script enabled.
+  auto common_params = GetCommonParamsForContentSettingsTest();
+  common_params->navigation_type =
+      blink::mojom::NavigationType::DIFFERENT_DOCUMENT;
+  blink::mojom::CommitNavigationParamsPtr commit_params =
+      blink::CreateCommitNavigationParams();
+  content::TestRenderFrame* frame =
+      static_cast<TestRenderFrame*>(GetMainRenderFrame());
+
+  NavigateAndWait(frame, common_params->Clone(), commit_params->Clone(),
+                  web_view_);
+  // Verify that the script was not blocked.
+  EXPECT_FALSE(HasText(GetMainFrame(), "JS_DISABLED"));
+  EXPECT_TRUE(HasText(GetMainFrame(), "JS_ENABLED"));
+
+  // Verify there was no script blocked callback.
+  EXPECT_EQ(0, fake_content_settings_client.did_not_allow_script_count_);
+}
 
 // Regression test for crbug.com/232410: Load a page with JS blocked. Then,
 // allow JS and reload the page. In each case, only one of noscript or script

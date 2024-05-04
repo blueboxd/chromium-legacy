@@ -100,9 +100,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     {switches::kEnableExperimentalCookieFeatures,
      std::cref(net::features::kSchemefulSameSite),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalCookieFeatures,
-     std::cref(net::features::kPartitionedCookies),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
     // Test behavior for third-party cookie phaseout.
     {network::switches::kTestThirdPartyCookiePhaseout,
@@ -176,9 +173,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnablePrivacySandboxAdsApis,
      std::cref(blink::features::kPrivateAggregationApi),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnablePrivacySandboxAdsApis,
-     std::cref(features::kAttributionFencedFrameReportingBeacon),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
   };
 

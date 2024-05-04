@@ -187,6 +187,10 @@ LocalDeskDataManager::DeleteTaskResult::DeleteTaskResult(
 
 LocalDeskDataManager::DeleteTaskResult::~DeleteTaskResult() = default;
 
+void LocalDeskDataManager::SetupFloatingWorkspaceForTest() {
+  saved_desks_list_[ash::DeskTemplateType::kFloatingWorkspace];
+}
+
 DeskModel::GetAllEntriesResult LocalDeskDataManager::GetAllEntries() {
   std::vector<raw_ptr<const ash::DeskTemplate, VectorExperimental>> entries;
   if (cache_status_ != CacheStatus::kOk) {

@@ -268,9 +268,6 @@ struct PassedData {
   // The slot_id passed into FakeChapsSlotSessionFactory.
   std::optional<CK_SLOT_ID> slot_id;
 
-  // Attributes passed for the secret key template to GenerateKey.
-  ObjectAttributes secret_key_gen_attributes;
-
   // Attributes passed for the public key template to GenerateKeyPair.
   ObjectAttributes public_key_gen_attributes;
 
@@ -339,25 +336,6 @@ class FakeChapsSlotSession : public chromeos::ChapsSlotSession {
     if (parsed_object_type.CkULong() == CKO_CERTIFICATE) {
       passed_data_->pkcs12_cert_attributes.push_back(parsing_result);
     }
-
-    return CKR_OK;
-  }
-
-  CK_RV GenerateKey(CK_MECHANISM_PTR pMechanism,
-                    CK_ATTRIBUTE_PTR pTemplate,
-                    CK_ULONG ulCount,
-                    CK_OBJECT_HANDLE_PTR phKey) override {
-    EXPECT_TRUE(session_ok_);
-    CK_RV configured_result = ApplyConfiguredResult();
-    if (configured_result != CKR_OK) {
-      return configured_result;
-    }
-
-    passed_data_->secret_key_gen_attributes =
-        ObjectAttributes::ParseFrom(pTemplate, ulCount);
-
-    // TODO(b/288880151): Finish fake implementation of `GenerateKey()`, when it
-    // becomes necessary for testing `ChapsUtilImpl`.
 
     return CKR_OK;
   }
@@ -988,7 +966,7 @@ TEST_F(KcerChapsUtilImplTest, ImportPkcs12HardwareBackedSuccess) {
 // Successfully import EC key and single certificate from PKCS12 file to
 // Chaps software slot with is_software_backed = false.
 TEST_F(KcerChapsUtilImplTest, ImportPkcs12WithEcKeyHardwareBackedSuccess) {
-  using OPTIONAL_CK_BYTE_VECTOR = absl::optional<std::vector<CK_BYTE>>;
+  using OPTIONAL_CK_BYTE_VECTOR = std::optional<std::vector<CK_BYTE>>;
   std::map<CK_ATTRIBUTE_TYPE, OPTIONAL_CK_BYTE_VECTOR> expected_key_data;
   // Strings below have hardcoded fields from "client_with_ec_key.p12" which is
   // referenced by GetPkcs12Data(), they are Base64Encoded for the shorter
@@ -1033,7 +1011,7 @@ TEST_F(KcerChapsUtilImplTest, ImportPkcs12WithEcKeyHardwareBackedSuccess) {
 // Successfully import EC key and single certificate from PKCS12 file to
 // Chaps software slot with is_software_backed = true.
 TEST_F(KcerChapsUtilImplTest, ImportPkcs12WithEcKeySoftwareBackedSuccess) {
-  using OPTIONAL_CK_BYTE_VECTOR = absl::optional<std::vector<CK_BYTE>>;
+  using OPTIONAL_CK_BYTE_VECTOR = std::optional<std::vector<CK_BYTE>>;
   std::map<CK_ATTRIBUTE_TYPE, OPTIONAL_CK_BYTE_VECTOR> expected_key_data;
   // Strings below have hardcoded fields from "client_with_ec_key.p12" which is
   // referenced by GetPkcs12Data(), they are Base64Encoded for the shorter

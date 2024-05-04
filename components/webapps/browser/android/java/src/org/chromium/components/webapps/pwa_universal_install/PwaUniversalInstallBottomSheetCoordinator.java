@@ -6,7 +6,6 @@ package org.chromium.components.webapps.pwa_universal_install;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.util.Pair;
 import android.view.View;
 
 import androidx.annotation.MainThread;
@@ -15,27 +14,31 @@ import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.webapps.AppType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-
-import java.util.concurrent.Callable;
 
 /** The Coordinator for managing the Pwa Universal Install bottom sheet experience. */
 @JNINamespace("webapps")
 public class PwaUniversalInstallBottomSheetCoordinator {
-    // If set, this swaps out the icon fetching callback for testing.
-    private static Callable<Pair<Bitmap, Boolean>> sIconCall;
+    public static boolean sEnableManualIconFetching;
 
-    public static void setIconCallForTesting(Callable<Pair<Bitmap, Boolean>> iconCall) {
-        sIconCall = iconCall;
-    }
+    // UniversalInstallDialogActions defined in tools/metrics/histograms/enums.xml
+    public static final int DIALOG_SHOWN = 0;
+    public static final int INSTALL_APP = 1;
+    public static final int OPEN_EXISTING_APP = 2;
+    public static final int CREATE_SHORTCUT = 3;
+    public static final int CREATE_SHORTCUT_TO_APP = 4;
+    // Keep this one at the end and increment appropriately when adding new tasks.
+    public static final int DIALOG_RESULT_COUNT = 5;
 
     private final BottomSheetController mController;
     private final PwaUniversalInstallBottomSheetView mView;
     private final PwaUniversalInstallBottomSheetContent mContent;
     private final PwaUniversalInstallBottomSheetMediator mMediator;
-    private final WebContents mWebContents;
+    private @AppType int mAppType = AppType.COUNT;
 
     private final Runnable mInstallCallback;
     private final Runnable mAddShortcutCallback;
@@ -51,16 +54,16 @@ public class PwaUniversalInstallBottomSheetCoordinator {
             Runnable openAppCallback,
             boolean webAppAlreadyInstalled,
             BottomSheetController bottomSheetController,
-            int arrowId) {
-        mWebContents = webContents;
+            int arrowId,
+            int installOverlayId,
+            int shortcutOverlayId) {
         mController = bottomSheetController;
         mInstallCallback = installCallback;
         mAddShortcutCallback = addShortcutCallback;
         mOpenAppCallback = openAppCallback;
 
         mView = new PwaUniversalInstallBottomSheetView();
-        mView.initialize(
-                activity, webContents, sIconCall != null ? sIconCall : this::getIcon, arrowId);
+        mView.initialize(activity, webContents, arrowId, installOverlayId, shortcutOverlayId);
         mContent = new PwaUniversalInstallBottomSheetContent(mView);
         mMediator =
                 new PwaUniversalInstallBottomSheetMediator(
@@ -72,6 +75,10 @@ public class PwaUniversalInstallBottomSheetCoordinator {
 
         PropertyModelChangeProcessor.create(
                 mMediator.getModel(), mView, PwaUniversalInstallBottomSheetViewBinder::bind);
+
+        if (!sEnableManualIconFetching) {
+            fetchAppData(webContents); // We get a reply back through onAppDataFetched below.
+        }
     }
 
     /**
@@ -80,30 +87,30 @@ public class PwaUniversalInstallBottomSheetCoordinator {
      * @return True if showing is successful.
      */
     public boolean show() {
+        RecordHistogram.recordEnumeratedHistogram(
+                "WebApk.UniversalInstall.DialogAction", DIALOG_SHOWN, DIALOG_RESULT_COUNT);
         return mController.requestShowContent(mContent, /* animate= */ true);
     }
 
-    /**
-     * This function starts the icon fetching asynchronously and returns null to signify that the
-     * icons are not yet available. This is overwritten in tests to return actual icon data
-     * synchronously.
-     */
-    private Pair<Bitmap, Boolean> getIcon() {
-        fetchAppIcon(mWebContents); // We get a reply back through onAppIconFetched below.
-        return null;
-    }
-
     private void onInstallClicked() {
+        RecordHistogram.recordEnumeratedHistogram(
+                "WebApk.UniversalInstall.DialogAction", INSTALL_APP, DIALOG_RESULT_COUNT);
         mController.hideContent(mContent, /* animate= */ true);
         mInstallCallback.run();
     }
 
     private void onAddShortcutClicked() {
+        RecordHistogram.recordEnumeratedHistogram(
+                "WebApk.UniversalInstall.DialogAction",
+                mAppType == AppType.SHORTCUT ? CREATE_SHORTCUT : CREATE_SHORTCUT_TO_APP,
+                DIALOG_RESULT_COUNT);
         mController.hideContent(mContent, /* animate= */ true);
         mAddShortcutCallback.run();
     }
 
     private void onOpenAppClicked() {
+        RecordHistogram.recordEnumeratedHistogram(
+                "WebApk.UniversalInstall.DialogAction", OPEN_EXISTING_APP, DIALOG_RESULT_COUNT);
         mController.hideContent(mContent, /* animate= */ true);
         mOpenAppCallback.run();
     }
@@ -112,19 +119,37 @@ public class PwaUniversalInstallBottomSheetCoordinator {
         return mView.getContentView();
     }
 
-    public void fetchAppIcon(WebContents webContents) {
+    public void fetchAppData(WebContents webContents) {
         PwaUniversalInstallBottomSheetCoordinatorJni.get()
-                .fetchAppIcon(PwaUniversalInstallBottomSheetCoordinator.this, webContents);
+                .fetchAppData(PwaUniversalInstallBottomSheetCoordinator.this, webContents);
     }
 
     @CalledByNative
-    public void onAppIconFetched(Bitmap icon, boolean adaptive) {
+    public void onAppDataFetched(@AppType int appType, Bitmap icon, boolean adaptive) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "WebApk.UniversalInstall.DialogShownForAppType", appType, AppType.COUNT);
         mView.setIcon(icon, adaptive);
+        mAppType = appType;
+
+        boolean alreadyInstalled =
+                mMediator.getModel().get(PwaUniversalInstallProperties.VIEW_STATE)
+                        == PwaUniversalInstallProperties.ViewState.APP_ALREADY_INSTALLED;
+        if (alreadyInstalled) {
+            return;
+        }
+
+        mMediator
+                .getModel()
+                .set(
+                        PwaUniversalInstallProperties.VIEW_STATE,
+                        (appType == AppType.WEBAPK || appType == AppType.WEBAPK_DIY)
+                                ? PwaUniversalInstallProperties.ViewState.APP_IS_INSTALLABLE
+                                : PwaUniversalInstallProperties.ViewState.APP_IS_NOT_INSTALLABLE);
     }
 
     @NativeMethods
     interface Natives {
-        public void fetchAppIcon(
+        public void fetchAppData(
                 PwaUniversalInstallBottomSheetCoordinator caller, WebContents webContents);
     }
 }

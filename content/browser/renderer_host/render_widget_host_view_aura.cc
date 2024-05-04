@@ -113,6 +113,7 @@
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/base/ime/virtual_keyboard_controller.h"
 #include "ui/base/ime/virtual_keyboard_controller_observer.h"
+#include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/gdi_util.h"
@@ -889,6 +890,12 @@ void RenderWidgetHostViewAura::ShowWithVisibility(
       legacy_render_widget_host_HWND_) {
     legacy_render_widget_host_HWND_->Hide();
   }
+
+  if (window_->GetHost() && GetInputMethod() && !ShouldDoLearning()) {
+    ui::tsf_inputscope::SetPrivateInputScope(
+        RenderWidgetHostViewAura::GetHostWindowHWND());
+  }
+
 #endif  // BUILDFLAG(IS_WIN)
 }
 
@@ -1691,7 +1698,7 @@ ukm::SourceId RenderWidgetHostViewAura::GetClientSourceForMetrics() const {
 }
 
 bool RenderWidgetHostViewAura::ShouldDoLearning() {
-  return GetTextInputManager() && GetTextInputManager()->should_do_learning();
+  return host_->delegate() && host_->delegate()->ShouldDoLearning();
 }
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

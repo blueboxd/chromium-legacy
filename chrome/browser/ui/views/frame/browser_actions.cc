@@ -6,6 +6,7 @@
 
 #include "base/check_op.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/actions/chrome_action_id.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/feed/feed_feature_list.h"
 #include "components/history_clusters/core/features.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/performance_manager/public/features.h"
@@ -103,8 +103,6 @@ BrowserActions* BrowserActions::FromBrowser(Browser* browser) {
 }
 
 void BrowserActions::InitializeBrowserActions() {
-  const bool rename_journeys =
-      base::FeatureList::IsEnabled(history_clusters::kRenameJourneys);
   Profile* profile = browser_->profile();
 
   actions::ActionManager::Get().AddAction(
@@ -144,13 +142,11 @@ void BrowserActions::InitializeBrowserActions() {
 
   if (HistoryClustersSidePanelCoordinator::IsSupported(profile)) {
     root_action_item_->AddChild(
-        SidePanelAction(
-            SidePanelEntryId::kHistoryClusters,
-            rename_journeys ? IDS_HISTORY_TITLE
-                            : IDS_HISTORY_CLUSTERS_JOURNEYS_TAB_LABEL,
-            IDS_HISTORY_CLUSTERS_SHOW_SIDE_PANEL,
-            vector_icons::kHistoryChromeRefreshIcon,
-            kActionSidePanelShowHistoryCluster, &(browser_.get()), true)
+        SidePanelAction(SidePanelEntryId::kHistoryClusters, IDS_HISTORY_TITLE,
+                        IDS_HISTORY_CLUSTERS_SHOW_SIDE_PANEL,
+                        vector_icons::kHistoryChromeRefreshIcon,
+                        kActionSidePanelShowHistoryCluster, &(browser_.get()),
+                        true)
             .Build());
   }
 
@@ -168,14 +164,6 @@ void BrowserActions::InitializeBrowserActions() {
         SidePanelAction(SidePanelEntryId::kUserNote, IDS_USER_NOTE_TITLE,
                         IDS_USER_NOTE_TITLE, kNoteOutlineIcon,
                         kActionSidePanelShowUserNote, &(browser_.get()), true)
-            .Build());
-  }
-
-  if (base::FeatureList::IsEnabled(feed::kWebUiFeed)) {
-    root_action_item_->AddChild(
-        SidePanelAction(SidePanelEntryId::kFeed, IDS_FEED_TITLE, IDS_FEED_TITLE,
-                        vector_icons::kFeedIcon, kActionSidePanelShowFeed,
-                        &(browser_.get()), true)
             .Build());
   }
 
@@ -242,6 +230,7 @@ void BrowserActions::InitializeBrowserActions() {
                            },
                            base::Unretained(&(browser_.get()))),
                        kActionPrint, IDS_PRINT, IDS_PRINT, kPrintMenuIcon)
+          .SetEnabled(chrome::CanPrint(&(browser_.get())))
           .Build());
 
   root_action_item_->AddChild(
@@ -276,4 +265,17 @@ void BrowserActions::InitializeBrowserActions() {
                          kTaskManagerIcon)
             .Build());
   }
+
+  root_action_item_->AddChild(
+      ChromeMenuAction(base::BindRepeating(
+                           [](Browser* browser, actions::ActionItem* item,
+                              actions::ActionInvocationContext context) {
+                             chrome::ToggleDevToolsWindow(
+                                 browser, DevToolsToggleAction::Show(),
+                                 DevToolsOpenedByAction::kPinnedToolbarButton);
+                           },
+                           base::Unretained(&(browser_.get()))),
+                       kActionDevTools, IDS_DEV_TOOLS, IDS_DEV_TOOLS,
+                       kDeveloperToolsIcon)
+          .Build());
 }

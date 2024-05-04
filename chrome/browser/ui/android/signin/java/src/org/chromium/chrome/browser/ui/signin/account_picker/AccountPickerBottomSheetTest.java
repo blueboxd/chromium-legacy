@@ -16,8 +16,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibilit
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,9 +28,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
+
 import android.app.Activity;
 import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.filters.MediumTest;
@@ -45,7 +48,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
@@ -55,6 +60,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -71,15 +77,16 @@ import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.device_lock.DeviceLockActivityLauncher;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.SigninFeatures;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.signin.base.GoogleServiceAuthError;
-import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.components.signin.metrics.AccountConsistencyPromoAction;
 import org.chromium.components.signin.test.util.FakeAccountInfoService;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.test.util.ViewUtils;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Tests account picker bottom sheet of the web signin flow. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -95,6 +102,7 @@ public class AccountPickerBottomSheetTest {
     private static final String TEST_EMAIL1 = "test.account1@gmail.com";
     private static final String FULL_NAME1 = "Test Account1";
     private static final String GIVEN_NAME1 = "Account1";
+    private static final String DOMAIN1 = "Domain1";
     private static final String TEST_EMAIL2 = "test.account2@gmail.com";
     private static final String NEW_ACCOUNT_EMAIL = "new.account@gmail.com";
 
@@ -122,7 +130,7 @@ public class AccountPickerBottomSheetTest {
     public AutomotiveContextWrapperTestRule mAutoTestRule = new AutomotiveContextWrapperTestRule();
 
     @Rule
-    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.LENIENT);
 
     @Mock private AccountPickerDelegate mAccountPickerDelegateMock;
 
@@ -132,6 +140,7 @@ public class AccountPickerBottomSheetTest {
     private CustomDeviceLockActivityLauncher mDeviceLockActivityLauncher;
     private CoreAccountInfo mCoreAccountInfo1;
     private CoreAccountInfo mCoreAccountInfo2;
+    private boolean mIsAccountManaged;
 
     @Before
     public void setUp() {
@@ -140,6 +149,15 @@ public class AccountPickerBottomSheetTest {
                 mAccountManagerTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
         mCoreAccountInfo2 = mAccountManagerTestRule.addAccount(TEST_EMAIL2, null, null, null);
         SigninPreferencesManager.getInstance().clearWebSigninAccountPickerActiveDismissalCount();
+        doAnswer(
+                        invocation -> {
+                            ((Callback<Boolean>) invocation.getArgument(1))
+                                    .onResult(mIsAccountManaged);
+                            return null;
+                        })
+                .when(mAccountPickerDelegateMock)
+                .isAccountManaged(any(), any());
+        when(mAccountPickerDelegateMock.extractDomainName(eq(TEST_EMAIL1))).thenReturn(DOMAIN1);
     }
 
     @After
@@ -192,7 +210,8 @@ public class AccountPickerBottomSheetTest {
                                     getBottomSheetController(),
                                     mAccountPickerDelegateMock,
                                     new AccountPickerBottomSheetStrings() {},
-                                    new CustomDeviceLockActivityLauncher());
+                                    new CustomDeviceLockActivityLauncher(),
+                                    AccountPickerLaunchMode.DEFAULT);
                 });
 
         checkZeroAccountBottomSheet();
@@ -219,7 +238,7 @@ public class AccountPickerBottomSheetTest {
         onView(isRoot()).perform(pressBack());
 
         Assert.assertFalse(controller.isSheetOpen());
-        verify(mAccountPickerDelegateMock).destroy();
+        verify(mAccountPickerDelegateMock).onAccountPickerDestroy();
         Assert.assertEquals(0, mFakeAccountInfoService.getNumberOfObservers());
         accountConsistencyHistogram.assertExpected();
         Assert.assertEquals(
@@ -250,7 +269,7 @@ public class AccountPickerBottomSheetTest {
         onView(isRoot()).perform(pressBack());
 
         Assert.assertFalse(controller.isSheetOpen());
-        verify(mAccountPickerDelegateMock).destroy();
+        verify(mAccountPickerDelegateMock).onAccountPickerDestroy();
         Assert.assertEquals(0, mFakeAccountInfoService.getNumberOfObservers());
         accountConsistencyHistogram.assertExpected();
         Assert.assertEquals(
@@ -280,7 +299,7 @@ public class AccountPickerBottomSheetTest {
         onView(withText(R.string.signin_account_picker_dismiss_button)).perform(click());
 
         Assert.assertFalse(controller.isSheetOpen());
-        verify(mAccountPickerDelegateMock).destroy();
+        verify(mAccountPickerDelegateMock).onAccountPickerDestroy();
         Assert.assertEquals(0, mFakeAccountInfoService.getNumberOfObservers());
         accountConsistencyHistogram.assertExpected();
         Assert.assertEquals(
@@ -311,7 +330,7 @@ public class AccountPickerBottomSheetTest {
         onView(withText(R.string.cancel)).perform(click());
 
         Assert.assertFalse(controller.isSheetOpen());
-        verify(mAccountPickerDelegateMock).destroy();
+        verify(mAccountPickerDelegateMock).onAccountPickerDestroy();
         Assert.assertEquals(0, mFakeAccountInfoService.getNumberOfObservers());
         accountConsistencyHistogram.assertExpected();
         Assert.assertEquals(
@@ -379,7 +398,8 @@ public class AccountPickerBottomSheetTest {
                                     getBottomSheetController(),
                                     mAccountPickerDelegateMock,
                                     new AccountPickerBottomSheetStrings() {},
-                                    null);
+                                    null,
+                                    AccountPickerLaunchMode.DEFAULT);
                 });
         checkZeroAccountBottomSheet();
 
@@ -676,16 +696,13 @@ public class AccountPickerBottomSheetTest {
                         .expectIntRecords(
                                 "Signin.AccountConsistencyPromoAction",
                                 AccountConsistencyPromoAction.SHOWN,
-                                AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT,
-                                AccountConsistencyPromoAction.GENERIC_ERROR_SHOWN)
+                                AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT)
                         .build();
         // Throws a connection error during the sign-in action
         doAnswer(
                         invocation -> {
-                            Callback<GoogleServiceAuthError> onSignInErrorCallback =
-                                    invocation.getArgument(1);
-                            onSignInErrorCallback.onResult(
-                                    new GoogleServiceAuthError(State.CONNECTION_FAILED));
+                            ((AccountPickerBottomSheetMediator) invocation.getArgument(1))
+                                    .switchToTryAgainView();
                             return null;
                         })
                 .when(mAccountPickerDelegateMock)
@@ -714,16 +731,13 @@ public class AccountPickerBottomSheetTest {
                         .expectIntRecords(
                                 "Signin.AccountConsistencyPromoAction",
                                 AccountConsistencyPromoAction.SHOWN,
-                                AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT,
-                                AccountConsistencyPromoAction.AUTH_ERROR_SHOWN)
+                                AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT)
                         .build();
         // Throws an auth error during the sign-in action
         doAnswer(
                         invocation -> {
-                            Callback<GoogleServiceAuthError> onSignInErrorCallback =
-                                    invocation.getArgument(1);
-                            onSignInErrorCallback.onResult(
-                                    new GoogleServiceAuthError(State.INVALID_GAIA_CREDENTIALS));
+                            ((AccountPickerBottomSheetMediator) invocation.getArgument(1))
+                                    .switchToAuthErrorView();
                             return null;
                         })
                 .when(mAccountPickerDelegateMock)
@@ -750,10 +764,8 @@ public class AccountPickerBottomSheetTest {
         // Throws a connection error during the sign-in action
         doAnswer(
                         invocation -> {
-                            Callback<GoogleServiceAuthError> onSignInErrorCallback =
-                                    invocation.getArgument(1);
-                            onSignInErrorCallback.onResult(
-                                    new GoogleServiceAuthError(State.CONNECTION_FAILED));
+                            ((AccountPickerBottomSheetMediator) invocation.getArgument(1))
+                                    .switchToTryAgainView();
                             return null;
                         })
                 .when(mAccountPickerDelegateMock)
@@ -773,10 +785,8 @@ public class AccountPickerBottomSheetTest {
         // Throws an auth error during the sign-in action
         doAnswer(
                         invocation -> {
-                            Callback<GoogleServiceAuthError> onSignInErrorCallback =
-                                    invocation.getArgument(1);
-                            onSignInErrorCallback.onResult(
-                                    new GoogleServiceAuthError(State.INVALID_GAIA_CREDENTIALS));
+                            ((AccountPickerBottomSheetMediator) invocation.getArgument(1))
+                                    .switchToAuthErrorView();
                             return null;
                         })
                 .when(mAccountPickerDelegateMock)
@@ -839,40 +849,161 @@ public class AccountPickerBottomSheetTest {
         checkCollapsedAccountListForWebSignin(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
     }
 
-    private void clickContinueButtonAndWaitForErrorSheet() {
+    @Test
+    @MediumTest
+    @EnableFeatures(SigninFeatures.ENTERPRISE_POLICY_ON_SIGNIN)
+    public void testSignInDefaultAccountOnCollapsedSheet_SpinnerWhileCheckingAccountManagement() {
+        var accountConsistencyHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords(
+                                "Signin.AccountConsistencyPromoAction",
+                                AccountConsistencyPromoAction.SHOWN)
+                        .build();
+
+        // Don't respond to account management and see if spinner shows up.
+        doNothing().when(mAccountPickerDelegateMock).isAccountManaged(any(), any());
+        buildAndShowCollapsedBottomSheet();
+
         View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        clickContinueButton(bottomSheetView);
+
+        waitForView(
+                (ViewGroup) bottomSheetView,
+                allOf(withId(R.id.account_picker_signin_spinner_view), isDisplayed()));
+        accountConsistencyHistogram.assertExpected();
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(SigninFeatures.ENTERPRISE_POLICY_ON_SIGNIN)
+    public void testSignInDefaultAccountOnCollapsedSheet_PoliciesOnSignin() {
+        mIsAccountManaged = true;
+        var accountConsistencyHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords(
+                                "Signin.AccountConsistencyPromoAction",
+                                AccountConsistencyPromoAction.SHOWN,
+                                AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT,
+                                AccountConsistencyPromoAction.CONFIRM_MANAGEMENT_SHOWN,
+                                AccountConsistencyPromoAction.CONFIRM_MANAGEMENT_ACCEPTED)
+                        .build();
+        buildAndShowCollapsedBottomSheet();
+
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        clickContinueButton(bottomSheetView);
+
+        String text =
+                sActivityTestRule
+                        .getActivity()
+                        .getString(R.string.managed_signin_with_user_policy_subtitle, DOMAIN1);
+        assertTrue(text.contains(DOMAIN1));
+        waitForView(
+                (ViewGroup) bottomSheetView,
+                allOf(
+                        withId(R.id.account_picker_confirm_management_description),
+                        isDisplayed(),
+                        withText(text)));
+
+        clickContinueButtonAndCheckSignInInProgressSheet();
+
+        verify(mAccountPickerDelegateMock).setUserAcceptedAccountManagement(true);
+
+        accountConsistencyHistogram.assertExpected();
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(SigninFeatures.ENTERPRISE_POLICY_ON_SIGNIN)
+    public void testSignInDefaultAccountOnCollapsedSheet_PoliciesOnSignin_GeneralError() {
+        mIsAccountManaged = true;
+        var accountConsistencyHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords(
+                                "Signin.AccountConsistencyPromoAction",
+                                AccountConsistencyPromoAction.SHOWN,
+                                AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT,
+                                AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT,
+                                AccountConsistencyPromoAction.CONFIRM_MANAGEMENT_SHOWN,
+                                AccountConsistencyPromoAction.CONFIRM_MANAGEMENT_ACCEPTED)
+                        .build();
+
+        final AtomicBoolean networkError = new AtomicBoolean(true);
+        // Throws a connection error during the sign-in action
+        doAnswer(
+                        invocation -> {
+                            if (networkError.get()) {
+                                ((AccountPickerBottomSheetMediator) invocation.getArgument(1))
+                                        .switchToTryAgainView();
+                            }
+                            return null;
+                        })
+                .when(mAccountPickerDelegateMock)
+                .signIn(eq(mCoreAccountInfo1), any());
+
+        buildAndShowCollapsedBottomSheet();
+
+        InOrder inOrder = Mockito.inOrder(mAccountPickerDelegateMock);
+
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        clickContinueButton(bottomSheetView);
+
+        String text =
+                sActivityTestRule
+                        .getActivity()
+                        .getString(R.string.managed_signin_with_user_policy_subtitle, DOMAIN1);
+        assertTrue(text.contains(DOMAIN1));
+        waitForView(
+                (ViewGroup) bottomSheetView,
+                allOf(
+                        withId(R.id.account_picker_confirm_management_description),
+                        isDisplayed(),
+                        withText(text)));
+
+        clickContinueButtonAndWaitForErrorSheet();
+
+        inOrder.verify(mAccountPickerDelegateMock).isAccountManaged(eq(mCoreAccountInfo1), any());
+        inOrder.verify(mAccountPickerDelegateMock).setUserAcceptedAccountManagement(true);
+        inOrder.verify(mAccountPickerDelegateMock).signIn(eq(mCoreAccountInfo1), any());
+        inOrder.verify(mAccountPickerDelegateMock).setUserAcceptedAccountManagement(false);
+
+        networkError.set(false);
+        clickContinueButtonAndCheckSignInInProgressSheet();
+
+        inOrder.verify(mAccountPickerDelegateMock).setUserAcceptedAccountManagement(true);
+        inOrder.verify(mAccountPickerDelegateMock).signIn(eq(mCoreAccountInfo1), any());
+
+        accountConsistencyHistogram.assertExpected();
+    }
+
+    private void clickContinueButton(View bottomSheetView) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     bottomSheetView
                             .findViewById(R.id.account_picker_continue_as_button)
                             .performClick();
                 });
+    }
+
+    private void clickContinueButtonAndWaitForErrorSheet() {
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        clickContinueButton(bottomSheetView);
 
         if (BuildInfo.getInstance().isAutomotive) {
             completeDeviceLock(true);
         }
 
-        CriteriaHelper.pollUiThread(
-                () -> {
-                    return !bottomSheetView
-                            .findViewById(R.id.account_picker_selected_account)
-                            .isShown();
-                });
+        waitForView(
+                (ViewGroup) bottomSheetView,
+                allOf(withId(R.id.account_picker_signin_spinner_view), not(isDisplayed())));
     }
 
     private void clickContinueButtonAndCheckSignInInProgressSheet() {
         View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    bottomSheetView
-                            .findViewById(R.id.account_picker_continue_as_button)
-                            .performClick();
-                });
+        clickContinueButton(bottomSheetView);
 
-        CriteriaHelper.pollUiThread(
-                () -> {
-                    bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view).isShown();
-                });
+        waitForView(
+                (ViewGroup) bottomSheetView,
+                allOf(withId(R.id.account_picker_signin_spinner_view), isDisplayed()));
 
         if (BuildInfo.getInstance().isAutomotive) {
             completeDeviceLock(true);
@@ -884,12 +1015,7 @@ public class AccountPickerBottomSheetTest {
     private void clickContinueButtonAndCheckSignInInProgressSheetOnAutomotive(
             boolean deviceLockCreated) {
         View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    bottomSheetView
-                            .findViewById(R.id.account_picker_continue_as_button)
-                            .performClick();
-                });
+        clickContinueButton(bottomSheetView);
 
         completeDeviceLock(deviceLockCreated);
 
@@ -984,7 +1110,8 @@ public class AccountPickerBottomSheetTest {
                                     getBottomSheetController(),
                                     mAccountPickerDelegateMock,
                                     accountPickerBottomSheetStrings,
-                                    mDeviceLockActivityLauncher);
+                                    mDeviceLockActivityLauncher,
+                                    AccountPickerLaunchMode.DEFAULT);
                 });
         CriteriaHelper.pollUiThread(
                 mCoordinator

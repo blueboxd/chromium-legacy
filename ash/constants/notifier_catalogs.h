@@ -191,7 +191,8 @@ enum class NotificationCatalogName {
   kNetworkCarrierUnlock = 176,
   kCoralFeature = 177,
   kInputDeviceSettings = 178,
-  kMaxValue = kInputDeviceSettings
+  kDocumentScanning = 179,
+  kMaxValue = kDocumentScanning
 };
 
 // A living catalog that registers system nudges.
@@ -276,7 +277,7 @@ enum class ToastCatalogName {
   kUndoCloseAll = 34,
   kEcheAppToast = 35,
   // [Deprecated] kDeprecateAssistantStylus = 36,
-  kEcheTrayCopyPasteNotImplemented = 37,
+  // [Deprecated] kEcheTrayCopyPasteNotImplemented = 37,
   kEcheTrayTabletModeNotSupported = 38,
   kNotificationCenterTrayNoNotifications = 39,
   // [Deprecated] kCopyToClipboardAction = 40,

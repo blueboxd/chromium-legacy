@@ -78,7 +78,6 @@ extern const char kContentPackDefaultFilteringBehavior[];
 extern const char kContentPackManualBehaviorHosts[];
 extern const char kContentPackManualBehaviorURLs[];
 extern const char kCookiesAlwaysAllowed[];
-extern const char kForceSafeSearch[];
 extern const char kGeolocationDisabled[];
 extern const char kSafeSitesEnabled[];
 extern const char kSigninAllowed[];
@@ -120,6 +119,9 @@ extern const char kSupervisedUserURLFilteringResultHistogramName[];
 
 // Histogram name to log top level URL filtering results with reason for filter.
 extern const char kSupervisedUserTopLevelURLFilteringResultHistogramName[];
+
+// The URL which the "Managed by your parent" UI links to.
+extern const char kManagedByParentUiMoreInfoUrl[];
 
 }  // namespace supervised_user
 

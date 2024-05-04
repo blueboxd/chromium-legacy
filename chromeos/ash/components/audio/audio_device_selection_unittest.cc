@@ -8,6 +8,7 @@
 #include "ash/constants/ash_features.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/ash/components/audio/audio_device_encoding.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -224,10 +225,15 @@ TEST_F(AudioDeviceSelectionTest, PlugUnplugHistogramMetrics) {
   uint16_t expected_user_override_system_switch_output_count = 0;
   uint16_t expected_user_override_system_not_switch_output_count = 0;
 
+  uint16_t num_of_input_devices = 0;
+  uint16_t num_of_output_devices = 0;
+
   // Plug in internal mic and speaker.
   // Do not record if there is no alternative device available.
   Plug(input_internal);
   Plug(output_internal);
+  num_of_input_devices++;
+  num_of_output_devices++;
 
   ExpectSystemDecisionHistogramCount(histogram_tester(),
                                      expected_system_switch_input_count,
@@ -239,12 +245,47 @@ TEST_F(AudioDeviceSelectionTest, PlugUnplugHistogramMetrics) {
   // Expect to record system has switched both input and output.
   Plug(input_USB);
   Plug(output_USB);
+  num_of_input_devices++;
+  num_of_output_devices++;
 
   ExpectSystemDecisionHistogramCount(histogram_tester(),
                                      ++expected_system_switch_input_count,
                                      expected_system_not_switch_input_count,
                                      ++expected_system_switch_output_count,
                                      expected_system_not_switch_output_count);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputAudioDeviceCount,
+      num_of_input_devices, /*bucket_count=*/1);
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchOutputAudioDeviceCount,
+      num_of_output_devices, /*bucket_count=*/1);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputAudioDeviceSet,
+      EncodeAudioDeviceSet(
+          {AudioDevice(input_internal), AudioDevice(input_USB)}),
+      /*bucket_count=*/1);
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchOutputAudioDeviceSet,
+      EncodeAudioDeviceSet(
+          {AudioDevice(output_internal), AudioDevice(output_USB)}),
+      /*bucket_count=*/1);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputBeforeAndAfterAudioDeviceSet,
+      EncodeBeforeAndAfterAudioDeviceSets(
+          /*device_set_before=*/{AudioDevice(output_internal)},
+          /*device_set_after=*/{AudioDevice(output_internal),
+                                AudioDevice(output_USB)}),
+      /*bucket_count=*/1);
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchOutputBeforeAndAfterAudioDeviceSet,
+      EncodeBeforeAndAfterAudioDeviceSets(
+          /*device_set_before=*/{AudioDevice(output_internal)},
+          /*device_set_after=*/{AudioDevice(output_internal),
+                                AudioDevice(output_USB)}),
+      /*bucket_count=*/1);
 
   // User switches input device immediately.
   // Expect to record user overrides system decision of switching input
@@ -289,12 +330,33 @@ TEST_F(AudioDeviceSelectionTest, PlugUnplugHistogramMetrics) {
   // Plug in a bluetooth nb mic with lower priority than current active one.
   // Expect to record system does not switch input.
   Plug(input_bluetooth_nb);
+  num_of_input_devices++;
 
   ExpectSystemDecisionHistogramCount(histogram_tester(),
                                      expected_system_switch_input_count,
                                      ++expected_system_not_switch_input_count,
                                      expected_system_switch_output_count,
                                      expected_system_not_switch_output_count);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemNotSwitchInputAudioDeviceCount,
+      num_of_input_devices, /*bucket_count=*/1);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemNotSwitchInputAudioDeviceSet,
+      EncodeAudioDeviceSet({AudioDevice(input_internal), AudioDevice(input_USB),
+                            AudioDevice(input_bluetooth_nb)}),
+      /*bucket_count=*/1);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemNotSwitchInputBeforeAndAfterAudioDeviceSet,
+      EncodeBeforeAndAfterAudioDeviceSets(
+          /*device_set_before=*/{AudioDevice(output_internal),
+                                 AudioDevice(output_USB)},
+          /*device_set_after=*/{AudioDevice(output_internal),
+                                AudioDevice(output_USB),
+                                AudioDevice(input_bluetooth_nb)}),
+      /*bucket_count=*/1);
 
   // User switches to USB input after some time.
   // Expect to record user overrides system decision of not switching input
@@ -314,12 +376,33 @@ TEST_F(AudioDeviceSelectionTest, PlugUnplugHistogramMetrics) {
   // User unplugs current active device USB input.
   // Expect to record system has switched input.
   Unplug(input_USB);
+  num_of_input_devices--;
 
   ExpectSystemDecisionHistogramCount(histogram_tester(),
                                      ++expected_system_switch_input_count,
                                      expected_system_not_switch_input_count,
                                      expected_system_switch_output_count,
                                      expected_system_not_switch_output_count);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputAudioDeviceCount,
+      num_of_input_devices, /*bucket_count=*/2);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputAudioDeviceSet,
+      EncodeAudioDeviceSet(
+          {AudioDevice(input_internal), AudioDevice(input_bluetooth_nb)}),
+      /*bucket_count=*/1);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputBeforeAndAfterAudioDeviceSet,
+      EncodeBeforeAndAfterAudioDeviceSets(
+          /*device_set_before=*/{AudioDevice(input_internal),
+                                 AudioDevice(input_bluetooth_nb),
+                                 AudioDevice(input_USB)},
+          /*device_set_after=*/{AudioDevice(input_internal),
+                                AudioDevice(input_bluetooth_nb)}),
+      /*bucket_count=*/1);
 
   // User switches to input_bluetooth_nb after some time.
   // Expect to record user overrides system decision of switching input device.
@@ -338,6 +421,7 @@ TEST_F(AudioDeviceSelectionTest, PlugUnplugHistogramMetrics) {
   // User unplugs active device input_bluetooth_nb.
   // Do not record if there is no alternative device available.
   Unplug(input_bluetooth_nb);
+  num_of_input_devices--;
 
   ExpectSystemDecisionHistogramCount(histogram_tester(),
                                      expected_system_switch_input_count,
@@ -357,15 +441,53 @@ TEST_F(AudioDeviceSelectionTest, SystemBootsHistogramMetrics) {
   uint16_t expected_system_switch_output_count = 0;
   uint16_t expected_system_not_switch_output_count = 0;
 
+  uint16_t num_of_input_devices = 0;
+  uint16_t num_of_output_devices = 0;
+
   // System boots with multiple audio devices.
   // Expect to record system has switched both input and output.
   SystemBootsWith({input_internal, input_USB, output_internal, output_USB});
+  num_of_input_devices += 2;
+  num_of_output_devices += 2;
 
   ExpectSystemDecisionHistogramCount(histogram_tester(),
                                      ++expected_system_switch_input_count,
                                      expected_system_not_switch_input_count,
                                      ++expected_system_switch_output_count,
                                      expected_system_not_switch_output_count);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputAudioDeviceCount,
+      num_of_input_devices, /*bucket_count=*/1);
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchOutputAudioDeviceCount,
+      num_of_output_devices, /*bucket_count=*/1);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputAudioDeviceSet,
+      EncodeAudioDeviceSet(
+          {AudioDevice(input_internal), AudioDevice(input_USB)}),
+      /*bucket_count=*/1);
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchOutputAudioDeviceSet,
+      EncodeAudioDeviceSet(
+          {AudioDevice(input_internal), AudioDevice(input_USB)}),
+      /*bucket_count=*/1);
+
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchInputBeforeAndAfterAudioDeviceSet,
+      EncodeBeforeAndAfterAudioDeviceSets(
+          /*device_set_before=*/{},
+          /*device_set_after=*/{AudioDevice(input_internal),
+                                AudioDevice(input_USB)}),
+      /*bucket_count=*/1);
+  histogram_tester().ExpectBucketCount(
+      CrasAudioHandler::kSystemSwitchOutputBeforeAndAfterAudioDeviceSet,
+      EncodeBeforeAndAfterAudioDeviceSets(
+          /*device_set_before=*/{},
+          /*device_set_after=*/{AudioDevice(input_internal),
+                                AudioDevice(input_USB)}),
+      /*bucket_count=*/1);
 }
 
 TEST_F(AudioDeviceSelectionTest, DevicePrefEviction) {

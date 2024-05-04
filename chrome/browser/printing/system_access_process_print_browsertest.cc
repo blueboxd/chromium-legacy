@@ -165,7 +165,15 @@ const char* GetPrintBackendString(PrintBackendFeatureVariation variation) {
 
 enum class PlatformPrintApiVariation {
 #if BUILDFLAG(IS_WIN)
-  kGdi,
+  // Windows print drivers can have a language type which alters how the print
+  // data is processed.  While much of the GDI printing pipeline is not
+  // concerned with the language type differences, certain portions of the
+  // printing pipeline are impacted by it.  Most tests only need test against
+  // one GDI language type.
+  kGdiEmf,
+  kGdiPostScriptLevel2,
+  kGdiPostScriptLevel3,
+  kGdiTextOnly,
   kXps,
 #else
   kCups,
@@ -175,8 +183,14 @@ enum class PlatformPrintApiVariation {
 const char* GetPlatformPrintApiString(PlatformPrintApiVariation variation) {
   switch (variation) {
 #if BUILDFLAG(IS_WIN)
-    case PlatformPrintApiVariation::kGdi:
-      return "Gdi";
+    case PlatformPrintApiVariation::kGdiEmf:
+      return "GdiEmf";
+    case PlatformPrintApiVariation::kGdiPostScriptLevel2:
+      return "GdiPostScriptLevel2";
+    case PlatformPrintApiVariation::kGdiPostScriptLevel3:
+      return "GdiPostScriptLevel3";
+    case PlatformPrintApiVariation::kGdiTextOnly:
+      return "GdiTextOnly";
     case PlatformPrintApiVariation::kXps:
       return "Xps";
 #else
@@ -191,11 +205,28 @@ const char* GetPlatformPrintApiTestSuffix(
   return GetPlatformPrintApiString(info.param);
 }
 
-const PlatformPrintApiVariation kSandboxedServicePlatformPrintApiVariations[] =
-    {
+// Tests using these variations are not concerned with the different language
+// types, where one Windows GDI type is sufficient.
+constexpr PlatformPrintApiVariation
+    kSandboxedServicePlatformPrintApiVariations[] = {
 #if BUILDFLAG(IS_WIN)
         // TODO(crbug.com/1008222):  Include XPS variation.
-        PlatformPrintApiVariation::kGdi,
+        PlatformPrintApiVariation::kGdiEmf,
+#else
+        PlatformPrintApiVariation::kCups,
+#endif
+};
+
+// Tests using these variations are concerned with all the different language
+// types on Windows.
+constexpr PlatformPrintApiVariation
+    kSandboxedServicePlatformPrintLanguageApiVariations[] = {
+#if BUILDFLAG(IS_WIN)
+        // TODO(crbug.com/1008222):  Include XPS variation.
+        PlatformPrintApiVariation::kGdiEmf,
+        PlatformPrintApiVariation::kGdiPostScriptLevel2,
+        PlatformPrintApiVariation::kGdiPostScriptLevel3,
+        PlatformPrintApiVariation::kGdiTextOnly,
 #else
         PlatformPrintApiVariation::kCups,
 #endif
@@ -232,10 +263,11 @@ GeneratePrintBackendAndPlatformPrintApiVariations(
   for (PrintBackendFeatureVariation print_backend_variation :
        print_backend_variations) {
 #if BUILDFLAG(IS_WIN)
+    // Only need one GDI variation, not interested in different language types.
     // TODO(crbug.com/1008222):  Include XPS variation, only when the
     // `print_backend_variation` is not `kInBrowserProcess`.
     variations.emplace_back(print_backend_variation,
-                            PlatformPrintApiVariation::kGdi);
+                            PlatformPrintApiVariation::kGdiEmf);
 #else
     variations.emplace_back(print_backend_variation,
                             PlatformPrintApiVariation::kCups);
@@ -1277,6 +1309,37 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn(kSandboxedServicePlatformPrintApiVariations),
     GetPlatformPrintApiTestSuffix);
 
+class SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest
+    : public SystemAccessProcessSandboxedServicePrintBrowserTest {
+ public:
+  SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest() = default;
+  ~SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest() override =
+      default;
+
+#if BUILDFLAG(IS_WIN)
+  mojom::PrinterLanguageType UseLanguageType() {
+    switch (GetParam()) {
+      case PlatformPrintApiVariation::kGdiEmf:
+        return mojom::PrinterLanguageType::kNone;
+      case PlatformPrintApiVariation::kGdiPostScriptLevel2:
+        return mojom::PrinterLanguageType::kPostscriptLevel2;
+      case PlatformPrintApiVariation::kGdiPostScriptLevel3:
+        return mojom::PrinterLanguageType::kPostscriptLevel3;
+      case PlatformPrintApiVariation::kGdiTextOnly:
+        return mojom::PrinterLanguageType::kTextOnly;
+      case PlatformPrintApiVariation::kXps:
+        return mojom::PrinterLanguageType::kXps;
+    }
+  }
+#endif
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest,
+    testing::ValuesIn(kSandboxedServicePlatformPrintLanguageApiVariations),
+    GetPlatformPrintApiTestSuffix);
+
 class SystemAccessProcessServicePrintBrowserTest
     : public SystemAccessProcessPrintBrowserTestBase,
       public testing::WithParamInterface<
@@ -1479,10 +1542,14 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
   EXPECT_EQ(error_dialog_shown_count(), 0u);
 }
 
-IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
-                       StartPrinting) {
+IN_PROC_BROWSER_TEST_P(
+    SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest,
+    StartPrinting) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
+#if BUILDFLAG(IS_WIN)
+  SetPrinterLanguageTypeForSubsequentContexts(UseLanguageType());
+#endif
   constexpr int kJobId = 1;
   SetNewDocumentJobId(kJobId);
 

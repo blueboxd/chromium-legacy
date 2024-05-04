@@ -54,14 +54,14 @@ ParseAggregationCoordinator(const base::Value* value) {
   const std::string* str = value->GetIfString();
   if (!str) {
     return base::unexpected(
-        TriggerRegistrationError::kAggregationCoordinatorWrongType);
+        TriggerRegistrationError::kAggregationCoordinatorValueInvalid);
   }
 
   std::optional<url::Origin> aggregation_coordinator =
       aggregation_service::ParseAggregationCoordinator(*str);
   if (!aggregation_coordinator.has_value()) {
     return base::unexpected(
-        TriggerRegistrationError::kAggregationCoordinatorUnknownValue);
+        TriggerRegistrationError::kAggregationCoordinatorValueInvalid);
   }
   auto aggregation_coordinator_origin =
       SuitableOrigin::Create(*aggregation_coordinator);
@@ -113,12 +113,12 @@ base::expected<std::vector<T>, TriggerRegistrationError> ParseList(
 }  // namespace
 
 void RecordTriggerRegistrationError(TriggerRegistrationError error) {
-  static_assert(
-      TriggerRegistrationError::kMaxValue ==
-          TriggerRegistrationError::
-              kTriggerContextIdInvalidSourceRegistrationTimeConfig,
-      "Bump version of Conversions.TriggerRegistrationError9 histogram.");
-  base::UmaHistogramEnumeration("Conversions.TriggerRegistrationError9", error);
+  static_assert(TriggerRegistrationError::kMaxValue ==
+                    TriggerRegistrationError::
+                        kTriggerContextIdInvalidSourceRegistrationTimeConfig,
+                "Update ConversionTriggerRegistrationError enum.");
+  base::UmaHistogramEnumeration("Conversions.TriggerRegistrationError10",
+                                error);
 }
 
 // static
@@ -217,9 +217,7 @@ base::Value::Dict TriggerRegistration::ToJson() const {
   SerializeListIfNotEmpty(dict, kAggregatableTriggerData,
                           aggregatable_trigger_data);
 
-  if (!aggregatable_values.values().empty()) {
-    dict.Set(kAggregatableValues, aggregatable_values.ToJson());
-  }
+  SerializeListIfNotEmpty(dict, kAggregatableValues, aggregatable_values);
 
   SerializeDebugKey(dict, debug_key);
 

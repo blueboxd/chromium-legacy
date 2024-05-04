@@ -137,6 +137,18 @@ interface ServerSocket {
   Disconnect() => ();
 };
 
+// Representation of a BLE GATT service.
+// TODO(b/311430390): Implement additional methods that will create and update a
+// GATT characteristic, and delete the GATT service.
+interface GattService {
+};
+
+// Listener on `GattService` events.
+// TODO(b/311430390): Implement additional methods that communicate read/write
+// requests on GATT characteristics.
+interface GattServiceObserver {
+};
+
 // Handles requests to either query Bluetooth adapter capabilities or state, or
 // find or connect to remote devices. Backed by //device/bluetooth.
 // Note: Methods which are declared [Sync] are for use by
@@ -229,6 +241,14 @@ interface Adapter {
   [Sync]
   CreateRfcommServiceInsecurely(string service_name, UUID service_uuid)
       => (pending_remote<ServerSocket>? server_socket);
+
+  // Creates a local GATT service corresponding to |service_id|, and
+  // communicates events to the |observer|. This call is only expected to be
+  // used to create a local GATT service that does not exist at |service_id|.
+  [Sync]
+  CreateLocalGattService(UUID service_id,
+       pending_remote<GattServiceObserver> observer)
+      => (pending_remote<GattService> gatt_service);
 };
 
 // Listener on Bluetooth events. Register as an observer via AddObserver().

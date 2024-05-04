@@ -354,9 +354,9 @@ bool CanComputeBlockSizeWithoutLayout(
     return true;
   }
   const auto& style = node.Style();
-  if (style.LogicalHeight().IsContentOrIntrinsic() ||
-      style.LogicalMinHeight().IsContentOrIntrinsic() ||
-      style.LogicalMaxHeight().IsContentOrIntrinsic()) {
+  if (style.LogicalHeight().HasContentOrIntrinsic() ||
+      style.LogicalMinHeight().HasContentOrIntrinsic() ||
+      style.LogicalMaxHeight().HasContentOrIntrinsic()) {
     return false;
   }
   if (style.LogicalHeight().IsAuto()) {
@@ -410,43 +410,32 @@ LogicalOofInsets ComputeOutOfFlowInsets(
     }
   }
 
-  using AnchorScope = Length::AnchorScope;
-
   // Compute in physical, because anchors may be in different `writing-mode` or
   // `direction`.
   const PhysicalSize available_size = ToPhysicalSize(
       available_logical_size, self_writing_direction.GetWritingMode());
   std::optional<LayoutUnit> left;
-  if (const Length& left_length = style.UsedLeft(); !left_length.IsAuto()) {
-    AnchorScope scope(AnchorScope::Mode::kLeft, anchor_evaluator);
-    left = MinimumValueForLength(left_length, available_size.width,
-                                 {.anchor_evaluator = anchor_evaluator});
+  if (const Length& left_length = style.Left(); !left_length.IsAuto()) {
+    left = MinimumValueForLength(left_length, available_size.width);
   } else if (force_x_insets_to_zero) {
     left = LayoutUnit();
   }
   std::optional<LayoutUnit> right;
-  if (const Length& right_length = style.UsedRight(); !right_length.IsAuto()) {
-    AnchorScope scope(AnchorScope::Mode::kRight, anchor_evaluator);
-    right = MinimumValueForLength(right_length, available_size.width,
-                                  {.anchor_evaluator = anchor_evaluator});
+  if (const Length& right_length = style.Right(); !right_length.IsAuto()) {
+    right = MinimumValueForLength(right_length, available_size.width);
   } else if (force_x_insets_to_zero) {
     right = LayoutUnit();
   }
 
   std::optional<LayoutUnit> top;
-  if (const Length& top_length = style.UsedTop(); !top_length.IsAuto()) {
-    AnchorScope scope(AnchorScope::Mode::kTop, anchor_evaluator);
-    top = MinimumValueForLength(top_length, available_size.height,
-                                {.anchor_evaluator = anchor_evaluator});
+  if (const Length& top_length = style.Top(); !top_length.IsAuto()) {
+    top = MinimumValueForLength(top_length, available_size.height);
   } else if (force_y_insets_to_zero) {
     top = LayoutUnit();
   }
   std::optional<LayoutUnit> bottom;
-  if (const Length& bottom_length = style.UsedBottom();
-      !bottom_length.IsAuto()) {
-    AnchorScope scope(AnchorScope::Mode::kBottom, anchor_evaluator);
-    bottom = MinimumValueForLength(bottom_length, available_size.height,
-                                   {.anchor_evaluator = anchor_evaluator});
+  if (const Length& bottom_length = style.Bottom(); !bottom_length.IsAuto()) {
+    bottom = MinimumValueForLength(bottom_length, available_size.height);
   } else if (force_y_insets_to_zero) {
     bottom = LayoutUnit();
   }
@@ -598,7 +587,6 @@ bool ComputeOofInlineDimensions(
     const BoxStrut& border_padding,
     const std::optional<LogicalSize>& replaced_size,
     WritingDirectionMode container_writing_direction,
-    const AnchorEvaluatorImpl* anchor_evaluator,
     LogicalOofDimensions* dimensions) {
   DCHECK(dimensions);
   DCHECK_GE(imcb.InlineSize(), LayoutUnit());
@@ -625,10 +613,10 @@ bool ComputeOofInlineDimensions(
 
     // Compute our block-size if we haven't already.
     if (dimensions->size.block_size == kIndefiniteSize) {
-      ComputeOofBlockDimensions(
-          node, style, space, imcb, alignment, border_padding,
-          /* replaced_size */ std::nullopt, container_writing_direction,
-          anchor_evaluator, dimensions);
+      ComputeOofBlockDimensions(node, style, space, imcb, alignment,
+                                border_padding,
+                                /* replaced_size */ std::nullopt,
+                                container_writing_direction, dimensions);
     }
 
     // Create a new space, setting the fixed block-size.
@@ -693,12 +681,12 @@ bool ComputeOofInlineDimensions(
       }
     }
 
-    LayoutUnit main_inline_size = ResolveMainInlineLength(
-        space, style, border_padding, MinMaxSizesFunc, main_inline_length,
-        imcb.InlineSize(), anchor_evaluator);
-    MinMaxSizes min_max_inline_sizes = ComputeMinMaxInlineSizes(
-        space, node, border_padding, MinMaxSizesFunc, &min_inline_length,
-        imcb.InlineSize(), anchor_evaluator);
+    LayoutUnit main_inline_size =
+        ResolveMainInlineLength(space, style, border_padding, MinMaxSizesFunc,
+                                main_inline_length, imcb.InlineSize());
+    MinMaxSizes min_max_inline_sizes =
+        ComputeMinMaxInlineSizes(space, node, border_padding, MinMaxSizesFunc,
+                                 &min_inline_length, imcb.InlineSize());
 
     inline_size = min_max_inline_sizes.ClampSizeToMinAndMax(main_inline_size);
   }
@@ -741,7 +729,6 @@ const LayoutResult* ComputeOofBlockDimensions(
     const BoxStrut& border_padding,
     const std::optional<LogicalSize>& replaced_size,
     WritingDirectionMode container_writing_direction,
-    const AnchorEvaluatorImpl* anchor_evaluator,
     LogicalOofDimensions* dimensions) {
   DCHECK(dimensions);
   DCHECK_GE(imcb.BlockSize(), LayoutUnit());
@@ -749,8 +736,8 @@ const LayoutResult* ComputeOofBlockDimensions(
   const auto alignment_position = alignment.block_alignment.GetPosition();
   const LayoutResult* result = nullptr;
 
-  MinMaxSizes min_max_block_sizes = ComputeMinMaxBlockSizes(
-      space, style, border_padding, imcb.BlockSize(), anchor_evaluator);
+  MinMaxSizes min_max_block_sizes =
+      ComputeMinMaxBlockSizes(space, style, border_padding, imcb.BlockSize());
 
   auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
     DCHECK(!node.IsReplaced());
@@ -826,16 +813,18 @@ const LayoutResult* ComputeOofBlockDimensions(
       }
     }
 
-    LayoutUnit main_block_size = ResolveMainBlockLength(
-        space, style, border_padding, main_block_length, IntrinsicBlockSizeFunc,
-        imcb.BlockSize(), anchor_evaluator);
+    LayoutUnit main_block_size =
+        ResolveMainBlockLength(space, style, border_padding, main_block_length,
+                               IntrinsicBlockSizeFunc, imcb.BlockSize());
 
     // Manually resolve any intrinsic/content min/max block-sizes.
     // TODO(crbug.com/1135207): |ComputeMinMaxBlockSizes()| should handle this.
-    if (style.LogicalMinHeight().IsContentOrIntrinsic())
+    if (style.LogicalMinHeight().HasContentOrIntrinsic()) {
       min_max_block_sizes.min_size = IntrinsicBlockSizeFunc();
-    if (style.LogicalMaxHeight().IsContentOrIntrinsic())
+    }
+    if (style.LogicalMaxHeight().HasContentOrIntrinsic()) {
       min_max_block_sizes.max_size = IntrinsicBlockSizeFunc();
+    }
     min_max_block_sizes.max_size =
         std::max(min_max_block_sizes.max_size, min_max_block_sizes.min_size);
 

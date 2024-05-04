@@ -24,6 +24,7 @@ namespace ash {
 
 class PillButton;
 class PineContextMenuModel;
+class PineItemsContainerView;
 
 class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   METADATA_HEADER(PineContentsView, views::BoxLayoutView)
@@ -36,9 +37,16 @@ class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
 
   static std::unique_ptr<views::Widget> Create(aura::Window* root);
 
-  // TODO(sammiequon): Move this to a test api.
+  // TODO(b/327499182): Move test functions to a Pine test API.
   const PillButton* restore_button_for_testing() const {
     return restore_button_for_testing_;
+  }
+  const PillButton* cancel_button_for_testing() const {
+    return cancel_button_for_testing_;
+  }
+
+  const PineItemsContainerView* container_view_for_testing() const {
+    return container_view_;
   }
 
  private:
@@ -63,6 +71,9 @@ class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   raw_ptr<PillButton> restore_button_for_testing_ = nullptr;
+  raw_ptr<PillButton> cancel_button_for_testing_ = nullptr;
+
+  raw_ptr<PineItemsContainerView> container_view_ = nullptr;
 
   base::WeakPtrFactory<PineContentsView> weak_ptr_factory_{this};
 };

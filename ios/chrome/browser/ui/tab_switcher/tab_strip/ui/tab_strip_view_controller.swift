@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 import UIKit
+import ios_chrome_browser_shared_ui_util_util_swift
 
 /// View Controller displaying the TabStrip.
 @objcMembers
-class TabStripViewController: UIViewController, TabStripCellDelegate,
-  TabStripConsumer, TabStripNewTabButtonDelegate
+class TabStripViewController: UIViewController, TabStripTabCellDelegate,
+  TabStripConsumer, TabStripCommands, TabStripNewTabButtonDelegate
 {
 
   // The enum used by the data source to manage the sections.
@@ -20,7 +21,8 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
   private let collectionView: UICollectionView
   // The DataSource for this collection view.
   private var diffableDataSource: UICollectionViewDiffableDataSource<Section, TabSwitcherItem>?
-  private var tabCellRegistration: UICollectionView.CellRegistration<TabStripCell, TabSwitcherItem>?
+  private var tabCellRegistration:
+    UICollectionView.CellRegistration<TabStripTabCell, TabSwitcherItem>?
 
   // The New tab button.
   private let newTabButton: TabStripNewTabButton = TabStripNewTabButton()
@@ -35,21 +37,47 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
   // is long pressed which does not always result in a drag action.
   private var draggedItem: TabSwitcherItem?
 
+  // The item currently selected in the tab strip.
+  // The collection view appears to sometimes forget what item is selected,
+  // so it is better to store this information here rather than directly using
+  // `collectionView.selectItem:` and `collectionView.deselectItem:`.
+  // `self.ensureSelectedItemIsSelected()` is used to ensure the value of
+  // `collectionView.indexPathsForSelectedItems` remains consistent with `selectedItem`.
+  private var selectedItem: TabSwitcherItem? {
+    didSet { self.ensureSelectedItemIsSelected() }
+  }
+
   /// `true` if the new tab button has been tapped. Used to scroll to the newly
   /// added item. It's automatically set to `false` after the scroll.
   private var newTabOpened: Bool = false
 
-  // Handles model updates.
-  public weak var mutator: TabStripMutator?
-  // Tab strip  delegate.
-  public weak var delegate: TabStripViewControllerDelegate?
-  // Handles drag and drop interactions.
-  public weak var dragDropHandler: TabCollectionDragDropHandler?
+  /// `true` if the dragged tab moved to a new index.
+  private var dragEndAtNewIndex: Bool = false
+
+  /// `true` if a drop animation is in progress.
+  private var dropAnimationInProgress: Bool = false
 
   /// Targeted scroll offset, used on iOS 16 only.
   /// On iOS 16, the scroll animation after opening a new tab is delayed.
   /// This variable ensures that the most recent scroll event is processed.
   private var targetedScrollOffsetiOS16: CGFloat = 0
+
+  /// `true` if the user is in incognito.
+  public var isIncognito: Bool = false
+
+  /// Handles model updates.
+  public weak var mutator: TabStripMutator?
+  /// Tab strip delegate.
+  public weak var delegate: TabStripViewControllerDelegate?
+  /// Handles drag and drop interactions.
+  public weak var dragDropHandler: TabCollectionDragDropHandler?
+
+  /// The LayoutGuideCenter.
+  @objc public var layoutGuideCenter: LayoutGuideCenter? {
+    didSet {
+      layoutGuideCenter?.reference(view: newTabButton.layoutGuideView, under: kNewTabButtonGuide)
+    }
+  }
 
   init() {
     layout = TabStripLayout()
@@ -74,6 +102,7 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
     layout.dataSource = diffableDataSource
     layout.leftStaticSeparator = leftStaticSeparator
     layout.rightStaticSeparator = rightStaticSeparator
+    layout.newTabButton = newTabButton
   }
 
   required init?(coder: NSCoder) {
@@ -97,35 +126,53 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
     view.addSubview(rightStaticSeparator)
 
     newTabButton.delegate = self
+    newTabButton.isIncognito = isIncognito
     view.addSubview(newTabButton)
 
-    NSLayoutConstraint.activate([
-      /// `collectionView` constraints.
-      collectionView.leadingAnchor.constraint(
-        equalTo: view.leadingAnchor),
-      collectionView.topAnchor.constraint(
-        equalTo: view.topAnchor),
-      collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+    if TabStripFeaturesUtils.isModernTabStripNewTabButtonDynamic() {
+      NSLayoutConstraint.activate([
+        collectionView.trailingAnchor.constraint(
+          equalTo: view.trailingAnchor, constant: -TabStripConstants.NewTabButton.width),
+        newTabButton.leadingAnchor.constraint(
+          greaterThanOrEqualTo: view.leadingAnchor),
+        newTabButton.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor),
+      ])
+    } else {
+      NSLayoutConstraint.activate([
+        newTabButton.leadingAnchor.constraint(
+          equalTo: collectionView.trailingAnchor),
+        newTabButton.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      ])
+    }
 
-      /// `newTabButton` constraints.
-      newTabButton.leadingAnchor.constraint(
-        equalTo: collectionView.trailingAnchor),
-      newTabButton.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      newTabButton.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-      newTabButton.topAnchor.constraint(equalTo: view.topAnchor),
-      newTabButton.widthAnchor.constraint(equalToConstant: TabStripConstants.NewTabButton.width),
+    NSLayoutConstraint.activate(
+      [
+        /// `collectionView` constraints.
+        collectionView.leadingAnchor.constraint(
+          equalTo: view.leadingAnchor),
+        collectionView.topAnchor.constraint(
+          equalTo: view.topAnchor),
+        collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
-      /// `leftStaticSeparator` constraints.
-      leftStaticSeparator.leftAnchor.constraint(equalTo: collectionView.leftAnchor),
-      leftStaticSeparator.bottomAnchor.constraint(
-        equalTo: collectionView.bottomAnchor,
-        constant: -TabStripConstants.StaticSeparator.bottomInset),
-      /// `rightStaticSeparator` constraints.
-      rightStaticSeparator.rightAnchor.constraint(equalTo: collectionView.rightAnchor),
-      rightStaticSeparator.bottomAnchor.constraint(
-        equalTo: collectionView.bottomAnchor,
-        constant: -TabStripConstants.StaticSeparator.bottomInset),
-    ])
+        /// `newTabButton` constraints.
+        newTabButton.leadingAnchor.constraint(
+          greaterThanOrEqualTo: view.leadingAnchor),
+        newTabButton.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor),
+        newTabButton.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        newTabButton.topAnchor.constraint(equalTo: view.topAnchor),
+        newTabButton.widthAnchor.constraint(equalToConstant: TabStripConstants.NewTabButton.width),
+
+        /// `leftStaticSeparator` constraints.
+        leftStaticSeparator.leftAnchor.constraint(equalTo: collectionView.leftAnchor),
+        leftStaticSeparator.bottomAnchor.constraint(
+          equalTo: collectionView.bottomAnchor,
+          constant: -TabStripConstants.StaticSeparator.bottomInset),
+        /// `rightStaticSeparator` constraints.
+        rightStaticSeparator.rightAnchor.constraint(equalTo: collectionView.rightAnchor),
+        rightStaticSeparator.bottomAnchor.constraint(
+          equalTo: collectionView.bottomAnchor,
+          constant: -TabStripConstants.StaticSeparator.bottomInset),
+      ])
   }
 
   override func viewWillTransition(
@@ -141,6 +188,11 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
     }
   }
 
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    self.ensureSelectedItemIsSelected()
+  }
+
   // MARK: - TabStripConsumer
 
   func populate(items: [TabSwitcherItem]?, selectedItem: TabSwitcherItem?) {
@@ -151,24 +203,19 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
     snapshot.appendSections([.tabs])
     snapshot.appendItems(items, toSection: .tabs)
 
-    if #unavailable(iOS 17.0) {
+    // TODO(crbug.com/325415449): Update this when #unavailable is rocognized by
+    // the formatter.
+    if #available(iOS 17.0, *) {
+    } else {
       layout.cellAnimatediOS16 = true
     }
 
-    if let selectedItem = selectedItem,
-      let diffableDataSource = diffableDataSource,
-      diffableDataSource.indexPath(for: selectedItem) != nil
-    {
-      // If the newly selected item is already in the data source, select it first.
-      selectItem(selectedItem)
-      applySnapshot(
-        diffableDataSource: diffableDataSource, snapshot: snapshot, animatingDifferences: true)
-    } else {
-      // If the newly selected item is a new item, select it after applying snapshot.
-      applySnapshot(
-        diffableDataSource: diffableDataSource, snapshot: snapshot, animatingDifferences: true)
-      selectItem(selectedItem)
-    }
+    // To make the animation smoother, try to select the item if it's already
+    // present in the collection view.
+    selectItem(selectedItem)
+    applySnapshot(
+      diffableDataSource: diffableDataSource, snapshot: snapshot, animatingDifferences: true)
+    selectItem(selectedItem)
 
     /// Scroll to the end of the collection view if a new tab has been opened.
     if newTabOpened {
@@ -201,22 +248,7 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
   }
 
   func selectItem(_ item: TabSwitcherItem?) {
-    layout.selectedIndexPath = nil
-    if let indexPaths = collectionView.indexPathsForSelectedItems {
-      for indexPath in indexPaths {
-        collectionView.deselectItem(at: indexPath, animated: false)
-      }
-    }
-    guard
-      let item = item, let diffableDataSource = diffableDataSource,
-      let indexPath = diffableDataSource.indexPath(for: item)
-    else { return }
-    layout.selectedIndexPath = indexPath
-
-    collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
-
-    /// Invalidate the layout to correctly recalculate the frame of the `selected` cell.
-    layout.invalidateLayout()
+    self.selectedItem = item
   }
 
   func reloadItem(_ item: TabSwitcherItem?) {
@@ -243,9 +275,15 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
       diffableDataSource: diffableDataSource, snapshot: snapshot, animatingDifferences: false)
   }
 
-  // MARK: - TabStripCellDelegate
+  // MARK: - TabStripCommands
 
-  func closeButtonTapped(for cell: TabStripCell?) {
+  func setNewTabButtonOnTabStripIPHHighlighted(_ IPHHighlighted: Bool) {
+    newTabButton.IPHHighlighted = IPHHighlighted
+  }
+
+  // MARK: - TabStripTabCellDelegate
+
+  func closeButtonTapped(for cell: TabStripTabCell?) {
     guard let cell = cell, let diffableDataSource = diffableDataSource else {
       return
     }
@@ -264,6 +302,7 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
     willDecelerate decelerate: Bool
   ) {
     layout.cellAnimatediOS16 = false
+    UserMetricsUtils.recordAction("MobileTabStripScrollDidEnd")
   }
 
   // MARK: - Private
@@ -283,7 +322,7 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
 
   /// Creates the registrations of the different cells used in the collection view.
   private func createRegistrations() {
-    tabCellRegistration = UICollectionView.CellRegistration<TabStripCell, TabSwitcherItem> {
+    tabCellRegistration = UICollectionView.CellRegistration<TabStripTabCell, TabSwitcherItem> {
       (cell, indexPath, item) in
       cell.setTitle(item.title)
       cell.loading = item.showsActivity
@@ -306,10 +345,10 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
       }
     }
 
-    // UICollectionViewDropPlaceholder uses a TabStripCell and needs the class to be
+    // UICollectionViewDropPlaceholder uses a TabStripTabCell and needs the class to be
     // registered.
     collectionView.register(
-      TabStripCell.self,
+      TabStripTabCell.self,
       forCellWithReuseIdentifier: TabStripConstants.CollectionView.tabStripCellReuseIdentifier)
   }
 
@@ -367,7 +406,7 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
     }
   }
 
-  // Returns the accessibility identifier to set on a TabStripCell when
+  // Returns the accessibility identifier to set on a TabStripTabCell when
   // positioned at the given index.
   func tabTripCellAccessibilityIdentifier(index: Int) -> String {
     return String(
@@ -376,7 +415,10 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
 
   /// Scrolls the collection view to the given horizontal `offset`.
   func scrollToContentOffset(_ offset: CGFloat) {
-    if #unavailable(iOS 17.0) {
+    // TODO(crbug.com/325415449): Update this when #unavailable is rocognized by
+    // the formatter.
+    if #available(iOS 17.0, *) {
+    } else {
       if offset != targetedScrollOffsetiOS16 { return }
     }
     self.collectionView.setContentOffset(
@@ -384,9 +426,43 @@ class TabStripViewController: UIViewController, TabStripCellDelegate,
       animated: true)
   }
 
+  /// Ensures `collectionView.indexPathsForSelectedItems` is consistent with
+  /// `self.selectedItem`.
+  func ensureSelectedItemIsSelected() {
+    guard let diffableDataSource = diffableDataSource else {
+      return
+    }
+
+    let expectedIndexPathForSelectedItem =
+      self.selectedItem.map { diffableDataSource.indexPath(for: $0) }
+    let observedIndexPathForSelectedItem = collectionView.indexPathsForSelectedItems?.first
+
+    // If the observed selected indexPath doesn't match the expected selected
+    // indexPath, update the observed selected item.
+    if expectedIndexPathForSelectedItem != observedIndexPathForSelectedItem {
+      // Clear the selection.
+      if let indexPaths = collectionView.indexPathsForSelectedItems {
+        for indexPath in indexPaths {
+          collectionView.deselectItem(at: indexPath, animated: false)
+        }
+      }
+
+      // If `expectedIndexPathForSelectedItem` is not nil, select it.
+      guard let expectedIndexPathForSelectedItem = expectedIndexPathForSelectedItem else { return }
+      collectionView.selectItem(
+        at: expectedIndexPathForSelectedItem, animated: false, scrollPosition: [])
+    }
+
+    /// Invalidate the layout to correctly recalculate the frame of the `selected` cell.
+    layout.invalidateLayout()
+  }
+
   // MARK: - TabStripNewTabButtonDelegate
 
   @objc func newTabButtonTapped() {
+    UserMetricsUtils.recordAction("MobileTabSwitched")
+    UserMetricsUtils.recordAction("MobileTabStripNewTab")
+
     newTabOpened = true
     mutator?.addNewItem()
   }
@@ -418,7 +494,7 @@ extension TabStripViewController: UICollectionViewDelegateFlowLayout {
     contextMenuConfiguration configuration: UIContextMenuConfiguration,
     highlightPreviewForItemAt indexPath: IndexPath
   ) -> UITargetedPreview? {
-    guard let cell = collectionView.cellForItem(at: indexPath) as? TabStripCell else {
+    guard let cell = collectionView.cellForItem(at: indexPath) as? TabStripTabCell else {
       return nil
     }
     return UITargetedPreview(view: cell, parameters: cell.dragPreviewParameters)
@@ -474,6 +550,10 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
     _ collectionView: UICollectionView,
     dragSessionWillBegin session: UIDragSession
   ) {
+    dragEndAtNewIndex = false
+    HistogramUtils.recordHistogram(
+      kUmaTabStripViewDragDropTabs, withSample: DragDropTabs.dragBegin.rawValue,
+      maxValue: DragDropTabs.maxValue.rawValue)
     dragDropHandler?.dragWillBegin(for: draggedItem)
   }
 
@@ -481,6 +561,21 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
     _ collectionView: UICollectionView,
     dragSessionDidEnd session: UIDragSession
   ) {
+    var dragEvent =
+      dragEndAtNewIndex
+      ? DragDropTabs.dragEndAtNewIndex
+      : DragDropTabs.dragEndAtSameIndex
+
+    // If a drop animation is in progress and the drag didn't end at a new index,
+    // that means the item has been dropped outside of its collection view.
+    if dropAnimationInProgress && !dragEndAtNewIndex {
+      dragEvent = DragDropTabs.dragEndInOtherCollection
+    }
+
+    HistogramUtils.recordHistogram(
+      kUmaTabStripViewDragDropTabs, withSample: dragEvent.rawValue,
+      maxValue: DragDropTabs.maxValue.rawValue)
+
     dragDropHandler?.dragSessionDidEnd()
   }
 
@@ -488,7 +583,7 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
     _ collectionView: UICollectionView,
     dragPreviewParametersForItemAt indexPath: IndexPath
   ) -> UIDragPreviewParameters? {
-    guard let cell = collectionView.cellForItem(at: indexPath) as? TabStripCell else {
+    guard let cell = collectionView.cellForItem(at: indexPath) as? TabStripTabCell else {
       return nil
     }
     return cell.dragPreviewParameters
@@ -528,8 +623,12 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
     guard let dropOperation: UIDropOperation = dragDropHandler?.dropOperation(for: session) else {
       return UICollectionViewDropProposal(operation: .cancel)
     }
+    /// Use `insertIntoDestinationIndexPath` if the dragged item is not from the same
+    /// collection view. This prevents having unwanted empty space in the collection view.
     return UICollectionViewDropProposal(
-      operation: dropOperation, intent: .insertAtDestinationIndexPath)
+      operation: dropOperation,
+      intent: dropOperation == .move
+        ? .insertAtDestinationIndexPath : .insertIntoDestinationIndexPath)
   }
 
   func collectionView(
@@ -547,10 +646,15 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
         destinationIndex = destinationIndexPath.item
       }
       let dropIndexPah: IndexPath = IndexPath(item: destinationIndex, section: 0)
+      dragEndAtNewIndex = true
 
       // Drop synchronously if local object is available.
       if item.dragItem.localObject != nil {
-        coordinator.drop(item.dragItem, toItemAt: dropIndexPah)
+        weak var weakSelf = self
+        coordinator.drop(item.dragItem, toItemAt: dropIndexPah).addCompletion {
+          UIViewAnimatingPosition in
+          weakSelf?.dropAnimationInProgress = false
+        }
         // The sourceIndexPath is non-nil if the drop item is from this same
         // collection view.
         self.dragDropHandler?.drop(
@@ -563,7 +667,7 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
           reuseIdentifier: TabStripConstants.CollectionView.tabStripCellReuseIdentifier)
         placeholder.previewParametersProvider = {
           (placeholderCell: UICollectionViewCell) -> UIDragPreviewParameters? in
-          guard let tabStripCell = placeholderCell as? TabStripCell else {
+          guard let tabStripCell = placeholderCell as? TabStripTabCell else {
             return nil
           }
           return tabStripCell.dragPreviewParameters

@@ -126,12 +126,14 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
       ChromeClient& chrome_client,
       Page* opener,
       AgentGroupScheduler& agent_group_scheduler,
-      const BrowsingContextGroupInfo& browsing_context_group_info);
+      const BrowsingContextGroupInfo& browsing_context_group_info,
+      const ColorProviderColorMaps* color_provider_colors);
 
   Page(base::PassKey<Page>,
        ChromeClient& chrome_client,
        AgentGroupScheduler& agent_group_scheduler,
        const BrowsingContextGroupInfo& browsing_context_group_info,
+       const ColorProviderColorMaps* color_provider_colors,
        bool is_ordinary);
   Page(const Page&) = delete;
   Page& operator=(const Page&) = delete;
@@ -160,7 +162,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   static void UsesOverlayScrollbarsChanged();
   static void PlatformColorsChanged();
   static void ColorSchemeChanged();
-  static void ColorProvidersChanged();
 
   void EmulateForcedColors(bool is_dark_theme);
   void DisableEmulatedForcedColors();

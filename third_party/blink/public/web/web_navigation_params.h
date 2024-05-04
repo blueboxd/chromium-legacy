@@ -186,13 +186,14 @@ struct BLINK_EXPORT WebNavigationInfo {
   // The frame token of the initiator Frame.
   std::optional<LocalFrameToken> initiator_frame_token;
 
-  // A handle for keeping the initiator RenderFrameHost's PolicyContainerHost
-  // alive until we create the NavigationRequest.
-  CrossVariantMojoRemote<mojom::PolicyContainerHostKeepAliveHandleInterfaceBase>
-      initiator_policy_container_keep_alive_handle;
+  // A handle for keeping the initiator RenderFrameHost's
+  // NavigationStateKeepAlive alive until we create the NavigationRequest.
+  CrossVariantMojoRemote<mojom::NavigationStateKeepAliveHandleInterfaceBase>
+      initiator_navigation_state_keep_alive_handle;
 
   // The initiator frame's LocalDOMWindow's has_storage_access state.
   bool has_storage_access = false;
+
   // Whether this navigation was initiated by the container, e.g. iframe changed
   // src. Only container-initiated navigation report resource timing to the
   // parent.
@@ -466,6 +467,10 @@ struct BLINK_EXPORT WebNavigationParams {
   // Whether the navigation is cross-site and swaps BrowsingContextGroups
   // (BrowsingInstances).
   bool is_cross_site_cross_browsing_context_group = false;
+
+  // Whether the new document should start with sticky user activation, because
+  // the previously committed document did, and the navigation was same-site.
+  bool should_have_sticky_user_activation = false;
 
   // Blink's copy of the policy container containing security policies to be
   // enforced on the document created by this navigation.

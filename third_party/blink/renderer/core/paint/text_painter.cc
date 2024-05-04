@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/paint/applied_decoration_painter.h"
+#include "third_party/blink/renderer/core/paint/decoration_line_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
@@ -127,6 +128,7 @@ struct SvgPaints {
 };
 
 void PrepareSvgPaints(const TextPainter::SvgTextPaintState& state,
+                      const SvgContextPaints* context_paints,
                       SvgPaintMode paint_mode,
                       SvgPaints& paints) {
   if (UNLIKELY(state.IsRenderingClipPathAsMaskImage())) {
@@ -142,7 +144,7 @@ void PrepareSvgPaints(const TextPainter::SvgTextPaintState& state,
   const LayoutObject& layout_parent = paint_mode == SvgPaintMode::kText
                                           ? *state.InlineText().Parent()
                                           : state.TextDecorationObject();
-  SVGObjectPainter object_painter(layout_parent);
+  SVGObjectPainter object_painter(layout_parent, context_paints);
   if (UNLIKELY(state.IsPaintingTextMatch())) {
     const ComputedStyle& style = state.Style();
 
@@ -151,13 +153,15 @@ void PrepareSvgPaints(const TextPainter::SvgTextPaintState& state,
     fill_flags.setAntiAlias(true);
 
     cc::PaintFlags unused_flags;
-    if (!object_painter.PreparePaint(state.GetPaintFlags(), style,
-                                     kApplyToStrokeMode, unused_flags)) {
-      return;
+    if (SVGObjectPainter::HasVisibleStroke(style, context_paints)) {
+      if (!object_painter.PreparePaint(state.GetPaintFlags(), style,
+                                       kApplyToStrokeMode, unused_flags)) {
+        return;
+      }
+      cc::PaintFlags& stroke_flags = paints.stroke.emplace(fill_flags);
+      PrepareStrokeGeometry(state, style, layout_parent, paint_mode,
+                            stroke_flags);
     }
-    cc::PaintFlags& stroke_flags = paints.stroke.emplace(fill_flags);
-    PrepareStrokeGeometry(state, style, layout_parent, paint_mode,
-                          stroke_flags);
     return;
   }
 
@@ -179,7 +183,7 @@ void PrepareSvgPaints(const TextPainter::SvgTextPaintState& state,
 
   const ShadowList* text_shadows = GetTextShadows(style, layout_parent);
   const AffineTransform* shader_transform = state.GetShaderTransform();
-  if (style.HasFill()) {
+  if (SVGObjectPainter::HasFill(style, context_paints)) {
     if (object_painter.PreparePaint(state.GetPaintFlags(), style,
                                     kApplyToFillMode, paints.fill.emplace(),
                                     shader_transform)) {
@@ -189,7 +193,7 @@ void PrepareSvgPaints(const TextPainter::SvgTextPaintState& state,
       paints.fill.reset();
     }
   }
-  if (style.HasVisibleStroke()) {
+  if (SVGObjectPainter::HasVisibleStroke(style, context_paints)) {
     if (object_painter.PreparePaint(state.GetPaintFlags(), style,
                                     kApplyToStrokeMode, paints.stroke.emplace(),
                                     shader_transform)) {
@@ -355,8 +359,7 @@ void TextPainter::PaintDecorationLine(
     const TextDecorationInfo& decoration_info,
     const Color& line_color,
     const TextFragmentPaintInfo* fragment_paint_info) {
-  AppliedDecorationPainter decoration_painter(graphics_context_,
-                                              decoration_info);
+  DecorationLinePainter decoration_painter(graphics_context_, decoration_info);
   if (fragment_paint_info &&
       decoration_info.TargetStyle().TextDecorationSkipInk() ==
           ETextDecorationSkipInk::kAuto) {
@@ -375,7 +378,8 @@ void TextPainter::PaintDecorationLine(
       !decoration_info.HasDecorationOverride()) {
     SvgPaints paints;
     const SvgTextPaintState& state = svg_text_paint_state_.value();
-    PrepareSvgPaints(state, SvgPaintMode::kTextDecoration, paints);
+    PrepareSvgPaints(state, svg_context_paints_, SvgPaintMode::kTextDecoration,
+                     paints);
 
     const OrderedPaints ordered_paints =
         OrderPaints(paints, state.Style().PaintOrder());
@@ -410,7 +414,7 @@ void TextPainter::PaintSvgTextFragment(
     const AutoDarkMode& auto_dark_mode) {
   SvgPaints paints;
   const SvgTextPaintState& state = svg_text_paint_state_.value();
-  PrepareSvgPaints(state, SvgPaintMode::kText, paints);
+  PrepareSvgPaints(state, svg_context_paints_, SvgPaintMode::kText, paints);
 
   const OrderedPaints ordered_paints =
       OrderPaints(paints, state.Style().PaintOrder());

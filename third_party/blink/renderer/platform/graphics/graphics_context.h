@@ -71,6 +71,8 @@ class FloatRoundedRect;
 class KURL;
 class PaintController;
 class Path;
+class StrokeData;
+class StyledStrokeData;
 struct TextRunPaintInfo;
 
 // Tiling parameters for the DrawImageTiled() method.
@@ -106,7 +108,7 @@ struct ImageDrawOptions {
         decode_mode(decode_mode),
         apply_dark_mode(apply_dark_mode),
         may_be_lcp_candidate(may_be_lcp_candidate) {}
-  DarkModeFilter* dark_mode_filter = nullptr;
+  raw_ptr<DarkModeFilter> dark_mode_filter = nullptr;
   SkSamplingOptions sampling_options;
   RespectImageOrientationEnum respect_orientation = kRespectImageOrientation;
   Image::ImageClampingMode clamping_mode = Image::kClampImageToSourceRect;
@@ -211,30 +213,20 @@ class PLATFORM_EXPORT GraphicsContext {
 #endif
 
   float StrokeThickness() const {
-    return ImmutableState()->GetStrokeData().Thickness();
+    return ImmutableState()->GetStrokeThickness();
   }
   void SetStrokeThickness(float thickness) {
     MutableState()->SetStrokeThickness(thickness);
   }
 
-  StrokeStyle GetStrokeStyle() const {
-    return ImmutableState()->GetStrokeData().Style();
-  }
-  void SetStrokeStyle(StrokeStyle style) {
-    MutableState()->SetStrokeStyle(style);
+  void SetStroke(const StrokeData& stroke_data) {
+    MutableState()->SetStroke(stroke_data);
   }
 
   Color StrokeColor() const { return ImmutableState()->StrokeColor(); }
   void SetStrokeColor(const Color& color) {
     MutableState()->SetStrokeColor(color);
   }
-
-  void SetLineCap(LineCap cap) { MutableState()->SetLineCap(cap); }
-  void SetLineDash(const DashArray& dashes, float dash_offset) {
-    MutableState()->SetLineDash(dashes, dash_offset);
-  }
-  void SetLineJoin(LineJoin join) { MutableState()->SetLineJoin(join); }
-  void SetMiterLimit(float limit) { MutableState()->SetMiterLimit(limit); }
 
   Color FillColor() const { return ImmutableState()->FillColor(); }
   void SetFillColor(const Color& color) { MutableState()->SetFillColor(color); }
@@ -290,23 +282,13 @@ class PLATFORM_EXPORT GraphicsContext {
   // top-to-down or left-to-right to get correct interval of dots/dashes.
   void DrawLine(const gfx::Point&,
                 const gfx::Point&,
+                const StyledStrokeData&,
                 const AutoDarkMode& auto_dark_mode,
                 bool is_text_line = false,
                 const cc::PaintFlags* flags = nullptr);
 
   void FillPath(const Path&, const AutoDarkMode& auto_dark_mode);
-
-  // The length parameter is only used when the path has a dashed or dotted
-  // stroke style, with the default dash/dot path effect. If a non-zero length
-  // is provided the number of dashes/dots on a dashed/dotted
-  // line will be adjusted to start and end that length with a dash/dot.
-  // The dash_thickness parameter is only used when drawing dashed borders,
-  // where the stroke thickness has been set for corner miters but we want the
-  // dash length set from the border width.
-  void StrokePath(const Path&,
-                  const AutoDarkMode& auto_dark_mode,
-                  const int length = 0,
-                  const int dash_thickness = 0);
+  void StrokePath(const Path&, const AutoDarkMode& auto_dark_mode);
 
   void FillEllipse(const gfx::RectF&, const AutoDarkMode& auto_dark_mode);
   void StrokeEllipse(const gfx::RectF&, const AutoDarkMode& auto_dark_mode);
@@ -334,7 +316,6 @@ class PLATFORM_EXPORT GraphicsContext {
                                const AutoDarkMode& auto_dark_mode);
 
   void StrokeRect(const gfx::RectF&,
-                  float line_width,
                   const AutoDarkMode& auto_dark_mode);
 
   void DrawRecord(PaintRecord);
@@ -373,6 +354,10 @@ class PLATFORM_EXPORT GraphicsContext {
   // These methods write to the canvas.
   // Also drawLine(const gfx::Point& point1, const gfx::Point& point2) and
   // fillRoundedRect().
+  void DrawLine(const gfx::PointF& from,
+                const gfx::PointF& to,
+                const cc::PaintFlags& flags,
+                const AutoDarkMode& auto_dark_mode);
   void DrawOval(const SkRect&,
                 const cc::PaintFlags&,
                 const AutoDarkMode& auto_dark_mode);
@@ -436,11 +421,6 @@ class PLATFORM_EXPORT GraphicsContext {
       const AutoDarkMode& auto_dark_mode,
       Font::CustomFontNotReadyAction = Font::kDoNotPaintIfFontNotReady);
 
-  void DrawLineForText(const gfx::PointF&,
-                       float width,
-                       const AutoDarkMode& auto_dark_mode,
-                       const cc::PaintFlags* flags = nullptr);
-
   // BeginLayer()/EndLayer() behave like Save()/Restore() for CTM and clip
   // states. Apply opacity, blend mode, filter when the layer is composited on
   // the backdrop (i.e. EndLayer()).
@@ -475,13 +455,8 @@ class PLATFORM_EXPORT GraphicsContext {
   const cc::PaintFlags& FillFlags() const {
     return ImmutableState()->FillFlags();
   }
-  // If the length of the path to be stroked is known, pass it in for correct
-  // dash or dot placement. Border painting uses a stroke thickness determined
-  // by the corner miters. Set the dash_thickness to a non-zero number for
-  // cases where dashes should be based on a different thickness.
-  const cc::PaintFlags& StrokeFlags(const int length = 0,
-                                    const int dash_thickness = 0) const {
-    return ImmutableState()->StrokeFlags(length, dash_thickness);
+  const cc::PaintFlags& StrokeFlags() const {
+    return ImmutableState()->StrokeFlags();
   }
 
   // ---------- Transformation methods -----------------
@@ -519,12 +494,6 @@ class PLATFORM_EXPORT GraphicsContext {
   static void AdjustLineToPixelBoundaries(gfx::PointF& p1,
                                           gfx::PointF& p2,
                                           float stroke_width);
-
-  static Path GetPathForTextLine(const gfx::PointF&,
-                                 float width,
-                                 float stroke_thickness,
-                                 StrokeStyle);
-  static bool ShouldUseStrokeForTextLine(StrokeStyle);
 
   void SetInDrawingRecorder(bool);
   bool InDrawingRecorder() const { return in_drawing_recorder_; }
@@ -584,7 +553,7 @@ class PLATFORM_EXPORT GraphicsContext {
   // This is owned by paint_recorder_. Never delete this object.
   // Drawing operations are allowed only after the first BeginRecording() which
   // initializes this to not null.
-  raw_ptr<cc::PaintCanvas, ExperimentalRenderer> canvas_ = nullptr;
+  raw_ptr<cc::PaintCanvas> canvas_ = nullptr;
 
   const raw_ref<PaintController, DanglingUntriaged> paint_controller_;
 
@@ -597,7 +566,7 @@ class PLATFORM_EXPORT GraphicsContext {
   wtf_size_t paint_state_index_ = 0;
 
   // Raw pointer to the current state.
-  raw_ptr<GraphicsContextState, ExperimentalRenderer> paint_state_ = nullptr;
+  raw_ptr<GraphicsContextState> paint_state_ = nullptr;
 
   PaintRecorder paint_recorder_;
 

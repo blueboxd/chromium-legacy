@@ -313,10 +313,6 @@ void EncodeFormFieldsForUpload(const FormStructure& form,
     if (IsCheckable(field->check_status)) {
       continue;
     }
-    //  Add the same field elements as the query and a few more below.
-    if (IsCheckable(field->check_status)) {
-      continue;
-    }
     // Do not upload fields that were filled with a fallback type, as this would
     // introduce unnecessary noise in the field votes.
     if (field->WasAutofilledWithFallback()) {
@@ -326,17 +322,6 @@ void EncodeFormFieldsForUpload(const FormStructure& form,
     auto* added_field = upload->add_field();
     for (auto field_type : field->possible_types()) {
       added_field->add_autofill_type(field_type);
-    }
-
-    field->NormalizePossibleTypesValidities();
-
-    for (const auto& [field_type, validities] :
-         field->possible_types_validities()) {
-      auto* type_validities = added_field->add_autofill_type_validities();
-      type_validities->set_type(field_type);
-      for (const auto& validity : validities) {
-        type_validities->add_validity(base::to_underlying(validity));
-      }
     }
 
     if (field->generation_type()) {

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/cast.gni")
 import("//build/config/features.gni")
 import("//build/config/gclient_args.gni")
 
@@ -30,6 +29,12 @@ build_with_v8_embedder = build_with_chromium
 # `use_custom_libcxx = true`.
 enable_safe_libcxx = true
 
+# Enable assertions on safety checks, also in libstdc++
+#
+# In case the C++ standard library implementation used is libstdc++, then
+# enable its own hardening checks.
+enable_safe_libstdcxx = true
+
 # Features used by //base/trace_event and //services/tracing.
 declare_args() {
   # Tracing support requires //third_party/perfetto, which is not available in
@@ -40,11 +45,8 @@ declare_args() {
   enable_base_tracing = true
 
   # Switches the TRACE_EVENT instrumentation from base's TraceLog implementation
-  # to //third_party/perfetto's client library.
-  # TODO(crbug/1006541): Switch to perfetto's client library on all platforms.
-  use_perfetto_client_library =
-      (is_linux || is_android || (use_blink && is_ios) || is_win ||
-       is_chromeos || is_mac) && !is_castos
+  # to //third_party/perfetto's client library (crbug/1006541).
+  use_perfetto_client_library = true
 
   # Limits the defined //third_party/android_deps targets to only "buildCompile"
   # and "buildCompileNoDeps" targets. This is useful for third-party

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/shell.h"
+#include "ash/system/mahi/fake_mahi_manager.h"
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
 #include "base/check.h"
@@ -206,10 +207,26 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   }
 
   if (chromeos::features::IsMahiEnabled()) {
-    mahi_manager_impl_ = std::make_unique<ash::MahiManagerImpl>();
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kUseFakeMahiManager)) {
+      mahi_manager_ = std::make_unique<ash::FakeMahiManager>(
+          /*enable_callback_delays_for_animations=*/true);
+    } else {
+      mahi_manager_ = std::make_unique<ash::MahiManagerImpl>();
+    }
   }
 
   ash_shell_init_ = std::make_unique<AshShellInit>();
+  ash::Shell::Get()
+      ->login_unlock_throughput_recorder()
+      ->post_login_deferred_task_runner()
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     &session_manager::SessionManager::
+                         HandleUserSessionStartUpTaskCompleted,
+                     // Safe because SessionManager singleton will be destroyed
+                     // after message loops stops.
+                     base::Unretained(session_manager::SessionManager::Get())));
 
   screen_orientation_delegate_ =
       std::make_unique<ScreenOrientationDelegateChromeos>();
@@ -376,7 +393,8 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
   game_mode_controller_ = std::make_unique<game_mode::GameModeController>();
   refresh_rate_controller_ = std::make_unique<ash::RefreshRateController>(
       ash::Shell::Get()->display_configurator(), ash::PowerStatus::Get(),
-      game_mode_controller_.get(), force_throttle);
+      game_mode_controller_.get(),
+      ash::Shell::Get()->display_performance_mode_controller(), force_throttle);
 
   // Initialize TabScrubberChromeOS after the Ash Shell has been initialized.
   TabScrubberChromeOS::GetInstance();
@@ -453,7 +471,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   app_list_client_.reset();
   ash_shell_init_.reset();
 
-  mahi_manager_impl_.reset();
+  mahi_manager_.reset();
 
   // These instances must be destructed after `ash_shell_init_`.
   video_conference_tray_controller_.reset();

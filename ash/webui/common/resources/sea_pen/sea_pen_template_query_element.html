@@ -103,13 +103,13 @@
     font: var(--cros-button-2-font);
     padding: 8px 32px 8px 16px;
   }
-
-  cr-action-menu::part(dialog) {
-    /* The menu only takes up half of the screen. */
-    max-height: calc(100vh / 2);
-  }
 </style>
 <div class="main">
+  <sea-pen-options
+      options="[[options_]]"
+      selected-chip="[[selectedChip_]]"
+      selected-options="{{selectedOptions_}}">
+  </sea-pen-options>
   <div id="template">
     <template is="dom-repeat" items="[[templateTokens_]]" as="token">
       <template is="dom-if" if="[[isChip_(token)]]">
@@ -140,22 +140,10 @@
           id="searchButton"
           class="action-button"
           on-click="onClickSearchButton_">
-        <iron-icon icon$="[[getSearchButtonIcon_(path, thumbnails_)]]" slot="prefix-icon">
+        <iron-icon icon$="[[searchButtonIcon_]]" slot="prefix-icon">
         </iron-icon>
-        <p>[[getSearchButtonText_(path, thumbnails_)]]</p>
+        <p>[[searchButtonText_]]</p>
       </cr-button>
     </template>
   </div>
-  <cr-action-menu>
-    <template id="optionList" is="dom-repeat" items="[[options_]]" as="option">
-      <button
-          aria-selected$="[[isOptionSelected_(option, selectedChip_.translation)]]"
-          class="dropdown-item"
-          data-id$="[[template.id]]"
-          on-click="onClickOption_">
-        <iron-icon class="dropdown-check" icon="cr:check"></iron-icon>
-        [[option.translation]]
-      </button>
-    </template>
-  </cr-action-menu>
 </div>

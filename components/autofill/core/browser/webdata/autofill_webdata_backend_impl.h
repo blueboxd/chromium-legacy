@@ -188,12 +188,11 @@ class AutofillWebDataBackendImpl
                                               WebDatabase* db);
 
   // Server credit cards can be masked (only last 4 digits stored) or unmasked
-  // (all data stored). These toggle between the two states.
+  // (all data stored). This method changes a masked card to unmasked.
+  // TODO(crbug.com/1497734): Remove this method entirely.
   WebDatabase::State UnmaskServerCreditCard(const CreditCard& card,
                                             const std::u16string& full_number,
                                             WebDatabase* db);
-  WebDatabase::State MaskServerCreditCard(const std::string& id,
-                                          WebDatabase* db);
 
   WebDatabase::State UpdateServerCardMetadata(const CreditCard& credit_card,
                                               WebDatabase* db);
@@ -227,6 +226,9 @@ class AutofillWebDataBackendImpl
   // Returns all Credit Card Benefits from the database.
   std::unique_ptr<WDTypedResult> GetCreditCardBenefits(WebDatabase* db);
 
+  // Returns a vector of masked bank accounts from the web database.
+  std::unique_ptr<WDTypedResult> GetMaskedBankAccounts(WebDatabase* db);
+
   WebDatabase::State ClearAllServerData(WebDatabase* db);
   WebDatabase::State ClearAllLocalData(WebDatabase* db);
 
@@ -243,6 +245,9 @@ class AutofillWebDataBackendImpl
       const base::Time& delete_begin,
       const base::Time& delete_end,
       WebDatabase* db);
+
+  // Clears all the credit card benefits from the database.
+  WebDatabase::State ClearAllCreditCardBenefits(WebDatabase* db);
 
  protected:
   ~AutofillWebDataBackendImpl() override;

@@ -187,7 +187,8 @@ class CompositorImpl::HostBeginFrameObserver
     : public viz::mojom::BeginFrameObserver {
  public:
   HostBeginFrameObserver(
-      const base::flat_set<SimpleBeginFrameObserver*>& observers,
+      const base::flat_set<raw_ptr<SimpleBeginFrameObserver, CtnExperimental>>&
+          observers,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : simple_begin_frame_observers_(observers),
         task_runner_(std::move(task_runner)) {}
@@ -236,12 +237,13 @@ class CompositorImpl::HostBeginFrameObserver
   // This may be deleted as part of `CallObservers`.
   void CallObservers(const viz::BeginFrameArgs& args) {
     auto observers_copy = *simple_begin_frame_observers_;
-    for (auto* simple_observer : observers_copy) {
+    for (SimpleBeginFrameObserver* simple_observer : observers_copy) {
       simple_observer->OnBeginFrame(args.frame_time);
     }
   }
 
-  const raw_ref<const base::flat_set<SimpleBeginFrameObserver*>>
+  const raw_ref<
+      const base::flat_set<raw_ptr<SimpleBeginFrameObserver, CtnExperimental>>>
       simple_begin_frame_observers_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -832,7 +834,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   pending_frames_ = 0;
   gpu_capabilities_ = context_provider->ContextCapabilities();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput});
+      GetUIThreadTaskRunner({BrowserTaskType::kUserInput});
 
   auto root_params = viz::mojom::RootCompositorFrameSinkParams::New();
 
@@ -1009,7 +1011,7 @@ void CompositorImpl::MaybeUpdateObserveBeginFrame() {
 
   host_begin_frame_observer_ = std::make_unique<HostBeginFrameObserver>(
       simple_begin_frame_observers_,
-      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
+      GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
   display_private_->SetStandaloneBeginFrameObserver(
       host_begin_frame_observer_->GetBoundRemote());
 }

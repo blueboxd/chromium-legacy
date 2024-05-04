@@ -46,7 +46,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -496,7 +495,7 @@ NSString* const kDomain2 = @"domain2.com";
       [FakeSystemIdentity identityWithEmail:managedAccountEmail
                                      gaiaID:@"exampleManagedID"
                                        name:@"Fake Managed"];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
+  [SigninEarlGrey signinWithFakeIdentity:fakeManagedIdentity];
 
   // Open the menu and click on the item.
   [ChromeEarlGreyUI openToolsMenu];
@@ -526,7 +525,7 @@ NSString* const kDomain2 = @"domain2.com";
       [FakeSystemIdentity identityWithEmail:managedAccountEmail
                                      gaiaID:@"exampleManagedID"
                                        name:@"Fake Managed"];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
+  [SigninEarlGrey signinWithFakeIdentity:fakeManagedIdentity];
 
   // Open the menu and click on the item.
   [ChromeEarlGreyUI openToolsMenu];
@@ -608,7 +607,7 @@ NSString* const kDomain2 = @"domain2.com";
       [FakeSystemIdentity identityWithEmail:managedAccountEmail
                                      gaiaID:@"exampleManagedID"
                                        name:@"Fake Managed"];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
+  [SigninEarlGrey signinWithFakeIdentity:fakeManagedIdentity];
 
   // Open the management page and check if the content is expected.
   [ChromeEarlGrey loadURL:GURL(kChromeUIManagementURL)];
@@ -654,7 +653,7 @@ NSString* const kDomain2 = @"domain2.com";
       [FakeSystemIdentity identityWithEmail:managedAccountEmail
                                      gaiaID:@"exampleManagedID"
                                        name:@"Fake Managed"];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
+  [SigninEarlGrey signinWithFakeIdentity:fakeManagedIdentity];
 
   // Open the management page and check if the content is expected.
   [ChromeEarlGrey loadURL:GURL(kChromeUIManagementURL)];
@@ -702,7 +701,7 @@ NSString* const kDomain2 = @"domain2.com";
       [FakeSystemIdentity identityWithEmail:managedAccountEmail
                                      gaiaID:@"exampleManagedID"
                                        name:@"Fake Managed"];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
+  [SigninEarlGrey signinWithFakeIdentity:fakeManagedIdentity];
 
   // Open the management page and check if the content is expected.
   [ChromeEarlGrey loadURL:GURL(kChromeUIManagementURL)];
@@ -717,7 +716,7 @@ NSString* const kDomain2 = @"domain2.com";
 // launched, a policy screen is displayed at startup.
 - (void)testBrowserSignInDisabledAtStartup {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   // Create the config to relaunch Chrome.
   AppLaunchConfiguration config;
@@ -761,7 +760,7 @@ NSString* const kDomain2 = @"domain2.com";
 // policy changes while the app is launched.
 - (void)testBrowserSignInDisabledWhileAppVisible {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   // Force sign out.
   SetPolicy(0, policy::key::kBrowserSignin);
@@ -785,7 +784,7 @@ NSString* const kDomain2 = @"domain2.com";
 // primary account is restricted.
 - (void)testBrowserAccountRestrictedAlert {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   // Set restrictions.
   base::Value::List restrictions;
@@ -812,7 +811,7 @@ NSString* const kDomain2 = @"domain2.com";
 // administrator while the app is launched.
 - (void)testSyncDisabledPromptWhileAppVisible {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   // Enable SyncDisabled policy.
   SetPolicy(true, policy::key::kSyncDisabled);

@@ -9,6 +9,7 @@
 
 #import "base/containers/flat_map.h"
 #import "base/containers/flat_set.h"
+#import "base/containers/span.h"
 #import "base/memory/raw_ptr.h"
 #import "base/memory/weak_ptr.h"
 #import "components/autofill/core/browser/autofill_client.h"
@@ -37,6 +38,7 @@ class AutofillDriverIOSFactory;
 // AutofillDriverIOS is associated with exactly one WebFrame and its lifecycle
 // is bound to that WebFrame.
 class AutofillDriverIOS : public AutofillDriver,
+                          public AutofillManager::Observer,
                           public web::WebFrameUserData<AutofillDriverIOS> {
  public:
   // Returns the AutofillDriverIOS for `web_state` and `web_frame`. Creates the
@@ -65,20 +67,19 @@ class AutofillDriverIOS : public AutofillDriver,
   bool HasSharedAutofillPermission() const override;
   bool CanShowAutofillUi() const override;
   base::flat_set<FieldGlobalId> ApplyFormAction(
-      mojom::ActionType action_type,
+      mojom::FormActionType action_type,
       mojom::ActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, FieldType>& field_type_map) override;
-  void ApplyFieldAction(mojom::ActionPersistence action_persistence,
-                        mojom::TextReplacement text_replacement,
+  void ApplyFieldAction(mojom::FieldActionType action_type,
+                        mojom::ActionPersistence action_persistence,
                         const FieldGlobalId& field,
                         const std::u16string& value) override;
   void ExtractForm(
       FormGlobalId form,
       base::OnceCallback<void(AutofillDriver*, const std::optional<FormData>&)>
           response_callback) override;
-  void HandleParsedForms(const std::vector<FormData>& forms) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<raw_ptr<FormStructure, VectorExperimental>>& forms)
       override;
@@ -101,8 +102,9 @@ class AutofillDriverIOS : public AutofillDriver,
   AutofillClient* client() { return client_; }
 
   void set_autofill_manager_for_testing(
-      std::unique_ptr<BrowserAutofillManager> browser_autofill_manager) {
-    browser_autofill_manager_ = std::move(browser_autofill_manager);
+      std::unique_ptr<BrowserAutofillManager> manager) {
+    manager_ = std::move(manager);
+    manager_observation_.Observe(manager_.get());
   }
 
   void RendererShouldSetSuggestionAvailability(
@@ -149,6 +151,11 @@ class AutofillDriverIOS : public AutofillDriver,
   // Other callers should use FromWebStateAndWebFrame() instead.
   using web::WebFrameUserData<AutofillDriverIOS>::FromWebFrame;
 
+  // AutofillManager::Observer:
+  void OnAutofillManagerDestroyed(AutofillManager& manager) override;
+  void OnAfterFormsSeen(AutofillManager& manager,
+                        base::span<const FormGlobalId> forms) override;
+
   // The WebState with which this object is associated.
   raw_ptr<web::WebState> web_state_ = nullptr;
 
@@ -178,9 +185,10 @@ class AutofillDriverIOS : public AutofillDriver,
   // The embedder's AutofillClient instance.
   raw_ptr<AutofillClient> client_;
 
-  // BrowserAutofillManager instance via which this object drives the shared
-  // Autofill code.
-  std::unique_ptr<BrowserAutofillManager> browser_autofill_manager_;
+  std::unique_ptr<BrowserAutofillManager> manager_;
+
+  base::ScopedObservation<AutofillManager, AutofillManager::Observer>
+      manager_observation_{this};
 
   base::WeakPtrFactory<AutofillDriverIOS> weak_ptr_factory_{this};
 };

@@ -48,6 +48,14 @@ void WebApkSyncService::MergeSyncDataForTesting(
       std::move(app_vector), std::move(last_used_days_vector));  // IN-TEST
 }
 
+void WebApkSyncService::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+  sync_bridge_->SetClockForTesting(std::move(clock));  // IN-TEST
+}
+
+const Registry& WebApkSyncService::GetRegistryForTesting() const {
+  return sync_bridge_->GetRegistryForTesting();  // IN-TEST
+}
+
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebApkSyncService::GetModelTypeControllerDelegate() {
   return sync_bridge_->GetModelTypeControllerDelegate();
@@ -60,6 +68,11 @@ void WebApkSyncService::OnWebApkUsed(
 
 void WebApkSyncService::OnWebApkUninstalled(const std::string& manifest_id) {
   sync_bridge_->OnWebApkUninstalled(manifest_id);
+}
+
+void WebApkSyncService::RemoveOldWebAPKsFromSync(
+    int64_t current_time_ms_since_unix_epoch) {
+  sync_bridge_->RemoveOldWebAPKsFromSync(current_time_ms_since_unix_epoch);
 }
 
 // static
@@ -102,6 +115,22 @@ static void JNI_WebApkSyncService_OnWebApkUninstalled(
 
   WebApkSyncService::GetForProfile(profile)->OnWebApkUninstalled(
       ConvertJavaStringToUTF8(env, java_manifest_id));
+}
+
+static void JNI_WebApkSyncService_RemoveOldWebAPKsFromSync(
+    JNIEnv* env,
+    jlong java_current_time_ms_since_unix_epoch) {
+  if (!base::FeatureList::IsEnabled(syncer::kWebApkBackupAndRestoreBackend)) {
+    return;
+  }
+
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (profile == nullptr) {
+    return;
+  }
+
+  WebApkSyncService::GetForProfile(profile)->RemoveOldWebAPKsFromSync(
+      static_cast<int64_t>(java_current_time_ms_since_unix_epoch));
 }
 
 }  // namespace webapk

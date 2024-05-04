@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PLUS_ADDRESSES_PLUS_ADDRESS_TYPES_H_
 #define COMPONENTS_PLUS_ADDRESSES_PLUS_ADDRESS_TYPES_H_
 
+#include <map>
+#include <optional>
 #include <string>
-#include <unordered_map>
 
 #include "base/functional/callback_forward.h"
 #include "base/types/expected.h"
@@ -16,28 +17,45 @@
 namespace plus_addresses {
 
 struct PlusProfile {
+  int64_t profile_id;
   std::string facet;
   std::string plus_address;
   bool is_confirmed;
+
+  friend bool operator==(const PlusProfile&, const PlusProfile&) = default;
 };
 
 enum class PlusAddressRequestErrorType {
   kParsingError = 0,
   kNetworkError = 1,
   kOAuthError = 2,
+  // The type of request is not supported by this version of Chrome - e.g.,
+  // refreshing plus addresses prior to them being enabled.
+  kRequestNotSupportedError = 3,
+  // The refresh request is not allowed because the limit of requests has been
+  // meet.
+  kMaxRefreshesReached = 4
 };
 
 class PlusAddressRequestError {
  public:
-  explicit PlusAddressRequestError(PlusAddressRequestErrorType error_type) {
-    error_type_ = error_type;
+  explicit PlusAddressRequestError(PlusAddressRequestErrorType error_type)
+      : error_type_(error_type) {}
+
+  static PlusAddressRequestError AsNetworkError(
+      std::optional<int> response_code) {
+    PlusAddressRequestError result(PlusAddressRequestErrorType::kNetworkError);
+    result.http_response_code_ = response_code;
+    return result;
   }
+
+  bool operator==(const PlusAddressRequestError&) const = default;
 
   PlusAddressRequestErrorType type() const { return error_type_; }
 
   void set_http_response_code(int code) {
     CHECK(error_type_ == PlusAddressRequestErrorType::kNetworkError);
-    http_response_code_.emplace(code);
+    http_response_code_ = code;
   }
 
   std::optional<int> http_response_code() const { return http_response_code_; }
@@ -50,20 +68,23 @@ class PlusAddressRequestError {
 
 // Only used by Autofill.
 using autofill::PlusAddressCallback;
-using PlusAddressMap = std::unordered_map<std::string, std::string>;
+
+using PlusAddressMap = std::map<std::string, std::string>;
 using PlusAddressMapCallback = base::OnceCallback<void(const PlusAddressMap&)>;
+
 // Holds either a PlusProfile or an error that prevented us from getting it.
 using PlusProfileOrError = base::expected<PlusProfile, PlusAddressRequestError>;
 using PlusAddressRequestCallback =
     base::OnceCallback<void(const PlusProfileOrError&)>;
-typedef base::expected<PlusProfile, PlusAddressRequestError> PlusProfileOrError;
-typedef base::OnceCallback<void(const PlusProfileOrError&)>
-    PlusAddressRequestCallback;
+using PlusProfileOrError = base::expected<PlusProfile, PlusAddressRequestError>;
+using PlusAddressRequestCallback =
+    base::OnceCallback<void(const PlusProfileOrError&)>;
+
 // Holds either a PlusAddressMap or an error that prevented us from getting it.
-typedef base::expected<PlusAddressMap, PlusAddressRequestError>
-    PlusAddressMapOrError;
-typedef base::OnceCallback<void(const PlusAddressMapOrError&)>
-    PlusAddressMapRequestCallback;
+using PlusAddressMapOrError =
+    base::expected<PlusAddressMap, PlusAddressRequestError>;
+using PlusAddressMapRequestCallback =
+    base::OnceCallback<void(const PlusAddressMapOrError&)>;
 
 // Defined for use in metrics and to share code for certain network-requests.
 enum class PlusAddressNetworkRequestType {

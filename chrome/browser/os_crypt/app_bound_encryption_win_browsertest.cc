@@ -4,6 +4,8 @@
 
 #include "chrome/browser/os_crypt/app_bound_encryption_win.h"
 
+#include <optional>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -129,25 +131,28 @@ IN_PROC_BROWSER_TEST_F(AppBoundEncryptionWinTest, EncryptDecrypt) {
 // browser in the PRE_ test stores the "Test Key" with app-bound encryption and
 // the second stage of the test verifies it can be retrieved successfully.
 IN_PROC_BROWSER_TEST_F(AppBoundEncryptionWinTest, PRE_MetricsTest) {
-  ASSERT_TRUE(install_static::IsSystemInstall());
+  histogram_tester_.ExpectUniqueSample(
+      "OSCrypt.AppBoundEncryption.SupportLevel", SupportLevel::kSupported, 1);
   // These histograms are recorded on a background worker thread, so the test
   // needs to wait until this task completes and the histograms are recorded.
-  WaitForHistogram("OSCrypt.AppBoundEncryption.Encrypt.ResultCode");
+  WaitForHistogram(
+      "OSCrypt.AppBoundEncryption.PathValidation.Encrypt.ResultCode");
   histogram_tester_.ExpectBucketCount(
-      "OSCrypt.AppBoundEncryption.Encrypt.ResultCode", S_OK, 1);
+      "OSCrypt.AppBoundEncryption.PathValidation.Encrypt.ResultCode", S_OK, 1);
 
-  WaitForHistogram("OSCrypt.AppBoundEncryption.Encrypt.Time");
+  WaitForHistogram("OSCrypt.AppBoundEncryption.PathValidation.Encrypt.Time");
 }
 
 IN_PROC_BROWSER_TEST_F(AppBoundEncryptionWinTest, MetricsTest) {
   ASSERT_TRUE(install_static::IsSystemInstall());
   // These histograms are recorded on a background worker thread, so the test
   // needs to wait until this task completes and the histograms are recorded.
-  WaitForHistogram("OSCrypt.AppBoundEncryption.Decrypt.ResultCode");
+  WaitForHistogram(
+      "OSCrypt.AppBoundEncryption.PathValidation.Decrypt.ResultCode");
   histogram_tester_.ExpectBucketCount(
-      "OSCrypt.AppBoundEncryption.Decrypt.ResultCode", S_OK, 1);
+      "OSCrypt.AppBoundEncryption.PathValidation.Decrypt.ResultCode", S_OK, 1);
 
-  WaitForHistogram("OSCrypt.AppBoundEncryption.Decrypt.Time");
+  WaitForHistogram("OSCrypt.AppBoundEncryption.PathValidation.Decrypt.Time");
 }
 
 // Run this test manually to force uninstall the service using
@@ -156,7 +161,8 @@ IN_PROC_BROWSER_TEST_F(AppBoundEncryptionWinTest, MANUAL_Uninstall) {}
 
 using AppBoundEncryptionWinTestNoService = InProcessBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(AppBoundEncryptionWinTestNoService, NoService) {
+// TODO(https://crbug.com/328398409): Flakily fails
+IN_PROC_BROWSER_TEST_F(AppBoundEncryptionWinTestNoService, DISABLED_NoService) {
   const std::string plaintext("plaintext");
   std::string ciphertext;
   DWORD last_error;
@@ -185,18 +191,26 @@ class AppBoundEncryptionWinTestMultiProcess : public AppBoundEncryptionWinTest {
     AppBoundEncryptionWinTest::SetUp();
   }
 
-  void EncryptOrDecryptInTestProcess(base::FilePath::StringPieceType filename,
-                                     const std::string& input_data,
-                                     std::string& output_data,
-                                     Operation op,
-                                     HRESULT& result) {
+  void EncryptOrDecryptInTestProcess(
+      base::FilePath::StringPieceType filename,
+      std::optional<base::FilePath::StringPieceType> sub_dir,
+      const std::string& input_data,
+      std::string& output_data,
+      Operation op,
+      HRESULT& result) {
     base::ScopedAllowBlockingForTesting allow_blocking;
 
     const auto input_file_path = temp_dir_.GetPath().Append(L"input-file");
     const auto output_file_path = temp_dir_.GetPath().Append(L"output-file");
     ASSERT_TRUE(base::WriteFile(input_file_path, input_data));
 
-    auto executable_file_path = temp_dir_.GetPath().Append(filename);
+    auto executable_file_dir = temp_dir_.GetPath();
+    if (sub_dir) {
+      executable_file_dir = executable_file_dir.Append(*sub_dir);
+      base::CreateDirectory(executable_file_dir);
+    }
+
+    const auto executable_file_path = executable_file_dir.Append(filename);
     std::ignore = base::DeleteFile(executable_file_path);
 
     const auto orig_exe = base::PathService::CheckedGet(base::DIR_EXE)
@@ -240,20 +254,60 @@ class AppBoundEncryptionWinTestMultiProcess : public AppBoundEncryptionWinTest {
 IN_PROC_BROWSER_TEST_F(AppBoundEncryptionWinTestMultiProcess,
                        EncryptDecryptProcess) {
   const std::string kSecret("secret");
-  std::string ciphertext;
-  HRESULT result;
-  ASSERT_NO_FATAL_FAILURE(EncryptOrDecryptInTestProcess(
-      L"app1.exe", kSecret, ciphertext, Operation::kEncrypt, result));
-  EXPECT_EQ(S_OK, result);
-  std::string plaintext;
-  ASSERT_NO_FATAL_FAILURE(EncryptOrDecryptInTestProcess(
-      L"app1.exe", ciphertext, plaintext, Operation::kDecrypt, result));
-  EXPECT_EQ(S_OK, result);
-  EXPECT_EQ(kSecret, plaintext);
+  {
+    std::string ciphertext;
+    HRESULT result;
+    ASSERT_NO_FATAL_FAILURE(EncryptOrDecryptInTestProcess(
+        L"app1.exe", {}, kSecret, ciphertext, Operation::kEncrypt, result));
+    EXPECT_EQ(S_OK, result);
+    std::string plaintext;
+    ASSERT_NO_FATAL_FAILURE(EncryptOrDecryptInTestProcess(
+        L"app1.exe", {}, ciphertext, plaintext, Operation::kDecrypt, result));
+    EXPECT_EQ(S_OK, result);
+    EXPECT_EQ(kSecret, plaintext);
 
-  ASSERT_NO_FATAL_FAILURE(EncryptOrDecryptInTestProcess(
-      L"app2.exe", ciphertext, plaintext, Operation::kDecrypt, result));
-  EXPECT_EQ(elevation_service::Elevator::kValidationDidNotPass, result);
+    ASSERT_NO_FATAL_FAILURE(EncryptOrDecryptInTestProcess(
+        L"app2.exe", {}, ciphertext, plaintext, Operation::kDecrypt, result));
+    EXPECT_EQ(S_OK, result);
+    EXPECT_EQ(kSecret, plaintext);
+
+    ASSERT_NO_FATAL_FAILURE(
+        EncryptOrDecryptInTestProcess(L"app1.exe", L"Application", ciphertext,
+                                      plaintext, Operation::kDecrypt, result));
+    EXPECT_EQ(S_OK, result);
+    EXPECT_EQ(kSecret, plaintext);
+
+    ASSERT_NO_FATAL_FAILURE(
+        EncryptOrDecryptInTestProcess(L"app1.exe", L"Temp", ciphertext,
+                                      plaintext, Operation::kDecrypt, result));
+    EXPECT_EQ(S_OK, result);
+    EXPECT_EQ(kSecret, plaintext);
+
+    ASSERT_NO_FATAL_FAILURE(
+        EncryptOrDecryptInTestProcess(L"app1.exe", L"Bad", ciphertext,
+                                      plaintext, Operation::kDecrypt, result));
+    EXPECT_EQ(elevation_service::Elevator::kValidationDidNotPass, result);
+  }
+  {
+    // Explicitly test the most frequent chrome-specific cases.
+    std::string ciphertext;
+    HRESULT result;
+    ASSERT_NO_FATAL_FAILURE(
+        EncryptOrDecryptInTestProcess(L"chrome.exe", L"Application", kSecret,
+                                      ciphertext, Operation::kEncrypt, result));
+    EXPECT_EQ(S_OK, result);
+    std::string plaintext;
+    ASSERT_NO_FATAL_FAILURE(EncryptOrDecryptInTestProcess(
+        L"new_chrome.exe", L"Application", ciphertext, plaintext,
+        Operation::kDecrypt, result));
+    EXPECT_EQ(S_OK, result);
+    EXPECT_EQ(kSecret, plaintext);
+    ASSERT_NO_FATAL_FAILURE(
+        EncryptOrDecryptInTestProcess(L"old_chrome.exe", L"Temp", ciphertext,
+                                      plaintext, Operation::kDecrypt, result));
+    EXPECT_EQ(S_OK, result);
+    EXPECT_EQ(kSecret, plaintext);
+  }
 }
 #endif  // !defined(COMPONENT_BUILD)
 

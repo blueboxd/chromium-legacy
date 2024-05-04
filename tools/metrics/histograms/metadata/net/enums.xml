@@ -2364,17 +2364,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="RESOLVE_SPECULATIVE_ABORT"/>
 </enum>
 
-<enum name="RSAKeyUsage">
-  <int value="0" label="Not an RSA key"/>
-  <int value="1" label="OK (no extension)"/>
-  <int value="2" label="OK (both bits present)"/>
-  <int value="3" label="OK (digitalSignature present)"/>
-  <int value="4" label="OK (keyEncipherment present)"/>
-  <int value="5" label="Missing digitalSignature"/>
-  <int value="6" label="Missing keyEncipherment"/>
-  <int value="7" label="Error parsing certificate"/>
-</enum>
-
 <enum name="SCTOrigin">
   <int value="0" label="SCT_EMBEDDED"/>
   <int value="1" label="SCT_FROM_TLS_EXTENSION"/>
@@ -2609,22 +2598,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="SSLKeyLogger enabled"/>
   <int value="1" label="ssl-key-log-file switch set"/>
   <int value="2" label="SSLKEYLOGFILE environment variable set"/>
-</enum>
-
-<enum name="SSLLegacyCryptoFallback">
-  <int value="0" label="No fallback used"/>
-  <int value="1" label="Used fallback and negotiated 3DES"/>
-  <int value="2" label="Used fallback and negotiated SHA-1"/>
-  <int value="3"
-      label="Used fallback and sent a certificate signed with
-             RSASSA-PKCS1-v1_5-SHA-1"/>
-  <int value="4"
-      label="Used fallback, negotiated 3DES, and sent a certificate signed
-             with RSASSA-PKCS1-v1_5-SHA-1"/>
-  <int value="5"
-      label="Used fallback, negotiated SHA-1, and sent a certificate signed
-             with RSASSA-PKCS1-v1_5-SHA-1"/>
-  <int value="6" label="Used fallback for unknown reason"/>
 </enum>
 
 <enum name="SSLNegotiatedAlpnProtocol">

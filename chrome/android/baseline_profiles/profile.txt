@@ -2839,8 +2839,6 @@ HSPLorg/chromium/chrome/browser/app/appmenu/AppMenuPropertiesDelegateImpl$$Exter
 Lorg/chromium/chrome/browser/app/download/DownloadMessageUiDelegate;
 HSPLorg/chromium/chrome/browser/app/download/DownloadMessageUiDelegate;-><init>()V
 HSPLorg/chromium/chrome/browser/app/download/DownloadMessageUiDelegate;->maybeSwitchToFocusedActivity()Z
-Lorg/chromium/chrome/browser/app/feature_guide/notifications/FeatureNotificationGuideDelegate;
-HSPLorg/chromium/chrome/browser/app/feature_guide/notifications/FeatureNotificationGuideDelegate;-><init>()V
 Lorg/chromium/chrome/browser/app/flags/ChromeCachedFlags;
 HSPLorg/chromium/chrome/browser/app/flags/ChromeCachedFlags;-><init>()V
 Lorg/chromium/chrome/browser/app/metrics/LaunchCauseMetrics;
@@ -3631,12 +3629,6 @@ Lorg/chromium/chrome/browser/feature_engagement/ScreenshotMonitorImpl$Screenshot
 HSPLorg/chromium/chrome/browser/feature_engagement/ScreenshotMonitorImpl$ScreenshotMonitorContentObserver;-><init>(Lorg/chromium/chrome/browser/feature_engagement/ScreenshotMonitorImpl;Lorg/chromium/chrome/browser/feature_engagement/ScreenshotMonitorImpl;)V
 Lorg/chromium/chrome/browser/feature_engagement/TrackerFactory;
 HSPLorg/chromium/chrome/browser/feature_engagement/TrackerFactory;->getTrackerForProfile(Lorg/chromium/chrome/browser/profiles/Profile;)Lorg/chromium/components/feature_engagement/Tracker;
-Lorg/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationGuideBridge;
-Lorg/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationGuideService$Delegate;
-Lorg/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationUtils;
-HSPLorg/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationUtils;->getIPHFeatureForNotificationFeatureType(I)Ljava/lang/String;
-HSPLorg/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationUtils;->registerIPHCallback(ILjava/lang/Runnable;)V
-HSPLorg/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationUtils;->unregisterIPHCallback(I)V
 Lorg/chromium/chrome/browser/feed/FeedFeatures;
 Lorg/chromium/chrome/browser/feed/FeedPlaceholderLayout;
 Lorg/chromium/chrome/browser/feed/FeedStreamViewResizer;
@@ -6147,9 +6139,9 @@ Lorg/chromium/chrome/browser/tasks/tab_management/TabGridDialogView$VisibilityLi
 Lorg/chromium/chrome/browser/tasks/tab_management/TabGridItemTouchHelperCallback;
 HSPLorg/chromium/chrome/browser/tasks/tab_management/TabGridItemTouchHelperCallback;-><init>(Landroid/content/Context;Lorg/chromium/chrome/browser/tasks/tab_management/TabListModel;Lorg/chromium/chrome/browser/tabmodel/TabModelSelector;Lorg/chromium/chrome/browser/tasks/tab_management/TabListMediator$6;Lorg/chromium/chrome/browser/tasks/tab_management/TabGridDialogMediator$3;Ljava/lang/String;ZILorg/chromium/chrome/browser/tasks/tab_management/TabGridItemTouchHelperCallback$OnLongPressTabItemEventListener;)V
 Lorg/chromium/chrome/browser/tasks/tab_management/TabGridItemTouchHelperCallback$OnLongPressTabItemEventListener;
-Lorg/chromium/chrome/browser/tasks/tab_management/TabGridPanelProperties;
-Lorg/chromium/chrome/browser/tasks/tab_management/TabGridPanelViewBinder$ViewHolder;
-HSPLorg/chromium/chrome/browser/tasks/tab_management/TabGridPanelViewBinder$ViewHolder;-><init>(Lorg/chromium/chrome/browser/tasks/tab_management/TabGroupUiToolbarView;Landroidx/recyclerview/widget/RecyclerView;Lorg/chromium/chrome/browser/tasks/tab_management/TabGridDialogView;)V
+Lorg/chromium/chrome/browser/tasks/tab_management/TabGridDialogProperties;
+Lorg/chromium/chrome/browser/tasks/tab_management/TabGridDialogViewBinder$ViewHolder;
+HSPLorg/chromium/chrome/browser/tasks/tab_management/TabGridDialogViewBinder$ViewHolder;-><init>(Lorg/chromium/chrome/browser/tasks/tab_management/TabGroupUiToolbarView;Landroidx/recyclerview/widget/RecyclerView;Lorg/chromium/chrome/browser/tasks/tab_management/TabGridDialogView;)V
 Lorg/chromium/chrome/browser/tasks/tab_management/TabThumbnailView;
 HSPLorg/chromium/chrome/browser/tasks/tab_management/TabThumbnailView;-><init>(Landroid/content/Context;Landroid/util/AttributeSet;)V
 Lorg/chromium/chrome/browser/tasks/tab_management/TabGroupUi;

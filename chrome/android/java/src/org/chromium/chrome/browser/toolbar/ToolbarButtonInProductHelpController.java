@@ -22,8 +22,6 @@ import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
-import org.chromium.chrome.browser.feature_guide.notifications.FeatureType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -66,7 +64,7 @@ public class ToolbarButtonInProductHelpController
     private final View mSecurityIconAnchorView;
     private final AppMenuHandler mAppMenuHandler;
     private final UserEducationHelper mUserEducationHelper;
-    private final ObservableSupplier<Profile> mProfileSupplier;
+    private final Profile mProfile;
     private final Supplier<Tab> mCurrentTabSupplier;
     private final Supplier<Boolean> mIsInOverviewModeSupplier;
 
@@ -76,7 +74,7 @@ public class ToolbarButtonInProductHelpController
      * @param appMenuCoordinator {@link AppMenuCoordinator} whose visual state is to be updated
      *     accordingly.
      * @param lifecycleDispatcher {@link LifecycleDispatcher} that helps observe activity lifecycle.
-     * @param profileSupplier A supplier of the Profile associated with the current visible state.
+     * @param profile The current Profile.
      * @param tabSupplier An observable supplier of the current {@link Tab}.
      * @param isInOverviewModeSupplier Supplies whether the app is in overview mode.
      * @param menuButtonAnchorView The menu button view to serve as an anchor.
@@ -87,7 +85,7 @@ public class ToolbarButtonInProductHelpController
             @NonNull WindowAndroid windowAndroid,
             @NonNull AppMenuCoordinator appMenuCoordinator,
             @NonNull ActivityLifecycleDispatcher lifecycleDispatcher,
-            @NonNull ObservableSupplier<Profile> profileSupplier,
+            @NonNull Profile profile,
             @NonNull ObservableSupplier<Tab> tabSupplier,
             @NonNull Supplier<Boolean> isInOverviewModeSupplier,
             @NonNull View menuButtonAnchorView,
@@ -99,13 +97,13 @@ public class ToolbarButtonInProductHelpController
         mMenuButtonAnchorView = menuButtonAnchorView;
         mSecurityIconAnchorView = securityIconAnchorView;
         mIsInOverviewModeSupplier = isInOverviewModeSupplier;
-        mUserEducationHelper = new UserEducationHelper(mActivity, new Handler());
+        mUserEducationHelper = new UserEducationHelper(mActivity, profile, new Handler());
         if (!BuildInfo.getInstance().isAutomotive) {
             mScreenshotMonitor = new ScreenshotMonitorImpl(this, mActivity);
         }
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);
-        mProfileSupplier = profileSupplier;
+        mProfile = profile;
         mCurrentTabSupplier = tabSupplier;
         mPageLoadObserver =
                 new CurrentTabObserver(
@@ -154,13 +152,9 @@ public class ToolbarButtonInProductHelpController
                             }
                         },
                         /* swapCallback= */ null);
-
-        FeatureNotificationUtils.registerIPHCallback(
-                FeatureType.INCOGNITO_TAB, this::showIncognitoTabIPH);
     }
 
     public void destroy() {
-        FeatureNotificationUtils.unregisterIPHCallback(FeatureType.INCOGNITO_TAB);
         mPageLoadObserver.destroy();
         mLifecycleDispatcher.unregister(this);
     }
@@ -231,8 +225,7 @@ public class ToolbarButtonInProductHelpController
     @Override
     public void onScreenshotTaken() {
         Tab currentTab = mCurrentTabSupplier.get();
-        Profile currentProfile =
-                currentTab != null ? currentTab.getProfile() : mProfileSupplier.get();
+        Profile currentProfile = currentTab != null ? currentTab.getProfile() : mProfile;
 
         Tracker tracker = TrackerFactory.getTrackerForProfile(currentProfile);
         tracker.notifyEvent(EventConstants.SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND);
@@ -264,21 +257,6 @@ public class ToolbarButtonInProductHelpController
                                 R.string.iph_download_home_accessibility_text)
                         .setAnchorView(mMenuButtonAnchorView)
                         .setOnShowCallback(() -> turnOnHighlightForMenuItem(R.id.downloads_menu_id))
-                        .setOnDismissCallback(this::turnOffHighlightForMenuItem)
-                        .build());
-    }
-
-    private void showIncognitoTabIPH() {
-        mUserEducationHelper.requestShowIPH(
-                new IPHCommandBuilder(
-                                mActivity.getResources(),
-                                FeatureConstants
-                                        .FEATURE_NOTIFICATION_GUIDE_INCOGNITO_TAB_HELP_BUBBLE_FEATURE,
-                                R.string.feature_notification_guide_tooltip_message_incognito_tab,
-                                R.string.feature_notification_guide_tooltip_message_incognito_tab)
-                        .setAnchorView(mMenuButtonAnchorView)
-                        .setOnShowCallback(
-                                () -> turnOnHighlightForMenuItem(R.id.new_incognito_tab_menu_id))
                         .setOnDismissCallback(this::turnOffHighlightForMenuItem)
                         .build());
     }

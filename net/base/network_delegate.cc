@@ -188,14 +188,12 @@ void NetworkDelegate::ExcludeAllCookies(
 void NetworkDelegate::ExcludeAllCookiesExceptPartitioned(
     net::CookieInclusionStatus::ExclusionReason reason,
     net::CookieAccessResultList& maybe_included_cookies,
-    net::CookieAccessResultList& excluded_cookies,
-    bool are_cookies_disabled) {
+    net::CookieAccessResultList& excluded_cookies) {
   // If cookies are not universally disabled, we will preserve partitioned
   // cookies
   const auto to_be_moved = base::ranges::stable_partition(
-      maybe_included_cookies,
-      [&are_cookies_disabled](const net::CookieWithAccessResult& cookie) {
-        return !are_cookies_disabled && cookie.cookie.IsPartitioned();
+      maybe_included_cookies, [](const net::CookieWithAccessResult& cookie) {
+        return cookie.cookie.IsPartitioned();
       });
   excluded_cookies.insert(
       excluded_cookies.end(), std::make_move_iterator(to_be_moved),

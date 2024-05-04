@@ -60,8 +60,9 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
   title_->SetMultiLine(true);
   title_->SetMaxLines(2);
   title_->SetEnabledColorId(cros_tokens::kTextColorPrimary);
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
-  GetViewAccessibility().OverrideName(title_->GetText());
+  GetViewAccessibility().SetRole(ax::mojom::Role::kMenuItem);
+  GetViewAccessibility().SetName(title_->GetText(),
+                                 ax::mojom::NameFrom::kAttribute);
 
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets::TLBR(kItemBorderThickness, kItemBorderThickness,

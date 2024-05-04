@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+
 component("global_media_controls") {
   public = [
     "public/constants.h",
@@ -20,6 +22,7 @@ component("global_media_controls") {
     "public/views/media_item_ui_footer.h",
     "public/views/media_item_ui_list_view.h",
     "public/views/media_item_ui_view.h",
+    "public/views/media_progress_view.h",
   ]
 
   defines = [ "IS_GLOBAL_MEDIA_CONTROLS_IMPL" ]
@@ -42,6 +45,10 @@ component("global_media_controls") {
     deps += [ "//chromeos/constants:constants" ]
   }
 
+  if (is_chromeos_ash) {
+    public += [ "public/views/chapter_item_view.h" ]
+  }
+
   public_deps = [
     "//components/media_message_center",
     "//services/media_session/public/cpp",
@@ -60,7 +67,12 @@ component("global_media_controls") {
     "public/views/media_item_ui_footer.cc",
     "public/views/media_item_ui_list_view.cc",
     "public/views/media_item_ui_view.cc",
+    "public/views/media_progress_view.cc",
   ]
+
+  if (is_chromeos_ash) {
+    sources += [ "public/views/chapter_item_view.cc" ]
+  }
 
   friend = [ ":*" ]
 }
@@ -75,6 +87,7 @@ source_set("unit_tests") {
     "public/views/media_item_ui_detailed_view_unittest.cc",
     "public/views/media_item_ui_list_view_unittest.cc",
     "public/views/media_item_ui_view_unittest.cc",
+    "public/views/media_progress_view_unittest.cc",
   ]
 
   deps = [

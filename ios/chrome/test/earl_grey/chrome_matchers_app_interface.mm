@@ -366,12 +366,6 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
 }
 
-+ (id<GREYMatcher>)closeButton {
-  return grey_allOf(
-      [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(IDS_CLOSE)],
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
-}
-
 + (id<GREYMatcher>)closeTabMenuButton {
   return grey_allOf(
       [ChromeMatchersAppInterface contextMenuItemWithAccessibilityLabelID:
@@ -663,7 +657,9 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)omniboxPopupRow {
-  if (base::FeatureList::IsEnabled(kOmniboxSuggestionsRTLImprovements)) {
+  if (base::FeatureList::IsEnabled(kOmniboxPopupRowContentConfiguration)) {
+    return grey_kindOfClassName(@"UITableViewCell");
+  } else if (base::FeatureList::IsEnabled(kOmniboxSuggestionsRTLImprovements)) {
     return grey_kindOfClassName(@"OmniboxPopupRowCellExperimental");
   } else {
     return grey_kindOfClassName(@"OmniboxPopupRowCell");
@@ -1445,13 +1441,14 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       manual_fill::CardTableViewAccessibilityIdentifier);
 }
 
-+ (id<GREYMatcher>)manualFallbackManageCreditCardsMatcher {
-  return grey_accessibilityID(manual_fill::ManageCardsAccessibilityIdentifier);
++ (id<GREYMatcher>)manualFallbackManagePaymentMethodsMatcher {
+  return grey_accessibilityID(
+      manual_fill::kManagePaymentMethodsAccessibilityIdentifier);
 }
 
-+ (id<GREYMatcher>)manualFallbackAddCreditCardsMatcher {
++ (id<GREYMatcher>)manualFallbackAddPaymentMethodMatcher {
   return grey_accessibilityID(
-      manual_fill::kAddCreditCardsAccessibilityIdentifier);
+      manual_fill::kAddPaymentMethodAccessibilityIdentifier);
 }
 
 + (id<GREYMatcher>)manualFallbackCreditCardTableViewWindowMatcher {

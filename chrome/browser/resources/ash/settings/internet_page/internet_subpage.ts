@@ -38,7 +38,6 @@ import {afterNextRender, DomRepeatEvent, mixinBehaviors, PolymerElement} from 'c
 import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../common/deep_linking_mixin.js';
 import {RouteOriginMixin, RouteOriginMixinInterface} from '../common/route_origin_mixin.js';
-import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, Router, routes} from '../router.js';
 
@@ -442,15 +441,10 @@ export class SettingsInternetSubpageElement extends
       return true;
     }
 
-    // Scans should be kicked off from the Mobile data subpage, as long as it
-    // includes Tether networks.
-    if (this.deviceState.type === NetworkType.kTether ||
+    // Scans should be kicked off from the new Instant Hotspot page.
+    return this.deviceState.type === NetworkType.kTether ||
         (this.deviceState.type === NetworkType.kCellular &&
-         this.tetherDeviceState)) {
-      return true;
-    }
-
-    return false;
+         !!this.tetherDeviceState && !this.isInstantHotspotRebrandEnabled_);
   }
 
   private startScanning_(): void {
@@ -459,7 +453,8 @@ export class SettingsInternetSubpageElement extends
     }
     const INTERVAL_MS = 10 * 1000;
     let type = this.deviceState!.type;
-    if (type === NetworkType.kCellular && this.tetherDeviceState) {
+    if (!this.isInstantHotspotRebrandEnabled_ &&
+        type === NetworkType.kCellular && this.tetherDeviceState) {
       // Only request tether scan. Cellular scan is disruptive and should
       // only be triggered by explicit user action.
       type = NetworkType.kTether;
@@ -709,7 +704,7 @@ export class SettingsInternetSubpageElement extends
   private onAddThirdPartyVpnClick_(event: DomRepeatEvent<VpnProvider>): void {
     const provider = event.model.item;
     this.browserProxy_.addThirdPartyVpn(provider.appId);
-    recordSettingChange();
+    // TODO(b/282233232) recordSettingChange() for adding third party VPN.
   }
 
   private knownNetworksIsVisible_(deviceState: OncMojo.DeviceStateProperties|
@@ -776,7 +771,7 @@ export class SettingsInternetSubpageElement extends
         detail: {networkState},
       });
       this.dispatchEvent(networkConnectEvent);
-      recordSettingChange();
+      // TODO(b/282233232) recordSettingChange() for connecting to network.
       return;
     }
 

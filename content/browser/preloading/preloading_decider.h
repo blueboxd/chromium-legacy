@@ -64,6 +64,11 @@ class CONTENT_EXPORT PreloadingDecider
   void UpdateSpeculationCandidates(
       std::vector<blink::mojom::SpeculationCandidatePtr>& candidates);
 
+  // Called when LCP is predicted.
+  // This is used to defer starting prerenders until LCP timing and is only
+  // used under LCPTimingPredictorPrerender2.
+  void OnLCPPredicted();
+
   // Returns true if the |url|, |action| pair is in the on-standby list.
   bool IsOnStandByForTesting(const GURL& url,
                              blink::mojom::SpeculationAction action);
@@ -76,6 +81,14 @@ class CONTENT_EXPORT PreloadingDecider
   explicit PreloadingDecider(RenderFrameHost* rfh);
   friend class DocumentUserData<PreloadingDecider>;
   DOCUMENT_USER_DATA_KEY_DECL();
+
+  // Attempts preloading actions starting from the most advanced (prerendering)
+  // to least (preconnect), in response to `predictor` predicting a navigation
+  // to `url`. If `fallback_to_preconnect` is true, we preconnect if no other
+  // action is taken.
+  void MaybeEnactCandidate(const GURL& url,
+                           const PreloadingPredictor& predictor,
+                           bool fallback_to_preconnect);
 
   // Prefetches the |url| if it is safe and eligible to be prefetched. Returns
   // false if no suitable (given |predictor|) on-standby candidate is found for

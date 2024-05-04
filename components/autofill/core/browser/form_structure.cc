@@ -87,9 +87,7 @@ namespace {
 // Returns true if the scheme given by |url| is one for which autofill is
 // allowed to activate. By default this only returns true for HTTP and HTTPS.
 bool HasAllowedScheme(const GURL& url) {
-  return url.SchemeIsHTTPOrHTTPS() ||
-         base::FeatureList::IsEnabled(
-             features::test::kAutofillAllowNonHttpActivation);
+  return url.SchemeIsHTTPOrHTTPS();
 }
 
 std::string ServerTypesToString(const AutofillField* field) {
@@ -546,7 +544,6 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
     field->set_may_use_prefilled_placeholder(
         cached_field->may_use_prefilled_placeholder());
     field->set_previously_autofilled(cached_field->previously_autofilled());
-    field->set_was_context_menu_shown(cached_field->was_context_menu_shown());
 
     // During form parsing, we don't care for heuristic field classifications
     // and information derived from the autocomplete attribute as those are
@@ -1230,6 +1227,12 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
                           " - ",
                           base::NumberToString(
                               HashFormSignature(form.form_signature()))});
+  buffer << Tr{} << "Form alternative signature:"
+         << base::StrCat({base::NumberToString(
+                              form.alternative_form_signature().value()),
+                          " - ",
+                          base::NumberToString(HashFormSignature(
+                              form.alternative_form_signature()))});
   buffer << Tr{} << "Form name:" << form.form_name();
   buffer << Tr{} << "Identifiers: "
          << base::StrCat(

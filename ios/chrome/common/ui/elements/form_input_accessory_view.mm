@@ -16,10 +16,13 @@
 namespace {
 
 // Default Height for the accessory.
-const CGFloat kDefaultAccessoryHeight = 44;
+constexpr CGFloat kDefaultAccessoryHeight = 44;
 
 // Large Height for the accessory.
-const CGFloat kLargeAccessoryHeight = 59;
+constexpr CGFloat kLargeAccessoryHeight = 59;
+
+// Button target area for the large keyboard accessory.
+constexpr CGFloat kLargeButtonTargetArea = 44;
 
 // The width for the white gradient UIView.
 constexpr CGFloat ManualFillGradientWidth = 44;
@@ -59,6 +62,8 @@ NSString* const kFormInputAccessoryViewOmniboxTypingShieldAccessibilityID =
 @property(nonatomic, weak) UIButton* manualFillButton;
 
 @property(nonatomic, weak) UIView* leadingView;
+
+@property(nonatomic, weak) UIView* trailingView;
 
 @property(nonatomic, strong) UIImage* manualFillSymbol;
 
@@ -192,6 +197,7 @@ NSString* const kFormInputAccessoryViewOmniboxTypingShieldAccessibilityID =
   } else {
     trailingView = customTrailingView;
   }
+  self.trailingView = trailingView;
 
   // If there is no trailing view, set the leading view as the only view and
   // return early.
@@ -317,6 +323,14 @@ NSString* const kFormInputAccessoryViewOmniboxTypingShieldAccessibilityID =
             accessibilityLabel:(NSString*)accessibilityLabel {
   UIButton* imageButton = [UIButton buttonWithType:UIButtonTypeSystem];
   [imageButton setImage:image forState:UIControlStateNormal];
+  if (_largeAccessoryViewEnabled) {
+    [imageButton.widthAnchor
+        constraintGreaterThanOrEqualToConstant:kLargeButtonTargetArea]
+        .active = YES;
+    [imageButton.heightAnchor
+        constraintGreaterThanOrEqualToConstant:kLargeButtonTargetArea]
+        .active = YES;
+  }
   [imageButton addTarget:self
                   action:action
         forControlEvents:UIControlEventTouchUpInside];

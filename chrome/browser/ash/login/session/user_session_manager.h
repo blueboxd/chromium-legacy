@@ -217,10 +217,10 @@ class UserSessionManager
   // user sessions restoration is in progress.
   bool UserSessionsRestoreInProgress() const;
 
-  // Send the notification before creating the browser so additional objects
-  // that need the profile (e.g. the launcher) can be created first.
-  void NotifyUserProfileLoaded(Profile* profile,
-                               const user_manager::User* user);
+  // Called when user profile is loaded. Send the notification before creating
+  // the browser so additional objects that need the profile (e.g. the launcher)
+  // can be created first.
+  void OnUserProfileLoaded(Profile* profile, const user_manager::User* user);
 
   // Start the Tether service if it is ready.
   void StartTetherServiceIfPossible(Profile* profile);
@@ -337,11 +337,6 @@ class UserSessionManager
   // Shows Help App release notes notification, if a notification for the help
   // app has not yet been shown in the current milestone.
   void MaybeShowHelpAppReleaseNotesNotification(Profile* profile);
-
-  // Shows Help App discover notification if the profile meets the criteria and
-  // if a notification for the help app has not yet been shown in the current
-  // milestone.
-  void MaybeShowHelpAppDiscoverNotification(Profile* profile);
 
   using EolNotificationHandlerFactoryCallback =
       base::RepeatingCallback<std::unique_ptr<EolNotification>(
@@ -629,7 +624,8 @@ class UserSessionManager
   // Mapped to `chrome::AttemptRestart`, except in tests.
   base::RepeatingClosure attempt_restart_closure_;
 
-  base::flat_set<Profile*> user_profile_initialized_called_;
+  base::flat_set<raw_ptr<Profile, CtnExperimental>>
+      user_profile_initialized_called_;
 
   std::unique_ptr<arc::AlwaysOnVpnManager> always_on_vpn_manager_;
 

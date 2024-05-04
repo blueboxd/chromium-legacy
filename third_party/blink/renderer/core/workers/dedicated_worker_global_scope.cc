@@ -501,8 +501,8 @@ void DedicatedWorkerGlobalScope::UpdateBackForwardCacheDisablingFeatures(
     return;
   }
   auto mojom_details = LocalFrame::ConvertFeatureAndLocationToMojomStruct(
-      details.non_sticky_features_and_js_locations,
-      details.sticky_features_and_js_locations);
+      *details.non_sticky_features_and_js_locations,
+      *details.sticky_features_and_js_locations);
   back_forward_cache_controller_host_
       ->DidChangeBackForwardCacheDisablingFeatures(std::move(mojom_details));
 }
@@ -533,7 +533,7 @@ void DedicatedWorkerGlobalScope::EvictFromBackForwardCache(
   // execution, `source_location` should always be null here.
   CHECK(!source_location);
   back_forward_cache_controller_host_->EvictFromBackForwardCache(
-      /*eviction_reason=*/std::move(reason), /*details=*/nullptr);
+      /*reason=*/std::move(reason), /*source=*/nullptr);
 }
 
 void DedicatedWorkerGlobalScope::DidBufferLoadWhileInBackForwardCache(

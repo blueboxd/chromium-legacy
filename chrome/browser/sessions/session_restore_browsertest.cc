@@ -2214,7 +2214,10 @@ class MultiBrowserObserver : public BrowserListObserver {
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAllBrowsers) {
   // Create two profiles with two browsers each.
   Browser* first_profile_browser_one = browser();
+  ui_test_utils::BrowserChangeObserver new_browser_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   chrome::NewWindow(first_profile_browser_one);
+  ui_test_utils::WaitForBrowserSetLastActive(new_browser_observer.Wait());
   Browser* first_profile_browser_two =
       BrowserList::GetInstance()->GetLastActive();
   EXPECT_NE(first_profile_browser_one, first_profile_browser_two);
@@ -2225,7 +2228,12 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAllBrowsers) {
       second_profile, chrome::startup::IsProcessStartup::kNo,
       chrome::startup::IsFirstRun::kNo, false);
   Browser* second_profile_browser_one = ui_test_utils::WaitForBrowserToOpen();
+  ui_test_utils::WaitForBrowserSetLastActive(second_profile_browser_one);
+  ui_test_utils::BrowserChangeObserver second_profile_new_browser_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   chrome::NewWindow(second_profile_browser_one);
+  ui_test_utils::WaitForBrowserSetLastActive(
+      second_profile_new_browser_observer.Wait());
   Browser* second_profile_browser_two =
       BrowserList::GetInstance()->GetLastActive();
   EXPECT_NE(second_profile_browser_one, second_profile_browser_two);

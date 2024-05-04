@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
 
 #include "chrome/browser/ui/autofill/payments/save_iban_ui.h"
+#include "chrome/browser/ui/autofill/save_address_bubble_controller.h"
+#include "chrome/browser/ui/autofill/update_address_bubble_controller.h"
 
 namespace autofill {
 
@@ -53,7 +55,7 @@ AutofillBubbleBase* TestAutofillBubbleHandler::ShowOfferNotificationBubble(
 
 AutofillBubbleBase* TestAutofillBubbleHandler::ShowSaveAddressProfileBubble(
     content::WebContents* contents,
-    SaveUpdateAddressProfileBubbleController* controller,
+    std::unique_ptr<SaveAddressBubbleController> controller,
     bool is_user_gesture) {
   if (!save_address_profile_bubble_view_)
     save_address_profile_bubble_view_ = std::make_unique<TestAutofillBubble>();
@@ -62,7 +64,7 @@ AutofillBubbleBase* TestAutofillBubbleHandler::ShowSaveAddressProfileBubble(
 
 AutofillBubbleBase* TestAutofillBubbleHandler::ShowUpdateAddressProfileBubble(
     content::WebContents* contents,
-    SaveUpdateAddressProfileBubbleController* controller,
+    std::unique_ptr<UpdateAddressBubbleController> controller,
     bool is_user_gesture) {
   if (!update_address_profile_bubble_view_) {
     update_address_profile_bubble_view_ =

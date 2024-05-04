@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/new_tab_page_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/constants.h"
@@ -34,7 +35,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -181,6 +181,7 @@ void TapMoreButtonIfVisible() {
       [self isRunningTest:@selector(testMagicStackEditButton)] ||
       [self isRunningTest:@selector
             (testMagicStackCompactedSetUpListCompleteAllItems)]) {
+    config.features_enabled.push_back(kIOSMagicStackCollectionView);
     std::string enable_magic_stack_segmentation_arg =
         "--enable-features=" +
         std::string(segmentation_platform::features::
@@ -221,7 +222,7 @@ void TapMoreButtonIfVisible() {
 
 - (void)tearDown {
   [ChromeEarlGrey clearBrowsingHistory];
-  [ChromeEarlGreyAppInterface removeFirstRunSentinel];
+  [ChromeEarlGrey removeFirstRunSentinel];
   [super tearDown];
 }
 
@@ -814,15 +815,15 @@ void TapMoreButtonIfVisible() {
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
                                    [NewTabPageAppInterface setUpListTitle])]
-      assertWithMatcher:grey_nil()];
+      assertWithMatcher:grey_notVisible()];
 }
 
 #pragma mark - Test utils
 
 // Sets up the test case to test SetUpList.
 - (void)prepareToTestSetUpList {
-  [ChromeEarlGreyAppInterface writeFirstRunSentinel];
-  [ChromeEarlGreyAppInterface clearDefaultBrowserPromoData];
+  [ChromeEarlGrey writeFirstRunSentinel];
+  [ChromeEarlGrey clearDefaultBrowserPromoData];
   [ChromeEarlGrey resetDataForLocalStatePref:
                       prefs::kIosCredentialProviderPromoLastActionTaken];
   [NewTabPageAppInterface resetSetUpListPrefs];
@@ -836,8 +837,8 @@ void TapMoreButtonIfVisible() {
 }
 
 - (void)prepareToTestSetUpListInMagicStack {
-  [ChromeEarlGreyAppInterface writeFirstRunSentinel];
-  [ChromeEarlGreyAppInterface clearDefaultBrowserPromoData];
+  [ChromeEarlGrey writeFirstRunSentinel];
+  [ChromeEarlGrey clearDefaultBrowserPromoData];
   [ChromeEarlGrey resetDataForLocalStatePref:
                       prefs::kIosCredentialProviderPromoLastActionTaken];
   [NewTabPageAppInterface resetSetUpListPrefs];

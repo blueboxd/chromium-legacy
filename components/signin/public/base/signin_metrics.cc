@@ -162,13 +162,8 @@ void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
   }
 }
 
-void LogSignout(ProfileSignout source_metric, SignoutDelete delete_metric) {
+void LogSignout(ProfileSignout source_metric) {
   base::UmaHistogramEnumeration("Signin.SignoutProfile", source_metric);
-  if (delete_metric != SignoutDelete::kIgnoreMetric) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Signin.SignoutDeleteProfile",
-        delete_metric == SignoutDelete::kDeleted ? true : false);
-  }
 }
 
 void LogExternalCcResultFetches(
@@ -752,6 +747,13 @@ void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action,
       histogram =
           "Signin.AccountConsistencyPromoAction."
           "AddAccountStartedWithNoDeviceAccount";
+      break;
+    case AccountConsistencyPromoAction::CONFIRM_MANAGEMENT_SHOWN:
+      histogram = "Signin.AccountConsistencyPromoAction.ConfirmManagementShown";
+      break;
+    case AccountConsistencyPromoAction::CONFIRM_MANAGEMENT_ACCEPTED:
+      histogram =
+          "Signin.AccountConsistencyPromoAction.ConfirmManagementAccepted";
       break;
   }
 

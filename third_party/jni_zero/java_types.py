@@ -160,6 +160,9 @@ class JavaType:
   def is_primitive(self):
     return self.primitive_name is not None and not self.is_array_type()
 
+  def is_primitive_array(self):
+    return self.primitive_name is not None and self.is_array_type()
+
   def is_void(self):
     return self.primitive_name == 'void'
 
@@ -189,9 +192,11 @@ class JavaType:
       # There is no jstringArray.
       return 'jobjectArray'
 
-    base = _CPP_TYPE_BY_JAVA_TYPE.get(self.non_array_full_name_with_slashes,
-                                      'jobject')
-    return base + ('Array' * self.array_dimensions)
+    cpp_type = _CPP_TYPE_BY_JAVA_TYPE.get(self.non_array_full_name_with_slashes,
+                                          'jobject')
+    if self.array_dimensions:
+      cpp_type = f'{cpp_type}Array'
+    return cpp_type
 
   def to_cpp_default_value(self):
     """Returns a valid C return value for the given java type."""
@@ -207,7 +212,7 @@ class JavaType:
       return self
 
     # All other types should just be passed as Objects or Object arrays.
-    return dataclasses.replace(self, java_class=_OBJECT_CLASS)
+    return dataclasses.replace(self, java_class=OBJECT_CLASS)
 
   def converted_type(self):
     """Returns a C datatype listed in the JniType annotation for this type."""
@@ -322,6 +327,7 @@ class TypeResolver:
   def resolve(self, name):
     """Return a JavaClass for the given type name."""
     assert name not in PRIMITIVES
+    assert ' ' not in name
 
     if '/' in name:
       # Coming from javap, use the fully qualified name directly.
@@ -366,8 +372,9 @@ class TypeResolver:
     return JavaClass(f'{self.java_class.package_with_slashes}/{name}')
 
 
-_OBJECT_CLASS = JavaClass('java/lang/Object')
-_EMPTY_TYPE_RESOLVER = TypeResolver(_OBJECT_CLASS)
+OBJECT_CLASS = JavaClass('java/lang/Object')
+STRING_CLASS = JavaClass('java/lang/String')
+_EMPTY_TYPE_RESOLVER = TypeResolver(OBJECT_CLASS)
 LONG = JavaType(primitive_name='long')
 VOID = JavaType(primitive_name='void')
 EMPTY_PARAM_LIST = JavaParamList()

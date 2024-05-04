@@ -26,6 +26,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/jobs/uninstall/remove_install_source_job.h"
 #include "chrome/browser/web_applications/jobs/uninstall/remove_install_url_job.h"
 #include "chrome/browser/web_applications/jobs/uninstall/remove_web_app_job.h"
@@ -282,19 +283,6 @@ void WebAppInstallFinalizer::OnOriginAssociationValidated(
 
   web_app->SetValidatedScopeExtensions(validated_scope_extensions);
 
-  if (existing_web_app && !options.bypass_os_hooks) {
-    // There is a chance that existing sources type(s) are user uninstallable
-    // but the newly added source type is NOT user uninstallable. In this
-    // case, the following call will unregister os uninstallation.
-    // TODO(https://crbug.com/1273270): This does NOT block installation, and
-    // there is a possible edge case here where installation completes before
-    // this os hook is written. The best place to fix this is to put this code
-    // is where OS Hooks are called - however that is currently separate from
-    // this class. See https://crbug.com/1273269.
-    MaybeUnregisterOsUninstall(web_app.get(), options.source,
-                               provider_->os_integration_manager());
-  }
-
   // The UI may initiate a full install to overwrite the existing
   // non-locally-installed app. Therefore, |is_locally_installed| can be
   // promoted to |true|, but not vice versa.
@@ -492,7 +480,7 @@ void WebAppInstallFinalizer::Shutdown() {
 
 void WebAppInstallFinalizer::UpdateIsolationDataAndResetPendingUpdateInfo(
     WebApp* web_app,
-    const IsolatedWebAppLocation& location,
+    const IsolatedWebAppStorageLocation& location,
     const base::Version& version) {
   CHECK(version.IsValid());
 
@@ -611,8 +599,11 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall(
     return;
   }
 
-#if BUILDFLAG(IS_CHROMEOS)  // Deeper OS integration is expected on ChromeOS.
-  const bool should_install_os_hooks = !finalize_options.bypass_os_hooks;
+#if BUILDFLAG(IS_CHROMEOS)
+  // ChromeOS should always have OS integration. In the future we should always
+  // be synchronizing os integration on all platforms too.
+  // https://crbug.com/328524602
+  const bool should_install_os_hooks = true;
 #else
   const bool should_install_os_hooks =
       !finalize_options.bypass_os_hooks &&

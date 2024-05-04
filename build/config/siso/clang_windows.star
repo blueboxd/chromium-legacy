@@ -229,6 +229,9 @@ def __step_config(ctx, step_config):
                         path.join(win_toolchain_dir, "Windows Kits/10/Include/10.0.22621.0/shared/Devpropdef.h"),
                         # third_party/dawn/third_party/dxc/include/dxc/Support/WinIncludes.h "ObjIdl.h"
                         path.join(win_toolchain_dir, "Windows Kits/10/Include/10.0.22621.0/um/ObjIdl.h"),
+                        # third_party/dawn/third_party/dxc/lib/Support includes "D3Dcommon.h"
+                        # https://github.com/microsoft/DirectXShaderCompiler/pull/6380
+                        path.join(win_toolchain_dir, "Windows Kits/10/Include/10.0.22621.0/um/D3Dcommon.h"),
                     ],
                 })
                 remote = True
@@ -237,6 +240,9 @@ def __step_config(ctx, step_config):
                 "name": "clang-cl/cxx",
                 "action": "(.*_)?cxx",
                 "command_prefix": "..\\..\\third_party\\llvm-build\\Release+Asserts\\bin\\clang-cl.exe",
+                "inputs": [
+                    "third_party/llvm-build/Release+Asserts/bin/clang-cl.exe",
+                ],
                 "exclude_input_patterns": ["*.stamp"],
                 "platform_ref": "clang-cl",
                 "remote": remote,
@@ -247,6 +253,9 @@ def __step_config(ctx, step_config):
                 "name": "clang-cl/cc",
                 "action": "(.*_)?cc",
                 "command_prefix": "..\\..\\third_party\\llvm-build\\Release+Asserts\\bin\\clang-cl.exe",
+                "inputs": [
+                    "third_party/llvm-build/Release+Asserts/bin/clang-cl.exe",
+                ],
                 "exclude_input_patterns": ["*.stamp"],
                 "platform_ref": "clang-cl",
                 "remote": remote,

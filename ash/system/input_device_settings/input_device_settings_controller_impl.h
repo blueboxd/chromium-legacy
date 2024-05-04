@@ -71,6 +71,11 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       DeviceId id) override;
   const mojom::GraphicsTabletSettings* GetGraphicsTabletSettings(
       DeviceId id) override;
+  const mojom::Keyboard* GetKeyboard(DeviceId id) override;
+  const mojom::Mouse* GetMouse(DeviceId id) override;
+  const mojom::Touchpad* GetTouchpad(DeviceId id) override;
+  const mojom::PointingStick* GetPointingStick(DeviceId id) override;
+  const mojom::GraphicsTablet* GetGraphicsTablet(DeviceId id) override;
   const mojom::KeyboardPolicies& GetKeyboardPolicies() override;
   const mojom::MousePolicies& GetMousePolicies() override;
   bool SetKeyboardSettings(DeviceId id,
@@ -221,6 +226,11 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   // Get the mouse button config based on the mouse metadata. Return
   // kDefault by default if there is no mouse metadata.
   mojom::MouseButtonConfig GetMouseButtonConfig(const ui::InputDevice& mouse);
+
+  // Get the graphics tablet button config based on the tablet metadata. Return
+  // kDefault by default if there is no metadata.
+  mojom::GraphicsTabletButtonConfig GetGraphicsTabletButtonConfig(
+      const ui::InputDevice& graphics_tablet);
 
   mojom::Mouse* FindMouse(DeviceId id);
   mojom::Touchpad* FindTouchpad(DeviceId id);

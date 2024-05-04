@@ -23,6 +23,16 @@ class CrossThreadStyleValue;
 class ExecutionContext;
 class LayoutObject;
 
+// Determines how far to process a value requested from a computed style.
+enum class CSSValuePhase {
+  // The value inherited to child elements.
+  // https://www.w3.org/TR/css-cascade-3/#computed
+  kComputedValue,
+  // The value returned from getComputedStyle().
+  // https://www.w3.org/TR/cssom-1/#resolved-values
+  kResolvedValue
+};
+
 // For use in Get(Un)VisitedProperty(), although you could probably
 // use them yourself if you wanted to; contains a mapping from each
 // CSSPropertyID to its visited/unvisited counterpart, or kInvalid
@@ -97,9 +107,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     return flags_ & kValidForFormattedTextRun;
   }
   bool IsValidForKeyframe() const { return flags_ & kValidForKeyframe; }
-  bool IsValidForPositionFallback() const {
-    return flags_ & kValidForPositionFallback;
-  }
+  bool IsValidForPositionTry() const { return flags_ & kValidForPositionTry; }
   bool IsSurrogate() const { return flags_ & kSurrogate; }
   bool AffectsFont() const { return flags_ & kAffectsFont; }
   bool IsBackground() const { return flags_ & kBackground; }
@@ -124,16 +132,19 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   virtual const CSSValue* CSSValueFromComputedStyleInternal(
       const ComputedStyle&,
       const LayoutObject*,
-      bool allow_visited_style) const {
+      bool allow_visited_style,
+      CSSValuePhase value_phase) const {
     return nullptr;
   }
   const CSSValue* CSSValueFromComputedStyle(const ComputedStyle&,
                                             const LayoutObject*,
-                                            bool allow_visited_style) const;
+                                            bool allow_visited_style,
+                                            CSSValuePhase) const;
   std::unique_ptr<CrossThreadStyleValue> CrossThreadStyleValueFromComputedStyle(
       const ComputedStyle& computed_style,
       const LayoutObject* layout_object,
-      bool allow_visited_style) const;
+      bool allow_visited_style,
+      CSSValuePhase value_phase) const;
 
   const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,
@@ -246,12 +257,14 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     kLegacyOverlapping = 1 << 28,
     // See valid_for_keyframes in css_properties.json5
     kValidForKeyframe = 1 << 29,
-    // See valid_for_position_fallback in css_properties.json5
-    kValidForPositionFallback = 1 << 30,
+    // See valid_for_position_try in css_properties.json5
+    kValidForPositionTry = 1 << 30,
     // https://drafts.csswg.org/css-pseudo-4/#highlight-styling
     kValidForHighlight = 1ull << 31,
     // See accepts_numeric_literal in css_properties.json5.
     kAcceptsNumericLiteral = 1ull << 32,
+    // See valid_for_permission_element in css_properties.json5
+    kValidForPermissionElement = 1ull << 33,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

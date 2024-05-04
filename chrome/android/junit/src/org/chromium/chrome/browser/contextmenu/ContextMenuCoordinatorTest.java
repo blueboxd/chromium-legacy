@@ -70,6 +70,7 @@ import java.util.List;
     ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU,
     ChromeFeatureList.CONTEXT_MENU_POPUP_FOR_ALL_SCREEN_SIZES
 })
+@EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SYS_UI_MATCHES_ACTIVITY})
 public class ContextMenuCoordinatorTest {
     private static final int TOP_CONTENT_OFFSET_PX = 17;
 
@@ -213,7 +214,8 @@ public class ContextMenuCoordinatorTest {
     public void testGetItemListWithLink() {
         // We're testing it for a link, but the mediaType in params is image. That's because if it
         // isn't image or video, the header mediator tries to get a favicon for us and calls
-        // Profile.getLastUsedRegularProfile(), which throws an exception because native isn't
+        // ProfileManager.getLastUsedRegularProfile(), which throws an exception because native
+        // isn't
         // initialized. mediaType here doesn't have any effect on what we're testing.
         final ContextMenuParams params =
                 new ContextMenuParams(

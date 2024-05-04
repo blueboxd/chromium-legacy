@@ -575,7 +575,7 @@ PrefetchContainer::GetOrCreateNetworkContextForCurrentPrefetch() {
             .emplace(is_isolated_network_context_required,
                      std::make_unique<PrefetchNetworkContext>(
                          is_isolated_network_context_required, prefetch_type_,
-                         referring_render_frame_host_id_))
+                         referring_render_frame_host_id_, referring_origin_))
             .first;
   }
 
@@ -703,7 +703,7 @@ void PrefetchContainer::AddRedirectHop(const net::RedirectInfo& redirect_info) {
 
   // To avoid spurious reordering, don't remove headers that will be updated
   // anyway.
-  base::EraseIf(headers_to_remove, [&](const std::string& header) {
+  std::erase_if(headers_to_remove, [&](const std::string& header) {
     return updated_headers.HasHeader(header);
   });
 
@@ -732,6 +732,10 @@ void PrefetchContainer::AddRedirectHop(const net::RedirectInfo& redirect_info) {
 
   redirect_chain_.push_back(std::make_unique<SinglePrefetch>(
       redirect_info.new_url, referring_origin_));
+}
+
+void PrefetchContainer::MarkCrossSiteContaminated() {
+  is_cross_site_contaminated_ = true;
 }
 
 void PrefetchContainer::RegisterCookieListener(
@@ -898,6 +902,13 @@ void PrefetchContainer::CancelStreamingURLLoaderIfNotServing() {
 void PrefetchContainer::Reader::OnPrefetchProbeResult(
     PrefetchProbeResult probe_result) const {
   prefetch_container_->probe_result_ = probe_result;
+
+  // It's possible for the prefetch to fail (e.g., due to a network error) while
+  // the origin probe is running. We avoid overwriting the status in that case.
+  if (TriggeringOutcomeFromStatus(GetPrefetchStatus()) ==
+      PreloadingTriggeringOutcome::kFailure) {
+    return;
+  }
 
   switch (probe_result) {
     case PrefetchProbeResult::kNoProbing:
@@ -1150,6 +1161,15 @@ void PrefetchContainer::UpdateServingPageMetrics() {
   if (HasPrefetchStatus()) {
     serving_page_metrics_container_->SetPrefetchStatus(GetPrefetchStatus());
   }
+}
+
+void PrefetchContainer::SimulateAttemptAtRequestStartForTest() {
+  if (attempt_) {
+    attempt_->SetEligibility(PreloadingEligibility::kEligible);
+    attempt_->SetHoldbackStatus(PreloadingHoldbackStatus::kAllowed);
+  }
+  SetPrefetchStatus(PrefetchStatus::kPrefetchAllowed);
+  SetPrefetchStatus(PrefetchStatus::kPrefetchNotFinishedInTime);
 }
 
 void PrefetchContainer::SimulateAttemptAtInterceptorForTest() {

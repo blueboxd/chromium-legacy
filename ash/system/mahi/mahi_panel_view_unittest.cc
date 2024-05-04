@@ -9,12 +9,15 @@
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "ash/style/icon_button.h"
+#include "ash/system/mahi/fake_mahi_manager.h"
 #include "ash/system/mahi/mahi_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chromeos/components/mahi/public/cpp/fake_mahi_manager.h"
 #include "chromeos/components/mahi/public/cpp/mahi_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/text_constants.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/widget/widget.h"
@@ -47,7 +50,7 @@ class MahiPanelViewTest : public AshTestBase {
 
     AshTestBase::SetUp();
 
-    fake_mahi_manager_ = std::make_unique<chromeos::FakeMahiManager>();
+    fake_mahi_manager_ = std::make_unique<FakeMahiManager>();
     scoped_setter_ = std::make_unique<chromeos::ScopedMahiManagerSetter>(
         fake_mahi_manager_.get());
 
@@ -69,22 +72,60 @@ class MahiPanelViewTest : public AshTestBase {
 
   MockNewWindowDelegate& new_window_delegate() { return *new_window_delegate_; }
 
-  chromeos::FakeMahiManager* fake_mahi_manager() {
-    return fake_mahi_manager_.get();
-  }
+  FakeMahiManager* fake_mahi_manager() { return fake_mahi_manager_.get(); }
 
   MahiPanelView* panel_view() { return panel_view_; }
 
   views::Widget* widget() { return widget_.get(); }
 
  private:
-  std::unique_ptr<chromeos::FakeMahiManager> fake_mahi_manager_;
+  std::unique_ptr<FakeMahiManager> fake_mahi_manager_;
   std::unique_ptr<chromeos::ScopedMahiManagerSetter> scoped_setter_;
   raw_ptr<MahiPanelView> panel_view_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
   raw_ptr<MockNewWindowDelegate> new_window_delegate_;
   std::unique_ptr<TestNewWindowDelegateProvider> delegate_provider_;
 };
+
+// Verifies that the content title is correct when the panel is created.
+TEST_F(MahiPanelViewTest, ContentTitle) {
+  auto* test_title1 = u"test content title 1";
+  fake_mahi_manager()->set_content_title(test_title1);
+  auto mahi_view1 = std::make_unique<MahiPanelView>();
+  auto* content_title_label1 = static_cast<views::Label*>(
+      mahi_view1->GetViewByID(mahi_constants::ViewId::kContentTitle));
+  EXPECT_EQ(content_title_label1->GetText(), test_title1);
+
+  auto* test_title2 = u"test content title 2";
+  fake_mahi_manager()->set_content_title(test_title2);
+  auto mahi_view2 = std::make_unique<MahiPanelView>();
+  auto* content_title_label2 = static_cast<views::Label*>(
+      mahi_view2->GetViewByID(mahi_constants::ViewId::kContentTitle));
+  EXPECT_EQ(content_title_label2->GetText(), test_title2);
+}
+
+// Verifies that the content icon is correct when the panel is created.
+TEST_F(MahiPanelViewTest, ContentIcon) {
+  auto test_icon1 = gfx::test::CreateImageSkia(128, SK_ColorRED);
+  fake_mahi_manager()->set_content_icon(test_icon1);
+  auto mahi_view1 = std::make_unique<MahiPanelView>();
+  auto* content_icon1 = static_cast<views::ImageView*>(
+      mahi_view1->GetViewByID(mahi_constants::ViewId::kContentIcon));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(*content_icon1->GetImage().bitmap(),
+                                         *test_icon1.bitmap()));
+  EXPECT_EQ(content_icon1->GetPreferredSize(),
+            mahi_constants::kContentIconSize);
+
+  auto test_icon2 = gfx::test::CreateImageSkia(128, SK_ColorBLUE);
+  fake_mahi_manager()->set_content_icon(test_icon2);
+  auto mahi_view2 = std::make_unique<MahiPanelView>();
+  auto* content_icon2 = static_cast<views::ImageView*>(
+      mahi_view2->GetViewByID(mahi_constants::ViewId::kContentIcon));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(*content_icon2->GetImage().bitmap(),
+                                         *test_icon2.bitmap()));
+  EXPECT_EQ(content_icon2->GetPreferredSize(),
+            mahi_constants::kContentIconSize);
+}
 
 // Makes sure that the summary text is set correctly in ctor with different
 // texts.
@@ -93,39 +134,49 @@ TEST_F(MahiPanelViewTest, SummaryText) {
   fake_mahi_manager()->set_summary_text(test_text1);
   auto mahi_view1 = std::make_unique<MahiPanelView>();
   auto* summary_label1 = static_cast<views::Label*>(
-      mahi_view1->GetViewByID(MahiPanelView::ViewId::kSummaryLabel));
+      mahi_view1->GetViewByID(mahi_constants::ViewId::kSummaryLabel));
   EXPECT_EQ(test_text1, summary_label1->GetText());
 
   auto* test_text2 = u"test summary text 2";
   fake_mahi_manager()->set_summary_text(test_text2);
   auto mahi_view2 = std::make_unique<MahiPanelView>();
   auto* summary_label2 = static_cast<views::Label*>(
-      mahi_view2->GetViewByID(MahiPanelView::ViewId::kSummaryLabel));
+      mahi_view2->GetViewByID(mahi_constants::ViewId::kSummaryLabel));
   EXPECT_EQ(test_text2, summary_label2->GetText());
+
+  // Make sure the text is multiline and aligned correctly.
+  EXPECT_TRUE(summary_label2->GetMultiLine());
+  EXPECT_EQ(gfx::HorizontalAlignment::ALIGN_LEFT,
+            summary_label2->GetHorizontalAlignment());
 }
 
 TEST_F(MahiPanelViewTest, FeedbackButtons) {
   base::HistogramTester histogram_tester;
 
   LeftClickOn(
-      panel_view()->GetViewByID(MahiPanelView::ViewId::kThumbsUpButton));
+      panel_view()->GetViewByID(mahi_constants::ViewId::kThumbsUpButton));
   histogram_tester.ExpectBucketCount(mahi_constants::kMahiFeedbackHistogramName,
                                      true, 1);
   histogram_tester.ExpectBucketCount(mahi_constants::kMahiFeedbackHistogramName,
                                      false, 0);
 
+  EXPECT_EQ(0, fake_mahi_manager()->open_feedback_dialog_called_count());
+
   LeftClickOn(
-      panel_view()->GetViewByID(MahiPanelView::ViewId::kThumbsDownButton));
+      panel_view()->GetViewByID(mahi_constants::ViewId::kThumbsDownButton));
   histogram_tester.ExpectBucketCount(mahi_constants::kMahiFeedbackHistogramName,
                                      true, 1);
   histogram_tester.ExpectBucketCount(mahi_constants::kMahiFeedbackHistogramName,
                                      false, 1);
+
+  // Should open feedback dialog when thumbs down button is pressed.
+  EXPECT_EQ(1, fake_mahi_manager()->open_feedback_dialog_called_count());
 }
 
 TEST_F(MahiPanelViewTest, CloseButton) {
   EXPECT_FALSE(widget()->IsClosed());
 
-  LeftClickOn(panel_view()->GetViewByID(MahiPanelView::ViewId::kCloseButton));
+  LeftClickOn(panel_view()->GetViewByID(mahi_constants::ViewId::kCloseButton));
 
   EXPECT_TRUE(widget()->IsClosed());
 }
@@ -135,7 +186,8 @@ TEST_F(MahiPanelViewTest, LearnMoreLink) {
               OpenUrl(GURL(mahi_constants::kLearnMorePage),
                       NewWindowDelegate::OpenUrlFrom::kUserInteraction,
                       NewWindowDelegate::Disposition::kNewForegroundTab));
-  LeftClickOn(panel_view()->GetViewByID(MahiPanelView::ViewId::kLearnMoreLink));
+  LeftClickOn(
+      panel_view()->GetViewByID(mahi_constants::ViewId::kLearnMoreLink));
 }
 
 }  // namespace

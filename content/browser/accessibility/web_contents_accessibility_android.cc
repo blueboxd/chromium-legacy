@@ -10,12 +10,14 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
+#include "content/browser/accessibility/accessibility_tree_snapshot_combiner.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl_android.h"
@@ -24,6 +26,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/android/content_jni_headers/AccessibilityNodeInfoBuilder_jni.h"
+#include "content/public/android/content_jni_headers/AssistDataBuilder_jni.h"
 #include "content/public/android/content_jni_headers/WebContentsAccessibilityImpl_jni.h"
 #include "content/public/common/content_features.h"
 #include "net/base/data_url.h"
@@ -218,6 +221,18 @@ WebContentsAccessibilityAndroid::WebContentsAccessibilityAndroid(
   snapshot_root_manager_ = std::make_unique<BrowserAccessibilityManagerAndroid>(
       *ax_tree_snapshot, GetWeakPtr(), nullptr);
   snapshot_root_manager_->BuildAXTreeHitTestCache();
+  connector_ = nullptr;
+}
+
+WebContentsAccessibilityAndroid::WebContentsAccessibilityAndroid(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& jassist_data_builder,
+    WebContents* web_contents)
+    : java_ref_(env, obj),
+      java_adb_ref_(env, jassist_data_builder),
+      web_contents_(static_cast<WebContentsImpl*>(web_contents)) {
+  // A Connector is not required for a simple snapshot.
   connector_ = nullptr;
 }
 
@@ -1681,6 +1696,119 @@ void WebContentsAccessibilityAndroid::UpdateFrameInfo(float page_scale) {
   frame_info_initialized_ = true;
 }
 
+void WebContentsAccessibilityAndroid::RequestAccessibilityTreeSnapshot(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& view_structure_root,
+    const base::android::JavaParamRef<jobject>& on_done_callback) {
+  // This method should only be called by the unified snapshots feature.
+  CHECK(base::FeatureList::IsEnabled(features::kAccessibilityUnifiedSnapshots));
+
+  // This is the callback provided by the Java-side code and will be called
+  // after the snapshot has been requested and fully processed. This is not to
+  // be confused with the ProcessCompletedAccessibilityTreeSnapshot callback
+  // below, which is called once the renderer has returned all AXTreeUpdates.
+  on_done_callback_ = std::move(on_done_callback);
+
+  base::android::ScopedJavaGlobalRef<jobject> movable_view_structure_root;
+  movable_view_structure_root.Reset(env, view_structure_root);
+
+  // Define snapshot parameters:
+  auto params = mojom::SnapshotAccessibilityTreeParams::New();
+  params->ax_mode =
+      ui::AXMode(ui::kAXModeComplete.flags() | ui::AXMode::kHTMLMetadata)
+          .flags();
+  params->max_nodes = 5000;
+  params->timeout = base::Seconds(2);
+
+  // Use AccessibilityTreeSnapshotCombiner to perform snapshots
+  auto combiner = base::MakeRefCounted<AccessibilityTreeSnapshotCombiner>(
+      base::BindOnce(&WebContentsAccessibilityAndroid::
+                         ProcessCompletedAccessibilityTreeSnapshot,
+                     GetWeakPtr(), env, std::move(movable_view_structure_root)),
+      std::move(params));
+  web_contents_->GetPrimaryMainFrame()->ForEachRenderFrameHost(
+      [&combiner](RenderFrameHostImpl* rfhi) {
+        combiner->RequestSnapshotOnRenderFrameHost(rfhi);
+      });
+}
+
+void WebContentsAccessibilityAndroid::ProcessCompletedAccessibilityTreeSnapshot(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& view_structure_root,
+    const ui::AXTreeUpdate& result) {
+  // If we don't have a connection back to the Java-side objects, then fail.
+  ScopedJavaLocalRef<jobject> obj = java_adb_ref_.get(env);
+  CHECK(obj);
+
+  // Construct a root manager without a delegate if one does not already exist.
+  // In some situations (e.g. unit tests) the full accessibility engine may
+  // already be running and we do not need to create a new manager.
+  if (!GetRootBrowserAccessibilityManager()) {
+    snapshot_root_manager_ =
+        std::make_unique<BrowserAccessibilityManagerAndroid>(
+            result, GetWeakPtr(), /* delegate= */ nullptr);
+  }
+
+  auto* root = static_cast<BrowserAccessibilityAndroid*>(
+      GetRootBrowserAccessibilityManager()->GetBrowserAccessibilityRoot());
+  CHECK(root);
+
+  // Construct the Java-side tree, use the JNI builder `java_adb_ref_` to
+  // recursively construct each node of the tree starting with the provided
+  // root.
+  RecursivelyPopulateViewStructureTree(env, obj, root, view_structure_root,
+                                       /* is_root= */ true);
+
+  // Add tree-level (root only) data to Java-side tree (e.g. HTML metadata).
+  Java_AssistDataBuilder_populateHTMLMetadataProperties(env, obj,
+                                                        view_structure_root);
+
+  // We have fulfilled the request for an accessibility tree snapshot, so we can
+  // now call the provided Java-side callback to inform original client that the
+  // async construction is complete.
+  base::android::RunRunnableAndroid(on_done_callback_);
+}
+
+void WebContentsAccessibilityAndroid::RecursivelyPopulateViewStructureTree(
+    JNIEnv* env,
+    ScopedJavaLocalRef<jobject> obj,
+    const BrowserAccessibilityAndroid* node,
+    const base::android::JavaRef<jobject>& java_side_assist_data_object,
+    bool is_root) {
+  PopulateViewStructureNode(env, obj, node, java_side_assist_data_object);
+  for (const auto& child : node->PlatformChildren()) {
+    const auto& child_node =
+        static_cast<const BrowserAccessibilityAndroid&>(child);
+    base::android::ScopedJavaLocalRef<jobject> java_side_child_object =
+        Java_AssistDataBuilder_addChildNode(env, obj,
+                                            java_side_assist_data_object);
+    RecursivelyPopulateViewStructureTree(env, obj, &child_node,
+                                         java_side_child_object,
+                                         /* is_root= */ false);
+  }
+  if (!is_root) {
+    Java_AssistDataBuilder_commitNode(env, obj, java_side_assist_data_object);
+  }
+}
+
+void WebContentsAccessibilityAndroid::PopulateViewStructureNode(
+    JNIEnv* env,
+    ScopedJavaLocalRef<jobject> obj,
+    const BrowserAccessibilityAndroid* node,
+    const base::android::JavaRef<jobject>& java_side_assist_data_object) {
+  Java_AssistDataBuilder_populateBaseProperties(env, obj,
+                                                java_side_assist_data_object);
+
+  Java_AssistDataBuilder_populateTextProperties(env, obj,
+                                                java_side_assist_data_object);
+
+  Java_AssistDataBuilder_populateBoundsProperties(env, obj,
+                                                  java_side_assist_data_object);
+
+  Java_AssistDataBuilder_populateHTMLProperties(env, obj,
+                                                java_side_assist_data_object);
+}
+
 base::WeakPtr<WebContentsAccessibilityAndroid>
 WebContentsAccessibilityAndroid::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -1705,6 +1833,18 @@ jlong JNI_WebContentsAccessibilityImpl_Init(
 
   return reinterpret_cast<intptr_t>(new WebContentsAccessibilityAndroid(
       env, obj, web_contents, jaccessibility_node_info_builder));
+}
+
+jlong JNI_WebContentsAccessibilityImpl_InitForAssistData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobject>& jassist_data_builder) {
+  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
+  DCHECK(web_contents);
+
+  return reinterpret_cast<intptr_t>(new WebContentsAccessibilityAndroid(
+      env, obj, jassist_data_builder, web_contents));
 }
 
 void JNI_WebContentsAccessibilityImpl_SetBrowserAXMode(

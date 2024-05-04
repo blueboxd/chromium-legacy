@@ -139,12 +139,17 @@ const char* ProtoEnumToString(
   return "";
 }
 
-const char* ProtoEnumToString(
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source) {
-  ASSERT_ENUM_BOUNDS(sync_pb::GetUpdatesCallerInfo, GetUpdatesSource, UNKNOWN,
-                     UNKNOWN);
-  switch (updates_source) {
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, UNKNOWN);
+const char* ProtoEnumToString(sync_pb::NigoriSpecifics::
+    AutoUpgradeDebugInfo::AutoUpgradeState auto_upgrade_state) {
+  ASSERT_ENUM_BOUNDS(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo,
+    AutoUpgradeState, STATE_UNSPECIFIED, VALIDATION);
+
+  switch (auto_upgrade_state) {
+    ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo,
+        STATE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo, AUTO_UPGRADED);
+    ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo, CONTROL);
+    ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo, VALIDATION);
   }
   NOTREACHED();
   return "";
@@ -168,10 +173,11 @@ const char* ProtoEnumToString(sync_pb::NigoriSpecifics::PassphraseType type) {
 const char* ProtoEnumToString(
     sync_pb::PaymentInstrument::SupportedRail supported_rail) {
   ASSERT_ENUM_BOUNDS(sync_pb::PaymentInstrument, SupportedRail,
-                     SUPPORTED_RAIL_UNKNOWN, PIX);
+                     SUPPORTED_RAIL_UNKNOWN, IBAN);
   switch (supported_rail) {
     ENUM_CASE(sync_pb::PaymentInstrument, SUPPORTED_RAIL_UNKNOWN);
     ENUM_CASE(sync_pb::PaymentInstrument, PIX);
+    ENUM_CASE(sync_pb::PaymentInstrument, IBAN);
   }
   NOTREACHED();
   return "";

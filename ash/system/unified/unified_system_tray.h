@@ -170,7 +170,7 @@ class ASH_EXPORT UnifiedSystemTray
   void HandleLocaleChange() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
-  void ClickedOutsideBubble() override;
+  void ClickedOutsideBubble(const ui::LocatedEvent& event) override;
   void UpdateTrayItemColor(bool is_active) override;
   void UpdateLayout() override;
   void UpdateAfterLoginStatusChange() override;
@@ -256,7 +256,7 @@ class ASH_EXPORT UnifiedSystemTray
   raw_ptr<ChannelIndicatorView> channel_indicator_view_ = nullptr;
 
   // Contains all tray items views added to tray_container().
-  std::list<TrayItemView*> tray_items_;
+  std::list<raw_ptr<TrayItemView, CtnExperimental>> tray_items_;
 
   bool first_interaction_recorded_ = false;
 

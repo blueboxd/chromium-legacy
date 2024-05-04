@@ -5,8 +5,8 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 
 #include <memory>
-
 #include <optional>
+
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -559,7 +559,9 @@ void CommandBufferProxyImpl::GetGpuFence(
   command_buffer_->GetGpuFenceHandle(
       gpu_fence_id,
       base::BindOnce(&CommandBufferProxyImpl::OnGetGpuFenceHandleComplete,
-                     base::Unretained(this), gpu_fence_id,
+                     // TODO(crbug.com/1380714): Remove
+                     // `UnsafeDanglingUntriaged`
+                     base::UnsafeDanglingUntriaged(this), gpu_fence_id,
                      std::move(callback)));
 }
 

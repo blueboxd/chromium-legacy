@@ -148,6 +148,7 @@ HTMLInputElement::HTMLInputElement(Document& document,
       needs_to_update_view_value_(true),
       is_placeholder_visible_(false),
       has_been_password_field_(false),
+      scheduled_create_shadow_tree_(false),
       // |input_type_| is lazily created when constructed by the parser to avoid
       // constructing unnecessarily a text InputType and its shadow subtree,
       // just to destroy them when the |type| attribute gets set by the parser
@@ -385,7 +386,9 @@ void HTMLInputElement::HandleBlurEvent() {
 }
 
 void HTMLInputElement::setType(const AtomicString& type) {
-  EnsureShadowSubtree();
+  if (!RuntimeEnabledFeatures::CreateInputShadowTreeDuringLayoutEnabled()) {
+    EnsureShadowSubtree();
+  }
   setAttribute(html_names::kTypeAttr, type);
 }
 
@@ -408,7 +411,13 @@ void HTMLInputElement::InitializeTypeInParsing() {
   if (!default_value.IsNull())
     input_type_->WarnIfValueIsInvalid(default_value);
 
-  input_type_view_->UpdateView();
+  if (!RuntimeEnabledFeatures::CreateInputShadowTreeDuringLayoutEnabled() ||
+      input_type_view_->HasCreatedShadowSubtree()) {
+    input_type_view_->UpdateView();
+  } else {
+    input_type_view_->set_needs_update_view_in_create_shadow_subtree(true);
+    UpdatePlaceholderVisibility();
+  }
 
   // Prewarm the default font family. Do this while parsing because the style
   // recalc calls |TextControlInnerEditorElement::CreateInnerEditorStyle| which
@@ -487,7 +496,13 @@ void HTMLInputElement::UpdateType(const AtomicString& type_attribute_value) {
     UpdateDirectionalityAfterInputTypeChange(dir, value_dir);
   }
 
-  input_type_view_->CreateShadowSubtreeIfNeeded();
+  // No need for CreateShadowSubtreeIfNeeded() to call UpdateView() as we'll
+  // do that later on in this function (and calling UpdateView() here is
+  // problematic as state hasn't fully been updated).
+  if (RuntimeEnabledFeatures::CreateInputShadowTreeDuringLayoutEnabled()) {
+    input_type_view_->set_needs_update_view_in_create_shadow_subtree(false);
+  }
+  input_type_view_->CreateShadowSubtreeIfNeeded(true);
 
   UpdateWillValidateCache();
 
@@ -836,7 +851,10 @@ void HTMLInputElement::ParseAttribute(
         autocomplete_ = kOn;
     }
   } else if (name == html_names::kTypeAttr) {
-    if (params.old_value != value) {
+    if ((!RuntimeEnabledFeatures::
+             SkipUpdateTypeForHTMLInputElementCreatedByParserEnabled() ||
+         params.reason != AttributeModificationReason::kByParser) &&
+        params.old_value != value) {
       UpdateType(value);
     }
   } else if (name == html_names::kValueAttr) {
@@ -854,7 +872,13 @@ void HTMLInputElement::ParseAttribute(
     SetNeedsValidityCheck();
     input_type_->WarnIfValueIsInvalidAndElementIsVisible(value);
     input_type_->InRangeChanged();
-    input_type_view_->ValueAttributeChanged();
+    if (input_type_view_->HasCreatedShadowSubtree() ||
+        !RuntimeEnabledFeatures::CreateInputShadowTreeDuringLayoutEnabled() ||
+        !input_type_view_->NeedsShadowSubtree()) {
+      input_type_view_->ValueAttributeChanged();
+    } else {
+      input_type_view_->set_needs_update_view_in_create_shadow_subtree(true);
+    }
   } else if (name == html_names::kCheckedAttr) {
     // Another radio button in the same group might be checked by state
     // restore. We shouldn't call SetChecked() even if this has the checked
@@ -1071,16 +1095,10 @@ bool HTMLInputElement::Checked() const {
 }
 
 void HTMLInputElement::setCheckedForBinding(bool now_checked) {
-  bool old_value = this->Checked();
-  bool was_autofilled = IsAutofilled();
   SetChecked(now_checked, TextFieldEventBehavior::kDispatchNoEvent,
-             was_autofilled && old_value == now_checked
+             IsAutofilled() && this->Checked() == now_checked
                  ? WebAutofillState::kAutofilled
                  : WebAutofillState::kNotFilled);
-  if (Page* page = GetDocument().GetPage()) {
-    page->GetChromeClient().JavaScriptChangedValue(
-        *this, old_value ? "true" : "false", was_autofilled);
-  }
 }
 
 void HTMLInputElement::SetChecked(bool now_checked,
@@ -1242,7 +1260,9 @@ void HTMLInputElement::SetSuggestedValue(const String& value) {
 
 void HTMLInputElement::SetInnerEditorValue(const String& value) {
   TextControlElement::SetInnerEditorValue(value);
-  needs_to_update_view_value_ = false;
+  if (InnerEditorElement()) {
+    needs_to_update_view_value_ = false;
+  }
 }
 
 void HTMLInputElement::setValueForBinding(const String& value,
@@ -1257,12 +1277,13 @@ void HTMLInputElement::setValueForBinding(const String& value,
   }
   String old_value = this->Value();
   bool was_autofilled = IsAutofilled();
+  bool value_changed = old_value != value;
   SetValue(value, TextFieldEventBehavior::kDispatchNoEvent,
            TextControlSetValueSelection::kSetSelectionToEnd,
-           was_autofilled && old_value == value && !value.empty()
+           was_autofilled && !value_changed && !value.empty()
                ? WebAutofillState::kAutofilled
                : WebAutofillState::kNotFilled);
-  if (Page* page = GetDocument().GetPage()) {
+  if (Page* page = GetDocument().GetPage(); page && value_changed) {
     page->GetChromeClient().JavaScriptChangedValue(*this, old_value,
                                                    was_autofilled);
   }
@@ -1307,9 +1328,9 @@ void HTMLInputElement::SetValue(const String& value,
 
   // We set the Autofilled state again because setting the autofill value
   // triggers JavaScript events and the site may override the autofilled value,
-  // which resets the autofill state. Even if the website modifies the from
+  // which resets the autofill state. Even if the website modifies the form
   // control element's content during the autofill operation, we want the state
-  // to show as as autofilled.
+  // to show as autofilled.
   SetAutofillState(autofill_state);
 }
 
@@ -1409,7 +1430,9 @@ void HTMLInputElement::SetValueFromRenderer(const String& value) {
   SetValueBeforeFirstUserEditIfNotSet();
   non_attribute_value_ = value;
   has_dirty_value_ = true;
-  needs_to_update_view_value_ = false;
+  if (InnerEditorElement()) {
+    needs_to_update_view_value_ = false;
+  }
   CheckIfValueWasReverted(value);
 
   // Input event is fired by the Node::defaultEventHandler for editable
@@ -1548,6 +1571,7 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
 }
 
 ShadowRoot* HTMLInputElement::EnsureShadowSubtree() {
+  scheduled_create_shadow_tree_ = false;
   input_type_view_->CreateShadowSubtreeIfNeeded();
   return UserAgentShadowRoot();
 }
@@ -1732,6 +1756,10 @@ void HTMLInputElement::UpdateClearButtonVisibility() {
   input_type_view_->UpdateClearButtonVisibility();
 }
 
+bool HTMLInputElement::IsInnerEditorValueEmpty() const {
+  return input_type_view_->IsInnerEditorValueEmpty();
+}
+
 void HTMLInputElement::WillChangeForm() {
   if (input_type_)
     RemoveFromRadioButtonGroup();
@@ -1747,12 +1775,21 @@ void HTMLInputElement::DidChangeForm() {
 Node::InsertionNotificationRequest HTMLInputElement::InsertedInto(
     ContainerNode& insertion_point) {
   TextControlElement::InsertedInto(insertion_point);
-  if (insertion_point.isConnected() && !Form())
-    AddToRadioButtonGroup();
+  if (insertion_point.isConnected()) {
+    if (!Form()) {
+      AddToRadioButtonGroup();
+    }
+    if (RuntimeEnabledFeatures::CreateInputShadowTreeDuringLayoutEnabled() &&
+        !input_type_view_->HasCreatedShadowSubtree() &&
+        input_type_view_->NeedsShadowSubtree()) {
+      scheduled_create_shadow_tree_ = true;
+      GetDocument().ScheduleShadowTreeCreation(*this);
+    }
+  }
   ResetListAttributeTargetObserver();
   LogAddElementIfIsolatedWorldAndInDocument("input", html_names::kTypeAttr,
                                             html_names::kFormactionAttr);
-  {
+  if (!RuntimeEnabledFeatures::CreateInputShadowTreeDuringLayoutEnabled()) {
     EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
     input_type_view_->CreateShadowSubtreeIfNeeded();
   }
@@ -1761,8 +1798,15 @@ Node::InsertionNotificationRequest HTMLInputElement::InsertedInto(
 
 void HTMLInputElement::RemovedFrom(ContainerNode& insertion_point) {
   input_type_view_->ClosePopupView();
-  if (insertion_point.isConnected() && !Form())
-    RemoveFromRadioButtonGroup();
+  if (insertion_point.isConnected()) {
+    if (!Form()) {
+      RemoveFromRadioButtonGroup();
+    }
+    if (scheduled_create_shadow_tree_) {
+      scheduled_create_shadow_tree_ = false;
+      GetDocument().UnscheduleShadowTreeCreation(*this);
+    }
+  }
   TextControlElement::RemovedFrom(insertion_point);
   DCHECK(!isConnected());
   ResetListAttributeTargetObserver();
@@ -1839,6 +1883,10 @@ HTMLInputElement::FilteredDataListOptions() const {
   HTMLDataListElement* data_list = DataList();
   if (!data_list)
     return filtered;
+
+  // Ensure the editor has been created as InnerEditorValue() returns an empty
+  // string if the editor wasn't created.
+  EnsureInnerEditorElement();
 
   String editor_value = InnerEditorValue();
   if (Multiple() && FormControlType() == FormControlType::kInputEmail) {
@@ -2003,12 +2051,11 @@ bool HTMLInputElement::SupportsPlaceholder() const {
   return input_type_->SupportsPlaceholder();
 }
 
-TextControlInnerEditorElement* HTMLInputElement::EnsureInnerEditorElement()
-    const {
-  return input_type_view_->EnsureInnerEditorElement();
+void HTMLInputElement::CreateInnerEditorElementIfNecessary() const {
+  input_type_view_->CreateShadowSubtreeIfNeeded();
 }
 
-void HTMLInputElement::UpdatePlaceholderText() {
+HTMLElement* HTMLInputElement::UpdatePlaceholderText() {
   return input_type_view_->UpdatePlaceholderText(!SuggestedValue().empty());
 }
 

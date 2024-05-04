@@ -178,23 +178,19 @@ Color DefaultBackgroundColor(const Document& document,
 // Returns the UA default highlight color for a paired cascade |property|,
 // that is, ‘color’ or ‘background-color’. Paired cascade only applies to those
 // properties, not ‘-webkit-text-fill-color’ or ‘-webkit-text-stroke-color’.
-Color DefaultHighlightColor(const Document& document,
-                            const ComputedStyle& originating_style,
-                            const ComputedStyle* pseudo_style,
-                            PseudoId pseudo,
-                            const CSSProperty& property,
-                            std::optional<Color> previous_layer_color) {
+std::optional<Color> DefaultHighlightColor(
+    const Document& document,
+    const ComputedStyle& originating_style,
+    const ComputedStyle* pseudo_style,
+    PseudoId pseudo,
+    const CSSProperty& property) {
   mojom::blink::ColorScheme color_scheme =
       UsedColorScheme(originating_style, pseudo_style);
   if (property.IDEquals(CSSPropertyID::kBackgroundColor)) {
     return DefaultBackgroundColor(document, pseudo, color_scheme);
   }
   DCHECK(property.IDEquals(CSSPropertyID::kColor));
-  if (std::optional<Color> result =
-          DefaultForegroundColor(document, pseudo, color_scheme)) {
-    return *result;
-  }
-  return PreviousLayerColor(originating_style, previous_layer_color);
+  return DefaultForegroundColor(document, pseudo, color_scheme);
 }
 
 // Returns highlight styles for the given node, inheriting from the originating
@@ -264,7 +260,7 @@ bool UseForcedColors(const Document& document,
 
 // Paired cascade: when we encounter any highlight colors, we make all other
 // highlight color properties default to initial, rather than the UA default.
-// https://drafts.csswg.org/css-pseudo-4/#highlight-cascade
+// https://drafts.csswg.org/css-pseudo-4/#paired-defaults
 bool UseDefaultHighlightColors(const ComputedStyle* pseudo_style,
                                PseudoId pseudo,
                                const CSSProperty& property) {
@@ -280,18 +276,30 @@ bool UseDefaultHighlightColors(const ComputedStyle* pseudo_style,
 
 }  // anonymous namespace
 
+Color HighlightStyleUtils::ResolveColor(const Document& document,
+                                        const ComputedStyle& originating_style,
+                                        const ComputedStyle* pseudo_style,
+                                        PseudoId pseudo,
+                                        const CSSProperty& property,
+                                        std::optional<Color> current_color) {
+  std::optional<Color> maybe_color = MaybeResolveColor(
+      document, originating_style, pseudo_style, pseudo, property);
+  if (maybe_color) {
+    return maybe_color.value();
+  }
+  return PreviousLayerColor(originating_style, current_color);
+}
+
 // Returns the used value of the given <color>-valued |property|, taking into
-// account forced colors, default highlight colors, and ‘currentColor’ fallback
-// by means of the previous_layer_color parameter.
-// If the current layer's color already accounts for the currentColor fallback,
-// then the current layer's color can be supplied for the previous_layer_color.
-Color HighlightStyleUtils::ResolveColor(
+// account forced colors and default highlight colors. If the final result is
+// ‘currentColor’, return nullopt so that the color may later be resolved
+// against the previous layer.
+std::optional<Color> HighlightStyleUtils::MaybeResolveColor(
     const Document& document,
     const ComputedStyle& originating_style,
     const ComputedStyle* pseudo_style,
     PseudoId pseudo,
-    const CSSProperty& property,
-    std::optional<Color> previous_layer_color) {
+    const CSSProperty& property) {
   if (UseForcedColors(document, originating_style, pseudo_style)) {
     return ForcedColor(originating_style, pseudo_style, pseudo, property,
                        document.GetColorProviderForPainting(
@@ -299,7 +307,7 @@ Color HighlightStyleUtils::ResolveColor(
   }
   if (UseDefaultHighlightColors(pseudo_style, pseudo, property)) {
     return DefaultHighlightColor(document, originating_style, pseudo_style,
-                                 pseudo, property, previous_layer_color);
+                                 pseudo, property);
   }
   if (pseudo_style) {
     bool is_current_color;
@@ -310,10 +318,10 @@ Color HighlightStyleUtils::ResolveColor(
     }
   }
   if (!property.IDEquals(CSSPropertyID::kColor)) {
-    return ResolveColor(document, originating_style, pseudo_style, pseudo,
-                        GetCSSPropertyColor(), previous_layer_color);
+    return MaybeResolveColor(document, originating_style, pseudo_style, pseudo,
+                             GetCSSPropertyColor());
   }
-  return PreviousLayerColor(originating_style, previous_layer_color);
+  return std::nullopt;
 }
 
 // Returns highlight styles for the given node, inheriting through the “tree” of
@@ -364,7 +372,6 @@ Color HighlightStyleUtils::HighlightBackgroundColor(
   Color result =
       ResolveColor(document, style, pseudo_style, pseudo,
                    GetCSSPropertyBackgroundColor(), current_layer_color);
-
   if (pseudo == kPseudoIdSelection) {
     if (NodeIsReplaced(node)) {
       // Avoid that ::selection full obscures selected replaced elements like
@@ -374,15 +381,19 @@ Color HighlightStyleUtils::HighlightBackgroundColor(
     if (result.IsFullyTransparent()) {
       return Color::kTransparent;
     }
-    // If the text color ends up being the same as the selection background,
-    // invert the selection background.
-    if (current_layer_color && *current_layer_color == result) {
-      if (node) {
-        UseCounter::Count(node->GetDocument(),
-                          WebFeature::kSelectionBackgroundColorInversion);
+    if (!RuntimeEnabledFeatures::SelectionRespectsColorsEnabled() ||
+        (UseDefaultHighlightColors(pseudo_style, pseudo,
+                                   GetCSSPropertyColor()) &&
+         UseDefaultHighlightColors(pseudo_style, pseudo,
+                                   GetCSSPropertyBackgroundColor()))) {
+      // If the text color ends up being the same as the selection background
+      // and we are using default colors, invert the background color. We do not
+      // do this when the author has requested colors in a ::selection pseudo
+      // (unless the flag is disabled).
+      if (current_layer_color && *current_layer_color == result) {
+        return Color(0xff - result.Red(), 0xff - result.Green(),
+                     0xff - result.Blue());
       }
-      return Color(0xff - result.Red(), 0xff - result.Green(),
-                   0xff - result.Blue());
     }
   }
   return result;
@@ -392,8 +403,7 @@ std::optional<AppliedTextDecoration>
 HighlightStyleUtils::SelectionTextDecoration(
     const Document& document,
     const ComputedStyle& style,
-    const ComputedStyle& pseudo_style,
-    std::optional<Color> previous_layer_color) {
+    const ComputedStyle& pseudo_style) {
   std::optional<AppliedTextDecoration> decoration =
       style.LastAppliedTextDecoration();
   if (!decoration) {
@@ -406,13 +416,11 @@ HighlightStyleUtils::SelectionTextDecoration(
     decoration = pseudo_decoration;
   }
 
-  decoration->SetColor(
-      ResolveColor(document, style, &pseudo_style, kPseudoIdSelection,
-                   GetCSSPropertyTextDecorationColor(), previous_layer_color));
   return decoration;
 }
 
-TextPaintStyle HighlightStyleUtils::HighlightPaintingStyle(
+HighlightStyleUtils::HighlightTextPaintStyle
+HighlightStyleUtils::HighlightPaintingStyle(
     const Document& document,
     const ComputedStyle& style,
     Node* node,
@@ -421,11 +429,19 @@ TextPaintStyle HighlightStyleUtils::HighlightPaintingStyle(
     const PaintInfo& paint_info,
     const AtomicString& pseudo_argument) {
   TextPaintStyle highlight_style = previous_layer_text_style;
+  HighlightColorPropertySet colors_from_previous_layer;
   const PaintFlags paint_flags = paint_info.GetPaintFlags();
   bool uses_text_as_clip = paint_info.phase == PaintPhase::kTextClip;
-  bool ignored_selection = pseudo == kPseudoIdSelection &&
-                           ((node && !style.IsSelectable()) ||
-                            (paint_flags & PaintFlag::kSelectionDragImageOnly));
+  bool ignored_selection = false;
+
+  if (pseudo == kPseudoIdSelection) {
+    if ((node && !style.IsSelectable()) ||
+        (paint_flags & PaintFlag::kSelectionDragImageOnly)) {
+      ignored_selection = true;
+    }
+    highlight_style.selection_decoration_lines = TextDecorationLine::kNone;
+    highlight_style.selection_decoration_color = Color::kBlack;
+  }
 
   // Each highlight overlay’s shadows are completely independent of any shadows
   // specified on the originating element (or the other highlight overlays).
@@ -433,26 +449,43 @@ TextPaintStyle HighlightStyleUtils::HighlightPaintingStyle(
 
   const ComputedStyle* pseudo_style =
       HighlightPseudoStyle(node, style, pseudo, pseudo_argument);
-  Color previous_layer_current_color = previous_layer_text_style.current_color;
 
   if (!uses_text_as_clip && !ignored_selection) {
-    highlight_style.current_color =
-        ResolveColor(document, style, pseudo_style, pseudo,
-                     GetCSSPropertyColor(), previous_layer_current_color);
-    highlight_style.fill_color =
-        ResolveColor(document, style, pseudo_style, pseudo,
-                     GetCSSPropertyWebkitTextFillColor(),
-                     previous_layer_text_style.fill_color);
+    std::optional<Color> maybe_color;
+
+    maybe_color = MaybeResolveColor(document, style, pseudo_style, pseudo,
+                                    GetCSSPropertyColor());
+    if (maybe_color) {
+      highlight_style.current_color = maybe_color.value();
+    } else {
+      colors_from_previous_layer.Put(HighlightColorProperty::kCurrentColor);
+    }
+
+    maybe_color = MaybeResolveColor(document, style, pseudo_style, pseudo,
+                                    GetCSSPropertyWebkitTextFillColor());
+    if (maybe_color) {
+      highlight_style.fill_color = maybe_color.value();
+    } else {
+      colors_from_previous_layer.Put(HighlightColorProperty::kFillColor);
+    }
+
     // TODO(crbug.com/1147859) ignore highlight ‘text-emphasis-color’
     // https://github.com/w3c/csswg-drafts/issues/7101
-    highlight_style.emphasis_mark_color =
-        ResolveColor(document, style, pseudo_style, pseudo,
-                     GetCSSPropertyTextEmphasisColor(),
-                     previous_layer_text_style.emphasis_mark_color);
-    highlight_style.stroke_color =
-        ResolveColor(document, style, pseudo_style, pseudo,
-                     GetCSSPropertyWebkitTextStrokeColor(),
-                     previous_layer_text_style.stroke_color);
+    maybe_color = MaybeResolveColor(document, style, pseudo_style, pseudo,
+                                    GetCSSPropertyTextEmphasisColor());
+    if (maybe_color) {
+      highlight_style.emphasis_mark_color = maybe_color.value();
+    } else {
+      colors_from_previous_layer.Put(HighlightColorProperty::kEmphasisColor);
+    }
+
+    maybe_color = MaybeResolveColor(document, style, pseudo_style, pseudo,
+                                    GetCSSPropertyWebkitTextStrokeColor());
+    if (maybe_color) {
+      highlight_style.stroke_color = maybe_color.value();
+    } else {
+      colors_from_previous_layer.Put(HighlightColorProperty::kStrokeColor);
+    }
   }
 
   if (pseudo_style) {
@@ -465,8 +498,26 @@ TextPaintStyle HighlightStyleUtils::HighlightPaintingStyle(
       highlight_style.shadow =
           uses_text_as_clip ? nullptr : pseudo_style->TextShadow();
     }
-    highlight_style.selection_text_decoration = SelectionTextDecoration(
-        document, style, *pseudo_style, previous_layer_current_color);
+    std::optional<AppliedTextDecoration> selection_decoration =
+        SelectionTextDecoration(document, style, *pseudo_style);
+    if (selection_decoration) {
+      highlight_style.selection_decoration_lines =
+          selection_decoration->Lines();
+      std::optional<Color> selection_decoration_color =
+          MaybeResolveColor(document, style, pseudo_style, kPseudoIdSelection,
+                            GetCSSPropertyTextDecorationColor());
+      if (selection_decoration_color) {
+        highlight_style.selection_decoration_color =
+            selection_decoration_color.value();
+      } else {
+        // Some code paths that do not use the highlight overlay painting system
+        // may not resolve the color, so set it now.
+        highlight_style.selection_decoration_color =
+            PreviousLayerColor(style, previous_layer_text_style.current_color);
+        colors_from_previous_layer.Put(
+            HighlightColorProperty::kSelectionDecorationColor);
+      }
+    }
   }
 
   // Text shadows are disabled when printing. http://crbug.com/258321
@@ -474,68 +525,60 @@ TextPaintStyle HighlightStyleUtils::HighlightPaintingStyle(
     highlight_style.shadow = nullptr;
   }
 
-  return highlight_style;
+  return {highlight_style, colors_from_previous_layer};
 }
 
-std::optional<Color> HighlightStyleUtils::HighlightTextDecorationColor(
-    const Document& document,
-    const ComputedStyle& style,
-    Node* node,
-    std::optional<Color> previous_layer_color,
-    PseudoId pseudo) {
-  DCHECK(pseudo == kPseudoIdSpellingError || pseudo == kPseudoIdGrammarError);
-
-  if (!RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
-    return std::nullopt;
+TextPaintStyle HighlightStyleUtils::ResolveColorsFromPreviousLayer(
+    const HighlightTextPaintStyle unresolved_style,
+    const TextPaintStyle& previous_layer_style) {
+  if (unresolved_style.properties_using_current_color.Empty()) {
+    return unresolved_style.style;
   }
 
-  if (const ComputedStyle* pseudo_style =
-          HighlightPseudoStyle(node, style, pseudo)) {
-    return ResolveColor(document, style, pseudo_style, pseudo,
-                        GetCSSPropertyTextDecorationColor(),
-                        previous_layer_color);
+  TextPaintStyle result = unresolved_style.style;
+  if (unresolved_style.properties_using_current_color.Has(
+          HighlightColorProperty::kCurrentColor)) {
+    result.current_color = previous_layer_style.current_color;
   }
-
-  return std::nullopt;
+  if (unresolved_style.properties_using_current_color.Has(
+          HighlightColorProperty::kFillColor)) {
+    result.fill_color = previous_layer_style.fill_color;
+  }
+  if (unresolved_style.properties_using_current_color.Has(
+          HighlightColorProperty::kStrokeColor)) {
+    result.stroke_color = previous_layer_style.stroke_color;
+  }
+  if (unresolved_style.properties_using_current_color.Has(
+          HighlightColorProperty::kEmphasisColor)) {
+    result.emphasis_mark_color = previous_layer_style.emphasis_mark_color;
+  }
+  if (unresolved_style.properties_using_current_color.Has(
+          HighlightColorProperty::kSelectionDecorationColor)) {
+    result.selection_decoration_color =
+        previous_layer_style.selection_decoration_color;
+  }
+  return result;
 }
 
 bool HighlightStyleUtils::ShouldInvalidateVisualOverflow(
     const Node& node,
     DocumentMarker::MarkerType type) {
-  if ((type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar) &&
-      RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
+  // Custom highlights and selection are handled separately. Here we just need
+  // to handle spelling, grammar and target-text. Note that we assume
+  // RuntimeEnabledFeatures::HighlightInheritanceEnabled() is true to avoid
+  // needing a non-const node.
+  if (type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar) {
     return true;
   }
 
-  // Custom highlights are handled separately. Here we just need to handle
-  // spelling, grammar and target-text. Note that we assume
-  // RuntimeEnabledFeatures::HighlightInheritanceEnabled() is true to avoid
-  // needing a non-const node.
+  if (type != DocumentMarker::kTextFragment) {
+    return false;
+  }
   const ComputedStyle* style = node.GetComputedStyle();
   if (!style) {
     return false;
   }
-  const ComputedStyle* pseudo_style = nullptr;
-  switch (type) {
-    case DocumentMarker::kTextFragment:
-      pseudo_style = style->HighlightData().TargetText();
-      break;
-
-    case DocumentMarker::kSpelling:
-      if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
-        pseudo_style = style->HighlightData().SpellingError();
-      }
-      break;
-
-    case DocumentMarker::kGrammar:
-      if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
-        pseudo_style = style->HighlightData().GrammarError();
-      }
-      break;
-
-    default:
-      break;
-  }
+  const ComputedStyle* pseudo_style = style->HighlightData().TargetText();
   if (!pseudo_style) {
     return false;
   }

@@ -45,6 +45,24 @@ namespace web_app {
 // A builder for a subset of the Web Manifest spec.
 class ManifestBuilder {
  public:
+  // Creates the following default manifest:
+  // {
+  //   name: "Test App",
+  //   version: "0.0.1",
+  //   id: "/",
+  //   scope: "/",
+  //   start_url: "/",
+  //   permissions_policy: {
+  //     cross-origin-isolated: ["self"]
+  //   },
+  //   icons: [
+  //     {
+  //       src: "/icon.png",
+  //       sizes: "256x256",
+  //       type: "image/png"
+  //     }
+  //   ]
+  // }
   ManifestBuilder();
   ManifestBuilder(const ManifestBuilder&);
 
@@ -75,16 +93,17 @@ class ManifestBuilder {
   std::vector<std::string> icon_paths_;
 };
 
-class ScopedBundledIsolatedWebApp {
+class BundledIsolatedWebApp {
  public:
-  ScopedBundledIsolatedWebApp(
+  BundledIsolatedWebApp(
       const web_package::SignedWebBundleId& web_bundle_id,
       const std::vector<uint8_t> serialized_bundle,
+      const base::FilePath path,
       std::optional<ManifestBuilder> manifest_builder = std::nullopt);
 
-  ~ScopedBundledIsolatedWebApp();
+  ~BundledIsolatedWebApp();
 
-  const base::FilePath& path() const { return bundle_file_.path(); }
+  const base::FilePath& path() const { return path_; }
 
   const web_package::SignedWebBundleId& web_bundle_id() const {
     return web_bundle_id_;
@@ -96,17 +115,38 @@ class ScopedBundledIsolatedWebApp {
 
   void FakeInstallPageState(Profile* profile);
 
+  IsolatedWebAppUrlInfo InstallChecked(Profile* profile);
+
   base::expected<IsolatedWebAppUrlInfo, std::string> Install(Profile* profile);
 
  private:
   web_package::SignedWebBundleId web_bundle_id_;
-  base::ScopedTempFile bundle_file_;
+  base::FilePath path_;
   std::optional<ManifestBuilder> manifest_builder_;
+};
+
+class ScopedBundledIsolatedWebApp : public BundledIsolatedWebApp {
+ public:
+  static std::unique_ptr<ScopedBundledIsolatedWebApp> Create(
+      const web_package::SignedWebBundleId& web_bundle_id,
+      const std::vector<uint8_t> serialized_bundle,
+      std::optional<ManifestBuilder> manifest_builder = std::nullopt);
+
+  ~ScopedBundledIsolatedWebApp();
+
+ private:
+  ScopedBundledIsolatedWebApp(
+      const web_package::SignedWebBundleId& web_bundle_id,
+      const std::vector<uint8_t> serialized_bundle,
+      base::ScopedTempFile bundle_file,
+      std::optional<ManifestBuilder> manifest_builder = std::nullopt);
+
+  base::ScopedTempFile bundle_file_;
 };
 
 class ScopedProxyIsolatedWebApp {
  public:
-  ScopedProxyIsolatedWebApp(
+  explicit ScopedProxyIsolatedWebApp(
       std::unique_ptr<net::EmbeddedTestServer> proxy_server,
       std::optional<ManifestBuilder> manifest_builder = std::nullopt);
 
@@ -117,6 +157,8 @@ class ScopedProxyIsolatedWebApp {
   void FakeInstallPageState(
       Profile* profile,
       const web_package::SignedWebBundleId& web_bundle_id);
+
+  IsolatedWebAppUrlInfo InstallChecked(Profile* profile);
 
   base::expected<IsolatedWebAppUrlInfo, std::string> Install(Profile* profile);
 
@@ -147,7 +189,7 @@ class IsolatedWebAppBuilder {
   using Headers = std::vector<Header>;
 
   // Initializes the builder with the specified manifest and some common
-  // resources such as an empty text/html file at '/'.
+  // resources such as a default text/html file at '/'.
   //
   // The following resources will be present in the app:
   //   * /
@@ -209,14 +251,27 @@ class IsolatedWebAppBuilder {
 
   // Creates and starts a new server that will serve a snapshot of the app's
   // contents as they were when this function was called.
-  std::unique_ptr<ScopedProxyIsolatedWebApp> BuildAndStartProxyServer();
+  [[nodiscard]] std::unique_ptr<ScopedProxyIsolatedWebApp>
+  BuildAndStartProxyServer();
 
   // Creates and signs a .swbn file on disk containing the app's contents. A
   // random signing key will be created and used to sign the bundle.
-  std::unique_ptr<ScopedBundledIsolatedWebApp> BuildBundle();
+  [[nodiscard]] std::unique_ptr<ScopedBundledIsolatedWebApp> BuildBundle();
 
   // Creates and signs a .swbn file on disk containing the app's contents.
-  std::unique_ptr<ScopedBundledIsolatedWebApp> BuildBundle(
+  [[nodiscard]] std::unique_ptr<ScopedBundledIsolatedWebApp> BuildBundle(
+      const web_package::WebBundleSigner::KeyPair& key_pair);
+
+  // Creates and signs a .swbn file on disk containing the app's contents. The
+  // location of the bundle must be provided in `bundle_path`. A random signing
+  // key will be created and used to sign the bundle.
+  std::unique_ptr<BundledIsolatedWebApp> BuildBundle(
+      const base::FilePath& bundle_path);
+
+  // Creates and signs a .swbn file on disk containing the app's contents. The
+  // location of the bundle must be provided in `bundle_path`.
+  std::unique_ptr<BundledIsolatedWebApp> BuildBundle(
+      const base::FilePath& bundle_path,
       const web_package::WebBundleSigner::KeyPair& key_pair);
 
   // Creates and signs a .swbn file and returns its serialized contents.

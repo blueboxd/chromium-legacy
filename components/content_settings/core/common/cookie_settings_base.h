@@ -79,27 +79,69 @@ class CookieSettingsBase {
   // Enum for measuring the mechanism for re-enabling third-party cookies when
   // applying 3PCD experiment. These values are persisted to logs. Entries
   // should not be renumbered and numeric values should never be reused.
+  //
+  // Keep in sync with ThirdPartyCookieAllowMechanism at
+  // //src/tools/metrics/histograms/metadata/page/enums.xml
   enum class ThirdPartyCookieAllowMechanism {
     kNone = 0,
     // Allow by explicit cookie content setting (e.g. UserBypass).
     kAllowByExplicitSetting = 1,
-    // Allow by global 3p cookie setting setting (e.g. Enterperise Policy:
+    // Allow by global 3p cookie setting setting (e.g. Enterprise Policy:
     // BlockThirdPartyCookies, UX).
     kAllowByGlobalSetting = 2,
-    // Allow by 3PCD metadata grants content settings.
-    kAllowBy3PCDMetadata = 3,
+    // (DEPRECATED) Allow by 3PCD metadata grants content settings.
+    // kAllowBy3PCDMetadata = 3,
     // Allow by third-party deprecation trial.
     kAllowBy3PCD = 4,
     kAllowBy3PCDHeuristics = 5,
     kAllowByStorageAccess = 6,
     kAllowByTopLevelStorageAccess = 7,
     kAllowByCORSException = 8,
+    // Allow by 1P (AKA First Party, Top-level) DT (Deprecation Trial) token
+    // being deployed.
     kAllowByTopLevel3PCD = 9,
-    // Allow by Enterperise Policy: CookiesAllowedForUrls.
+    // Allow by Enterprise Policy: CookiesAllowedForUrls.
     kAllowByEnterprisePolicyCookieAllowedForUrls = 10,
+    // Same as kAllowBy3PCDMetadata but for
+    // mojom::TpcdMetadataRuleSource::SOURCE_UNSPECIFIED rules.
+    kAllowBy3PCDMetadataSourceUnspecified = 11,
+    // Same as kAllowBy3PCDMetadata but for
+    // mojom::TpcdMetadataRuleSource::SOURCE_TEST rules.
+    kAllowBy3PCDMetadataSourceTest = 12,
+    // Same as kAllowBy3PCDMetadata but for
+    // mojom::TpcdMetadataRuleSource::SOURCE_1P_DT rules.
+    kAllowBy3PCDMetadataSource1pDt = 13,
+    // Same as kAllowBy3PCDMetadata but for
+    // mojom::TpcdMetadataRuleSource::SOURCE_3P_DT rules.
+    kAllowBy3PCDMetadataSource3pDt = 14,
+    // Same as kAllowBy3PCDMetadata but for
+    // mojom::TpcdMetadataRuleSource::SOURCE_DOGFOOD rules.
+    kAllowBy3PCDMetadataSourceDogFood = 15,
+    // Same as kAllowBy3PCDMetadata but for
+    // mojom::TpcdMetadataRuleSource::SOURCE_CRITICAL_SECTOR rules.
+    kAllowBy3PCDMetadataSourceCriticalSector = 16,
+    // Same as kAllowBy3PCDMetadata but for
+    // mojom::TpcdMetadataRuleSource::SOURCE_CUJ rules.
+    kAllowBy3PCDMetadataSourceCuj = 17,
+    // Same as kAllowBy3PCDMetadata but for
+    // mojom::TpcdMetadataRuleSource::SOURCE_GOV_EDU_TLD rules.
+    kAllowBy3PCDMetadataSourceGovEduTld = 18,
 
-    kMaxValue = kAllowByEnterprisePolicyCookieAllowedForUrls,
+    kMaxValue = kAllowBy3PCDMetadataSourceGovEduTld,
   };
+
+  // Returns true if the allow mechanism represents one of the multiple allow
+  // mechanisms derived from the TPCD Mitigations Metadata.
+  static bool IsAnyTpcdMetadataAllowMechanism(
+      const ThirdPartyCookieAllowMechanism& mechanism);
+
+  // Returns true if the allow mechanism corresponds to the 1P (AKA First Party,
+  // Top-level) DT (Deprecation Trial).
+  static bool Is1PDtRelatedAllowMechanism(
+      const ThirdPartyCookieAllowMechanism& mechanism);
+
+  static ThirdPartyCookieAllowMechanism TpcdMetadataSourceToAllowMechanism(
+      const mojom::TpcdMetadataRuleSource& source);
 
   class CookieSettingWithMetadata {
    public:
@@ -321,6 +363,12 @@ class CookieSettingsBase {
       const GURL& first_party_url,
       net::CookieSettingOverrides overrides) const;
 
+  // Proxies of the restricted cookie manager can override if third party
+  // cookies should be allowed.
+  // Used by WebView.
+  bool Are3pcsForceDisabledByOverride(
+      net::CookieSettingOverrides overrides) const;
+
   bool IsAllowedBy3pcdHeuristicsGrantsSettings(
       const GURL& url,
       const GURL& first_party_url,
@@ -329,7 +377,8 @@ class CookieSettingsBase {
   bool IsAllowedBy3pcdMetadataGrantsSettings(
       const GURL& url,
       const GURL& first_party_url,
-      net::CookieSettingOverrides overrides) const;
+      net::CookieSettingOverrides overrides,
+      SettingInfo* out_info) const;
 
   struct AllowAllCookies {
     ThirdPartyCookieAllowMechanism mechanism =

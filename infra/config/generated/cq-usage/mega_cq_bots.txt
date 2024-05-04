@@ -32,6 +32,7 @@ chromium/try/chromeos-amd64-generic-rel-gtest-and-tast
 chromium/try/chromeos-arm-generic-dbg
 chromium/try/chromeos-arm-generic-rel
 chromium/try/chromeos-arm64-generic-rel
+chromium/try/chromeos-jacuzzi-rel
 chromium/try/chromeos-octopus-rel
 chromium/try/dawn-android-arm-deps-rel
 chromium/try/dawn-android-arm64-deps-rel
@@ -41,6 +42,7 @@ chromium/try/dawn-mac-x64-deps-rel
 chromium/try/dawn-try-linux-tsan-rel
 chromium/try/dawn-try-mac-amd-exp
 chromium/try/dawn-try-mac-arm64-deps-rel
+chromium/try/dawn-try-mac-arm64-m2-exp
 chromium/try/dawn-try-mac-arm64-rel
 chromium/try/dawn-try-mac-intel-exp
 chromium/try/dawn-try-win-x64-intel-exp
@@ -64,7 +66,6 @@ chromium/try/ios-device
 chromium/try/ios-simulator
 chromium/try/ios-simulator-full-configs
 chromium/try/ios-simulator-noncq
-chromium/try/ios-simulator-siso
 chromium/try/lacros-amd64-generic-rel-gtest
 chromium/try/lacros-amd64-generic-rel-gtest-and-tast
 chromium/try/lacros-amd64-generic-rel-non-skylab
@@ -116,7 +117,6 @@ chromium/try/linux_chromium_chromeos_asan_rel_ng
 chromium/try/linux_chromium_chromeos_msan_rel_ng
 chromium/try/linux_chromium_compile_dbg_ng
 chromium/try/linux_chromium_compile_rel_ng
-chromium/try/linux_chromium_compile_siso_dbg_ng
 chromium/try/linux_chromium_dbg_ng
 chromium/try/linux_chromium_msan_rel_ng
 chromium/try/linux_chromium_tsan_rel_ng
@@ -130,7 +130,6 @@ chromium/try/mac-clobber-rel
 chromium/try/mac-dawn-rel
 chromium/try/mac-official
 chromium/try/mac-rel
-chromium/try/mac-siso-rel
 chromium/try/mac11-arm64-rel
 chromium/try/mac12-arm64-rel
 chromium/try/mac12-tests
@@ -149,6 +148,7 @@ chromium/try/win-clobber-rel
 chromium/try/win-dawn-rel
 chromium/try/win-official
 chromium/try/win-rel
+chromium/try/win11-rel
 chromium/try/win32-clobber-rel
 chromium/try/win32-official
 chromium/try/win_chromium_compile_dbg_ng

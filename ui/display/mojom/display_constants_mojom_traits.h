@@ -60,6 +60,31 @@ struct EnumTraits<display::mojom::VariableRefreshRateState,
   static bool FromMojom(display::mojom::VariableRefreshRateState type,
                         display::VariableRefreshRateState* out);
 };
+template <>
+struct StructTraits<display::mojom::RefreshRangeNodeDataView,
+                    display::RefreshRangeNode> {
+  static float refresh_rate(const display::RefreshRangeNode& range) {
+    return range.refresh_rate;
+  }
+
+  static bool contiguous(const display::RefreshRangeNode& range) {
+    return range.contiguous;
+  }
+
+  static bool Read(display::mojom::RefreshRangeNodeDataView data,
+                   display::RefreshRangeNode* out_range);
+};
+
+template <>
+struct StructTraits<display::mojom::ModesetFlagsDataView,
+                    display::ModesetFlags> {
+  static uint64_t bitmask(const display::ModesetFlags& flags) {
+    return flags.ToEnumBitmask();
+  }
+
+  static bool Read(display::mojom::ModesetFlagsDataView data,
+                   display::ModesetFlags* out_range);
+};
 
 }  // namespace mojo
 

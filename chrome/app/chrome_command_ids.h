@@ -8,7 +8,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
+#include "services/screen_ai/buildflags/buildflags.h"
 #include "ui/base/command_id_constants.h"
 
 // This file lists all the command IDs understood by e.g. the browser.
@@ -525,6 +525,7 @@
 // Autofill feedback.
 #define IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK 52990
 // Autofill context menu commands
+#define IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PLUS_ADDRESS 52994
 #define IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS 52995
 #define IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS 52996
 

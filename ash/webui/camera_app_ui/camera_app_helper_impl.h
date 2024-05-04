@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/screen_backlight.h"
+#include "ash/webui/camera_app_ui/camera_app_events_sender.h"
 #include "ash/webui/camera_app_ui/camera_app_helper.mojom.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/camera_app_ui/camera_app_window_state_controller.h"
@@ -16,6 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/machine_learning/public/mojom/document_scanner.mojom.h"
+#include "media/capture/video/chromeos/mojom/system_event_monitor.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/aura/window.h"
@@ -30,6 +32,7 @@ namespace ash {
 
 class CameraAppHelperImpl : public ScreenBacklightObserver,
                             public display::DisplayObserver,
+                            public cros::mojom::CrosLidObserver,
                             public camera_app::mojom::CameraAppHelper {
  public:
   using CameraResultCallback =
@@ -45,6 +48,7 @@ class CameraAppHelperImpl : public ScreenBacklightObserver,
   using CameraUsageOwnershipMonitor =
       camera_app::mojom::CameraUsageOwnershipMonitor;
   using StorageMonitor = camera_app::mojom::StorageMonitor;
+  using LidStateMonitor = camera_app::mojom::LidStateMonitor;
 
   CameraAppHelperImpl(CameraAppUI* camera_app_ui,
                       CameraResultCallback camera_result_callback,
@@ -104,6 +108,9 @@ class CameraAppHelperImpl : public ScreenBacklightObserver,
   void StopStorageMonitor() override;
   void OpenStorageManagement() override;
   void OpenWifiDialog(camera_app::mojom::WifiConfigPtr wifi_config) override;
+  void SetLidStateMonitor(mojo::PendingRemote<LidStateMonitor> monitor,
+                          SetLidStateMonitorCallback callback) override;
+  void GetEventsSender(GetEventsSenderCallback callback) override;
 
  private:
   void CheckExternalScreenState();
@@ -128,6 +135,7 @@ class CameraAppHelperImpl : public ScreenBacklightObserver,
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayTabletStateChanged(display::TabletState state) override;
+  void OnLidStateChanged(cros::mojom::LidState state) override;
 
   // For platform app, we set |camera_app_ui_| to nullptr and should not use
   // it. For SWA, since CameraAppUI owns CameraAppHelperImpl, it is safe to
@@ -148,12 +156,14 @@ class CameraAppHelperImpl : public ScreenBacklightObserver,
   mojo::Remote<TabletModeMonitor> tablet_mode_monitor_;
   mojo::Remote<ScreenStateMonitor> screen_state_monitor_;
   mojo::Remote<ExternalScreenMonitor> external_screen_monitor_;
+  mojo::Remote<LidStateMonitor> lid_state_monitor_;
+  SetLidStateMonitorCallback lid_callback_;
   mojo::Remote<StorageMonitor> storage_monitor_;
   StartStorageMonitorCallback storage_callback_;
 
-  mojo::Receiver<camera_app::mojom::CameraAppHelper> receiver_{this};
-
   std::unique_ptr<CameraAppWindowStateController> window_state_controller_;
+
+  std::unique_ptr<CameraAppEventsSender> events_sender_;
 
   display::ScopedDisplayObserver display_observer_{this};
 
@@ -161,6 +171,12 @@ class CameraAppHelperImpl : public ScreenBacklightObserver,
   std::unique_ptr<DocumentScannerServiceClient> document_scanner_service_;
 
   raw_ptr<HoldingSpaceClient> const holding_space_client_;
+
+  mojo::Remote<cros::mojom::CrosSystemEventMonitor> monitor_;
+
+  mojo::Receiver<cros::mojom::CrosLidObserver> lid_observer_receiver_{this};
+
+  mojo::Receiver<camera_app::mojom::CameraAppHelper> receiver_{this};
 
   base::WeakPtrFactory<CameraAppHelperImpl> weak_factory_{this};
 };

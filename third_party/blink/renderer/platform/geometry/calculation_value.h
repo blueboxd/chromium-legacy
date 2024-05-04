@@ -67,8 +67,8 @@ class PLATFORM_EXPORT CalculationValue : public RefCounted<CalculationValue> {
     return is_non_negative_ ? Length::ValueRange::kNonNegative
                             : Length::ValueRange::kAll;
   }
-  bool HasAnchorQueries() const;
   bool HasContentOrIntrinsicSize() const;
+  bool HasPercent() const;
 
   float Pixels() const {
     DCHECK(!IsExpression());

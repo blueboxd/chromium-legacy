@@ -573,6 +573,7 @@ void AutofillProviderAndroid::OnManagerResetOrDestroyed(
   // we consider this navigation to be resulting from the submission.
   if (check_submission_ && form_.get()) {
     FireSuccessfulSubmission(pending_submission_source_);
+    return;
   }
 
   Reset();
@@ -590,8 +591,8 @@ bool AutofillProviderAndroid::IntendsToShowBottomSheet(
     FormGlobalId form,
     FieldGlobalId field,
     const FormData& form_data) const {
-  return !has_used_cached_form_ && cached_form_ &&
-         form == cached_form_->form().global_id();
+  return !has_used_cached_form_ && cached_data_ && cached_data_->cached_form &&
+         form == cached_data_->cached_form->form().global_id();
 }
 
 bool AutofillProviderAndroid::WasBottomSheetJustShown(
@@ -666,10 +667,23 @@ void AutofillProviderAndroid::Reset() {
   was_shown_bottom_sheet_timer_.Stop();
   was_bottom_sheet_just_shown_ = false;
 
+  if (base::FeatureList::IsEnabled(
+          features::kAndroidAutofillCancelSessionOnNavigation)) {
+    CancelSession();
+  }
+
   // Resets the Java instance and hides the datalist popup if there is one.
   bridge_->Reset();
   // TODO(crbug.com/1488233): Also send an unfocus event to make sure that the
   // Autofill session is truly terminated.
+}
+
+void AutofillProviderAndroid::CancelSession() {
+  cached_data_ = std::nullopt;
+  has_used_cached_form_ = false;
+  was_bottom_sheet_just_shown_ = false;
+  was_shown_bottom_sheet_timer_.Stop();
+  bridge_->CancelSession();
 }
 
 SessionId AutofillProviderAndroid::CreateSessionId() {

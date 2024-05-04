@@ -8,8 +8,6 @@ component("cpp") {
   defines = [ "IS_MAHI_PUBLIC_CPP_IMPL" ]
 
   sources = [
-    "fake_mahi_manager.cc",
-    "fake_mahi_manager.h",
     "mahi_manager.cc",
     "mahi_manager.h",
     "views/experiment_badge.cc",
@@ -18,6 +16,7 @@ component("cpp") {
 
   deps = [
     "//base",
+    "//chromeos/crosapi/mojom",
     "//chromeos/strings:strings_grit",
     "//ui/base",
     "//ui/chromeos/styles:cros_tokens_color_mappings",

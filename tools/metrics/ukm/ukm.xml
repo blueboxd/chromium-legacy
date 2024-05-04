@@ -1508,6 +1508,21 @@ be describing additional metrics about the same event.
       are no bidders eligible to participate in this auction.
     </summary>
   </metric>
+  <metric name="NumOwnersWithoutInterestGroups">
+    <summary>
+      The number of owner origins listed in an auction configuration that were
+      excluded from taking part in a FLEDGE auction because they have no
+      eligible interest groups. Equivalent to the UMA histogram named
+      Ads.InterestGroup.Auction.NumOwnersWithoutInterestGroups. This does not
+      count owners that were filtered due to user settings. For multi-seller
+      auctions, this is the sum of all such excluded owners across all component
+      auctions. This double-counts owners that participate in multiple component
+      auctions. Recorded after all interest groups participating in an auction
+      have been retrieved from storage at the start of an auction. This is
+      related to the sibling histogram named
+      &quot;NumOwnersWithInterestGroups&quot;.
+    </summary>
+  </metric>
   <metric name="NumScoreAdCodeReadyOnCriticalPath">
     <summary>
       Aggregated across all components for multi-seller auctions, this records
@@ -4316,7 +4331,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Blink.DeveloperMetricsRare">
-  <owner>schenney@chromium.org</owner>
+  <owner>foolip@chromium.org</owner>
   <owner>chrome-webdev-metrics@google.com</owner>
   <summary>
     Collects data for a subset of UseCounter features of interest to the Web
@@ -4455,11 +4470,11 @@ be describing additional metrics about the same event.
   <metric name="NumRequestsPerDocument">
     <summary>
       Records the number of navigator.credentials.get() requests made in a
-      document. Requests made when FedCM is disabled, when there is a pending
-      FedCM request or for the purpose of MDocs or multi-IDP are not counted.
-      Records at most one sample for every document where at least one
-      navigator.credentials.get() request is made. No samples are recorded if
-      the count is 0. The bucketing method used is base::UmaHistogramCounts100.
+      document. Requests made when FedCM is disabled or when there is a pending
+      FedCM request are not counted. Records at most one sample for every
+      document where at least one navigator.credentials.get() request is made.
+      No samples are recorded if the count is 0. The bucketing method used is
+      base::UmaHistogramCounts100.
     </summary>
   </metric>
   <metric name="PreventSilentAccessFrameType" enum="FedCmRequesterFrameType">
@@ -4758,7 +4773,6 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Blink.HTMLParsing">
-  <owner>schenney@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <owner>nidhijaju@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
@@ -4906,7 +4920,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Blink.PageLoad">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     The aggregated time spent in each metric's component from creation of the
@@ -5070,6 +5084,12 @@ be describing additional metrics about the same event.
       The time spent parsing style sheets.
     </summary>
   </metric>
+  <metric name="PermissionElementIntersectionObserver">
+    <summary>
+      Time spent computing IntersectionObservations for permission elements, in
+      microseconds.
+    </summary>
+  </metric>
   <metric name="PossibleSynchronizedScrollCount">
     <obsolete>
       Was succeeded by PossibleSynchronizedScrollCount2 since this missed a case
@@ -5216,7 +5236,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Blink.UpdateTime">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Metrics that measure various update times in Blink. This includes paint,
@@ -6158,6 +6178,26 @@ be describing additional metrics about the same event.
   <metric name="ParseStyleSheetBeginMainFrame">
     <summary>
       The total main frame time spent parsing style sheets.
+    </summary>
+  </metric>
+  <metric name="PermissionElementIntersectionObserver">
+    <summary>
+      Time spent computing IntersectionObservations for permission elements, in
+      microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="PermissionElementIntersectionObserverBeginMainFrame">
+    <summary>
+      The total main frame time used to compute IntersectionObservations for
+      permission elements, in microseconds.
     </summary>
   </metric>
   <metric name="PossibleSynchronizedScrollCount">
@@ -9792,6 +9832,60 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="FacilitatedPayments.PixCodeDetectionResult">
+  <owner>vishwasuppoor@google.com</owner>
+  <owner>siashah@google.com</owner>
+  <owner>rouslan@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    An event that is logged after a PIX code detection is triggered on the page.
+  </summary>
+  <metric name="Attempts">
+    <summary>
+      The number of attempts at PIX code detection on a given page. Each attempt
+      is a full scan of the document DOM tree. Repeated attempts are made if a
+      PIX code was not found on the page, but the page URL is allowlisted. The
+      retry attempts are limited.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LatencyInMillis">
+    <summary>
+      The duration (in milliseconds) for how long it took to scan the document
+      for PIX code. It is the time between the browser sending a message to the
+      renderer to trigger PIX code detection and the renderer returning the
+      result of the scan.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Result" enum="PixCodeDetectionResult">
+    <summary>
+      Represents the outcome of running PIX code detection on the page. It is
+      used to log whether or not PIX detection was run, and if a valid PIX code
+      was found on the page.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="FamilyLinkUser.BlockedContent">
   <owner>chrome-kids-eng@google.com</owner>
   <summary>
@@ -10968,7 +11062,6 @@ be describing additional metrics about the same event.
 <event name="Graphics.Smoothness.Latency">
   <owner>animations-dev@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
-  <owner>schenney@chromium.org</owner>
   <summary>
     Tracks the duration of stages in the rendering pipeline while processing a
     single frame. All times are in microseconds.
@@ -15297,11 +15390,6 @@ be describing additional metrics about the same event.
       Measure of memory consumed by live allocations made from Oilpan.
     </summary>
   </metric>
-  <metric name="CanvasResourceProvider.SkSurface">
-    <summary>
-      Measure of memory used due to CanvasResourceProvider's SkSurface.
-    </summary>
-  </metric>
   <metric name="CommandBuffer">
     <summary>
       Measure of memory consumed by GL command buffer.
@@ -17050,6 +17138,28 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Omnibox.SuggestionUsed" singular="True">
+  <owner>mahmadi@google.com</owner>
+  <owner>chrome-desktop-search@google.com</owner>
+  <summary>
+    Recorded when the user uses the omnibox to search or navigate.
+  </summary>
+  <metric name="ResultType" enum="ClientSummarizedResultType">
+    <summary>
+      A value that indicates if the user searched or navigated from the omnibox.
+      Used to understand which URLs most commonly lead to searches or
+      navigations from the omnibox.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="OmniboxSecurityIndicator.FormSubmission">
   <owner>meacer@chromium.org</owner>
   <summary>
@@ -17157,6 +17267,12 @@ be describing additional metrics about the same event.
       The number of hours before the cookie access that the initial
       OpenerHeuristic.TopLevel event was recorded. Bucketized evenly with 50
       buckets up to 60 days.
+    </summary>
+  </metric>
+  <metric name="IsAdTagged" enum="IsAdTagged">
+    <summary>
+      Whether the cookie access attempt was tagged as an ad cookie, and thus
+      exempt from mitigations including heuristics.
     </summary>
   </metric>
 </event>
@@ -18715,6 +18831,14 @@ be describing additional metrics about the same event.
       HTTP Protocol scheme of the connection using which the main frame response
       was fetched. Recorded as HttpProtocolScheme enum in
       tools/metrics/histograms/enum.xml.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.NavigationStartToConnectStart">
+    <owner>nidhijaju@chromium.org</owner>
+    <owner>chrome-loading@google.com</owner>
+    <summary>
+      The duration from the start of the navigation to the start of the
+      connection establishment to the origin of the main frame request. In ms.
     </summary>
   </metric>
   <metric name="MainFrameResource.NavigationStartToReceiveHeadersStart">
@@ -21479,7 +21603,6 @@ be describing additional metrics about the same event.
 
 <event name="PowerUsageScenariosIntervalData">
   <owner>fdoray@chromium.org</owner>
-  <owner>sebmarchand@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
     Metrics to measure power consumption in key usage scenarios, as well as the
@@ -22874,6 +22997,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="ReaderModeActivated" singular="True">
+  <obsolete>
+    Deprecated as of 02/2024.
+  </obsolete>
   <owner>gilmanmh@google.com</owner>
   <owner>kjbooker@google.com</owner>
   <owner>dtseng@chromium.org</owner>
@@ -22896,6 +23022,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="ReaderModeReceivedDistillability">
+  <obsolete>
+    Deprecated as of 02/2024.
+  </obsolete>
   <owner>gilmanmh@google.com</owner>
   <owner>kjbooker@google.com</owner>
   <owner>dtseng@chromium.org</owner>
@@ -22951,6 +23080,12 @@ be describing additional metrics about the same event.
       with the tracking site. Clamped to 60 days at most, and rounded down to
       the nearest exponential bucket (out of 50 buckets). Set to -1 if there has
       never been a user interaction from the tracking site.
+    </summary>
+  </metric>
+  <metric name="IsAdTagged" enum="IsAdTagged">
+    <summary>
+      Whether the cookie access attempt was tagged as an ad cookie, and thus
+      exempt from mitigations including heuristics.
     </summary>
   </metric>
   <metric name="IsCurrentInteraction" enum="Boolean">
@@ -26435,6 +26570,20 @@ be describing additional metrics about the same event.
       is not reported). Used to compare the times when automated submission is
       enabled and disabled. Thus, we measure the time saved for a user. Recorded
       when the password manager detects that the login was successful.
+    </summary>
+  </metric>
+</event>
+
+<event name="Tpcd.Mitigations.Dt.FirstParty.Deployment">
+  <owner>njeunje@google.com</owner>
+  <owner>tpcd-mitigations-team@google.com</owner>
+  <summary>
+    Recorded on a page load cadance for every third party cookie accessed.
+  </summary>
+  <metric name="Deployed" enum="Boolean">
+    <summary>
+      Indicates when an origin deployed its 1P (AKA First Party, top-level) DT
+      Token and thus was granted cookie access.
     </summary>
   </metric>
 </event>

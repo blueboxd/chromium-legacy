@@ -191,6 +191,12 @@ class AccessibilityManager
   // Returns true if autoclick is enabled.
   bool IsAutoclickEnabled() const;
 
+  // Enables or disables ReducedAnimations.
+  void EnableReducedAnimations(bool enabled);
+
+  // Returns true if ReducedAnimations is enabled.
+  bool IsReducedAnimationsEnabled() const;
+
   // Enables or disables FaceGaze.
   void EnableFaceGaze(bool enabled);
 
@@ -281,6 +287,17 @@ class AccessibilityManager
   // false.
   bool IsBrailleDisplayConnected() const;
 
+  // Returns if Fullscreen Magnifier is enabled.
+  bool IsFullscreenMagnifierEnabled() const;
+
+  // Returns if Docked Magnifier is enabled.
+  bool IsDockedMagnifierEnabled() const;
+
+  // Returns false if any accessibility settings are enabled that would indicate
+  // that a user might have trouble pointing their phone camera at their
+  // Chomebook screen in order to scan a QR code.
+  bool AllowQRCodeUX() const;
+
   // user_manager::UserManager::UserSessionStateObserver overrides:
   void ActiveUserChanged(user_manager::User* active_user) override;
 
@@ -298,14 +315,6 @@ class AccessibilityManager
 
   // Notify accessibility when locale changes occur.
   void OnLocaleChanged();
-
-  // Called when we first detect two fingers are held down, which can be
-  // used to toggle spoken feedback on some touch-only devices.
-  void OnTwoFingerTouchStart();
-
-  // Called when the user is no longer holding down two fingers (including
-  // releasing one, holding down three, or moving them).
-  void OnTwoFingerTouchStop();
 
   // Whether or not to enable toggling spoken feedback via holding down
   // two fingers on the screen.

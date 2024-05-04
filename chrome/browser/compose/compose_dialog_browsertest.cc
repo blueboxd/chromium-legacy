@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/compose/compose_session.h"
-
 #include <optional>
 
 #include "base/test/metrics/user_action_tester.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/compose/compose_enabling.h"
+#include "chrome/browser/compose/compose_session.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
@@ -76,7 +75,13 @@ IN_PROC_BROWSER_TEST_F(ComposeSessionBrowserTest, LifetimeOfBubbleWrapper) {
                                                    TabCloseTypes::CLOSE_NONE);
 }
 
-IN_PROC_BROWSER_TEST_F(ComposeSessionBrowserTest, OpenFeedbackPage) {
+// TODO(b/328139715): Add support for ChromeOS lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_OpenFeedbackPage DISABLED_OpenFeedbackPage
+#else
+#define MAYBE_OpenFeedbackPage OpenFeedbackPage
+#endif
+IN_PROC_BROWSER_TEST_F(ComposeSessionBrowserTest, MAYBE_OpenFeedbackPage) {
   // Feedback page can only be opened from a dialog state where MSSB is enabled.
   // TODO(b/316601302): Without directly setting the MSBB pref value this test
   // is flaky on Linux MSan builders. This requires further investigation, but

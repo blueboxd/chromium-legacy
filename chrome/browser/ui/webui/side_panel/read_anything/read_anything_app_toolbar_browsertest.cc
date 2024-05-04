@@ -15,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/accessibility/accessibility_features.h"
 
 class ReadAnythingAppToolbarTest : public InProcessBrowserTest {
@@ -75,20 +76,6 @@ class ReadAnythingAppToolbarTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest, SupportedFonts_Correct) {
-  ASSERT_TRUE(RunTest("supported_fonts.js"));
-}
-
-IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
-                       FontSizeCallback_ChangesFontSize) {
-  ASSERT_TRUE(RunTest("font_size_callback_changes_font_size.js"));
-}
-
-IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
-                       FontNameCallback_ChangesFont) {
-  ASSERT_TRUE(RunTest("font_name_callback_changes_font.js"));
-}
-
 IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest, ColorCallback_ChangesColor) {
   ASSERT_TRUE(RunTest("color_callback_changes_color.js"));
 }
@@ -108,19 +95,6 @@ IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
   ASSERT_TRUE(RunTest("toolbar_visible_with_flag.js"));
 }
 
-IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest, FontSelectionShows) {
-  ASSERT_TRUE(RunTest("font_select_without_read_aloud.js"));
-}
-
-IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest, FontSizeButtonsOnToolbar) {
-  ASSERT_TRUE(RunTest("font_size_buttons_without_read_aloud.js"));
-}
-
 IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest, LinksToggleButtonOnToolbar) {
   ASSERT_TRUE(RunTest("links_toggle_button.js"));
-}
-
-// TODO(crbug.com/1474951): Remove this test once Read Aloud flag is removed.
-IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest, ReadAloud_Hidden) {
-  ASSERT_TRUE(RunTest("toolbar_without_flag_hides_read_aloud.js"));
 }

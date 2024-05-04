@@ -4,7 +4,7 @@
 
 #include "ash/picker/views/picker_category_type.h"
 
-#include "ash/picker/model/picker_category.h"
+#include "ash/public/cpp/picker/picker_category.h"
 
 namespace ash {
 
@@ -19,6 +19,9 @@ ASH_EXPORT PickerCategoryType GetPickerCategoryType(PickerCategory category) {
     case PickerCategory::kBrowsingHistory:
     case PickerCategory::kBookmarks:
       return PickerCategoryType::kLinks;
+    case PickerCategory::kDriveFiles:
+    case PickerCategory::kLocalFiles:
+      return PickerCategoryType::kFiles;
   }
 }
 

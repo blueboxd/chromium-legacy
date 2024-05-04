@@ -158,12 +158,6 @@ void TestSyncService::FireStateChanged() {
   }
 }
 
-void TestSyncService::FirePaymentsIntegrationEnabledChanged() {
-  for (SyncServiceObserver& observer : observers_) {
-    observer.OnSyncPaymentsIntegrationEnabledChanged(this);
-  }
-}
-
 void TestSyncService::FireSyncCycleCompleted() {
   for (SyncServiceObserver& observer : observers_) {
     observer.OnSyncCycleCompleted(this);
@@ -341,7 +335,7 @@ void TestSyncService::GetAllNodesForDebugging(
 
 SyncService::ModelTypeDownloadStatus TestSyncService::GetDownloadStatusFor(
     ModelType type) const {
-  if (base::Contains(download_statuses_, type)) {
+  if (download_statuses_.contains(type)) {
     return download_statuses_.at(type);
   }
   return ModelTypeDownloadStatus::kUpToDate;

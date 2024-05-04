@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include <string_view>
 
 #include "base/callback_list.h"
 #include "base/check_deref.h"
 #include "base/files/file_path.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
@@ -26,60 +23,48 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/sessions/session_service_test_helper.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/search_engines/choice_made_location.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/search_engine_choice_utils.h"
-#include "components/search_engines/search_engine_utils.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/signin/public/base/signin_switches.h"
 #include "components/version_info/version_info.h"
 #include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/window_open_disposition.h"
-#include "url/url_constants.h"
-
-// TODO(b/280753754): Convert these tests to interactive ui tests.
 
 using testing::_;
+using testing::TestParamInfo;
+using testing::ValuesIn;
+using testing::WithParamInterface;
 using EntryPoint = SearchEngineChoiceDialogService::EntryPoint;
 
 namespace {
-
-constexpr char kCustomSearchEngineDomain[] = "bar.com";
-constexpr char16_t kCustomSearchEngineKeyword[] = u"bar.com";
 
 // Class that mocks `SearchEngineChoiceDialogService`.
 class MockSearchEngineChoiceDialogService
@@ -133,23 +118,6 @@ class MockSearchEngineChoiceDialogService
  private:
   unsigned int number_of_browsers_with_dialogs_open_ = 0;
 };
-
-void SetUserSelectedDefaultSearchProvider(
-    TemplateURLService* template_url_service) {
-  TemplateURLData data;
-  data.SetShortName(kCustomSearchEngineKeyword);
-  data.SetKeyword(kCustomSearchEngineKeyword);
-  data.SetURL(base::StringPrintf("https://%s/url?bar={searchTerms}",
-                                 kCustomSearchEngineDomain));
-  data.new_tab_url =
-      base::StringPrintf("https://%s/newtab", kCustomSearchEngineDomain);
-  data.alternate_urls.push_back(base::StringPrintf(
-      "https://%s/alt#quux={searchTerms}", kCustomSearchEngineDomain));
-
-  TemplateURL* template_url =
-      template_url_service->Add(std::make_unique<TemplateURL>(data));
-  template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
-}
 
 webapps::AppId InstallPWA(Profile* profile, const GURL& start_url) {
   auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
@@ -312,9 +280,8 @@ class SearchEngineChoiceDialogBrowserTest : public InProcessBrowserTest {
   base::HistogramTester histogram_tester_;
 };
 
-// TODO(crbug.com/1515119): Flaky on all bots.
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
-                       DISABLED_RestoreBrowserWithMultipleTabs) {
+                       RestoreBrowserWithMultipleTabs) {
   // Open 2 more tabs in addition to the existing tab.
   for (int i = 0; i < 2; i++) {
     ui_test_utils::NavigateToURLWithDisposition(
@@ -395,63 +362,8 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
   EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
 }
 
-// TODO(crbug/1523581): Flaky on Linux Tests (dbg) and Mac ASan 64 Tests.
-#if (BUILDFLAG(IS_LINUX) && !defined(NDEBUG)) || \
-    (BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER))
-#define MAYBE_RestoreSettingsAndChangeUrl DISABLED_RestoreSettingsAndChangeUrl
-#else
-#define MAYBE_RestoreSettingsAndChangeUrl RestoreSettingsAndChangeUrl
-#endif
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
-                       MAYBE_RestoreSettingsAndChangeUrl) {
-  // Navigate the current tab to the settings page.
-  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUISettingsURL),
-      WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
-  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
-
-  auto* service = static_cast<MockSearchEngineChoiceDialogService*>(
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(
-          browser()->profile()));
-  ASSERT_TRUE(service);
-  EXPECT_FALSE(service->IsShowingDialog(browser()));
-
-  // Make sure that the dialog doesn't open if the restored tab is the settings
-  // page.
-  QuitAndRestoreBrowser(browser());
-  ASSERT_TRUE(browser());
-  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
-  EXPECT_EQ(GURL(chrome::kChromeUISettingsURL),
-            browser()->tab_strip_model()->GetWebContentsAt(0)->GetURL());
-  EXPECT_FALSE(service->IsShowingDialog(browser()));
-
-  // Make sure that the dialog doesn't get displayed after navigating to
-  // `chrome://welcome`.
-  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUIWelcomeURL),
-      WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
-  EXPECT_FALSE(service->IsShowingDialog(browser()));
-
-  // Make sure that the dialog doesn't open on the devtools url
-  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUIDevToolsURL),
-      WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
-  EXPECT_FALSE(service->IsShowingDialog(browser()));
-
-  // Dialog gets displayed when we navigate to chrome://new-tab-page.
-  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabPageURL),
-      WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
-  EXPECT_TRUE(service->IsShowingDialog(browser()));
-}
-
-// TODO(b/314262472) Flaky crashes on various platforms.
-IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
-                       DISABLED_BrowserIsRemovedFromListAfterClose) {
+                       BrowserIsRemovedFromListAfterClose) {
   Profile* profile = browser()->profile();
   Browser* new_browser = CreateBrowser(profile);
   auto* service = static_cast<MockSearchEngineChoiceDialogService*>(
@@ -568,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
-                       DialogDoesNotShowAgainAfterSettingPref) {
+                       PRE_DialogDoesNotShowAgainAfterSettingPref) {
   Profile* profile = browser()->profile();
   auto* service = static_cast<MockSearchEngineChoiceDialogService*>(
       SearchEngineChoiceDialogServiceFactory::GetForProfile(profile));
@@ -583,16 +495,22 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
   CheckNavigationConditionRecorded(
       search_engines::SearchEngineChoiceScreenConditions::kEligible, 1);
 
-  // Set the pref and simulate a dialog closing event.
-  service->NotifyChoiceMade(/*prepopulate_id=*/1, EntryPoint::kDialog);
-  EXPECT_FALSE(service->IsShowingDialog(browser()));
-  histogram_tester().ExpectUniqueSample(
-      search_engines::kSearchEngineChoiceScreenDefaultSearchEngineTypeHistogram,
-      SearchEngineType::SEARCH_ENGINE_GOOGLE, 1);
+  // Choose the first search engine to close the dialog.
+  std::unique_ptr<TemplateURL> first_search_engine =
+      std::move(service->GetSearchEngines().at(0));
+  service->NotifyChoiceMade(first_search_engine->prepopulate_id(),
+                            EntryPoint::kDialog);
+}
 
-  // Test that the dialog doesn't get shown again after opening the browser.
-  QuitAndRestoreBrowser(browser());
-  EXPECT_FALSE(service->IsShowingDialog(browser()));
+IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
+                       DialogDoesNotShowAgainAfterSettingPref) {
+  auto* service = static_cast<MockSearchEngineChoiceDialogService*>(
+      SearchEngineChoiceDialogServiceFactory::GetForProfile(
+          browser()->profile()));
+  // Test that the search engine choice dialog service is null after relaunching
+  // a browser with a profile in which the search engine choice was already
+  // made.
+  EXPECT_FALSE(service);
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -619,33 +537,6 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
       1);
 }
 #endif
-
-// This test is disabled because we currently don't want to show the dialog for
-// users who have custom search engines.
-// TODO(b/302687046): Modify the test based on the decision towards custom
-// search engines.
-IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
-                       DISABLED_ChooseCustomDefaultSearchProvider) {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(browser()->profile());
-  SetUserSelectedDefaultSearchProvider(template_url_service);
-  auto* search_engine_choice_dialog_service =
-      static_cast<MockSearchEngineChoiceDialogService*>(
-          SearchEngineChoiceDialogServiceFactory::GetForProfile(
-              browser()->profile()));
-
-  // Navigate to a URL to display the dialog.
-  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(kCustomSearchEngineDomain),
-      WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
-
-  search_engine_choice_dialog_service->NotifyChoiceMade(
-      /*prepopulate_id=*/0, EntryPoint::kDialog);
-  const TemplateURL* default_search_provider =
-      template_url_service->GetDefaultSearchProvider();
-  EXPECT_EQ(default_search_provider->short_name(), kCustomSearchEngineKeyword);
-}
 
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
                        DialogDoesNotShowWithExtensionEnabledThatOverridesDSE) {
@@ -694,9 +585,8 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
   EXPECT_TRUE(service->IsShowingDialog(browser()));
 }
 
-// TODO(crbug.com/1505043): Enable and fix test flakyness.
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
-                       DISABLED_DialogNotShownOverSpecificBrowserTypes) {
+                       DialogNotShownOverSpecificBrowserTypes) {
   Profile* profile = browser()->profile();
   auto* search_engine_choice_dialog_service =
       static_cast<MockSearchEngineChoiceDialogService*>(
@@ -707,11 +597,18 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
   chrome::AddTabAt(app_browser, GURL(), -1, true);
   EXPECT_TRUE(app_browser->is_type_app());
 
-  NavigateParams params(app_browser, GURL("http://www.google.com/"),
-                        ui::PAGE_TRANSITION_LINK);
+  GURL url = GURL("http://www.google.com/");
+  content::TestNavigationObserver observer(url);
+  observer.StartWatchingNewWebContents();
+
+  NavigateParams params(app_browser, url, ui::PAGE_TRANSITION_LINK);
   params.window_action = NavigateParams::SHOW_WINDOW;
   params.disposition = WindowOpenDisposition::NEW_POPUP;
   Navigate(&params);
+
+  // Wait for the URL to finish loading.
+  observer.Wait();
+
   // Navigate() should have opened a new `TYPE_APP_POPUP` window.
   Browser* app_popup_browser = params.browser;
   EXPECT_TRUE(app_popup_browser->is_type_app_popup());
@@ -904,14 +801,8 @@ IN_PROC_BROWSER_TEST_F(TaggedOnlySearchEngineChoiceDialogBrowserTest,
       prefs::kDefaultSearchProviderChoicePending);
 }
 
-// TODO(crbug.com/1506381) Flaky on mac.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_DialogTriggers DISABLED_DialogTriggers
-#else
-#define MAYBE_DialogTriggers DialogTriggers
-#endif
 IN_PROC_BROWSER_TEST_F(TaggedOnlySearchEngineChoiceDialogBrowserTest,
-                       MAYBE_DialogTriggers) {
+                       DialogTriggers) {
   // -- First profile ---------------------------------------------------------
 
   // Due to having more than one profile from the PRE_test, we explicitly load
@@ -974,9 +865,27 @@ IN_PROC_BROWSER_TEST_F(TaggedOnlySearchEngineChoiceDialogBrowserTest,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
+struct RepromptTestParam {
+  const std::string test_suffix;
+  const bool tagged_profiles_only = false;
+  const bool select_google_in_pre = true;
+  const bool skip_for_3p = false;
+};
+
+const RepromptTestParam kTestParams[] = {
+    {.test_suffix = "AllProfiles"},
+    {.test_suffix = "TaggedProfilesOnly", .tagged_profiles_only = true},
+    {.test_suffix = "Skip3p",
+     .select_google_in_pre = false,
+     .skip_for_3p = true},
+    {.test_suffix = "Skip3pButPickGoogle",
+     .select_google_in_pre = true,
+     .skip_for_3p = true},
+};
+
 class SearchEngineRepromptBrowserTest
     : public SearchEngineChoiceDialogBrowserTest,
-      public testing::WithParamInterface<bool> {
+      public WithParamInterface<RepromptTestParam> {
  public:
   SearchEngineRepromptBrowserTest()
       : SearchEngineChoiceDialogBrowserTest(
@@ -997,11 +906,21 @@ class SearchEngineRepromptBrowserTest
           [switches::kSearchEngineChoiceTriggerForTaggedProfilesOnly.name] =
               "false";
     }
+    if (skip_for_3p()) {
+      field_trial_params[switches::kSearchEngineChoiceTriggerSkipFor3p.name] =
+          "true";
+    } else {
+      field_trial_params[switches::kSearchEngineChoiceTriggerSkipFor3p.name] =
+          "false";
+    }
+
     feature_list_.InitAndEnableFeatureWithParameters(
         switches::kSearchEngineChoiceTrigger, std::move(field_trial_params));
   }
 
-  bool tagged_profiles_only() const { return GetParam(); }
+  bool tagged_profiles_only() const { return GetParam().tagged_profiles_only; }
+  bool skip_for_3p() const { return GetParam().skip_for_3p; }
+  bool select_google_in_pre() const { return GetParam().select_google_in_pre; }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -1026,6 +945,12 @@ IN_PROC_BROWSER_TEST_P(SearchEngineRepromptBrowserTest, PRE_Reprompt) {
   // Make a choice by grabbing the ID for one of the search engines in the
   // displayed list.
   int prepopulate_id = service->GetSearchEngines().at(0)->prepopulate_id();
+  if (select_google_in_pre()) {
+    prepopulate_id = TemplateURLPrepopulateData::google.id;
+  } else if (prepopulate_id == TemplateURLPrepopulateData::google.id) {
+    // The first item was Google, pick the second then.
+    prepopulate_id = service->GetSearchEngines().at(1)->prepopulate_id();
+  }
   service->NotifyChoiceMade(prepopulate_id, EntryPoint::kDialog);
 
   // Choice prefs have been written.
@@ -1058,7 +983,16 @@ IN_PROC_BROWSER_TEST_P(SearchEngineRepromptBrowserTest, Reprompt) {
       browser(), GURL(chrome::kChromeUINewTabPageURL),
       WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
-  EXPECT_TRUE(service->IsShowingDialog(browser()));
+  if (skip_for_3p() && !select_google_in_pre()) {
+    EXPECT_FALSE(service->IsShowingDialog(browser()));
+  } else {
+    EXPECT_TRUE(service->IsShowingDialog(browser()));
+  }
 }
 
-INSTANTIATE_TEST_SUITE_P(, SearchEngineRepromptBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         SearchEngineRepromptBrowserTest,
+                         ValuesIn(kTestParams),
+                         [](const TestParamInfo<RepromptTestParam>& info) {
+                           return info.param.test_suffix;
+                         });

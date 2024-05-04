@@ -128,15 +128,14 @@ AX_BASE_EXPORT bool IsUiaProviderEnabled();
 // TODO(accessibility): Should this be moved to ash_features.cc?
 AX_BASE_EXPORT bool IsDictationOfflineAvailable();
 
-// Allow accessibility accelerator notifications to timeout.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(
-    kAccessibilityAcceleratorNotificationsTimeout);
-AX_BASE_EXPORT bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled();
-
 // Use Dictation keyboard improvements.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(
     kAccessibilityDictationKeyboardImprovements);
 AX_BASE_EXPORT bool IsAccessibilityDictationKeyboardImprovementsEnabled();
+
+// Adds option to limit the movement on the screen.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityReducedAnimations);
+AX_BASE_EXPORT bool IsAccessibilityReducedAnimationsEnabled();
 
 // Integrate with FaceGaze.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityFaceGaze);
@@ -172,6 +171,10 @@ AX_BASE_EXPORT bool IsAccessibilityExtraLargeCursorEnabled();
 // Whether the screen magnifier can follow the Select to Speak focus.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityMagnifierFollowsSts);
 AX_BASE_EXPORT bool IsAccessibilityMagnifierFollowsStsEnabled();
+
+// Control mouse with keyboard.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityMouseKeys);
+AX_BASE_EXPORT bool IsAccessibilityMouseKeysEnabled();
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -224,6 +227,13 @@ AX_BASE_EXPORT bool IsPdfOcrEnabled();
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnything);
 AX_BASE_EXPORT bool IsReadAnythingEnabled();
 
+// Delay showing the side panel until content has loaded. This is being
+// separated out behind a separate flag to better verify that latency issues
+// introduced by the switch to the WebUI toolbar aren't related to delaying
+// loading the side panel.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingDelaySidePanelLoad);
+AX_BASE_EXPORT bool IsReadAnythingDelaySidePanelLoadEnabled();
+
 // Make the Read Anything Side Panel local (don't persist when opening a new
 // tab)
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingLocalSidePanel);
@@ -251,6 +261,11 @@ AX_BASE_EXPORT bool IsReadAnythingWithScreen2xEnabled();
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingWithAlgorithm);
 AX_BASE_EXPORT bool IsReadAnythingWithAlgorithmEnabled();
 
+// Enable images to be distilled via algorithm. Should be disabled by
+// default.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingImagesViaAlgorithm);
+AX_BASE_EXPORT bool IsReadAnythingImagesViaAlgorithmEnabled();
+
 // Write some ScreenAI library debug data in /tmp.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kScreenAIDebugMode);
 AX_BASE_EXPORT bool IsScreenAIDebugModeEnabled();
@@ -265,6 +280,12 @@ AX_BASE_EXPORT bool IsScreenAIOCREnabled();
 // If enabled, ScreenAI library will be loaded from //third_party/screen-ai.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kScreenAITestMode);
 AX_BASE_EXPORT bool IsScreenAITestModeEnabled();
+
+// Identify and annotate the main node of the AXTree where one was not already
+// provided.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kMainNodeAnnotations);
+AX_BASE_EXPORT bool IsMainNodeAnnotationsEnabled();
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_MAC)

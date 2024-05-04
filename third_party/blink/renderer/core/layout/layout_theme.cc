@@ -178,6 +178,9 @@ ControlPart LayoutTheme::AdjustAppearanceWithElementType(
     case kMediaVolumeSliderThumbPart:
     case kMediaControlPart:
       return part;
+    case kBikeshedPart:
+      CHECK(RuntimeEnabledFeatures::StylableSelectEnabled());
+      return part;
 
     // Aliases of 'auto'.
     // https://drafts.csswg.org/css-ui-4/#typedef-appearance-compat-auto
@@ -286,9 +289,6 @@ void LayoutTheme::AdjustStyle(const Element* element,
 }
 
 String LayoutTheme::ExtraDefaultStyleSheet() {
-  if (RuntimeEnabledFeatures::CssDisplayRubyEnabled()) {
-    return "ruby { display: ruby; }\nruby > rt { display: ruby-text; }\n";
-  }
   return g_empty_string;
 }
 
@@ -516,10 +516,6 @@ void LayoutTheme::ColorSchemeDidChange() {
   Page::ColorSchemeChanged();
 }
 
-void LayoutTheme::ColorProvidersDidChange() {
-  Page::ColorProvidersChanged();
-}
-
 void LayoutTheme::SetCaretBlinkInterval(base::TimeDelta interval) {
   caret_blink_interval_ = interval;
 }
@@ -529,65 +525,6 @@ base::TimeDelta LayoutTheme::CaretBlinkInterval() const {
   // a race condition for the pixel tests. http://b/1198440
   return WebTestSupport::IsRunningWebTest() ? base::TimeDelta()
                                             : caret_blink_interval_;
-}
-
-static FontDescription& GetCachedFontDescription(CSSValueID system_font_id) {
-  DEFINE_STATIC_LOCAL(FontDescription, caption, ());
-  DEFINE_STATIC_LOCAL(FontDescription, icon, ());
-  DEFINE_STATIC_LOCAL(FontDescription, menu, ());
-  DEFINE_STATIC_LOCAL(FontDescription, message_box, ());
-  DEFINE_STATIC_LOCAL(FontDescription, small_caption, ());
-  DEFINE_STATIC_LOCAL(FontDescription, status_bar, ());
-  DEFINE_STATIC_LOCAL(FontDescription, webkit_mini_control, ());
-  DEFINE_STATIC_LOCAL(FontDescription, webkit_small_control, ());
-  DEFINE_STATIC_LOCAL(FontDescription, webkit_control, ());
-  DEFINE_STATIC_LOCAL(FontDescription, default_description, ());
-  switch (system_font_id) {
-    case CSSValueID::kCaption:
-      return caption;
-    case CSSValueID::kIcon:
-      return icon;
-    case CSSValueID::kMenu:
-      return menu;
-    case CSSValueID::kMessageBox:
-      return message_box;
-    case CSSValueID::kSmallCaption:
-      return small_caption;
-    case CSSValueID::kStatusBar:
-      return status_bar;
-    case CSSValueID::kWebkitMiniControl:
-      return webkit_mini_control;
-    case CSSValueID::kWebkitSmallControl:
-      return webkit_small_control;
-    case CSSValueID::kWebkitControl:
-      return webkit_control;
-    case CSSValueID::kNone:
-      return default_description;
-    default:
-      NOTREACHED();
-      return default_description;
-  }
-}
-
-void LayoutTheme::SystemFont(CSSValueID system_font_id,
-                             FontDescription& font_description,
-                             const Document* document) {
-  font_description = GetCachedFontDescription(system_font_id);
-  if (font_description.IsAbsoluteSize())
-    return;
-
-  font_description.SetStyle(
-      LayoutThemeFontProvider::SystemFontStyle(system_font_id));
-  font_description.SetWeight(
-      LayoutThemeFontProvider::SystemFontWeight(system_font_id));
-  font_description.SetSpecifiedSize(
-      LayoutThemeFontProvider::SystemFontSize(system_font_id, document));
-  font_description.SetIsAbsoluteSize(true);
-  const AtomicString& system_font =
-      LayoutThemeFontProvider::SystemFontFamily(system_font_id);
-  font_description.FirstFamily().SetFamily(
-      system_font, FontFamily::InferredTypeFor(system_font));
-  font_description.SetGenericFamily(FontDescription::kNoFamily);
 }
 
 // TODO(crbug.com/1231644): Use color_provider to get the system colors if

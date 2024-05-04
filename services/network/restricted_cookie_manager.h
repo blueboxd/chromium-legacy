@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "mojo/public/cpp/base/shared_memory_version.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/isolation_info.h"
@@ -135,6 +136,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                     bool has_storage_access,
                     mojom::CookieManagerGetOptionsPtr options,
                     bool is_ad_tagged,
+                    bool force_disable_third_party_cookies,
                     GetAllForUrlCallback callback) override;
 
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
@@ -166,6 +168,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                         bool has_storage_access,
                         bool get_version_shared_memory,
                         bool is_ad_tagged,
+                        bool force_disable_third_party_cookies,
                         GetCookiesStringCallback callback) override;
   void CookiesEnabledFor(const GURL& url,
                          const net::SiteForCookies& site_for_cookies,
@@ -205,11 +208,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // Function to be called when an event is known to potentially invalidate
   // cookies the other side could have cached.
   void IncrementSharedVersion();
-
-  // Returns the cookie version shared with clients to determine whether a
-  // cookie string has changed since the last request and a new request needs to
-  // be issued.
-  uint64_t GetSharedVersion();
 
   // The state associated with a CookieChangeListener.
   class Listener;
@@ -288,7 +286,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // Computes the CookieSettingOverrides to be used by this instance.
   net::CookieSettingOverrides GetCookieSettingOverrides(
       bool has_storage_access,
-      bool is_ad_tagged) const;
+      bool is_ad_tagged,
+      bool force_disable_third_party_cookies) const;
 
   void OnCookiesAccessed(network::mojom::CookieAccessDetailsPtr details);
 
@@ -360,9 +359,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   size_t estimated_deduped_cookie_access_details_size_ = 0u;
   size_t cookie_access_details_count_ = 0u;
 
-  // Used to communicate cookie version information with renderers without going
-  // through IPCs.
-  base::MappedReadOnlyRegion mapped_region_;
+  mojo::SharedMemoryVersionController shared_memory_version_controller_;
 
   base::WeakPtrFactory<RestrictedCookieManager> weak_ptr_factory_{this};
 };

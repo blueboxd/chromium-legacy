@@ -6,6 +6,7 @@
 #include "chrome/test/base/web_ui_mocha_browser_test.h"
 #include "components/history_clusters/core/features.h"
 #include "content/public/test/browser_test.h"
+#include "crypto/crypto_buildflags.h"
 
 typedef WebUIMochaBrowserTest CrComponentsTest;
 
@@ -52,6 +53,11 @@ IN_PROC_BROWSER_TEST_F(CrComponentsTest, HelpBubble) {
 
 IN_PROC_BROWSER_TEST_F(CrComponentsTest, HorizontalCarousel) {
   RunTest("cr_components/history_clusters/horizontal_carousel_test.js",
+          "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(CrComponentsTest, HistoryEmbeddings) {
+  RunTest("cr_components/history_embeddings/history_embeddings_test.js",
           "mocha.run()");
 }
 

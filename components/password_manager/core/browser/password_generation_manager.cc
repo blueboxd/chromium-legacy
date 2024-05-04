@@ -48,8 +48,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
 
   // PasswordFormManagerForUI:
   const GURL& GetURL() const override;
-  const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-  GetBestMatches() const override;
+  base::span<const PasswordForm> GetBestMatches() const override;
   std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
   GetFederatedMatches() const override;
   const PasswordForm& GetPendingCredentials() const override;
@@ -62,6 +61,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   bool IsMovableToAccountStore() const override;
   void Save() override;
   void Update(const PasswordForm& credentials_to_update) override;
+  bool IsUpdateAffectingPasswordsStoredInTheGoogleAccount() const override;
   void OnUpdateUsernameFromPrompt(const std::u16string& new_username) override;
   void OnUpdatePasswordFromPrompt(const std::u16string& new_password) override;
   void OnNopeUpdateClicked() override;
@@ -74,7 +74,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
 
  private:
   PasswordForm pending_form_;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>> matches_;
+  std::vector<PasswordForm> matches_;
   const std::vector<PasswordForm> federated_matches_;
   const std::vector<PasswordForm> non_federated_matches_;
 
@@ -96,15 +96,14 @@ PasswordDataForUI::PasswordDataForUI(
       non_federated_matches_(DeepCopyVector(matches)),
       bubble_interaction_cb_(std::move(bubble_interaction)) {
   for (const PasswordForm& form : non_federated_matches_)
-    matches_.push_back(&form);
+    matches_.push_back(form);
 }
 
 const GURL& PasswordDataForUI::GetURL() const {
   return pending_form_.url;
 }
 
-const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-PasswordDataForUI::GetBestMatches() const {
+base::span<const PasswordForm> PasswordDataForUI::GetBestMatches() const {
   return matches_;
 }
 
@@ -157,6 +156,12 @@ void PasswordDataForUI::Save() {
 void PasswordDataForUI::Update(const PasswordForm&) {
   // The method is obsolete.
   NOTREACHED();
+}
+
+bool PasswordDataForUI::IsUpdateAffectingPasswordsStoredInTheGoogleAccount()
+    const {
+  // Generated passwords are always in the Google Account.
+  return true;
 }
 
 void PasswordDataForUI::OnUpdateUsernameFromPrompt(

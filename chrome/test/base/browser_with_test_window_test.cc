@@ -5,6 +5,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/location.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/test_crosapi_dependency_registry.h"
+#include "chrome/browser/chromeos/kcer/kcer_factory.h"
 #include "chromeos/ash/components/browser_context_helper/annotated_account_id.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -138,6 +140,7 @@ void BrowserWithTestWindowTest::TearDown() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  kcer::KcerFactory::Shutdown();  // Depends on `manager_`.
   manager_.reset();
   kiosk_chrome_app_manager_.reset();
 #endif
@@ -308,7 +311,7 @@ void BrowserWithTestWindowTest::SwitchActiveUser(const std::string& email) {
 
 void BrowserWithTestWindowTest::OnProfileWillBeDestroyed(Profile* profile) {
   CHECK(
-      base::EraseIf(profile_observations_, [profile](const auto& observation) {
+      std::erase_if(profile_observations_, [profile](const auto& observation) {
         return observation->IsObservingSource(profile);
       }));
   const AccountId* account_id = ash::AnnotatedAccountId::Get(profile);

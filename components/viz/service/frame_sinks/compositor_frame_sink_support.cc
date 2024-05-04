@@ -12,6 +12,7 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/system/sys_info.h"
@@ -24,6 +25,7 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -391,24 +393,30 @@ void CompositorFrameSinkSupport::OnSurfacePresented(
     base::TimeTicks draw_start_timestamp,
     const gfx::SwapTimings& swap_timings,
     const gfx::PresentationFeedback& feedback) {
-  DidPresentCompositorFrame(frame_token, draw_start_timestamp, swap_timings,
-                            feedback);
+  // If the frame was submitted locally (from inside viz), do not tell the
+  // client about it, since the client did not send it.
+  if (frame_token != kLocalFrameToken) {
+    DidPresentCompositorFrame(frame_token, draw_start_timestamp, swap_timings,
+                              feedback);
+  }
 }
 
 void CompositorFrameSinkSupport::RefResources(
     const std::vector<TransferableResource>& resources) {
-  if (surface_animation_manager_)
-    surface_animation_manager_->RefResources(resources);
+  if (reserved_resource_delegate_) {
+    reserved_resource_delegate_->RefResources(resources);
+  }
   surface_resource_holder_.RefResources(resources);
 }
 
 void CompositorFrameSinkSupport::UnrefResources(
     std::vector<ReturnedResource> resources) {
-  // |surface_animation_manager_| allocates ResourceIds in a different range
+  // `ReservedResourceDelegate` allocates ResourceIds in a different range
   // than the client so it can process returned resources before
   // |surface_resource_holder_|.
-  if (surface_animation_manager_)
-    surface_animation_manager_->UnrefResources(resources);
+  if (reserved_resource_delegate_) {
+    reserved_resource_delegate_->UnrefResources(resources);
+  }
   surface_resource_holder_.UnrefResources(std::move(resources));
 }
 
@@ -440,6 +448,9 @@ void CompositorFrameSinkSupport::ReturnResources(
 
 void CompositorFrameSinkSupport::ReceiveFromChild(
     const std::vector<TransferableResource>& resources) {
+  if (reserved_resource_delegate_) {
+    reserved_resource_delegate_->ReceiveFromChild(resources);
+  }
   surface_resource_holder_.ReceiveFromChild(resources);
 }
 
@@ -573,6 +584,26 @@ void CompositorFrameSinkSupport::UpdateThreadIdsPostVerification(
   if (passed_verification) {
     thread_ids_ = std::move(thread_ids);
   }
+}
+
+void CompositorFrameSinkSupport::SetSurfaceAnimationManager(
+    std::unique_ptr<SurfaceAnimationManager> surface_animation_manager) {
+  // We only support one of SurfaceAnimationManager or a custom
+  // `ReservedResourceDelegate` for the lifetime of a CFSS. If we are setting
+  // `surface_animation_manager_`, then either there is no current one and it
+  // and `reserved_resource_delegate_` should be nullptr, or we are setting a
+  // new one and the previous values should be equal.
+  CHECK_EQ(surface_animation_manager_.get(), reserved_resource_delegate_);
+  reserved_resource_delegate_ = surface_animation_manager.get();
+  surface_animation_manager_ = std::move(surface_animation_manager);
+}
+
+std::unique_ptr<SurfaceAnimationManager>
+CompositorFrameSinkSupport::TakeSurfaceAnimationManager() {
+  // See comment in `SetSurfaceAnimationManager` about this CHECK.
+  CHECK_EQ(surface_animation_manager_.get(), reserved_resource_delegate_);
+  reserved_resource_delegate_ = nullptr;
+  return std::move(surface_animation_manager_);
 }
 
 base::TimeDelta CompositorFrameSinkSupport::GetPreferredFrameInterval(
@@ -973,7 +1004,8 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
     base::TimeTicks draw_start_timestamp,
     const gfx::SwapTimings& swap_timings,
     const gfx::PresentationFeedback& feedback) {
-  CHECK_NE(frame_token, kInvalidOrLocalFrameToken);
+  CHECK_NE(frame_token, kInvalidFrameToken);
+  CHECK_NE(frame_token, kLocalFrameToken);
   DCHECK((feedback.flags & gfx::PresentationFeedback::kFailure) ||
          (!draw_start_timestamp.is_null() && !swap_timings.is_null()));
 
@@ -1456,7 +1488,8 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
 void CompositorFrameSinkSupport::CheckPendingSurfaces() {
   if (pending_surfaces_.empty())
     return;
-  base::flat_set<Surface*> pending_surfaces(pending_surfaces_);
+  base::flat_set<raw_ptr<Surface, CtnExperimental>> pending_surfaces(
+      pending_surfaces_);
   for (Surface* surface : pending_surfaces) {
     surface->ActivateIfDeadlinePassed();
   }
@@ -1494,11 +1527,11 @@ void CompositorFrameSinkSupport::ProcessCompositorFrameTransitionDirective(
       // Initialize this before creating the SurfaceAnimationManager since the
       // save operation may execute synchronously.
       in_flight_save_sequence_id_ = directive.sequence_id();
-      surface_animation_manager_ = SurfaceAnimationManager::CreateWithSave(
+      SetSurfaceAnimationManager(SurfaceAnimationManager::CreateWithSave(
           directive, surface, frame_sink_manager_->shared_bitmap_manager(),
           base::BindOnce(&CompositorFrameSinkSupport::
                              OnCompositorFrameTransitionDirectiveProcessed,
-                         base::Unretained(this)));
+                         base::Unretained(this))));
       break;
     case CompositorFrameTransitionDirective::Type::kAnimateRenderer:
       // The save operation must have been executed before we see an animate
@@ -1516,9 +1549,9 @@ void CompositorFrameSinkSupport::ProcessCompositorFrameTransitionDirective(
                      << directive.navigation_id();
         }
 
-        surface_animation_manager_ =
+        SetSurfaceAnimationManager(
             frame_sink_manager_->TakeSurfaceAnimationManager(
-                directive.navigation_id());
+                directive.navigation_id()));
       }
 
       if (surface_animation_manager_)
@@ -1528,7 +1561,7 @@ void CompositorFrameSinkSupport::ProcessCompositorFrameTransitionDirective(
 
       break;
     case CompositorFrameTransitionDirective::Type::kRelease:
-      surface_animation_manager_.reset();
+      SetSurfaceAnimationManager(nullptr);
 
       // This `surface_animation_manager_` could correspond to an in-flight
       // save, reset the tracking here.
@@ -1566,7 +1599,7 @@ void CompositorFrameSinkSupport::OnCompositorFrameTransitionDirectiveProcessed(
     // SurfaceAnimationManager for this |navigation_id|. Should never happen
     // but handled safely because its untrusted input from the renderer.
     frame_sink_manager_->CacheSurfaceAnimationManager(
-        directive.navigation_id(), std::move(surface_animation_manager_));
+        directive.navigation_id(), TakeSurfaceAnimationManager());
   }
 
   in_flight_save_sequence_id_ = 0;
@@ -1628,6 +1661,14 @@ void CompositorFrameSinkSupport::ClearAllPendingCopyOutputRequests() {
 SurfaceAnimationManager*
 CompositorFrameSinkSupport::GetSurfaceAnimationManagerForTesting() {
   return surface_animation_manager_.get();
+}
+
+void CompositorFrameSinkSupport::SetReservedResourceDelegate(
+    ReservedResourceDelegate* delegate) {
+  // We only support a custom `ReservedResourceDelegate` on root CFSS. So make
+  // sure `surface_animation_manager_` is not set.
+  CHECK(!surface_animation_manager_);
+  reserved_resource_delegate_ = delegate;
 }
 
 void CompositorFrameSinkSupport::DestroySelf() {

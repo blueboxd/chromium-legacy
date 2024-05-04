@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/bruschetta/bruschetta_network_context.h"
 
 #include <stdint.h>
+
 #include <memory>
 #include <optional>
 #include <vector>
@@ -269,5 +270,8 @@ void BruschettaNetworkContext::Clone(
         observer) {
   url_loader_observers_.Add(this, std::move(observer));
 }
+
+void BruschettaNetworkContext::OnWebSocketConnectedToPrivateNetwork(
+    network::mojom::IPAddressSpace ip_address_space) {}
 
 }  // namespace bruschetta

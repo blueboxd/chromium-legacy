@@ -112,7 +112,7 @@ void WorkerMainScriptLoader::Start(
       &WorkerMainScriptLoader::OnConnectionClosed, WrapWeakPersistent(this)));
   data_pipe_ = std::move(worker_main_script_load_params->response_body);
 
-  client_->OnStartLoadingBody(resource_response_);
+  client_->OnStartLoadingBodyWorkerMainScript(resource_response_);
   StartLoadingBody();
 }
 
@@ -200,6 +200,7 @@ void WorkerMainScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(fetch_context_);
   visitor->Trace(resource_load_observer_);
   visitor->Trace(client_);
+  visitor->Trace(resource_loader_options_);
 }
 
 void WorkerMainScriptLoader::StartLoadingBody() {
@@ -246,7 +247,7 @@ void WorkerMainScriptLoader::OnReadable(MojoResult) {
 
   if (bytes_read > 0) {
     base::span<const char> span = base::make_span(buffer, bytes_read);
-    client_->DidReceiveData(span);
+    client_->DidReceiveDataWorkerMainScript(span);
     resource_load_observer_->DidReceiveData(initial_request_.InspectorId(),
                                             span);
   }

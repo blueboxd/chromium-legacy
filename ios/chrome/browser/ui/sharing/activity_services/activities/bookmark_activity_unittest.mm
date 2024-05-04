@@ -4,12 +4,13 @@
 
 #import "ios/chrome/browser/ui/sharing/activity_services/activities/bookmark_activity.h"
 
-#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_node.h"
+#import "components/bookmarks/browser/core_bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/testing_pref_service.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_ios_unit_test_support.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -50,12 +51,11 @@ class BookmarkActivityTest : public BookmarkIOSUnitTestSupport {
 
   // Creates a BookmarkActivity instance with the given `URL`.
   BookmarkActivity* CreateActivity(const GURL& URL) {
-    return
-        [[BookmarkActivity alloc] initWithURL:URL
-                                        title:kTestTitle
-                                bookmarkModel:local_or_syncable_bookmark_model_
-                                      handler:mocked_handler_
-                                  prefService:&testing_pref_service_];
+    return [[BookmarkActivity alloc] initWithURL:URL
+                                           title:kTestTitle
+                                   bookmarkModel:bookmark_model_
+                                         handler:mocked_handler_
+                                     prefService:&testing_pref_service_];
   }
 
   TestingPrefServiceSimple testing_pref_service_;

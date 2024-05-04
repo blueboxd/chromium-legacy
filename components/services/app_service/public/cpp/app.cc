@@ -29,6 +29,9 @@ bool App::operator==(const App& other) const {
   if (this->publisher_id != other.publisher_id) {
     return false;
   }
+  if (this->installer_package_id != other.installer_package_id) {
+    return false;
+  }
   if (this->description != other.description) {
     return false;
   }
@@ -86,6 +89,9 @@ bool App::operator==(const App& other) const {
   if (this->allow_close != other.allow_close) {
     return false;
   }
+  if (this->allow_window_mode_selection != other.allow_window_mode_selection) {
+    return false;
+  }
   if (this->app_size_in_bytes != other.app_size_in_bytes) {
     return false;
   }
@@ -141,6 +147,7 @@ AppPtr App::Clone() const {
   app->install_reason = install_reason;
   app->install_source = install_source;
   app->policy_ids = policy_ids;
+  app->installer_package_id = installer_package_id;
   app->is_platform_app = is_platform_app;
   app->recommendable = recommendable;
   app->searchable = searchable;
@@ -155,6 +162,7 @@ AppPtr App::Clone() const {
   app->intent_filters = CloneIntentFilters(intent_filters);
   app->resize_locked = resize_locked;
   app->window_mode = window_mode;
+  app->allow_window_mode_selection = allow_window_mode_selection;
 
   if (run_on_os_login.has_value()) {
     app->run_on_os_login = apps::RunOnOsLogin(run_on_os_login->login_mode,

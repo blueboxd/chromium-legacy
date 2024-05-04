@@ -36,6 +36,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/windows_types.h"
+#include "content/public/common/prefetch_type_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #else
 #include "content/public/browser/posix_file_descriptor_info.h"
@@ -61,6 +62,10 @@
 
 namespace base {
 class CommandLine;
+
+#if BUILDFLAG(IS_IOS)
+class MachPortRendezvousServer;
+#endif
 }
 
 namespace content {
@@ -81,6 +86,15 @@ namespace internal {
 using FileMappedForLaunch = PosixFileDescriptorInfo;
 #else
 using FileMappedForLaunch = base::HandlesToInheritVector;
+#endif
+
+#if BUILDFLAG(IS_IOS)
+class LaunchResult;
+
+class ProcessStorageBase {
+ public:
+  virtual ~ProcessStorageBase() = default;
+};
 #endif
 
 // ChildProcessLauncherHelper is used by ChildProcessLauncher to start a
@@ -144,6 +158,12 @@ class ChildProcessLauncherHelper
   // Returns the list of files that should be mapped in the child process.
   // Platform specific.
   std::unique_ptr<FileMappedForLaunch> GetFilesToMap();
+
+#if BUILDFLAG(IS_WIN)
+  // Returns the Prefetch string for the process type on the OS in use.
+  static std::string_view GetPrefetchSwitch(
+      const AppLaunchPrefetchType prefetch_type);
+#endif
 
   // Returns true if the process will be launched using base::LaunchOptions.
   // If false, all of the base::LaunchOptions* below will be nullptr.
@@ -211,6 +231,10 @@ class ChildProcessLauncherHelper
   static void ForceNormalProcessTerminationAsync(
       ChildProcessLauncherHelper::Process process);
 
+#if BUILDFLAG(IS_IOS)
+  void OnChildProcessStarted(std::unique_ptr<LaunchResult> launch_result);
+#endif
+
 #if BUILDFLAG(IS_ANDROID)
   void OnChildProcessStarted(JNIEnv* env, jint handle);
 
@@ -235,6 +259,10 @@ class ChildProcessLauncherHelper
   ~ChildProcessLauncherHelper();
 
   void LaunchOnLauncherThread();
+
+  // Update command line and mapped handles if a log handle is being passed.
+  void PassLoggingSwitches(base::LaunchOptions* launch_options,
+                           base::CommandLine* cmd_line);
 
 #if BUILDFLAG(USE_ZYGOTE)
   // Returns the zygote handle for this particular launch, if any.
@@ -296,6 +324,11 @@ class ChildProcessLauncherHelper
   std::vector<content::WebPluginInfo> plugins_;
 #endif  // BUILDFLAG(ENABLE_PPAPI)
 #endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_IOS)
+  std::unique_ptr<base::MachPortRendezvousServer> rendezvous_server_;
+  std::unique_ptr<ProcessStorageBase> process_storage_;
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_peer_;

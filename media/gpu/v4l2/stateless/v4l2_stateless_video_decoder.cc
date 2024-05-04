@@ -10,12 +10,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/task/thread_pool.h"
+#include "base/trace_event/trace_event.h"
 #include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/stateless/h264_delegate.h"
-#include "media/gpu/v4l2/stateless/utils.h"
+#include "media/gpu/v4l2/stateless/h265_delegate.h"
 #include "media/gpu/v4l2/stateless/vp8_delegate.h"
 #include "media/gpu/v4l2/stateless/vp9_delegate.h"
 #include "media/gpu/v4l2/v4l2_status.h"
@@ -27,9 +27,9 @@
 // they can easily be bubbled up to MEDIA_LOG. When a function has multiple
 // error paths it is best to log each error path. Avoid logging every error
 // path if there is a meaningful error message logged from the calling function.
-// MEDIA_LOG(ERROR, media_log_):
-// Unrecoverable errors should be bubbled up the the media log so that they can
-// easily be seen during runtime.
+// LogError(media_log_):
+// Unrecoverable errors should be bubbled up the the media log and logged to
+// file so that they can easily be seen during runtime and in post log analysis.
 //
 // VLOGF(1):
 // Expected or recoverable events that occur on a per frame frame basis. These
@@ -46,43 +46,24 @@
 // DVLOGF(5): Events that occur multiple times per frame.
 
 namespace {
-using DequeueCB = base::RepeatingCallback<void(media::Buffer)>;
-
-void DequeueOutput(scoped_refptr<media::StatelessDevice> device,
-                   DequeueCB dequeue_cb) {
-  while (true) {
-    DVLOGF(4) << "blocking on dequeue of output";
-    auto buffer = device->DequeueBuffer(media::BufferType::kRawFrames,
-                                        media::MemoryType::kMemoryMapped, 2);
-    if (buffer) {
-      DVLOGF(4) << "output buffer dequeued " << buffer->GetIndex();
-      dequeue_cb.Run(std::move(*buffer));
-    } else {
-      break;
-    }
-  }
-}
-
-void DequeueInput(scoped_refptr<media::StatelessDevice> device,
-                  DequeueCB dequeue_cb) {
-  while (true) {
-    DVLOGF(4) << "blocking on dequeue on input";
-    auto buffer = device->DequeueBuffer(media::BufferType::kCompressedData,
-                                        media::MemoryType::kMemoryMapped, 1);
-    if (buffer) {
-      DVLOGF(4) << "input buffer dequeued " << buffer->GetIndex();
-      dequeue_cb.Run(std::move(*buffer));
-    } else {
-      break;
-    }
-  }
-}
-
-}  // namespace
-namespace media {
+constexpr char kTracingCategory[] = "media,gpu";
+constexpr char kBitstreamTracing[] = "V4L2 Bitstream Held Duration";
+constexpr char kBitstreamID[] = "bitstream id";
 
 constexpr size_t kTimestampCacheSize = 128;
 
+template <typename... Args>
+void LogError(const std::unique_ptr<media::MediaLog>& media_log,
+              Args&&... args) {
+  std::ostringstream error_message;
+  (error_message << ... << args);
+  LOG(ERROR) << error_message.str();
+  MEDIA_LOG(ERROR, media_log) << error_message.str();
+}
+
+}  // namespace
+
+namespace media {
 // static
 std::unique_ptr<VideoDecoderMixin> V4L2StatelessVideoDecoder::Create(
     std::unique_ptr<MediaLog> media_log,
@@ -123,24 +104,24 @@ V4L2StatelessVideoDecoder::V4L2StatelessVideoDecoder(
 V4L2StatelessVideoDecoder::~V4L2StatelessVideoDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
-  DCHECK(!current_decode_request_)
-      << "|current_decode_request_| should have been flushed.";
-  DCHECK(decode_request_queue_.empty())
-      << "|decode_request_queue_| is not empty, it should have been flushed.";
+
+  // There can be requests left in the queue if the decoder is torn down without
+  // waiting for an end of stream which would trigger a flush.
+  ClearPendingRequests(DecoderStatus::Codes::kAborted);
 }
 
 void V4L2StatelessVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                            bool low_delay,
                                            CdmContext* cdm_context,
                                            InitCB init_cb,
-                                           const OutputCB& output_cb,
+                                           const PipelineOutputCB& output_cb,
                                            const WaitingCB& waiting_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(config.IsValidConfig());
   DVLOGF(3);
-
+  TRACE_EVENT0("media,gpu", "V4L2StatelessVideoDecoder::Initialize");
   if (config.is_encrypted()) {
-    MEDIA_LOG(ERROR, media_log_) << "Decoder does not support encrypted stream";
+    LogError(media_log_, "Decoder does not support encrypted stream.");
     std::move(init_cb).Run(DecoderStatus::Codes::kUnsupportedEncryptionMode);
     return;
   }
@@ -152,7 +133,7 @@ void V4L2StatelessVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   device_->Close();
   if (!device_->Open()) {
-    MEDIA_LOG(ERROR, media_log_) << "Failed to open device.";
+    LogError(media_log_, "Failed to open device.");
     std::move(init_cb).Run(
         DecoderStatus(DecoderStatus::Codes::kNotInitialized)
             .AddCause(V4L2Status(V4L2Status::Codes::kNoDevice)));
@@ -161,8 +142,8 @@ void V4L2StatelessVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!device_->CheckCapabilities(
           VideoCodecProfileToVideoCodec(config.profile()))) {
-    MEDIA_LOG(ERROR, media_log_) << "Video configuration is not supported: "
-                                 << config.AsHumanReadableString();
+    LogError(media_log_, "Video configuration is not supported: ",
+             config.AsHumanReadableString());
     std::move(init_cb).Run(
         DecoderStatus(DecoderStatus::Codes::kNotInitialized)
             .AddCause(
@@ -192,23 +173,9 @@ void V4L2StatelessVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   const int32_t bitstream_id =
       bitstream_id_generator_.GenerateNextId().GetUnsafeValue();
 
-  // |input_queue_task_runner_| and |output_queue_task_runner_| block on
-  // dequeuing a kernel ioctl call (VIDIOC_DQBUF). These don't need to be true
-  // task runners as there is never anything posted to those runners. They wait
-  // for an event and then post messages to the main task runner. Using task
-  // runners requires having a dedicated thread to prevent other runners that
-  // are put on the same thread from being blocked unintentionally.
-  if (!input_queue_task_runner_) {
-    input_queue_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
-        {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-  }
-
-  if (!output_queue_task_runner_) {
-    output_queue_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
-        {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-  }
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTracingCategory, kBitstreamTracing,
+                                    TRACE_ID_LOCAL(bitstream_id), kBitstreamID,
+                                    bitstream_id);
 
   decode_request_queue_.push(
       DecodeRequest(std::move(buffer), std::move(decode_cb), bitstream_id));
@@ -272,26 +239,27 @@ void V4L2StatelessVideoDecoder::ApplyResolutionChange() {
   input_queue_.reset();
   output_queue_.reset();
 
-  const VideoCodec codec =
-      VideoCodecProfileToVideoCodec(decoder_->GetProfile());
-  input_queue_ = InputQueue::Create(device_, codec, decoder_->GetPicSize());
-  if (!input_queue_) {
-    // TODO(frkoenig): Handle error!
-    MEDIA_LOG(ERROR, media_log_) << "Unable to create input queue.";
-  }
+  // The driver can be busy cleaning up the resources that were freed up by
+  // resting the queues.
+  base::PlatformThread::Sleep(base::Milliseconds(2));
 
   // TODO(frkoenig): There only needs to be a single buffer in order to
   // decode. This should be investigated later to see if additional buffers
   // provide better performance.
   constexpr size_t kInputBuffers = 1;
-  if (input_queue_->PrepareBuffers(kInputBuffers)) {
-    if (!input_queue_->StartStreaming()) {
-      // TODO(frkoenig): Handle error!
-      MEDIA_LOG(ERROR, media_log_)
-          << "Unable to start streaming on the input queue";
-    }
 
+  const VideoCodec codec =
+      VideoCodecProfileToVideoCodec(decoder_->GetProfile());
+  input_queue_ = InputQueue::Create(device_, codec, decoder_->GetPicSize());
+
+  if (input_queue_ && input_queue_->PrepareBuffers(kInputBuffers) &&
+      input_queue_->StartStreaming()) {
     ServiceDecodeRequestQueue();
+  } else {
+    LogError(media_log_, "Unable to create input queue and allocate (",
+             kInputBuffers, ") buffers");
+    ClearPendingRequests(DecoderStatus::Codes::kPlatformDecodeFailure);
+    input_queue_.reset();
   }
 }
 
@@ -349,14 +317,15 @@ bool V4L2StatelessVideoDecoder::SubmitFrame(
     // The header needs to be parsed before the video resolution and format
     // can be decided.
     if (!device_->SetHeaders(ctrls, base::ScopedFD(-1))) {
-      MEDIA_LOG(ERROR, media_log_) << "Failure to send the header necessary "
-                                      "for output queue instantiation.";
+      LogError(media_log_,
+               "Failure to send the header necessary for output queue "
+               "instantiation.");
       return false;
     }
 
     output_queue_ = OutputQueue::Create(device_);
     if (!output_queue_) {
-      MEDIA_LOG(ERROR, media_log_) << "Unable to create an output queue.";
+      LogError(media_log_, "Unable to create an output queue.");
       return false;
     }
 
@@ -370,7 +339,7 @@ bool V4L2StatelessVideoDecoder::SubmitFrame(
     // vector (CAPCM*1_Sand_E.h264).
     CHECK_LE(num_buffers, 32u);
     if (!output_queue_->PrepareBuffers(num_buffers)) {
-      MEDIA_LOG(ERROR, media_log_) << "Unable to prepare output buffers.";
+      LogError(media_log_, "Unable to prepare output buffers.");
       return false;
     }
 
@@ -379,8 +348,7 @@ bool V4L2StatelessVideoDecoder::SubmitFrame(
     }
 
     if (!output_queue_->StartStreaming()) {
-      MEDIA_LOG(ERROR, media_log_)
-          << "Unable to start streaming on the output queue.";
+      LogError(media_log_, "Unable to start streaming on the output queue.");
     }
 
     ArmBufferMonitor();
@@ -393,8 +361,8 @@ bool V4L2StatelessVideoDecoder::SubmitFrame(
     return true;
   }
 
-  MEDIA_LOG(ERROR, media_log_) << "Unable to submit compressed frame "
-                               << dec_surface->FrameID() << " to be decoded.";
+  LogError(media_log_, "Unable to submit compressed frame ",
+           dec_surface->FrameID(), " to be decoded.");
   return false;
 }
 
@@ -456,9 +424,8 @@ void V4L2StatelessVideoDecoder::ServiceDisplayQueue() {
 
     // Retrieve the index of the corresponding dequeued buffer. It is expected
     // that a buffer may not be ready.
-    scoped_refptr<VideoFrame> video_frame =
-        output_queue_->GetVideoFrame(frame_id);
-    if (!video_frame) {
+    scoped_refptr<FrameResource> frame = output_queue_->GetFrame(frame_id);
+    if (!frame) {
       DVLOGF(5) << "No dequeued buffer ready for frame id : " << frame_id;
       return;
     }
@@ -468,8 +435,8 @@ void V4L2StatelessVideoDecoder::ServiceDisplayQueue() {
     const auto surface = std::move(display_queue_.front());
     display_queue_.pop();
 
-    auto wrapped_frame = VideoFrame::WrapVideoFrame(
-        video_frame, video_frame->format(), surface->GetVisibleRect(),
+    auto wrapped_frame = frame->CreateWrappingFrame(
+        surface->GetVisibleRect(),
         aspect_ratio_.GetNaturalSize(surface->GetVisibleRect()));
 
     // Move the metadata associated with the surface over to the video frame.
@@ -515,6 +482,12 @@ bool V4L2StatelessVideoDecoder::CreateDecoder(VideoCodecProfile profile,
       decoder_ = std::make_unique<H264Decoder>(
           std::make_unique<H264Delegate>(this), profile, color_space);
       break;
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+    case VideoCodec::kHEVC:
+      decoder_ = std::make_unique<H265Decoder>(
+          std::make_unique<H265Delegate>(this), profile, color_space);
+      break;
+#endif
     case VideoCodec::kVP8:
       decoder_ = std::make_unique<VP8Decoder>(
           std::make_unique<VP8Delegate>(this), color_space);
@@ -526,9 +499,8 @@ bool V4L2StatelessVideoDecoder::CreateDecoder(VideoCodecProfile profile,
           profile, color_space);
       break;
     default:
-      MEDIA_LOG(ERROR, media_log_)
-          << GetCodecName(VideoCodecProfileToVideoCodec(profile))
-          << " not supported.";
+      LogError(media_log_, GetCodecName(VideoCodecProfileToVideoCodec(profile)),
+               " not supported.");
       return false;
   }
 
@@ -572,11 +544,11 @@ bool V4L2StatelessVideoDecoder::SetupOutputFormatForPipeline() {
           /*use_protected=*/false, /*need_aux_frame_pool=*/false,
           /*allocator=*/std::nullopt);
   if (!status_or_output_format.has_value()) {
-    MEDIA_LOG(ERROR, media_log_)
-        << "Unable to convert or directly display video that has a "
-        << output_queue_->GetQueueFormat().ToString()
-        << " format with a resolution of "
-        << output_queue_->GetVideoResolution().ToString();
+    LogError(media_log_,
+             "Unable to convert or directly display video that has a ",
+             output_queue_->GetQueueFormat().ToString(),
+             " format with a resolution of ",
+             output_queue_->GetVideoResolution().ToString());
     return false;
   }
 
@@ -587,21 +559,19 @@ void V4L2StatelessVideoDecoder::ArmBufferMonitor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  auto input_cb = base::BindPostTaskToCurrentDefault(base::BindRepeating(
-      &V4L2StatelessVideoDecoder::HandleDequeuedInputBuffers,
-      weak_ptr_factory_for_events_.GetWeakPtr()));
+  media::DequeueCB input_cb =
+      base::BindPostTaskToCurrentDefault(base::BindRepeating(
+          &V4L2StatelessVideoDecoder::HandleDequeuedInputBuffers,
+          weak_ptr_factory_for_events_.GetWeakPtr()));
 
-  cancelable_input_queue_tracker_.PostTask(
-      input_queue_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&DequeueInput, device_, std::move(input_cb)));
+  input_queue_->ArmBufferMonitor(std::move(input_cb));
 
-  auto output_cb = base::BindPostTaskToCurrentDefault(base::BindRepeating(
-      &V4L2StatelessVideoDecoder::HandleDequeuedOutputBuffers,
-      weak_ptr_factory_for_events_.GetWeakPtr()));
+  media::DequeueCB output_cb =
+      base::BindPostTaskToCurrentDefault(base::BindRepeating(
+          &V4L2StatelessVideoDecoder::HandleDequeuedOutputBuffers,
+          weak_ptr_factory_for_events_.GetWeakPtr()));
 
-  cancelable_output_queue_tracker_.PostTask(
-      output_queue_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&DequeueOutput, device_, std::move(output_cb)));
+  output_queue_->ArmBufferMonitor(std::move(output_cb));
 }
 
 void V4L2StatelessVideoDecoder::HandleDequeuedOutputBuffers(Buffer buffer) {
@@ -648,7 +618,13 @@ void V4L2StatelessVideoDecoder::EnqueueDecodedOutputBufferByFrameID(
     uint64_t frame_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4) << "frame id: " << frame_id;
-  output_queue_->QueueBufferByFrameID(frame_id);
+  // The surface needs to be created for |SubmitFrame| to be called. But
+  // |output_queue_| is only setup during |SubmitFrame|. If |output_queue_| can
+  // not be created, this function will still get called on the destruction of
+  // the surface.
+  if (output_queue_) {
+    output_queue_->QueueBufferByFrameID(frame_id);
+  }
 
   last_frame_id_dequeued_ = frame_id;
 
@@ -773,8 +749,7 @@ void V4L2StatelessVideoDecoder::ServiceDecodeRequestQueue() {
         // done being processed.
         return;
       case AcceleratedVideoDecoder::kDecodeError:
-        MEDIA_LOG(ERROR, media_log_)
-            << "AcceleratedVideoDecoder::Decode() failed";
+        LogError(media_log_, "AcceleratedVideoDecoder::Decode() failed.");
         ClearPendingRequests(DecoderStatus::Codes::kPlatformDecodeFailure);
         return;
       case AcceleratedVideoDecoder::kTryAgain:
@@ -788,6 +763,14 @@ void V4L2StatelessVideoDecoder::ServiceDecodeRequestQueue() {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(current_decode_request_->decode_cb),
                                   DecoderStatus::Codes::kOk));
+
+    // There are multiple locations that the decode callback is run. For tracing
+    // purposes only the common path is considered. The reset/flush/error/etc.
+    // cases are ignored.
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        kTracingCategory, kBitstreamTracing,
+        TRACE_ID_LOCAL(current_decode_request_->bitstream_id));
+
     current_decode_request_ = std::nullopt;
   }
 }

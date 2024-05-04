@@ -383,7 +383,7 @@ std::string PasswordStoreAndroidAccountBackend::GetAccountToRetryOperation() {
 }
 
 PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType
-PasswordStoreAndroidAccountBackend::GetStoreType() {
+PasswordStoreAndroidAccountBackend::GetStorageType() {
   return PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType::
       kAccount;
 }
@@ -408,6 +408,20 @@ void PasswordStoreAndroidAccountBackend::OnSyncServiceInitialized(
       bridge_helper()->CanUseGetAllLoginsWithBrandingInfoAPI()) {
     affiliations_prefetcher_->DisablePrefetching();
   }
+}
+
+void PasswordStoreAndroidAccountBackend::
+    RecordAddLoginAsyncCalledFromTheStore() {
+  base::UmaHistogramBoolean(
+      "PasswordManager.PasswordStore.AccountBackend.AddLoginCalledOnStore",
+      true);
+}
+
+void PasswordStoreAndroidAccountBackend::
+    RecordUpdateLoginAsyncCalledFromTheStore() {
+  base::UmaHistogramBoolean(
+      "PasswordManager.PasswordStore.AccountBackend.UpdateLoginCalledOnStore",
+      true);
 }
 
 void PasswordStoreAndroidAccountBackend::

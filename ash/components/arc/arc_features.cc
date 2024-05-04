@@ -24,7 +24,7 @@ BASE_FEATURE(kBootCompletedBroadcastFeature,
 // the ARC container app killing in TabManagerDelegate.
 BASE_FEATURE(kContainerAppKiller,
              "ContainerAppKiller",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls experimental Custom Tabs feature for ARC.
 BASE_FEATURE(kCustomTabsExperimentFeature,
@@ -48,7 +48,10 @@ const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT{
     &kEnableArcIdleManager, "ignore_battery_for_test", false};
 
 const base::FeatureParam<int> kEnableArcIdleManagerDelayMs{
-    &kEnableArcIdleManager, "delay_ms", 20 * 1000};
+    &kEnableArcIdleManager, "delay_ms", 60 * 1000};
+
+const base::FeatureParam<bool> kEnableArcIdleManagerPendingIdleReactivate{
+    &kEnableArcIdleManager, "pending_idle_reactivate", false};
 
 // Controls whether files shared to ARC Nearby Share are shared through the
 // FuseBox filesystem, instead of the default method (through a temporary path
@@ -286,7 +289,7 @@ BASE_FEATURE(kSwitchToKeyMintOnTOverride,
 // requests.
 BASE_FEATURE(kSyncInstallPriority,
              "ArcSyncInstallPriority",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, touch screen emulation for compatibility is enabled on specific
 // apps.
@@ -298,6 +301,12 @@ BASE_FEATURE(kTouchscreenEmulation,
 BASE_FEATURE(kUnaffiliatedDeviceArcRestriction,
              "UnaffiliatedDeviceArcRestriction",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, ARC will not be throttled when there is active audio stream
+// from ARC.
+BASE_FEATURE(kUnthrottleOnActiveAudio,
+             "ArcUnthrottleOnActiveAudio",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls ARC USB Storage UI feature.
 // When enabled, chrome://settings and Files.app will ask if the user wants
@@ -343,12 +352,12 @@ const base::FeatureParam<int> kVmMemoryPSIReportsPeriod{&kVmMemoryPSIReports,
 // RAM - 1024 MiB.
 BASE_FEATURE(kVmMemorySize,
              "ArcVmMemorySize",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the amount to "shift" system RAM when sizing ARCVM. The default
 // value of 0 means that ARCVM's memory will be thr same as the system.
 const base::FeatureParam<int> kVmMemorySizeShiftMiB{&kVmMemorySize, "shift_mib",
-                                                    0};
+                                                    -500};
 
 // Controls the maximum amount of memory to give ARCVM. The default value of
 // INT32_MAX means that ARCVM's memory is not capped.

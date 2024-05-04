@@ -22,7 +22,7 @@ void WebToContentJavaScriptCallbackAdapter(
 }
 
 void WebWithErrorToContentJavaScriptCallbackAdapter(
-    WebFrame::ExecuteJavaScriptCallbackWithError web_callback,
+    ExecuteJavaScriptCallbackWithError web_callback,
     base::Value value) {
   std::move(web_callback).Run(&value, /*error=*/nil);
 }
@@ -112,6 +112,16 @@ bool ContentWebFrame::CallJavaScriptFunctionInContentWorld(
   // world.
   return ExecuteJavaScript(CreateFunctionCallWithParameters(name, parameters),
                            std::move(callback));
+}
+
+bool ContentWebFrame::ExecuteJavaScriptInContentWorld(
+    const std::u16string& script,
+    JavaScriptContentWorld* content_world,
+    ExecuteJavaScriptCallbackWithError callback) {
+  render_frame_host_->ExecuteJavaScript(
+      script, base::BindOnce(&WebWithErrorToContentJavaScriptCallbackAdapter,
+                             std::move(callback)));
+  return true;
 }
 
 bool ContentWebFrame::ExecuteJavaScript(const std::u16string& script) {

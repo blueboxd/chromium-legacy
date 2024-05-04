@@ -63,11 +63,10 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
       std::unique_ptr<safe_browsing::ClientSafeBrowsingReportRequest> report)
       override;
 
+  // TODO(crbug.com/1057253): dedup the two methods below, they both get a
+  // SharedURLLoaderFactory on the UI thread now.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
-  // Called on the IO thread to get a SharedURLLoaderFactory that can be used on
-  // the IO thread. If kSafeBrowsingOnUIThread is enabled it's called on the UI
-  // thread.
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryOnSBThread();
 
@@ -80,7 +79,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
       const GURL& blocked_url,
       const UnsafeResource& unsafe_resource,
       bool forward_extension_event,
-      absl::optional<base::TimeTicks> blocked_page_shown_timestamp) override;
+      std::optional<base::TimeTicks> blocked_page_shown_timestamp) override;
 
   // Called on the UI thread to create a URLLoaderFactory interface ptr for
   // the SB thread.

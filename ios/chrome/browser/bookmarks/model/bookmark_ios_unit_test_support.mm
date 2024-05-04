@@ -9,8 +9,10 @@
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/bookmarks/common/bookmark_metrics.h"
-#import "components/bookmarks/test/bookmark_test_helpers.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
+#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model_test_helpers.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/managed_bookmark_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
@@ -39,6 +41,9 @@ void BookmarkIOSUnitTestSupport::SetUp() {
       ios::AccountBookmarkModelFactory::GetInstance(),
       ios::AccountBookmarkModelFactory::GetDefaultFactory());
   test_cbs_builder.AddTestingFactory(
+      ios::BookmarkModelFactory::GetInstance(),
+      ios::BookmarkModelFactory::GetDefaultFactory());
+  test_cbs_builder.AddTestingFactory(
       ManagedBookmarkServiceFactory::GetInstance(),
       ManagedBookmarkServiceFactory::GetDefaultFactory());
 
@@ -51,15 +56,24 @@ void BookmarkIOSUnitTestSupport::SetUp() {
       ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
           chrome_browser_state_.get());
   if (wait_for_initialization_) {
-    bookmarks::test::WaitForBookmarkModelToLoad(
-        local_or_syncable_bookmark_model_);
+    WaitForLegacyBookmarkModelToLoad(local_or_syncable_bookmark_model_);
   }
+
   account_bookmark_model_ =
       ios::AccountBookmarkModelFactory::GetForBrowserState(
           chrome_browser_state_.get());
   if (wait_for_initialization_ && account_bookmark_model_) {
-    bookmarks::test::WaitForBookmarkModelToLoad(account_bookmark_model_);
+    WaitForLegacyBookmarkModelToLoad(account_bookmark_model_);
   }
+
+  bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
+      chrome_browser_state_.get());
+  if (wait_for_initialization_) {
+    // Waiting for the two underlying models, done earlier, should guarantee
+    // that the merged view is also loaded.
+    EXPECT_TRUE(bookmark_model_->loaded());
+  }
+
   browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
 }
 
@@ -74,24 +88,24 @@ const BookmarkNode* BookmarkIOSUnitTestSupport::AddBookmark(
     const BookmarkNode* parent,
     const std::u16string& title,
     const GURL& url) {
-  bookmarks::BookmarkModel* model = GetBookmarkModelForNode(parent);
+  LegacyBookmarkModel* model = GetBookmarkModelForNode(parent);
   return model->AddURL(parent, parent->children().size(), title, url);
 }
 
 const BookmarkNode* BookmarkIOSUnitTestSupport::AddFolder(
     const BookmarkNode* parent,
     const std::u16string& title) {
-  bookmarks::BookmarkModel* model = GetBookmarkModelForNode(parent);
+  LegacyBookmarkModel* model = GetBookmarkModelForNode(parent);
   return model->AddFolder(parent, parent->children().size(), title);
 }
 
 void BookmarkIOSUnitTestSupport::ChangeTitle(const std::u16string& title,
                                              const BookmarkNode* node) {
-  bookmarks::BookmarkModel* model = GetBookmarkModelForNode(node);
+  LegacyBookmarkModel* model = GetBookmarkModelForNode(node);
   model->SetTitle(node, title, bookmarks::metrics::BookmarkEditSource::kUser);
 }
 
-bookmarks::BookmarkModel* BookmarkIOSUnitTestSupport::GetBookmarkModelForNode(
+LegacyBookmarkModel* BookmarkIOSUnitTestSupport::GetBookmarkModelForNode(
     const BookmarkNode* node) {
   if (node->HasAncestor(local_or_syncable_bookmark_model_->root_node())) {
     return local_or_syncable_bookmark_model_;

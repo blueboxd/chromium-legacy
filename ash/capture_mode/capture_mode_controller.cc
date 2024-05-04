@@ -1471,7 +1471,7 @@ void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
     cursor_manager->LockCursor();
   }
 
-  ui::GrabWindowSnapshotAsyncPNG(
+  ui::GrabWindowSnapshotAsPNG(
       capture_params.window, capture_params.bounds,
       base::BindOnce(&CaptureModeController::OnImageCaptured,
                      weak_ptr_factory_.GetWeakPtr(), path,
@@ -1649,9 +1649,15 @@ void CaptureModeController::HandleNotificationClicked(
     const BehaviorType behavior_type,
     std::optional<int> button_index) {
   if (!button_index.has_value()) {
-    // Show the item in the folder.
-    delegate_->ShowScreenCaptureItemInFolder(screen_capture_path);
-    RecordScreenshotNotificationQuickAction(CaptureQuickAction::kFiles);
+    if (base::FeatureList::IsEnabled(features::kFileNotificationRevamp)) {
+      // Open the item with the default handler.
+      delegate_->OpenScreenCaptureItem(screen_capture_path);
+      RecordScreenshotNotificationQuickAction(CaptureQuickAction::kOpenDefault);
+    } else {
+      // Show the item in the folder.
+      delegate_->ShowScreenCaptureItemInFolder(screen_capture_path);
+      RecordScreenshotNotificationQuickAction(CaptureQuickAction::kFiles);
+    }
   } else {
     const int button_index_value = button_index.value();
     if (type == CaptureModeType::kVideo) {

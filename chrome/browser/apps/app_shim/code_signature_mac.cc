@@ -163,29 +163,43 @@ base::apple::ScopedCFTypeRef<CFDictionaryRef> AttributesForGuestValidation(
     pid_t pid,
     SignatureValidationType validation_type,
     std::string_view info_plist_xml) {
-  base::apple::ScopedCFTypeRef<CFNumberRef> pid_cf(
-      CFNumberCreate(nullptr, kCFNumberIntType, &pid));
-  size_t attribute_count = 1;
-  const void* attribute_keys[3] = {kSecGuestAttributePid};
-  const void* attribute_values[3] = {pid_cf.get()};
 
-  base::apple::ScopedCFTypeRef<CFDataRef> info_plist;
-  if (validation_type == SignatureValidationType::DynamicOnly) {
-    info_plist.reset(CFDataCreate(
-        nullptr, reinterpret_cast<const UInt8*>(info_plist_xml.data()),
-        info_plist_xml.length()));
+  static CFStringRef const* kSecGuestAttributeDynamicCodePtr =
+      reinterpret_cast<CFStringRef const*>(
+          dlsym(((void*)-2), "kSecGuestAttributeDynamicCode"));
 
-    attribute_keys[1] = kSecGuestAttributeDynamicCode;
-    attribute_values[1] = kCFBooleanTrue;
-    attribute_keys[2] = kSecGuestAttributeDynamicCodeInfoPlist;
-    attribute_values[2] = info_plist.get();
-    attribute_count = 3;
+  static CFStringRef const* kSecGuestAttributeDynamicCodeInfoPlistPtr =
+      reinterpret_cast<CFStringRef const*>(
+          dlsym(((void*)-2), "kSecGuestAttributeDynamicCodeInfoPlist"));
+
+  if (kSecGuestAttributeDynamicCodePtr &&
+      kSecGuestAttributeDynamicCodeInfoPlistPtr) {
+    base::apple::ScopedCFTypeRef<CFNumberRef> pid_cf(
+        CFNumberCreate(nullptr, kCFNumberIntType, &pid));
+    size_t attribute_count = 1;
+    const void* attribute_keys[3] = {kSecGuestAttributePid};
+    const void* attribute_values[3] = {pid_cf.get()};
+
+    base::apple::ScopedCFTypeRef<CFDataRef> info_plist;
+    if (validation_type == SignatureValidationType::DynamicOnly) {
+      info_plist.reset(CFDataCreate(
+          nullptr, reinterpret_cast<const UInt8*>(info_plist_xml.data()),
+          info_plist_xml.length()));
+
+      attribute_keys[1] = *kSecGuestAttributeDynamicCodePtr;
+      attribute_values[1] = kCFBooleanTrue;
+      attribute_keys[2] = *kSecGuestAttributeDynamicCodeInfoPlistPtr;
+      attribute_values[2] = info_plist.get();
+      attribute_count = 3;
+    }
+
+    base::apple::ScopedCFTypeRef<CFDictionaryRef> attributes(CFDictionaryCreate(
+        nullptr, attribute_keys, attribute_values, attribute_count,
+        &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
+    return attributes;
+  } else {
+    return base::apple::ScopedCFTypeRef<CFDictionaryRef>(NULL);
   }
-
-  base::apple::ScopedCFTypeRef<CFDictionaryRef> attributes(CFDictionaryCreate(
-      nullptr, attribute_keys, attribute_values, attribute_count,
-      &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
-  return attributes;
 }
 
 }  // namespace

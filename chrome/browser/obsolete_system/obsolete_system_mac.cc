@@ -18,20 +18,12 @@ enum class Obsoleteness {
   NotObsolete,
 };
 
-Obsoleteness OsObsoleteness() {
-  return Obsoleteness::NotObsolete;
-}
-
 }  // namespace
 
 namespace ObsoleteSystem {
 
 bool IsObsoleteNowOrSoon() {
-#if CHROME_VERSION_MAJOR >= 126
-  return base::mac::MacOSMajorVersion() < 11;
-#else
   return false;
-#endif
 }
 
 std::u16string LocalizedObsoleteString() {

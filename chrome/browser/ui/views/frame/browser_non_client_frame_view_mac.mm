@@ -183,16 +183,6 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
   gfx::Rect bounds(0, GetTopInset(restored), width(),
                    tabstrip_minimum_size.height());
 
-  // Do not draw caption buttons on fullscreen.
-  if (!frame()->IsFullscreen() && (@available(macOS 10.10, *))) {
-    const int kCaptionWidth = base::mac::IsAtMostOS10_15() ? 70 : 85;
-    if (CaptionButtonsOnLeadingEdge()) {
-      bounds.Inset(gfx::Insets::TLBR(0, kCaptionWidth, 0, 0));
-    } else {
-      bounds.Inset(gfx::Insets::TLBR(0, 0, 0, kCaptionWidth));
-    }
-  }
-
   // If we do not inset, the leftmost tab doesn't blend well with the bottom of
   // the tab strip. Normally, we would naturally have an inset from either the
   // caption buttons or the tab search button.
@@ -202,7 +192,7 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
       bounds.Inset(
           gfx::Insets::TLBR(0, GetLayoutConstant(TOOLBAR_CORNER_RADIUS), 0, 0));
     }
-  } else {
+  } else if (@available(macOS 10.10, *)) {
     bounds.Inset(GetCaptionButtonInsets());
   }
 

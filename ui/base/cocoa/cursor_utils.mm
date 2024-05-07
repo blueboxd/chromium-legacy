@@ -273,7 +273,7 @@ NSCursor* GetNativeCursor(const ui::Cursor& cursor) {
 }
 
 float GetCursorAccessibilityScaleFactor(bool force_update) {
-  static absl::optional<float> scale;
+  static std::optional<float> scale;
   if (@available(macOS 10.9, *)) {
     static std::optional<float> scale;
     if (!scale.has_value() || force_update) {

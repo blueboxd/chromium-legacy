@@ -79,13 +79,12 @@ SavedTabGroupDragData::ReadFromOSExchangeData(const ui::OSExchangeData* data) {
     return std::nullopt;
   }
 
-  std::optional<base::Pickle> drag_data_pickle =
-      data->GetPickledData(GetFormatType());
-  if (!drag_data_pickle.has_value()) {
+  base::Pickle drag_data_pickle;
+  if (!data->GetPickledData(GetFormatType(), &drag_data_pickle)) {
     return std::nullopt;
   }
 
-  base::PickleIterator data_iterator(drag_data_pickle.value());
+  base::PickleIterator data_iterator(drag_data_pickle);
   std::string guid_str;
   if (!data_iterator.ReadString(&guid_str)) {
     return std::nullopt;

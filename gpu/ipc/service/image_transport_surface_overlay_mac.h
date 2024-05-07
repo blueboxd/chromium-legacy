@@ -35,8 +35,7 @@ namespace gpu {
 
 class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
  public:
-  ImageTransportSurfaceOverlayMacEGL(
-      base::WeakPtr<ImageTransportSurfaceDelegate> delegate);
+  ImageTransportSurfaceOverlayMacEGL();
 
   // Presenter implementation
   bool Resize(const gfx::Size& size,
@@ -76,10 +75,6 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
   void BufferPresented(gl::GLSurface::PresentationCallback callback,
                        const gfx::PresentationFeedback& feedback);
 
-  base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
-
-  const bool use_remote_layer_api_;
-  CAContext* __strong ca_context_;
   void CommitPresentedFrameToCA();
 
   std::unique_ptr<ui::CALayerTreeCoordinator> ca_layer_tree_coordinator_;

@@ -160,6 +160,14 @@ std::vector<GURL> GetURLsForDrop(const ui::DropTargetEvent& event) {
   return urls.value();
 }
 
+bool GetURLForDrop(const ui::DropTargetEvent& event, GURL* url) {
+  DCHECK(url);
+  std::u16string title;
+  return event.data().GetURLAndTitle(ui::FilenameToURLPolicy::CONVERT_FILENAMES,
+                                     url, &title) &&
+         url->is_valid();
+}
+
 // Converts from `ui::DragDropTypes` to `::ui::mojom::DragOperation`.
 DragOperation GetDropEffect(const ui::DropTargetEvent& event) {
   const int source_ops = event.source_operations();
@@ -533,22 +541,22 @@ void BrowserRootView::SetOnFilteringCompleteClosureForTesting(
 
 std::optional<GURL> BrowserRootView::GetPasteAndGoURL(
     const ui::OSExchangeData& data) {
-  std::optional<std::u16string> text_result = data.GetString();
-  if (!text_result.has_value() || text_result->empty()) {
-    return std::nullopt;
-  }
-  std::u16string text = AutocompleteMatch::SanitizeString(*text_result);
+    std::u16string text;
+    if (!data.GetString(&text) || text.empty()) {
+      return std::nullopt;
+    }
+    text = AutocompleteMatch::SanitizeString(text);
 
-  AutocompleteMatch match;
-  AutocompleteClassifierFactory::GetForProfile(
-      browser_view_->browser()->profile())
-      ->Classify(text, false, false, metrics::OmniboxEventProto::INVALID_SPEC,
-                 &match, nullptr);
-  if (!match.destination_url.is_valid()) {
-    return std::nullopt;
-  }
+    AutocompleteMatch match;
+    AutocompleteClassifierFactory::GetForProfile(
+        browser_view_->browser()->profile())
+        ->Classify(text, false, false, metrics::OmniboxEventProto::INVALID_SPEC,
+                  &match, nullptr);
+    if (!match.destination_url.is_valid()) {
+      return std::nullopt;
+    }
 
-  return match.destination_url;
+    return match.destination_url;
 }
 
 void BrowserRootView::NavigateToDroppedUrls(

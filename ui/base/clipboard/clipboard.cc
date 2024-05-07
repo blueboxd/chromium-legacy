@@ -7,7 +7,6 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <string_view>
 
 #include "base/check.h"
 #include "base/containers/contains.h"
@@ -347,7 +346,7 @@ void Clipboard::RemoveObserver(ClipboardWriteObserver* observer) {
   write_observers_.RemoveObserver(observer);
 }
 
-void Clipboard::NotifyCopyWithUrl(const std::string_view text,
+void Clipboard::NotifyCopyWithUrl(const base::StringPiece text,
                                   const GURL& frame,
                                   const GURL& main_frame) {
   GURL text_url(text);
@@ -380,6 +379,8 @@ base::Lock& Clipboard::ClipboardMapLock() {
 bool Clipboard::IsMarkedByOriginatorAsConfidential() const {
   return false;
 }
+
+void Clipboard::MarkAsConfidential() {}
 
 void Clipboard::ReadAvailableTypes(ClipboardBuffer buffer,
                                    const DataTransferEndpoint* data_dst,

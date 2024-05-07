@@ -9,11 +9,11 @@
 #include "ui/base/clipboard/clipboard.h"
 
 #include <limits>
-#include <string_view>
 
 #include "base/apple/foundation_util.h"
 #include "base/apple/scoped_cftyperef.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -37,6 +37,7 @@
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
@@ -200,6 +201,12 @@ bool ClipboardMac::IsMarkedByOriginatorAsConfidential() const {
   return false;
 }
 
+void ClipboardMac::MarkAsConfidential() {
+  DCHECK(CalledOnValidThread());
+
+  [GetPasteboard() setData:nil forType:kUTTypeConfidentialData];
+}
+
 void ClipboardMac::Clear(ClipboardBuffer buffer) {
   ClearInternal(buffer, GetPasteboard());
 }
@@ -251,10 +258,14 @@ void ClipboardMac::ReadAvailableTypes(
   types->clear();
   *types = GetStandardFormats(buffer, data_dst);
 
-  if ([[pb types] containsObject:kWebCustomDataPboardType]) {
+  if ([pb.types containsObject:kWebCustomDataPboardType]) {
     NSData* data = [pb dataForType:kWebCustomDataPboardType];
-    if ([data length])
-      ReadCustomDataTypes([data bytes], [data length], types);
+    if ([data length]) {
+      ReadCustomDataTypes(
+          base::span(reinterpret_cast<const uint8_t*>([data bytes]),
+                     [data length]),
+          types);
+    }
   }
 }
 
@@ -367,8 +378,15 @@ void ClipboardMac::ReadCustomData(ClipboardBuffer buffer,
   NSPasteboard* pb = GetPasteboard();
   if ([[pb types] containsObject:kWebCustomDataPboardType]) {
     NSData* data = [pb dataForType:kWebCustomDataPboardType];
-    if ([data length])
-      ReadCustomDataForType([data bytes], [data length], type, result);
+    if ([data length]) {
+      if (std::optional<std::u16string> maybe_result = ReadCustomDataForType(
+              base::span(reinterpret_cast<const uint8_t*>([data bytes]),
+                         [data length]),
+              type);
+          maybe_result) {
+        *result = std::move(*maybe_result);
+      }
+    }
   }
 }
 
@@ -427,11 +445,10 @@ void ClipboardMac::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
-    std::unique_ptr<DataTransferEndpoint> data_src,
-    uint32_t privacy_types) {
+    std::unique_ptr<DataTransferEndpoint> data_src) {
   WritePortableAndPlatformRepresentationsInternal(
       buffer, objects, std::move(platform_representations), std::move(data_src),
-      GetPasteboard(), privacy_types);
+      GetPasteboard());
 }
 
 void ClipboardMac::WritePortableAndPlatformRepresentationsInternal(
@@ -439,14 +456,9 @@ void ClipboardMac::WritePortableAndPlatformRepresentationsInternal(
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
     std::unique_ptr<DataTransferEndpoint> data_src,
-    NSPasteboard* pasteboard,
-    uint32_t privacy_types) {
+    NSPasteboard* pasteboard) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
-  if (privacy_types & Clipboard::PrivacyTypes::kNoCloudClipboard) {
-    WriteUploadCloudClipboard();
-  }
 
   [pasteboard declareTypes:@[] owner:nil];
 
@@ -530,22 +542,6 @@ void ClipboardMac::WriteData(const ClipboardFormatType& format,
                    forType:format.ToNSString()];
 }
 
-void ClipboardMac::WriteClipboardHistory() {
-  // TODO(crbug.com/40945200): Add support for this.
-}
-
-void ClipboardMac::WriteUploadCloudClipboard() {
-  // Make the pasteboard content current host only.
-  [GetPasteboard()
-      prepareForNewContentsWithOptions:NSPasteboardContentsCurrentHostOnly];
-}
-
-void ClipboardMac::WriteConfidentialDataForPassword() {
-  DCHECK(CalledOnValidThread());
-
-  [GetPasteboard() setData:nil forType:kUTTypeConfidentialData];
-}
-
 // Write an extra flavor that signifies WebKit was the last to modify the
 // pasteboard. This flavor has no data.
 void ClipboardMac::WriteWebSmartPaste() {
@@ -591,6 +587,16 @@ void ClipboardMac::WriteBitmapInternal(const SkBitmap& bitmap,
   // to an NSImage would not explode if we got this wrong, so this is not a
   // security CHECK.
   DCHECK_EQ(bitmap.colorType(), kN32_SkColorType);
+
+  if (!base::FeatureList::IsEnabled(features::kMacClipboardWriteImageWithPng)) {
+    NSImage* image = skia::SkBitmapToNSImage(bitmap);
+    if (!image) {
+      NOTREACHED() << "SkBitmapToNSImage failed";
+      return;
+    }
+    [pasteboard writeObjects:@[ image ]];
+    return;
+  }
 
   NSBitmapImageRep* image_rep = skia::SkBitmapToNSBitmapImageRep(bitmap);
   if (!image_rep) {

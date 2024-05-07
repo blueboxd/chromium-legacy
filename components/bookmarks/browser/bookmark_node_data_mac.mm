@@ -36,7 +36,7 @@ bool BookmarkNodeData::ClipboardContainsBookmarks() {
 void BookmarkNodeData::WriteToClipboard(bool is_off_the_record) {
   NSPasteboard* pb =
       ui::ClipboardUtil::PasteboardFromBuffer(ui::ClipboardBuffer::kCopyPaste);
-  WriteBookmarksToPasteboard(pb, elements, profile_path_);
+  WriteBookmarksToPasteboard(pb, elements, profile_path_, is_off_the_record);
 }
 
 bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardBuffer buffer) {

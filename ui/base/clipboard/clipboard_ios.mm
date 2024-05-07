@@ -6,8 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include <string_view>
-
 #include "base/apple/foundation_util.h"
 #include "base/containers/span.h"
 #include "base/strings/sys_string_conversions.h"
@@ -359,8 +357,7 @@ void ClipboardIOS::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
-    std::unique_ptr<DataTransferEndpoint> data_src,
-    uint32_t privacy_types) {
+    std::unique_ptr<DataTransferEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
@@ -372,7 +369,7 @@ void ClipboardIOS::WritePortableAndPlatformRepresentations(
   }
 }
 
-void ClipboardIOS::WriteText(std::string_view text) {
+void ClipboardIOS::WriteText(base::StringPiece text) {
   NSDictionary<NSString*, id>* text_item = @{
     ClipboardFormatType::PlainTextType().ToNSString() :
         base::SysUTF8ToNSString(text)
@@ -380,19 +377,17 @@ void ClipboardIOS::WriteText(std::string_view text) {
   [GetPasteboard() addItems:@[ text_item ]];
 }
 
-void ClipboardIOS::WriteHTML(std::string_view markup,
-                             std::optional<std::string_view> /* source_url */) {
-  // We need to mark it as utf-8. (see crbug.com/40759159)
-  std::string html_fragment_str("<meta charset='utf-8'>");
-  html_fragment_str += markup;
-  NSString* html = base::SysUTF8ToNSString(html_fragment_str);
-
-  NSDictionary<NSString*, id>* html_item =
-      @{ClipboardFormatType::HtmlType().ToNSString() : html};
+void ClipboardIOS::WriteHTML(
+    base::StringPiece markup,
+    std::optional<base::StringPiece> /* source_url */) {
+  NSDictionary<NSString*, id>* html_item = @{
+    ClipboardFormatType::HtmlType().ToNSString() :
+        base::SysUTF8ToNSString(markup)
+  };
   [GetPasteboard() addItems:@[ html_item ]];
 }
 
-void ClipboardIOS::WriteSvg(std::string_view markup) {
+void ClipboardIOS::WriteSvg(base::StringPiece markup) {
   NSDictionary<NSString*, id>* svg_item = @{
     ClipboardFormatType::SvgType().ToNSString() :
         base::SysUTF8ToNSString(markup)
@@ -400,7 +395,7 @@ void ClipboardIOS::WriteSvg(std::string_view markup) {
   [GetPasteboard() addItems:@[ svg_item ]];
 }
 
-void ClipboardIOS::WriteRTF(std::string_view rtf) {
+void ClipboardIOS::WriteRTF(base::StringPiece rtf) {
   WriteData(ClipboardFormatType::RtfType(),
             base::as_bytes(base::make_span(rtf)));
 }
@@ -422,7 +417,8 @@ void ClipboardIOS::WriteFilenames(std::vector<ui::FileInfo> filenames) {
   [GetPasteboard() addItems:items];
 }
 
-void ClipboardIOS::WriteBookmark(std::string_view title, std::string_view url) {
+void ClipboardIOS::WriteBookmark(base::StringPiece title,
+                                 base::StringPiece url) {
   NSDictionary<NSString*, id>* bookmarkItem = @{
     ClipboardFormatType::UrlType().ToNSString() : base::SysUTF8ToNSString(url),
     kUTTypeURLName : base::SysUTF8ToNSString(title),
@@ -464,18 +460,6 @@ void ClipboardIOS::WriteData(const ClipboardFormatType& format,
     format.ToNSString() : [NSData dataWithBytes:data.data() length:data.size()]
   };
   [GetPasteboard() addItems:@[ data_item ]];
-}
-
-void ClipboardIOS::WriteClipboardHistory() {
-  // TODO(crbug.com/40945200): Add support for this.
-}
-
-void ClipboardIOS::WriteUploadCloudClipboard() {
-  // TODO(crbug.com/40945200): Add support for this.
-}
-
-void ClipboardIOS::WriteConfidentialDataForPassword() {
-  // TODO(crbug.com/40945200): Add support for this.
 }
 
 std::vector<uint8_t> ClipboardIOS::ReadPngInternal(

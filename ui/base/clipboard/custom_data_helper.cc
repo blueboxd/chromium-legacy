@@ -52,58 +52,6 @@ void ReadCustomDataTypes(base::span<const uint8_t> data,
   }
 }
 
-void ReadCustomDataTypes(const void* data,
-                         size_t data_length,
-                         std::vector<std::u16string>* types) {
-  base::Pickle pickle(reinterpret_cast<const char*>(data), data_length);
-  base::PickleIterator iter(pickle);
-
-  uint32_t size = 0;
-  if (!iter.ReadUInt32(&size)) {
-    return;
-  }
-
-  // Keep track of the original elements in the types vector. On failure, we
-  // truncate the vector to the original size since we want to ignore corrupt
-  // custom data pickles.
-  size_t original_size = types->size();
-
-  for (uint32_t i = 0; i < size; ++i) {
-    types->push_back(std::u16string());
-    if (!iter.ReadString16(&types->back()) || !SkipString16(&iter)) {
-      types->resize(original_size);
-      return;
-    }
-  }
-}
-
-void ReadCustomDataForType(const void* data,
-                           size_t data_length,
-                           const std::u16string& type,
-                           std::u16string* result) {
-  base::Pickle pickle(reinterpret_cast<const char*>(data), data_length);
-  base::PickleIterator iter(pickle);
-
-  uint32_t size = 0;
-  if (!iter.ReadUInt32(&size)) {
-    return;
-  }
-
-  for (uint32_t i = 0; i < size; ++i) {
-    std::u16string deserialized_type;
-    if (!iter.ReadString16(&deserialized_type)) {
-      return;
-    }
-    if (deserialized_type == type) {
-      std::ignore = iter.ReadString16(result);
-      return;
-    }
-    if (!SkipString16(&iter)) {
-      return;
-    }
-  }
-}
-
 std::optional<std::u16string> ReadCustomDataForType(
     base::span<const uint8_t> data,
     std::u16string_view type) {
@@ -159,10 +107,10 @@ ReadCustomDataIntoMap(base::span<const uint8_t> data) {
 }
 
 void ReadCustomDataIntoMap(
-    const void* data,
+    base::span<const uint8_t> data,
     size_t data_length,
     std::unordered_map<std::u16string, std::u16string>* result) {
-  base::Pickle pickle(reinterpret_cast<const char*>(data), data_length);
+  base::Pickle pickle = base::Pickle::WithData(data);
   base::PickleIterator iter(pickle);
 
   uint32_t size = 0;

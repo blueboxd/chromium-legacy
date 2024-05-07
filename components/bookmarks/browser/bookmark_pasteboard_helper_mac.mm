@@ -275,12 +275,17 @@ NSPasteboardItem* PasteboardItemFromBookmarks(
 void WriteBookmarksToPasteboard(
     NSPasteboard* pb,
     const std::vector<BookmarkNodeData::Element>& elements,
-    const base::FilePath& profile_path) {
+    const base::FilePath& profile_path,
+    bool is_off_the_record) {
   if (elements.empty())
     return;
 
   NSPasteboardItem* item = PasteboardItemFromBookmarks(elements, profile_path);
   [pb clearContents];
+  if (is_off_the_record) {
+    // Make the pasteboard content current host only.
+    [pb prepareForNewContentsWithOptions:NSPasteboardContentsCurrentHostOnly];
+  }
   [pb writeObjects:@[ item ]];
 }
 

@@ -73,29 +73,18 @@ NSDictionary* CreateAttributesForKey() {
 
 // Creates the query used for querying the keychain for the secure key
 // reference.
-base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> CreateQueryForKey(
-    SecureEnclaveClient::KeyType type) {
-  base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> query(
-      CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-                                &kCFTypeDictionaryKeyCallBacks,
-                                &kCFTypeDictionaryValueCallBacks));
-  CFDictionarySetValue(query.get(), kSecClass, kSecClassKey);
-  CFDictionarySetValue(query.get(), kSecAttrKeyType,
-                       kSecAttrKeyTypeECSECPrimeRandom);
-  CFDictionarySetValue(
-      query.get(), kSecAttrLabel,
-      base::SysUTF8ToCFStringRef(SecureEnclaveClient::GetLabelFromKeyType(type))
-          .get());
-  CFDictionarySetValue(query.get(), kSecReturnRef, kCFBooleanTrue);
-  // Specifying to query the data protection keychain is only available on
-  // macOS 10.15 or newer. This forces a query to the correct keychain since
-  // Secure Enclave keys are stored in the data protection keychain.
-  if (@available(macOS 10.15, *)) {
-    CFDictionarySetValue(query.get(), kSecUseDataProtectionKeychain,
-                         kCFBooleanTrue);
-  }
-  return query;
+NSDictionary* CreateQueryForKey(SecureEnclaveClient::KeyType type) {
+  return @{
+    CFToNSPtrCast(kSecClass) : CFToNSPtrCast(kSecClassKey),
+    CFToNSPtrCast(kSecAttrKeyType) :
+        CFToNSPtrCast(kSecAttrKeyTypeECSECPrimeRandom),
+    CFToNSPtrCast(kSecAttrLabel) :
+        base::SysUTF8ToNSString(SecureEnclaveClient::GetLabelFromKeyType(type)),
+    CFToNSPtrCast(kSecReturnRef) : @YES,
+    CFToNSPtrCast(kSecUseDataProtectionKeychain) : @YES,
+  };
 }
+
 // Converts an external representation of an EC public key from ANSI X9.63
 // standard (using a byte string of 04 || X || Y) to a DER-encoded SPKI
 // structure.

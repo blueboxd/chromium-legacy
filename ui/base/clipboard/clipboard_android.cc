@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <map>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -31,8 +30,8 @@
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_util.h"
-#include "ui/base/clipboard_jni_headers/Clipboard_jni.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
+#include "ui/base/ui_base_jni_headers/Clipboard_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
@@ -120,10 +119,9 @@ class ClipboardMap {
   std::vector<ClipboardFormatType> GetFormats();
   void OnPrimaryClipboardChanged();
   void OnPrimaryClipTimestampInvalidated(int64_t timestamp_ms);
-  void Set(const ClipboardFormatType& format, std::string_view data);
+  void Set(const ClipboardFormatType& format, const std::string& data);
   void CommitToAndroidClipboard();
   void Clear();
-  void MarkPasswordData();
 
   // Unlike the functions above, does not call |modified_cb_|.
   void SetLastModifiedTimeWithoutRunningCallback(base::Time time);
@@ -153,7 +151,6 @@ class ClipboardMap {
 
   ClipboardSequenceNumberToken sequence_number_;
   base::Time last_modified_time_;
-  bool mark_password_data_ = false;
 
   ClipboardAndroid::ModifiedCallback modified_cb_;
 
@@ -244,7 +241,7 @@ bool ClipboardMap::HasFormat(const ClipboardFormatType& format) {
   // from the system clipboard will cause clipboard access notification popping
   // up.
   JNIEnv* env = AttachCurrentThread();
-  // TODO(crbug.com/40175699): Create a single method for the follow JNI calls.
+  // TODO(crbug.com/1194601): Create a single method for the follow JNI calls.
   if (format == ClipboardFormatType::PlainTextType()) {
     return Java_Clipboard_hasCoercedText(env, clipboard_manager_);
   } else if (format == ClipboardFormatType::HtmlType()) {
@@ -317,7 +314,7 @@ void ClipboardMap::OnPrimaryClipTimestampInvalidated(int64_t timestamp_ms) {
 }
 
 void ClipboardMap::Set(const ClipboardFormatType& format,
-                       std::string_view data) {
+                       const std::string& data) {
   base::AutoLock lock(lock_);
   map_[format] = data;
   map_state_ = MapState::kPreparingCommit;
@@ -326,14 +323,7 @@ void ClipboardMap::Set(const ClipboardFormatType& format,
 void ClipboardMap::CommitToAndroidClipboard() {
   JNIEnv* env = AttachCurrentThread();
   base::AutoLock lock(lock_);
-  if (mark_password_data_ &&
-      base::Contains(map_, ClipboardFormatType::PlainTextType())) {
-    ScopedJavaLocalRef<jstring> str = ConvertUTF8ToJavaString(
-        env, map_[ClipboardFormatType::PlainTextType()]);
-    DCHECK(str.obj());
-    Java_Clipboard_setPassword(env, clipboard_manager_, str);
-    mark_password_data_ = false;
-  } else if (base::Contains(map_, ClipboardFormatType::HtmlType())) {
+  if (base::Contains(map_, ClipboardFormatType::HtmlType())) {
     // Android's API for storing HTML content on the clipboard requires a plain-
     // text representation to be available as well.
     if (!base::Contains(map_, ClipboardFormatType::PlainTextType()))
@@ -360,7 +350,7 @@ void ClipboardMap::CommitToAndroidClipboard() {
     ScopedJavaLocalRef<jstring> image_extension =
         ConvertUTF8ToJavaString(env, kPngExtension);
     DCHECK(image_data.obj());
-    // TODO(crbug.com/40187527) In unit tests, `jimageuri` is empty.
+    // TODO(crbug.com/1223215) In unit tests, `jimageuri` is empty.
     Java_Clipboard_setImage(env, clipboard_manager_, image_data,
                             image_extension);
     ScopedJavaLocalRef<jstring> jimageuri =
@@ -384,10 +374,6 @@ void ClipboardMap::Clear() {
   map_state_ = MapState::kUpToDate;
   sequence_number_ = ClipboardSequenceNumberToken();
   UpdateLastModifiedTime(base::Time::Now());
-}
-
-void ClipboardMap::MarkPasswordData() {
-  mark_password_data_ = true;
 }
 
 void ClipboardMap::SetLastModifiedTimeWithoutRunningCallback(base::Time time) {
@@ -684,8 +670,7 @@ void ClipboardAndroid::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
-    std::unique_ptr<DataTransferEndpoint> data_src,
-    uint32_t privacy_types) {
+    std::unique_ptr<DataTransferEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   g_map.Get().Clear();
@@ -694,28 +679,26 @@ void ClipboardAndroid::WritePortableAndPlatformRepresentations(
   for (const auto& object : objects)
     DispatchPortableRepresentation(object.first, object.second);
 
-  if (privacy_types & Clipboard::PrivacyTypes::kNoDisplay) {
-    WriteConfidentialDataForPassword();
-  }
-
   g_map.Get().CommitToAndroidClipboard();
 }
 
-void ClipboardAndroid::WriteText(std::string_view text) {
-  g_map.Get().Set(ClipboardFormatType::PlainTextType(), text);
+void ClipboardAndroid::WriteText(const char* text_data, size_t text_len) {
+  g_map.Get().Set(ClipboardFormatType::PlainTextType(),
+                  std::string(text_data, text_len));
 }
 
 void ClipboardAndroid::WriteHTML(
-    std::string_view markup,
-    std::optional<std::string_view> /* source_url */) {
+    base::StringPiece markup,
+    std::optional<base::StringPiece> /* source_url */) {
   g_map.Get().Set(ClipboardFormatType::HtmlType(), markup);
 }
 
-void ClipboardAndroid::WriteSvg(std::string_view markup) {
-  g_map.Get().Set(ClipboardFormatType::SvgType(), markup);
+void ClipboardAndroid::WriteSvg(const char* markup_data, size_t markup_len) {
+  g_map.Get().Set(ClipboardFormatType::SvgType(),
+                  std::string(markup_data, markup_len));
 }
 
-void ClipboardAndroid::WriteRTF(std::string_view rtf) {
+void ClipboardAndroid::WriteRTF(const char* rtf_data, size_t data_len) {
   NOTIMPLEMENTED();
 }
 
@@ -725,9 +708,12 @@ void ClipboardAndroid::WriteFilenames(std::vector<ui::FileInfo> filenames) {
 
 // According to other platforms implementations, this really writes the
 // URL spec.
-void ClipboardAndroid::WriteBookmark(std::string_view title,
-                                     std::string_view url) {
-  g_map.Get().Set(ClipboardFormatType::UrlType(), url);
+void ClipboardAndroid::WriteBookmark(const char* title_data,
+                                     size_t title_len,
+                                     const char* url_data,
+                                     size_t url_len) {
+  g_map.Get().Set(ClipboardFormatType::UrlType(),
+                  std::string(url_data, url_len));
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
@@ -746,27 +732,15 @@ void ClipboardAndroid::WriteBitmap(const SkBitmap& sk_bitmap) {
   // background sequence.
   scoped_refptr<base::RefCountedMemory> image_memory =
       gfx::Image::CreateFrom1xBitmap(sk_bitmap).As1xPNGBytes();
-  g_map.Get().Set(ClipboardFormatType::PngType(),
-                  std::string(base::as_string_view(*image_memory)));
+  std::string packed(image_memory->front_as<char>(), image_memory->size());
+
+  g_map.Get().Set(ClipboardFormatType::PngType(), packed);
 }
 
 void ClipboardAndroid::WriteData(const ClipboardFormatType& format,
                                  const char* data_data,
                                  size_t data_len) {
   g_map.Get().Set(format, std::string(data_data, data_len));
-}
-
-void ClipboardAndroid::WriteClipboardHistory() {
-  // TODO(crbug.com/40945200): Add support for this.
-}
-
-void ClipboardAndroid::WriteUploadCloudClipboard() {
-  // TODO(crbug.com/40945200): Add support for this.
-}
-
-void ClipboardAndroid::WriteConfidentialDataForPassword() {
-  // Set the password data that is marked as IS_SENSITIVE.
-  g_map.Get().MarkPasswordData();
 }
 
 }  // namespace ui

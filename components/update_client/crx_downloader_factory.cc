@@ -69,7 +69,6 @@ scoped_refptr<CrxDownloader> CrxDownloaderFactoryChromium::MakeCrxDownloader(
   if (background_download_enabled) {
 #if BUILDFLAG(IS_MAC)
     if (background_downloader_shared_session_ &&
-        base::FeatureList::IsEnabled(features::kBackgroundCrxDownloaderMac) &&
         __builtin_available(macOS 10.11, *)) {
       return base::MakeRefCounted<BackgroundDownloader>(
           url_fetcher_downloader, background_downloader_shared_session_,

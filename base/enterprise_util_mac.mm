@@ -7,7 +7,6 @@
 #import <OpenDirectory/OpenDirectory.h>
 
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "base/apple/foundation_util.h"
@@ -76,11 +75,13 @@ MacDeviceManagementStateOld IsDeviceRegisteredWithManagementOld() {
         return MacDeviceManagementStateOld::kFailureUnableToParseResult;
       };
 
-    for (const auto& property_state : property_states) {
-      std::string_view property =
-          TrimString(property_state.first, kWhitespaceASCII, TRIM_ALL);
-      std::string_view state =
-          TrimString(property_state.second, kWhitespaceASCII, TRIM_ALL);
+      for (NSDictionary* results in root) {
+        for (NSDictionary* dict in results[@"_items"]) {
+          for (NSDictionary* device_config_profiles in dict[@"_items"]) {
+            for (NSDictionary* profile_item in
+                     device_config_profiles[@"_items"]) {
+              if (![profile_item[@"_name"] isEqual:@"com.apple.mdm"])
+                continue;
 
               NSString* payload_data =
                   profile_item[@"spconfigprofile_payload_data"];

@@ -166,7 +166,7 @@ bool DoDeleteWebAuthnCredentials(const std::string& keychain_access_group,
                                  base::Time created_not_after)
     API_AVAILABLE(macosx(10.12.2)) {
   bool result = true;
-  absl::optional<std::vector<base::apple::ScopedCFTypeRef<CFDictionaryRef>>>
+  std::optional<std::vector<base::apple::ScopedCFTypeRef<CFDictionaryRef>>>
       keychain_items =
           QueryKeychainItemsForProfile(keychain_access_group, metadata_secret,
                                        created_not_before, created_not_after);
@@ -213,7 +213,7 @@ size_t DoCountWebAuthnCredentials(const std::string& keychain_access_group,
                                   base::Time created_not_before,
                                   base::Time created_not_after)
     API_AVAILABLE(macosx(10.12.2)) {
-  absl::optional<std::vector<base::apple::ScopedCFTypeRef<CFDictionaryRef>>>
+  std::optional<std::vector<base::apple::ScopedCFTypeRef<CFDictionaryRef>>>
       keychain_items =
           QueryKeychainItemsForProfile(keychain_access_group, metadata_secret,
                                        created_not_before, created_not_after);

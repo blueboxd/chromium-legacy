@@ -50,7 +50,7 @@ void ReadCustomDataForType(const void* data,
         std::u16string>> ReadCustomDataIntoMap(base::span<const uint8_t> data);
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
 void ReadCustomDataIntoMap(
-    const void* data,
+    base::span<const uint8_t> data,
     size_t data_length,
     std::unordered_map<std::u16string, std::u16string>* result);
 

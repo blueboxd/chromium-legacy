@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <string_view>
-
 #include "base/apple/foundation_util.h"
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
@@ -48,6 +46,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
                          ClipboardBuffer buffer,
                          const DataTransferEndpoint* data_dst) const override;
   bool IsMarkedByOriginatorAsConfidential() const override;
+  void MarkAsConfidential() override;
   void Clear(ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ClipboardBuffer buffer,
                           const DataTransferEndpoint* data_dst,
@@ -126,8 +125,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
       const ObjectMap& objects,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src,
-      NSPasteboard* pasteboard,
-      uint32_t privacy_types);
+      NSPasteboard* pasteboard);
 
   // Mapping of OS-provided sequence number to a unique token.
   mutable struct {

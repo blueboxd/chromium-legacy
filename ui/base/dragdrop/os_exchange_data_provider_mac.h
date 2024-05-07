@@ -50,6 +50,8 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderMac
   void SetFilenames(const std::vector<FileInfo>& filenames) override;
   void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
+  std::optional<std::vector<GURL>> GetURLs(
+      FilenameToURLPolicy policy) const override;
   bool GetString(std::u16string* data) const override;
   bool GetURLAndTitle(FilenameToURLPolicy policy,
                       GURL* url,
@@ -64,7 +66,8 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderMac
   bool HasCustomFormat(const ClipboardFormatType& format) const override;
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
-  std::optional<FileContentsInfo> GetFileContents() const override;
+  bool GetFileContents(base::FilePath* filename,
+                       std::string* file_contents) const override;
   bool HasFileContents() const override;
   void SetDragImage(const gfx::ImageSkia& image,
                     const gfx::Vector2d& cursor_offset) override;

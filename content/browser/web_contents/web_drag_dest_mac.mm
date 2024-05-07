@@ -499,9 +499,10 @@ void PopulateDropDataFromPasteboard(content::DropData* data,
   // Get custom MIME data.
   if ([types containsObject:ui::kWebCustomDataPboardType]) {
     NSData* customData = [pboard dataForType:ui::kWebCustomDataPboardType];
-    ui::ReadCustomDataIntoMap([customData bytes],
-                              [customData length],
-                              &data->custom_data);
+    auto maybe_custom_data = ui::ReadCustomDataIntoMap(
+        base::span(reinterpret_cast<const uint8_t*>([customData bytes]),
+                   [customData length]));
+    data->custom_data = std::move(*maybe_custom_data);
   }
 }
 

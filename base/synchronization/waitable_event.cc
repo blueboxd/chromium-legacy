@@ -75,6 +75,7 @@ bool WaitableEvent::TimedWait(TimeDelta wait_delta) {
   return result;
 }
 
+#if !BUILDFLAG(IS_MAC)
 size_t WaitableEvent::WaitMany(WaitableEvent** events, size_t count) {
   DCHECK(count) << "Cannot wait on no events";
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
@@ -89,5 +90,6 @@ size_t WaitableEvent::WaitMany(WaitableEvent** events, size_t count) {
   }
   return signaled_id;
 }
+#endif
 
 }  // namespace base

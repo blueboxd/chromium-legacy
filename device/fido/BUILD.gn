@@ -291,6 +291,9 @@ component("fido") {
         "Foundation.framework",
         "LocalAuthentication.framework",
         "Security.framework",
+      ]
+
+      weak_frameworks = [
         "AuthenticationServices.framework",
       ]
 
@@ -405,15 +408,13 @@ if (use_blink) {
     ]
     weak_frameworks = [ "AuthenticationServices.framework" ]
 
-    deps += [ "//build:branding_buildflags" ]
-  }
-
     deps = [
       ":fido",
       "//base",
       "//components/apdu",
       "//components/cbor",
       "//testing/gmock",
+      "//build:branding_buildflags",
     ]
   }
 

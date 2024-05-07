@@ -89,7 +89,8 @@ void NamedMojoServerEndpointConnectorMac::HandleRequest() {
   }
 
   auto info = std::make_unique<ConnectionInfo>();
-  info->pid = audit_token_to_pid(request.trailer.msgh_audit);
+  audit_token_to_au32(request.trailer.msgh_audit, NULL, NULL, NULL, NULL, NULL,
+                      &info->pid, NULL, NULL);
   info->audit_token = request.trailer.msgh_audit;
 
   mojo::PlatformChannelEndpoint remote_endpoint(mojo::PlatformHandle(

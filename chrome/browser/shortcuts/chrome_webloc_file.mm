@@ -39,8 +39,7 @@ std::optional<ChromeWeblocFile> ChromeWeblocFile::LoadFromFile(
     base::ScopedBlockingCall scoped_blocking_call(
         FROM_HERE, base::BlockingType::MAY_BLOCK);
     contents = [NSDictionary
-        dictionaryWithContentsOfURL:base::apple::FilePathToNSURL(file_path)
-                              error:&error];
+        dictionaryWithContentsOfURL:base::apple::FilePathToNSURL(file_path)];
   }
   if (!contents) {
     LOG(ERROR) << "Failed to read shortcut file from " << file_path << ": "

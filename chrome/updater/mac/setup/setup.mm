@@ -135,8 +135,7 @@ bool EnsureWakeLaunchItemPresence(UpdaterScope scope, NSDictionary* contents) {
     // If the file is unchanged, avoid a spammy notification by not touching it.
     if (previousPlistExists &&
         [contents isEqualToDictionary:[NSDictionary
-                                          dictionaryWithContentsOfURL:url
-                                                                error:nil]]) {
+                                          dictionaryWithContentsOfURL:url]]) {
       VLOG(2) << "Skipping unnecessary update to " << path;
       return true;
     }

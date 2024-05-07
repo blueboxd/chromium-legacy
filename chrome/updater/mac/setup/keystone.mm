@@ -224,8 +224,7 @@ bool CreateEmptyPlistFile(const base::FilePath& file_path) {
   @autoreleasepool {
     NSURL* const url = base::apple::FilePathToNSURL(file_path);
     if (base::PathExists(file_path) && [@{
-        } isEqualToDictionary:[NSDictionary dictionaryWithContentsOfURL:url
-                                                                  error:nil]]) {
+        } isEqualToDictionary:[NSDictionary dictionaryWithContentsOfURL:url]]) {
       VLOG(2) << "Skipping updating " << file_path;
       return true;
     }

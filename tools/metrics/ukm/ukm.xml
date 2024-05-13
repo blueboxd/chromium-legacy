@@ -4878,7 +4878,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Blink.HTMLParsing">
-  <owner>dom-dev@chromium.org</owner>
+  <owner>dom-dev@google.com</owner>
   <owner>nidhijaju@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -13525,6 +13525,29 @@ be describing additional metrics about the same event.
     <summary>
       Action taken by the user to interact with this feature.
     </summary>
+  </metric>
+</event>
+
+<event name="InputMethod.Manta.Orca">
+  <owner>curtismcmullan@google.com</owner>
+  <summary>
+    Metrics recording a summary of critical user interactions with the Editor
+    feature. The event is recorded whenever a user triggers a critical event in
+    the Editor funnel (specifically; the UI is shown, a request is triggered, or
+    a user inserts some suggested text).
+  </summary>
+  <metric name="EditorCriticalStates" enum="IMEEditorCriticalStates">
+    <summary>
+      A summary of interactions with the Editor feature for the purpose of
+      identifying common contexts where the feature is used.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -24522,6 +24545,44 @@ be describing additional metrics about the same event.
       The OptimizationTarget of the last selected segment before UKM is
       recorded. Some features might have several ML models with them. This
       metric records which model is currently selected for the feature.
+    </summary>
+  </metric>
+</event>
+
+<event name="ServiceWorker.MainResourceLoadCompleted">
+  <owner>suzukikeita@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    Events taken when the main resource is loaded. This only occurs when the
+    static routing API is used.
+  </summary>
+  <metric name="ActualRouterSourceType" enum="ServiceWorkerRouterSourceType">
+    <summary>
+      The actual router source type for Static Routing API. This indicates which
+      source type was actually used to get the resource. This will be recorded
+      only when the router has matched the incoming resource.
+    </summary>
+  </metric>
+  <metric name="MatchedFirstRouterSourceType"
+      enum="ServiceWorkerRouterSourceType">
+    <summary>
+      The result of the router evaluation of the Static Routing API. This
+      indicates which source type is specified to get the resource. This will be
+      recorded only when the router has matched the incoming resource.
+    </summary>
+  </metric>
+  <metric name="RouterRuleCount">
+    <summary>
+      The sum of registered router rules with the Static Routing API in main
+      resource. Recorded per navigation when the service worker, which has
+      associated routing info, is activated. This is rounded down to the nearest
+      exponential bucket (with a bucket ratio on 1.15).
+    </summary>
+  </metric>
+  <metric name="WorkerStatusOnEvaluation" enum="ServiceWorkerStatus">
+    <summary>
+      ServiceWorker running status at the time when router evaluation is
+      conducted.
     </summary>
   </metric>
 </event>

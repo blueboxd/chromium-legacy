@@ -12,7 +12,7 @@
 
 #include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
-#include "ash/system/mahi/mahi_panel_widget.h"
+#include "ash/system/mahi/mahi_ui_controller.h"
 #include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "ash/webui/settings/public/constants/setting.mojom.h"
 #include "base/functional/callback.h"
@@ -41,6 +41,29 @@ namespace {
 
 using chromeos::MahiResponseStatus;
 using crosapi::mojom::MahiContextMenuActionType;
+
+MahiResponseStatus GetMahiResponseStatusFromMantaStatus(
+    manta::MantaStatusCode code) {
+  switch (code) {
+    case manta::MantaStatusCode::kOk:
+      return MahiResponseStatus::kSuccess;
+    case manta::MantaStatusCode::kGenericError:
+    case manta::MantaStatusCode::kBackendFailure:
+    case manta::MantaStatusCode::kNoInternetConnection:
+    case manta::MantaStatusCode::kUnsupportedLanguage:
+    case manta::MantaStatusCode::kNoIdentityManager:
+    case manta::MantaStatusCode::kRestrictedCountry:
+      return MahiResponseStatus::kUnknownError;
+    case manta::MantaStatusCode::kBlockedOutputs:
+      return MahiResponseStatus::kInappropriate;
+    case manta::MantaStatusCode::kResourceExhausted:
+      return MahiResponseStatus::kResourceExhausted;
+    case manta::MantaStatusCode::kPerUserQuotaExceeded:
+      return MahiResponseStatus::kQuotaLimitHit;
+    default:
+      return MahiResponseStatus::kUnknownError;
+  }
+}
 
 std::unique_ptr<manta::MahiProvider> CreateProvider() {
   if (!manta::features::IsMantaServiceEnabled()) {
@@ -82,17 +105,7 @@ MahiManagerImpl::MahiManagerImpl() {
 }
 
 MahiManagerImpl::~MahiManagerImpl() {
-  mahi_panel_widget_.reset();
   mahi_provider_.reset();
-}
-
-void MahiManagerImpl::OpenMahiPanel(int64_t display_id) {
-  if (!IsEnabled()) {
-    return;
-  }
-
-  mahi_panel_widget_ = MahiPanelWidget::CreatePanelWidget(display_id);
-  mahi_panel_widget_->Show();
 }
 
 std::u16string MahiManagerImpl::GetContentTitle() {
@@ -175,10 +188,10 @@ void MahiManagerImpl::OnContextMenuClicked(
     case MahiContextMenuActionType::kSummary:
     case MahiContextMenuActionType::kOutline:
       // TODO(b/318565610): Update the behaviour of kOutline.
-      OpenMahiPanel(context_menu_request->display_id);
+      ui_controller_.OpenMahiPanel(context_menu_request->display_id);
       return;
     case MahiContextMenuActionType::kQA:
-      OpenMahiPanel(context_menu_request->display_id);
+      ui_controller_.OpenMahiPanel(context_menu_request->display_id);
 
       // Ask question.
       // TODO(b/331837721): `MahiManagerImpl` should own an instance of
@@ -189,15 +202,16 @@ void MahiManagerImpl::OnContextMenuClicked(
         return;
       }
 
-      if (!mahi_panel_widget_) {
+      if (!ui_controller_.IsMahiPanelOpen()) {
         return;
       }
 
       // When the user sends a question from the context menu, we treat it as
       // the start of a new journey, so we set `current_panel_content` false.
-      static_cast<MahiPanelWidget*>(mahi_panel_widget_.get())
-          ->SendQuestion(context_menu_request->question.value(),
-                         /*current_panel_content=*/false);
+      ui_controller_.SendQuestion(context_menu_request->question.value(),
+                                  /*current_panel_content=*/false,
+                                  MahiUiController::QuestionSource::kMenuView);
+
       return;
     case MahiContextMenuActionType::kSettings:
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
@@ -231,7 +245,7 @@ void MahiManagerImpl::OpenFeedbackDialog() {
   chrome::ShowFeedbackPage(
       /*browser=*/chrome::FindBrowserWithProfile(
           ProfileManager::GetActiveUserProfile()),
-      /*source=*/chrome::kFeedbackSourceAI, description_template,
+      /*source=*/feedback::kFeedbackSourceAI, description_template,
       /*description_placeholder_text=*/
       base::UTF16ToUTF8(
           l10n_util::GetStringUTF16(IDS_MAHI_FEEDBACK_PLACEHOLDER)),
@@ -247,9 +261,8 @@ bool MahiManagerImpl::IsEnabled() {
 }
 
 void MahiManagerImpl::NotifyRefreshAvailability(bool available) {
-  auto* mahi_widget = static_cast<MahiPanelWidget*>(mahi_panel_widget_.get());
-  if (mahi_widget) {
-    mahi_widget->NotifyRefreshAvailabilityChanged(available);
+  if (ui_controller_.IsMahiPanelOpen()) {
+    ui_controller_.NotifyRefreshAvailabilityChanged(available);
   }
 }
 
@@ -271,7 +284,7 @@ void MahiManagerImpl::OnMahiPrefChanged() {
   CHECK(pref_change_registrar_);
   CHECK(pref_change_registrar_->prefs());
   if (!pref_change_registrar_->prefs()->GetBoolean(ash::prefs::kMahiEnabled)) {
-    mahi_panel_widget_.reset();
+    ui_controller_.CloseMahiPanel();
   }
 }
 
@@ -330,7 +343,8 @@ void MahiManagerImpl::OnMahiProviderSummaryResponse(
     manta::MantaStatus status) {
   latest_summary_ = u"...";
   if (status.status_code != manta::MantaStatusCode::kOk) {
-    latest_response_status_ = MahiResponseStatus::kUnknownError;
+    latest_response_status_ =
+        GetMahiResponseStatusFromMantaStatus(status.status_code);
     std::move(summary_callback)
         .Run(u"Couldn't get summary", latest_response_status_);
     return;
@@ -343,7 +357,7 @@ void MahiManagerImpl::OnMahiProviderSummaryResponse(
   } else {
     latest_response_status_ = MahiResponseStatus::kCantFindOutputData;
     std::move(summary_callback)
-        .Run(u"Cannot find outputdata", latest_response_status_);
+        .Run(u"Cannot find output data", latest_response_status_);
   }
 }
 
@@ -353,7 +367,8 @@ void MahiManagerImpl::OnMahiProviderQAResponse(
     base::Value::Dict dict,
     manta::MantaStatus status) {
   if (status.status_code != manta::MantaStatusCode::kOk) {
-    latest_response_status_ = MahiResponseStatus::kUnknownError;
+    latest_response_status_ =
+        GetMahiResponseStatusFromMantaStatus(status.status_code);
     current_panel_qa_.emplace_back(base::UTF16ToUTF8(question), "");
     std::move(callback).Run(std::nullopt, latest_response_status_);
     return;

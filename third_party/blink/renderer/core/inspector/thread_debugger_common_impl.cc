@@ -760,11 +760,13 @@ void ThreadDebuggerCommonImpl::installAdditionalCommandLineAPI(
       "function getAccessibleRole(node) { [Command Line API] }",
       v8::SideEffectType::kHasNoSideEffect);
 
+  v8::Isolate* isolate = context->GetIsolate();
   ScriptEvaluationResult result =
       ClassicScript::CreateUnspecifiedScript(
           "(function(e) { console.log(e.type, e); })",
           ScriptSourceLocationType::kInternal)
-          ->RunScriptOnScriptStateAndReturnValue(ScriptState::From(context));
+          ->RunScriptOnScriptStateAndReturnValue(
+              ScriptState::From(isolate, context));
   if (result.GetResultType() != ScriptEvaluationResult::ResultType::kSuccess) {
     // On pages where scripting is disabled or CSP sandbox directive is used,
     // this can be blocked and thus early exited here.
@@ -1037,7 +1039,7 @@ void ThreadDebuggerCommonImpl::cancelTimer(void* data) {
 
 int64_t ThreadDebuggerCommonImpl::generateUniqueId() {
   int64_t result;
-  base::RandBytes(&result, sizeof result);
+  base::RandBytes(base::byte_span_from_ref(result));
   return result;
 }
 

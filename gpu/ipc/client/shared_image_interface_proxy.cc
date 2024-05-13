@@ -102,20 +102,20 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   {
     base::AutoLock lock(lock_);
     AddMailbox(mailbox, si_info.meta.usage);
-    params->release_id = ++next_release_id_;
     // Note: we enqueue the IPC under the lock to guarantee monotonicity of the
     // release ids as seen by the service.
     last_flush_id_ = host_->EnqueueDeferredMessage(
         mojom::DeferredRequestParams::NewSharedImageRequest(
             mojom::DeferredSharedImageRequest::NewCreateSharedImage(
-                std::move(params))));
+                std::move(params))),
+        /*sync_token_fences=*/{}, ++next_release_id_);
   }
 
   return mailbox;
 }
 
 Mailbox SharedImageInterfaceProxy::CreateSharedImage(
-    const SharedImageInfo& si_info,
+    SharedImageInfo& si_info,
     gfx::BufferUsage buffer_usage,
     gfx::GpuMemoryBufferHandle* handle_to_populate) {
   // Create a GMB here first on IO thread via sync IPC. Then create a mailbox
@@ -129,6 +129,16 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   if (handle_to_populate->is_null()) {
     LOG(ERROR) << "Buffer handle is null. Not creating a mailbox from it.";
     return Mailbox();
+  }
+
+  // Clear the external sampler prefs for shared memory case if it is set. Note
+  // that the |si_info.meta.format| is a reference, so any modifications to it
+  // will also be reflected at the place from which this method is called from.
+  // https://issues.chromium.org/339546249.
+  if (si_info.meta.format.PrefersExternalSampler() &&
+      (handle_to_populate->type ==
+       gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER)) {
+    si_info.meta.format.ClearPrefersExternalSampler();
   }
 
   // Call existing SI method to create a SI from handle. Note that we are doing
@@ -172,11 +182,11 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   params->pixel_data_offset = shm_offset;
   params->pixel_data_size = pixel_data.size();
   params->done_with_shm = done_with_shm;
-  params->release_id = ++next_release_id_;
   last_flush_id_ = host_->EnqueueDeferredMessage(
       mojom::DeferredRequestParams::NewSharedImageRequest(
           mojom::DeferredSharedImageRequest::NewCreateSharedImageWithData(
-              std::move(params))));
+              std::move(params))),
+      /*sync_token_fences=*/{}, ++next_release_id_);
   AddMailbox(mailbox, si_info.meta.usage);
   return mailbox;
 }
@@ -193,13 +203,13 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   params->buffer_handle = std::move(buffer_handle);
 
   base::AutoLock lock(lock_);
-  params->release_id = ++next_release_id_;
   // Note: we enqueue and send the IPC under the lock to guarantee
   // monotonicity of the release ids as seen by the service.
   last_flush_id_ = host_->EnqueueDeferredMessage(
       mojom::DeferredRequestParams::NewSharedImageRequest(
           mojom::DeferredSharedImageRequest::NewCreateSharedImageWithBuffer(
-              std::move(params))));
+              std::move(params))),
+      /*sync_token_fences=*/{}, ++next_release_id_);
   host_->EnsureFlush(last_flush_id_);
 
   AddMailbox(mailbox, si_info.meta.usage);
@@ -227,13 +237,13 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
                                                        params->format));
 
   base::AutoLock lock(lock_);
-  params->release_id = ++next_release_id_;
   // Note: we enqueue and send the IPC under the lock to guarantee
   // monotonicity of the release ids as seen by the service.
   last_flush_id_ = host_->EnqueueDeferredMessage(
       mojom::DeferredRequestParams::NewSharedImageRequest(
           mojom::DeferredSharedImageRequest::NewCreateGmbSharedImage(
-              std::move(params))));
+              std::move(params))),
+      /*sync_token_fences=*/{}, ++next_release_id_);
   host_->EnsureFlush(last_flush_id_);
 
   AddMailbox(mailbox, si_info.meta.usage);
@@ -251,9 +261,8 @@ void SharedImageInterfaceProxy::CopyToGpuMemoryBuffer(
     last_flush_id_ = host_->EnqueueDeferredMessage(
         mojom::DeferredRequestParams::NewSharedImageRequest(
             mojom::DeferredSharedImageRequest::NewCopyToGpuMemoryBuffer(
-                mojom::CopyToGpuMemoryBufferParams::New(mailbox,
-                                                        ++next_release_id_))),
-        std::move(dependencies));
+                mojom::CopyToGpuMemoryBufferParams::New(mailbox))),
+        std::move(dependencies), ++next_release_id_);
   }
 }
 
@@ -288,7 +297,7 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
                 mojom::RegisterDxgiFenceParams::New(
                     mailbox, d3d_shared_fence->GetDXGIHandleToken(),
                     std::move(fence_handle)))),
-        std::move(dependencies));
+        std::move(dependencies), /*release_count=*/0);
   }
 
   last_flush_id_ = host_->EnqueueDeferredMessage(
@@ -297,7 +306,7 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
               mojom::UpdateDxgiFenceParams::New(
                   mailbox, d3d_shared_fence->GetDXGIHandleToken(),
                   d3d_shared_fence->GetFenceValue()))),
-      std::move(dependencies));
+      std::move(dependencies), /*release_count=*/0);
 }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -325,9 +334,8 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
         mojom::DeferredRequestParams::NewSharedImageRequest(
             mojom::DeferredSharedImageRequest::NewUpdateSharedImage(
                 mojom::UpdateSharedImageParams::New(
-                    mailbox, ++next_release_id_,
-                    std::move(acquire_fence_handle)))),
-        std::move(dependencies));
+                    mailbox, std::move(acquire_fence_handle)))),
+        std::move(dependencies), ++next_release_id_);
   }
 }
 
@@ -352,7 +360,7 @@ void SharedImageInterfaceProxy::DestroySharedImage(const SyncToken& sync_token,
           mojom::DeferredRequestParams::NewSharedImageRequest(
               mojom::DeferredSharedImageRequest::NewDestroySharedImage(
                   mailbox)),
-          std::move(info.destruction_sync_tokens));
+          std::move(info.destruction_sync_tokens), /*release_count=*/0);
 
       mailbox_infos_.erase(it);
     } else if (!dependencies.empty()) {
@@ -367,7 +375,7 @@ void SharedImageInterfaceProxy::DestroySharedImage(const SyncToken& sync_token,
         last_flush_id_ = host_->EnqueueDeferredMessage(
             mojom::DeferredRequestParams::NewSharedImageRequest(
                 mojom::DeferredSharedImageRequest::NewNop(0)),
-            std::move(info.destruction_sync_tokens));
+            std::move(info.destruction_sync_tokens), /*release_count=*/0);
 
         info.destruction_sync_tokens.clear();
       }
@@ -410,7 +418,7 @@ void SharedImageInterfaceProxy::WaitSyncToken(const SyncToken& sync_token) {
     last_flush_id_ = host_->EnqueueDeferredMessage(
         mojom::DeferredRequestParams::NewSharedImageRequest(
             mojom::DeferredSharedImageRequest::NewNop(0)),
-        std::move(dependencies));
+        std::move(dependencies), /*release_count=*/0);
   }
 }
 
@@ -447,7 +455,8 @@ bool SharedImageInterfaceProxy::GetSHMForPixelData(
     last_flush_id_ = host_->EnqueueDeferredMessage(
         mojom::DeferredRequestParams::NewSharedImageRequest(
             mojom::DeferredSharedImageRequest::NewRegisterUploadBuffer(
-                std::move(readonly_shm))));
+                std::move(readonly_shm))),
+        /*sync_token_fences=*/{}, /*release_count=*/0);
     host_->EnsureFlush(last_flush_id_);
 
     upload_buffer_ = std::move(shm);
@@ -509,11 +518,11 @@ SharedImageInterfaceProxy::CreateSwapChain(viz::SharedImageFormat format,
     AddMailbox(mailboxes.front_buffer, usage);
     AddMailbox(mailboxes.back_buffer, usage);
 
-    params->release_id = ++next_release_id_;
     last_flush_id_ = host_->EnqueueDeferredMessage(
         mojom::DeferredRequestParams::NewSharedImageRequest(
             mojom::DeferredSharedImageRequest::NewCreateSwapChain(
-                std::move(params))));
+                std::move(params))),
+        /*sync_token_fences=*/{}, ++next_release_id_);
   }
   return mailboxes;
 #else
@@ -529,12 +538,11 @@ void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
       GenerateDependenciesFromSyncToken(std::move(sync_token), host_);
   {
     base::AutoLock lock(lock_);
-    uint32_t release_id = ++next_release_id_;
     last_flush_id_ = host_->EnqueueDeferredMessage(
         mojom::DeferredRequestParams::NewSharedImageRequest(
             mojom::DeferredSharedImageRequest::NewPresentSwapChain(
-                mojom::PresentSwapChainParams::New(mailbox, release_id))),
-        std::move(dependencies));
+                mojom::PresentSwapChainParams::New(mailbox))),
+        std::move(dependencies), ++next_release_id_);
     host_->EnsureFlush(last_flush_id_);
   }
 #else
@@ -577,9 +585,8 @@ void SharedImageInterfaceProxy::AddReferenceToSharedImage(
       last_flush_id_ = host_->EnqueueDeferredMessage(
           mojom::DeferredRequestParams::NewSharedImageRequest(
               mojom::DeferredSharedImageRequest::NewAddReferenceToSharedImage(
-                  mojom::AddReferenceToSharedImageParams::New(
-                      mailbox, ++next_release_id_))),
-          std::move(dependencies));
+                  mojom::AddReferenceToSharedImageParams::New(mailbox))),
+          std::move(dependencies), ++next_release_id_);
     }
   }
 }

@@ -877,7 +877,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Network.Cellular.CarrierLock.ConfigurationStateAfterInitialization"
-    enum="CellularCarrierLockInitialState" expires_after="2024-09-01">
+    enum="CellularCarrierLockInitialState" expires_after="2024-11-03">
   <owner>michamazur@google.com</owner>
   <owner>cros-cellular-core@google.com</owner>
   <summary>
@@ -888,7 +888,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.CarrierLock.Error.{ErrorType}"
-    enum="CellularCarrierLockError" expires_after="2024-09-01">
+    enum="CellularCarrierLockError" expires_after="2024-11-03">
   <owner>michamazur@google.com</owner>
   <owner>cros-cellular-core@google.com</owner>
   <summary>
@@ -938,7 +938,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.CarrierLock.LockState"
-    enum="CellularCarrierLockLockState" expires_after="2024-09-01">
+    enum="CellularCarrierLockLockState" expires_after="2024-11-03">
   <owner>michamazur@google.com</owner>
   <owner>cros-cellular-core@google.com</owner>
   <summary>
@@ -989,7 +989,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.CarrierLock.PsmClaimResponse"
-    enum="CellularCarrierLockPsmResult" expires_after="2024-09-01">
+    enum="CellularCarrierLockPsmResult" expires_after="2024-11-03">
   <owner>michamazur@google.com</owner>
   <owner>cros-cellular-core@google.com</owner>
   <summary>
@@ -2293,7 +2293,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Network.Shill.Cellular.3GPPRegistrationDelayedDrop"
     enum="NetworkCellular3GPPRegistrationDelayedDrop"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2368,7 +2368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.Drop" enum="NetworkCellularTechnology"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2378,7 +2378,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.EntitlementCheck"
-    enum="NetworkCellularEntitlementCheck" expires_after="2024-09-01">
+    enum="NetworkCellularEntitlementCheck" expires_after="2024-11-03">
   <owner>andrewlassalle@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2432,7 +2432,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.SignalStrengthBeforeDrop" units="units"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2482,7 +2482,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToInitialize" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2502,7 +2502,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToPortal" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3200,6 +3200,81 @@ chromium-metrics-reviews@google.com.
   <summary>
     ChromeOS network usage metric emitted on each successful {VPNType} VPN
     connection that tracks the IP family provided in this connection.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram
+    name="Network.Shill.Vpn.{VPNType}.TimeConnectedToDisconnectedSeconds"
+    units="seconds" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each time when the state of a
+    {VPNType} VPN transits from connected to a non-connected state (reconnecting
+    or idle), which tracks how long the VPN driver stays in the connected state
+    of this connection.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.TimeConnectToConnectedMillis"
+    units="ms" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful new {VPNType} VPN
+    connection that tracks time duration from the VPN driver starts connecting
+    to the VPN driver reports connected. The time used by shill and patchpanel
+    for datapath configuration is not counted in this metrics.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.TimeConnectToIdleMillis"
+    units="ms" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each time when the state of a
+    {VPNType} VPN transits from connecting to idle (without being connected
+    once), which tracks the time duration from the VPN driver starts connecting
+    to the VPN driver becomes idle. This can be expected (e.g., user cancel the
+    connection) or unexpected (e.g., cannot reach the VPN server).
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.TimeReconnectToConnectedMillis"
+    units="ms" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each successful {VPNType} VPN
+    reconnection (i.e., was connected before the reconnection restarts) that
+    tracks time duration from the VPN driver starts reconnecting to the VPN
+    driver reports connected. The time used by shill and patchpanel for datapath
+    configuration is not counted in this metrics.
+  </summary>
+  <token key="VPNType" variants="VPNType"/>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.{VPNType}.TimeReconnectToIdleMillis"
+    units="ms" expires_after="2025-02-20">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted on each time when the state of a
+    {VPNType} VPN transits from reconnecting (i.e., was connected before) to
+    idle (without being connected once), which tracks the time duration from the
+    VPN driver starts reconnecting to the VPN driver becomes idle. This can be
+    expected (e.g., user disconnects the connection) or unexpected (e.g., VPN
+    server is no longer reachable).
   </summary>
   <token key="VPNType" variants="VPNType"/>
 </histogram>
@@ -4818,7 +4893,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantCacheAccess" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>

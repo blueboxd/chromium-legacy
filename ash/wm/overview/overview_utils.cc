@@ -19,7 +19,7 @@
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_focus_cycler.h"
+#include "ash/wm/overview/overview_focus_cycler_old.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
@@ -36,6 +36,7 @@
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -304,7 +305,7 @@ gfx::Rect GetGridBoundsInScreen(
   // in clamshell and tablet mode. See the regression behavior in
   // http://b/324478757.
   if (opposite_position &&
-      IsPhysicalLeftOrTop(*opposite_position, target_root)) {
+      IsPhysicallyLeftOrTop(*opposite_position, target_root)) {
     // If we are shifting to the left or top we need to update the origin as
     // well.
     const int offset = min_length - current_length;
@@ -362,10 +363,10 @@ void MoveFocusToView(OverviewFocusableView* target_view) {
     return;
   }
 
-  auto* focus_cycler = overview_session->focus_cycler();
-  CHECK(focus_cycler);
+  auto* focus_cycler_old = overview_session->focus_cycler_old();
+  CHECK(focus_cycler_old);
 
-  focus_cycler->MoveFocusToView(target_view);
+  focus_cycler_old->MoveFocusToView(target_view);
 }
 
 void SetWindowsVisibleDuringItemDragging(const aura::Window::Windows& windows,
@@ -386,6 +387,12 @@ void SetWindowsVisibleDuringItemDragging(const aura::Window::Windows& windows,
       layer->SetOpacity(new_opacity);
     }
   }
+}
+
+ui::ImageModel CreateIconForMenuItem(const gfx::VectorIcon& icon) {
+  constexpr ui::ColorId kMenuIconColorId = cros_tokens::kCrosSysOnSurface;
+  constexpr int kMenuIconSize = 20;
+  return ui::ImageModel::FromVectorIcon(icon, kMenuIconColorId, kMenuIconSize);
 }
 
 }  // namespace ash

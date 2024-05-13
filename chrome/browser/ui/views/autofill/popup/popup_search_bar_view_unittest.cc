@@ -12,7 +12,10 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace autofill {
 
@@ -21,6 +24,23 @@ using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::MockFunction;
+using ::testing::NiceMock;
+
+class MockDelegate : public PopupSearchBarView::Delegate {
+ public:
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
+  MOCK_METHOD(void,
+              SearchBarOnInputChanged,
+              (const std::u16string& text),
+              (override));
+  MOCK_METHOD(void, SearchBarOnFocusLost, (), (override));
+  MOCK_METHOD(bool,
+              SearchBarHandleKeyPressed,
+              (const ui::KeyEvent& event),
+              (override));
+};
+
 }  // namespace
 
 class PopupSearchBarViewTest : public ChromeViewsTestBase {
@@ -29,25 +49,30 @@ class PopupSearchBarViewTest : public ChromeViewsTestBase {
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
     widget_ = CreateTestWidget();
+    generator_ = std::make_unique<ui::test::EventGenerator>(
+        views::GetRootWindow(widget_.get()));
   }
 
   void TearDown() override {
+    generator_.reset();
     widget_.reset();
     ChromeViewsTestBase::TearDown();
   }
 
  protected:
   views::Widget& widget() { return *widget_; }
+  ui::test::EventGenerator& generator() { return *generator_; }
+  MockDelegate& delegate() { return delegate_; }
 
  private:
   std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<ui::test::EventGenerator> generator_;
+  NiceMock<MockDelegate> delegate_;
 };
 
 TEST_F(PopupSearchBarViewTest, SetsFocusOnTextfield) {
-  PopupSearchBarView* view =
-      widget().SetContentsView(std::make_unique<PopupSearchBarView>(
-          u"placeholder", /*on_input_changed_callback=*/base::DoNothing(),
-          /*on_focus_lost_callback=*/base::DoNothing()));
+  PopupSearchBarView* view = widget().SetContentsView(
+      std::make_unique<PopupSearchBarView>(u"placeholder", delegate()));
   widget().Show();
   view->Focus();
 
@@ -58,30 +83,24 @@ TEST_F(PopupSearchBarViewTest, SetsFocusOnTextfield) {
 }
 
 TEST_F(PopupSearchBarViewTest, OnFocusLostCalled) {
-  base::MockRepeatingClosure mock_on_focus_lost_callback;
-  PopupSearchBarView* view =
-      widget().SetContentsView(std::make_unique<PopupSearchBarView>(
-          u"placeholder", /*on_input_changed_callback=*/base::DoNothing(),
-          mock_on_focus_lost_callback.Get()));
+  PopupSearchBarView* view = widget().SetContentsView(
+      std::make_unique<PopupSearchBarView>(u"placeholder", delegate()));
   widget().Show();
   view->Focus();
   ASSERT_NE(widget().GetFocusManager()->GetFocusedView(), nullptr);
 
-  EXPECT_CALL(mock_on_focus_lost_callback, Run);
+  EXPECT_CALL(delegate(), SearchBarOnFocusLost);
   widget().GetFocusManager()->SetFocusedView(nullptr);
 }
 
 TEST_F(PopupSearchBarViewTest, OnInputChangedIsCalledAfterDelay) {
-  base::MockRepeatingCallback<void(const std::u16string&)> input_callback;
-  auto view = std::make_unique<PopupSearchBarView>(
-      u"placeholder", input_callback.Get(),
-      /*on_focus_lost_callback=*/base::DoNothing());
+  auto view = std::make_unique<PopupSearchBarView>(u"placeholder", delegate());
 
   MockFunction<void()> check;
   {
     InSequence s;
     EXPECT_CALL(check, Call);
-    EXPECT_CALL(input_callback, Run(Eq(u"input text")));
+    EXPECT_CALL(delegate(), SearchBarOnInputChanged(Eq(u"input text")));
   }
 
   view->SetInputTextForTesting(u"input text");
@@ -93,16 +112,13 @@ TEST_F(PopupSearchBarViewTest, OnInputChangedIsCalledAfterDelay) {
 }
 
 TEST_F(PopupSearchBarViewTest, OnInputChangedCallbackIsThrottled) {
-  base::MockRepeatingCallback<void(const std::u16string&)> input_callback;
-  auto view = std::make_unique<PopupSearchBarView>(
-      u"placeholder", input_callback.Get(),
-      /*on_focus_lost_callback=*/base::DoNothing());
+  auto view = std::make_unique<PopupSearchBarView>(u"placeholder", delegate());
 
   MockFunction<void()> check;
   {
     InSequence s;
     EXPECT_CALL(check, Call);
-    EXPECT_CALL(input_callback, Run(std::u16string(u"input text 2")));
+    EXPECT_CALL(delegate(), SearchBarOnInputChanged(Eq(u"input text 2")));
   }
 
   view->SetInputTextForTesting(u"input text");
@@ -114,4 +130,54 @@ TEST_F(PopupSearchBarViewTest, OnInputChangedCallbackIsThrottled) {
       PopupSearchBarView::kInputChangeCallbackDelay);
 }
 
+// TODO(b/338934966): Enable when key events suppressing in tests is fixed.
+#if !BUILDFLAG(IS_WIN)
+TEST_F(PopupSearchBarViewTest, KeyPressedFromTextfieldPassedToDelegateFirst) {
+  PopupSearchBarView* view = widget().SetContentsView(
+      std::make_unique<PopupSearchBarView>(u"placeholder", delegate()));
+  widget().Show();
+  view->Focus();
+
+  // Set up "a" suppressing handler.
+  ON_CALL(delegate(), SearchBarHandleKeyPressed)
+      .WillByDefault([](const ui::KeyEvent& event) {
+        return event.key_code() == ui::VKEY_A ? true : false;
+      });
+  // As "a" is suppressed, only "bc" is expected.
+  EXPECT_CALL(delegate(), SearchBarOnInputChanged(Eq(u"bc")));
+
+  generator().PressAndReleaseKey(ui::VKEY_A);
+  generator().PressAndReleaseKey(ui::VKEY_B);
+  generator().PressAndReleaseKey(ui::VKEY_C);
+
+  task_environment()->FastForwardBy(
+      PopupSearchBarView::kInputChangeCallbackDelay);
+}
+#endif  // !BUILDFLAG(IS_WIN)
+
+TEST_F(PopupSearchBarViewTest, ClearButton) {
+  PopupSearchBarView* view = widget().SetContentsView(
+      std::make_unique<PopupSearchBarView>(u"placeholder", delegate()));
+  widget().Show();
+  view->Focus();
+
+  MockFunction<void()> check;
+  {
+    InSequence s;
+    EXPECT_CALL(delegate(), SearchBarOnInputChanged(Eq(u"abc")));
+    EXPECT_CALL(check, Call);
+    EXPECT_CALL(delegate(), SearchBarOnInputChanged(Eq(u"")));
+  }
+
+  view->SetInputTextForTesting(u"abc");
+  task_environment()->FastForwardBy(
+      PopupSearchBarView::kInputChangeCallbackDelay);
+
+  check.Call();
+
+  generator().MoveMouseTo(view->GetClearButtonScreenCenterPointForTesting());
+  generator().ClickLeftButton();
+  task_environment()->FastForwardBy(
+      PopupSearchBarView::kInputChangeCallbackDelay);
+}
 }  // namespace autofill

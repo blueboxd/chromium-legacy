@@ -506,16 +506,6 @@ BASE_FEATURE(kCustomizeChromeSidePanel,
              "CustomizeChromeSidePanel",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCustomizeChromeSidePanelNoChromeRefresh2023,
-             "CustomizeChromeSidePanelNoChromeRefresh2023",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool CustomizeChromeSupportsChromeRefresh2023() {
-  return base::FeatureList::IsEnabled(kCustomizeChromeSidePanel) &&
-         !base::FeatureList::IsEnabled(
-             kCustomizeChromeSidePanelNoChromeRefresh2023);
-}
-
 BASE_FEATURE(kChromeRefresh2023,
              "ChromeRefresh2023",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -524,67 +514,14 @@ BASE_FEATURE(kChromeRefreshSecondary2023,
              "ChromeRefreshSecondary2023",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kChromeRefresh2023NTB,
-             "ChromeRefresh2023NTB",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-const char kChromeRefresh2023NTBVariationKey[] = "Variation";
-
-constexpr base::FeatureParam<ChromeRefresh2023NTBVariation>::Option
-    ChromeRefresh2023NTBVariationOption[] = {
-        {ChromeRefresh2023NTBVariation::kGM2Full, "GM2Full"},
-        {ChromeRefresh2023NTBVariation::kGM3OldIconNoBackground,
-         "GM3OldIconNoBackground"},
-        {ChromeRefresh2023NTBVariation::kGM3OldIconWithBackground,
-         "GM3OldIconWithBackground"},
-        {ChromeRefresh2023NTBVariation::kGM3NewIconNoBackground,
-         "GM3NewIconNoBackground"},
-        {ChromeRefresh2023NTBVariation::kGM3NewIconWithBackground,
-         "GM3NewIconWithBackground"},
-        {ChromeRefresh2023NTBVariation::kNoChoice, "No Choice"}};
-
-const base::FeatureParam<ChromeRefresh2023NTBVariation>
-    kChromeRefresh2023NTBValue(&kChromeRefresh2023NTB,
-                               kChromeRefresh2023NTBVariationKey,
-                               ChromeRefresh2023NTBVariation::kNoChoice,
-                               &ChromeRefresh2023NTBVariationOption);
-
-ChromeRefresh2023NTBVariation GetChromeRefresh2023NTB() {
-  ChromeRefresh2023NTBVariation option = kChromeRefresh2023NTBValue.Get();
-  if (option == ChromeRefresh2023NTBVariation::kNoChoice) {
-    if (!IsChromeRefresh2023()) {
-      return ChromeRefresh2023NTBVariation::kGM2Full;
-    } else {
-      return ChromeRefresh2023NTBVariation::kGM3NewIconNoBackground;
-    }
-  }
-
-  return option;
-}
-
 bool IsChromeRefresh2023() {
-  if (!CustomizeChromeSupportsChromeRefresh2023()) {
-    // Bail before checking any other feature flags so that associated studies
-    // don't get activated.
-    return false;
-  }
   return base::FeatureList::IsEnabled(kChromeRefresh2023) ||
          base::FeatureList::IsEnabled(kChromeRefreshSecondary2023);
 }
 
-BASE_FEATURE(kChromeWebuiRefresh2023,
-             "ChromeWebuiRefresh2023",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 bool IsChromeWebuiRefresh2023() {
-  if (!CustomizeChromeSupportsChromeRefresh2023()) {
-    // Bail before checking any other feature flags so that associated studies
-    // don't get activated.
-    return false;
-  }
   return IsChromeRefresh2023() &&
-         (base::FeatureList::IsEnabled(kChromeWebuiRefresh2023) ||
-          base::FeatureList::IsEnabled(kChromeRefreshSecondary2023));
+         base::FeatureList::IsEnabled(kChromeRefreshSecondary2023);
 }
 
 BASE_FEATURE(kBubbleMetricsApi,
@@ -616,4 +553,7 @@ BASE_FEATURE(kUseGammaContrastRegistrySettings,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN)
 
+BASE_FEATURE(kBubbleFrameViewTitleIsHeading,
+             "BubbleFrameViewTitleIsHeading",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace features

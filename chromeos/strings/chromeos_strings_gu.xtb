@@ -11,6 +11,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> થ્રેડ, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">નવી સુવિધા ઉપલબ્ધ છે, વધુ જાણવા માટે ઉપર એરો કીનો ઉપયોગ કરો.</translation>
 <translation id="1049663189809099096">પૅસ્ટલ પીળો</translation>
+<translation id="1056898198331236512">ચેતવણી</translation>
 <translation id="1059913517121127803">સ્કૅન કરવાનું શરૂ કરી શક્યા નથી</translation>
 <translation id="1062823486781306604"><ph name="COUNT" />માંથી <ph name="INDEX" />, <ph name="NAME" />.</translation>
 <translation id="1070066693520972135">WEP</translation>
@@ -28,6 +29,7 @@
 <translation id="1145018782460575098">બાહ્ય ડિવાઇસનું ફર્મવેયર અપડેટ કરવા માટેની વિન્ડો ખુલ્લી છે. <ph name="NUM_UPDATES" /> અપડેટ ઉપલબ્ધ છે.</translation>
 <translation id="1145516343487477149">સહાય લેખ અને Chromebook વિશેના સામાન્ય પ્રશ્નોના જવાબો શોધો</translation>
 <translation id="1154390310959620237">તમે માત્ર 5 શૉર્ટકટ કસ્ટમાઇઝ કરી શકો છો. નવો શૉર્ટકટ ઉમેરવા માટે અસ્તિત્વમાં હોય એવો કોઈ શૉર્ટકટ ડિલીટ કરો.</translation>
+<translation id="1155154308031262006">પ્રૉમ્પ્ટ દાખલ કરો</translation>
 <translation id="115705039208660697">અનાનસ</translation>
 <translation id="1164939766849482256">ડૉન ટુ ડાર્ક સ્ક્રીન સેવર</translation>
 <translation id="1167755866710282443">કી કસ્ટમાઇઝ કરવા માટે મેનૂ ખોલો. ખસેડવા માટે મેનૂ ખેંચો.</translation>
@@ -95,7 +97,6 @@
 <translation id="1478594628797167447">સ્કૅનર</translation>
 <translation id="1483493594462132177">મોકલો</translation>
 <translation id="1488850966314959671">કોઈ ચાલુ કરેલા કસ્ટમ APNsનો ઉપયોગ કરીને આ નેટવર્ક સાથે કનેક્ટ કરી શકતાં નથી. વધુ માહિતી માટે તમારા મોબાઇલ ઑપરેટરનો સંપર્ક કરો.</translation>
-<translation id="1491076385728777984"><ph name="DEVICE_NAME" /> માટે ફર્મવેયર અપડેટ કરી રહ્યાં છીએ</translation>
 <translation id="1499041187027566160">વૉલ્યૂમ વધારો</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> આ વપરાશકર્તાને મેનેજ કરે છે તથા સેટિંગ અને વપરાશકર્તાની પ્રવૃત્તિને દૂરથી મેનેજ અને તેનું નિરીક્ષણ કરે એવું બની શકે.</translation>
 <translation id="150962533380566081">અમાન્ય PUK.</translation>
@@ -260,6 +261,7 @@
 <translation id="2287186687001756809">કોઈ છબી ઉપલબ્ધ નથી. ફોટા ઉમેરવા માટે, <ph name="LINK" /> પર જાઓ</translation>
 <translation id="2305172810646967500">કાળો</translation>
 <translation id="2307344026739914387">હાલની કીની જોડીનો ઉપયોગ કરો</translation>
+<translation id="2308243864813041101">અપડેટની પ્રક્રિયા ચાલુ રાખવા માટે <ph name="DEVICE_NAME" />ના USB કેબલને અનપ્લગ કરો</translation>
 <translation id="2320295602967756579">ઝાંખી થીમ ચાલુ કરો</translation>
 <translation id="2323506179655536734">છોડ્યું</translation>
 <translation id="2324354238778375592">ફ્લોટિંગ વિન્ડો</translation>
@@ -291,7 +293,6 @@
 <translation id="2505327257735685095">હાલની વૉલપેપર છબી રિફ્રેશ કરો</translation>
 <translation id="2512979179176933762">વિન્ડો બતાવો</translation>
 <translation id="2513396635448525189">લૉગ ઇન છબી</translation>
-<translation id="2517472476991765520">સ્કૅન કરો</translation>
 <translation id="2521835766824839541">પહેલાનો ટ્રૅક</translation>
 <translation id="2526590354069164005">ડેસ્કટૉપ</translation>
 <translation id="2529641961800709867">બટનના વિકલ્પો</translation>
@@ -317,6 +318,7 @@
 <translation id="2645380101799517405">નિયંત્રણો</translation>
 <translation id="2652403576514495859">ડિક્ટેશનની સુવિધા ચાલુ અથવા ટૉગલ કરો</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
+<translation id="2654647726140493436">અપડેટની પ્રક્રિયા ચાલુ હોય ત્યારે તમારા <ph name="DEVICE_TYPE" />ને બંધ ન કરો અથવા <ph name="DEVICE_TYPE" />નો પાવર કેબલ અનપ્લગ ન કરો</translation>
 <translation id="2656001153562991489">Chromebook Plus માટે વિશેષ</translation>
 <translation id="2665671725390405060">ઉચ્ચાર સાંભળો</translation>
 <translation id="267442004702508783">રિફ્રેશ કરો</translation>
@@ -330,6 +332,7 @@
 <translation id="2744221223678373668">શેર કરેલી</translation>
 <translation id="2751739896257479635">EAP તબક્કા 2 માટેનું પ્રમાણીકરણ</translation>
 <translation id="2754757901767760034">લેમ્પ</translation>
+<translation id="2780756493585863768">Google AI દ્વારા સંચાલિત તાજેતરના બૅકગ્રાઉન્ડ</translation>
 <translation id="2783010256799387990">પરીક્ષણ પાસ કર્યુ</translation>
 <translation id="2786429550992142861">લિનન</translation>
 <translation id="2787435249130282949">વધુ બ્રાઇટ કીબોર્ડ</translation>
@@ -394,6 +397,7 @@
 <translation id="3237710083340813756">ફરીથી લખો</translation>
 <translation id="3246869037381808805">1 દિવસ કરતાં જૂના પ્રિન્ટ કાર્યો કાઢી નાખવામાં આવશે</translation>
 <translation id="324961752321393509">તમારા ઍડમિનિસ્ટ્રેટર દ્વારા આ ઍપને બંધ કરવાની મંજૂરી આપવામાં આવતી નથી</translation>
+<translation id="3263941347294171263">અપડેટની પ્રક્રિયા ચાલુ રાખવા માટે <ph name="DEVICE_NAME" />ને અનપ્લગ કરો અને ફરીથી પ્લગ નાખો</translation>
 <translation id="3268178239013324452">નિષ્ફળ રહ્યું - પ્રિન્ટરનું ઢાંકણ ખૂલ્લું છે</translation>
 <translation id="3275729367986477355">અવતારની છબી</translation>
 <translation id="3283504360622356314">{0,plural, =1{ફાઇલમાં ફેરફાર કરો}one{ફાઇલમાં ફેરફાર કરો}other{ફાઇલમાં ફેરફાર કરો}}</translation>
@@ -426,6 +430,7 @@
 <translation id="3456078764689556234"><ph name="TOTAL_PAGES" />માંથી <ph name="PRINTED_PAGES" /> પેજ પ્રિન્ટ કર્યા.</translation>
 <translation id="345898999683440380"><ph name="PAGE_NUM" /> નંબરનું પેજ સ્કૅન કરી રહ્યાં છીએ. <ph name="PERCENTAGE_VALUE" />% પૂર્ણ થયું.</translation>
 <translation id="3459509316159669723">છાપવું</translation>
+<translation id="3462187165860821523"><ph name="DEVICE_NAME" /> અપડેટ કરી રહ્યાં છીએ</translation>
 <translation id="346423161771747987">કરન્ટ</translation>
 <translation id="346539236881580388">ફરીથી લો</translation>
 <translation id="3484914941826596830">ફર્મવેયર અપડેટ થતું હોય ત્યારે આ બાહ્ય ડિવાઇસ પ્લગમાંથી દૂર કરશો નહીં અથવા તમારા કમ્પ્યુટરને શટ ડાઉન કરશો નહીં. તમે આ વિન્ડો નાની કરી શકો છો. આ અપડેટમાં થોડી મિનિટનો સમય લાગી શકે અને તમારું બાહ્ય ડિવાઇસ આ સમય દરમિયાન કામ ન કરે તેમ બની શકે છે.</translation>
@@ -726,6 +731,7 @@
 <translation id="5160857336552977725">તમારા <ph name="DEVICE_TYPE" /> પર સાઇન ઇન કરો</translation>
 <translation id="5168185087976003268">બૅટરીની ક્ષમતા</translation>
 <translation id="5170568018924773124">ફોલ્ડરમાં બતાવો</translation>
+<translation id="517075088756846356">અપડેટની પ્રક્રિયા ચાલુ રાખવા માટે <ph name="DEVICE_NAME" />ના પાવર કેબલને અનપ્લગ કરો અને ફરીથી પ્લગ નાખો</translation>
 <translation id="5180108905184566358">બાઑબેબના વૃક્ષો</translation>
 <translation id="5180712487038406644">અભિવ્યક્તપૂર્ણ</translation>
 <translation id="5190187232518914472">તમારી મનગમતી યાદગીરીઓને ફરીથી માણો. આલ્બમ ઉમેરવા અથવા તેમાં ફેરફાર કરવા માટે, <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" /> પર જાઓ.</translation>
@@ -787,9 +793,11 @@
 <translation id="554067135846762198">કોરલ અને ટૅન</translation>
 <translation id="5543701552415191873">લૉક છે</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5554741914132564590">આ અપડેટ બાહ્ય ડિવાઇસ નિર્માતા દ્વારા આપવામાં આવે છે અને તેની Google દ્વારા ચકાસણી કરવામાં આવી નથી.</translation>
 <translation id="5559898619118303662">સૂર્યાસ્ત સમયે ઑટોમૅટિક રીતે ઘેરી થીમ પર સ્વિચ કરો</translation>
 <translation id="556042886152191864">બટન</translation>
 <translation id="5562551811867441927"><ph name="TERRAIN_COLOR" />ના શેડમાં <ph name="TERRAIN_FEATURE" /></translation>
+<translation id="5572169899491758844">સ્કૅન કરો</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">ફરી સ્કૅન કરો</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -879,7 +887,6 @@
 <translation id="6075872808778243331">(Android) HTTPની વિલંબતા</translation>
 <translation id="6078323886959318429">શોર્ટકટ ઉમેરો</translation>
 <translation id="6091080061796993741">પીળો</translation>
-<translation id="610371409726072606">Google AI દ્વારા સંચાલિત કૅમેરા બૅકગ્રાઉન્ડ</translation>
 <translation id="6104112872696127344">સ્કૅન કરવાનું કાર્ય રદ કરવામાં આવ્યું છે</translation>
 <translation id="6106186594183574873">સમાપ્ત કરવા માટે, તમારો જૂનો પાસવર્ડ દાખલ કરો</translation>
 <translation id="6108689792487843350">ગેટવેથી કનેક્ટ કરી શકાતું નથી</translation>
@@ -906,6 +913,7 @@
 <translation id="6205145102504628069">ક્લાઉડ ફ્લો</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">કોઈ સ્કૅનર ઉપલબ્ધ નથી</translation>
+<translation id="6231648282154119906">તમે પસંદ કરેલા વધારેલા સંરક્ષણના ભાગ તરીકે, શંકાસ્પદ ફાઇલોને Google Safe Browsing દ્વારા ઑટોમૅટિક રીતે સ્કૅન કરવામાં આવશે</translation>
 <translation id="6232017090690406397">બૅટરી</translation>
 <translation id="6234024205316847054">આઉટલાઇન બતાવો</translation>
 <translation id="6235460611964961764">ડેટા વપરાશ મૅન્યુઅલી રીસેટ કરો</translation>
@@ -1011,7 +1019,6 @@
 <translation id="672609503628871915">શું નવું છે તે જુઓ</translation>
 <translation id="6740695858234317715">ક્રીમ અને નારંગી</translation>
 <translation id="6741823073189174383">હોડી</translation>
-<translation id="674276385369049081">Google AI દ્વારા સંચાલિત કૅમેરાના તાજેતરના બૅકગ્રાઉન્ડ</translation>
 <translation id="6744441848304920043">જંગલ</translation>
 <translation id="6747035363363040417">ન્યૂટ્રલ</translation>
 <translation id="6747215703636344499">બંધ - આઉટપુટ ભરાઈ ગયું છે</translation>
@@ -1032,6 +1039,7 @@
 <translation id="6871256179359663621">આછો જાંબલી</translation>
 <translation id="6889786074662672253">ફરી શરૂ થતું હોય ત્યારે આ બાહ્ય ડિવાઇસ પ્લગમાંથી દૂર કરશો નહીં અથવા તમારા કમ્પ્યુટરને શટ ડાઉન કરશો નહીં. તમે આ વિન્ડો નાની કરી શકો છો. આમાં થોડી મિનિટનો સમય લાગી શકે અને તમારું બાહ્ય ડિવાઇસ આ સમય દરમિયાન કામ ન કરે તેમ બની શકે છે.</translation>
 <translation id="6900701049656042631">આ આલ્બમમાં કોઈ ફોટા નથી. ફોટા ઉમેરવા માટે, <ph name="LINK" /> પર જાઓ</translation>
+<translation id="6902359863093437070">AI વડે બૅકગ્રાઉન્ડ બનાવો</translation>
 <translation id="6905163627763043954">અજમાવી જુઓ</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> પર પાછા જાઓ</translation>
 <translation id="6910312834584889076">સ્કૅનરનું કવર ખુલ્લું છે. કવર બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
@@ -1077,6 +1085,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7097908713073775559">કલરફૂલ</translation>
 <translation id="710028965487274708">નિષ્ફળ રહ્યું - અધિકરણ નિષ્ફળ</translation>
+<translation id="7101959270679078188">અપડેટની પ્રક્રિયા ચાલુ રાખવા માટે <ph name="DEVICE_NAME" />ને અનલૉક કરો</translation>
 <translation id="7103252855940681301"><ph name="NAME" /> નામનું ડિવાઇસ (<ph name="INDEX" />/<ph name="COUNT" />).</translation>
 <translation id="7107255225945990211"><ph name="PRODUCT_NAME" /> માટે વિશેષ આર્ટવર્ક પસંદ કરો</translation>
 <translation id="7108668606237948702">Enter</translation>
@@ -1269,6 +1278,7 @@
 <translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8156233298086717232">મેજિકલ</translation>
 <translation id="8162776280680283326">શિયાળ</translation>
+<translation id="8167413449582155132">Google AI દ્વારા સંચાલિત બૅકગ્રાઉન્ડ</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183975772394450380">સમુદ્ર કિનારો</translation>
 <translation id="8206859287963243715">સેલ્યુલર</translation>
@@ -1351,6 +1361,7 @@
 <translation id="8675354002693747642">પહેલેથી-શેર કરેલી કી</translation>
 <translation id="8677859815076891398">કોઈ આલ્બમ નથી. <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />માં કોઈ આલ્બમ બનાવો.</translation>
 <translation id="8682949824227998083">રૅમન</translation>
+<translation id="8689520252402395106">અપડેટની પ્રક્રિયા ચાલુ રાખવા માટે <ph name="DEVICE_NAME" />નો USB કેબલ ફરી દાખલ કરો</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> આ સુવિધા મેનેજ કરવા માટે ડાબી કે જમણી એરો કીનો ઉપયોગ કરો.</translation>
 <translation id="8712637175834984815">સમજાઈ ગયું</translation>
 <translation id="871560550817059752">નિષ્ફળ થયું - પ્રિન્ટરમાં શાહી પૂરી થઈ ગઈ છે</translation>
@@ -1358,6 +1369,7 @@
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8726019395068607495">બંધ - ઢાંકણ ખુલ્લું છે</translation>
 <translation id="8730621377337864115">થઈ ગયું</translation>
+<translation id="8739555075907731077">થોભાવ્યું (<ph name="PERCENTAGE_VALUE" />% પૂર્ણ)</translation>
 <translation id="8747900814994928677">ફેરફાર કન્ફર્મ કરો</translation>
 <translation id="8749478549112817787">કૅમેરાનું બૅકગ્રાઉન્ડ</translation>
 <translation id="8755946156089753497">ટાવર</translation>

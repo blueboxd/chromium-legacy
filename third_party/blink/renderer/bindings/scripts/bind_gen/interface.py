@@ -119,8 +119,7 @@ def callback_function_name(cg_context,
         argument_count: When the target is an IDL operation that has optional
             arguments and is annotated with [NoAllocDirectCall], the value is
             the number of arguments that V8 passes in (excluding the fixed
-            arguments like the receiver object and the
-            v8::FastApiCallbackOptions.)
+            arguments like the receiver object.)
         for_cross_origin: True if the target is the cross origin accessible
             version.
     """
@@ -183,8 +182,6 @@ def callback_function_name(cg_context,
 
     if cg_context.no_alloc_direct_call:
         nadc = "NoAllocDirectCall"
-    elif cg_context.no_alloc_direct_call_for_testing:
-        nadc = "NoAllocDirectCallForTesting"
     else:
         nadc = ""
 
@@ -319,8 +316,9 @@ def bind_callback_local_vars(code_node, cg_context):
                               "\"${class_like.identifier}\";")),
         S("current_context", ("v8::Local<v8::Context> ${current_context} = "
                               "${isolate}->GetCurrentContext();")),
-        S("current_script_state", ("ScriptState* ${current_script_state} = "
-                                   "ScriptState::From(${current_context});")),
+        S("current_script_state",
+          ("ScriptState* ${current_script_state} = "
+           "ScriptState::From(${isolate}, ${current_context});")),
         S("isolate", "v8::Isolate* ${isolate} = ${info}.GetIsolate();"),
         S("non_undefined_argument_length",
           ("const int ${non_undefined_argument_length} = "
@@ -406,14 +404,6 @@ def bind_callback_local_vars(code_node, cg_context):
         exception_state_type = "ExceptionState"
         init_args = ["${isolate}", "${exception_context_type}"]
         exception_to_reject_promise = ""
-        if (cg_context.no_alloc_direct_call
-                or cg_context.no_alloc_direct_call_for_testing):
-            exception_state_type = "NoAllocDirectCallExceptionState"
-            init_args.insert(0, "${blink_receiver}")
-            node.accumulate(
-                CodeGenAccumulator.require_include_headers([
-                    "third_party/blink/renderer/platform/bindings/no_alloc_direct_call_exception_state.h"
-                ]))
         if cg_context.is_legacy_factory_function:
             init_args.append("\"{}\"".format(cg_context.property_.identifier))
         else:
@@ -486,7 +476,7 @@ def bind_callback_local_vars(code_node, cg_context):
         #   + ScriptState::GetContext
         # is faster than
         #     v8::Object::GetCreationContextChecked
-        #   + ScriptState::From(v8::Local<v8::Context>)
+        #   + ScriptState::From(v8::Isolate*, v8::Local<v8::Context>)
         # Depending on already-defined symbols, select the best way to get
         # ${receiver_script_state}.
         node.append(
@@ -494,11 +484,12 @@ def bind_callback_local_vars(code_node, cg_context):
                 SymbolSensitiveSelectionNode.Choice(
                     ["receiver_context"],
                     T("ScriptState* ${receiver_script_state} = "
-                      "ScriptState::From(${receiver_context});")),
+                      "ScriptState::From(${isolate}, ${receiver_context});")),
                 SymbolSensitiveSelectionNode.Choice(
                     [],
                     T("ScriptState* ${receiver_script_state} = "
-                      "ScriptState::ForRelevantRealm(${v8_receiver});")),
+                      "ScriptState::ForRelevantRealm(${isolate}, "
+                      "${v8_receiver});")),
             ]))
         return node
 
@@ -814,19 +805,6 @@ def _make_blink_api_call(code_node,
         func_designator = _format("${blink_receiver}->{}", func_name)
 
     expr = _format("{_1}({_2})", _1=func_designator, _2=", ".join(arguments))
-    if cg_context.no_alloc_direct_call_for_testing:
-        expr = "\n".join([
-            # GCC extension: a compound statement enclosed in parentheses
-            "({",
-            "v8::Isolate::DisallowJavascriptExecutionScope "
-            "nadc_disallow_js_exec_scope"
-            "(${isolate}, "
-            "v8::Isolate::DisallowJavascriptExecutionScope::CRASH_ON_FAILURE);",
-            "blink::NoAllocDirectCallScope nadc_nadc_scope"
-            "(${blink_receiver}, &${v8_fast_api_callback_options});",
-            _format("{};", expr),
-            "})",
-        ])
     return expr
 
 
@@ -1947,11 +1925,6 @@ def _make_empty_callback_def(cg_context, function_name):
         ]
         arg_names = ["v8_property_name", "v8_property_value", "info"]
 
-    if cg_context.no_alloc_direct_call_for_testing:
-        arg_decls.append(
-            "v8::FastApiCallbackOptions& v8_fast_api_callback_options")
-        arg_names.append("v8_fast_api_callback_options")
-
     func_def = CxxFuncDefNode(name=function_name,
                               arg_decls=arg_decls,
                               return_type=return_type)
@@ -2508,8 +2481,9 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
 
     def v8_type_and_symbol_node(argument, v8_arg_name, blink_arg_name):
         unwrapped_idl_type = argument.idl_type.unwrap()
-        if unwrapped_idl_type.is_interface:
-            return ("v8::Local<v8::Value>",
+        if unwrapped_idl_type.is_interface or unwrapped_idl_type.is_sequence:
+            return ("v8::Local<v8::Value>" if unwrapped_idl_type.is_interface
+                    else "v8::Local<v8::Array>",
                     make_v8_to_blink_value(
                         blink_arg_name,
                         "${{{}}}".format(v8_arg_name),
@@ -2517,49 +2491,7 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
                         argument=argument,
                         error_exit_return_statement="return;",
                         cg_context=cg_context))
-        elif unwrapped_idl_type.is_sequence:
 
-            def create_definition(symbol_node):
-                binds = {
-                    "v8_arg_name":
-                    v8_arg_name,
-                    "blink_arg_name":
-                    blink_arg_name,
-                    "native_value_tag":
-                    native_value_tag(argument.idl_type, argument=argument),
-                    "element_native_value_tag":
-                    native_value_tag(unwrapped_idl_type.element_type,
-                                     argument=argument),
-                }
-                try_convert = F(
-                    "!v8::TryToCopyAndConvertArrayToCppBuffer<"
-                    "V8CTypeTraits<"
-                    "{element_native_value_tag}>::kCTypeInfo.GetId()"
-                    ">({v8_arg_name}, {blink_arg_name}.data(),"
-                    "{blink_arg_name}.size())", **binds)
-                nodes = [
-                    F(
-                        "typename NativeValueTraits<"
-                        "{native_value_tag}"
-                        ">::ImplType {blink_arg_name}("
-                        "{v8_arg_name}->Length());", **binds),
-                    CxxUnlikelyIfNode(
-                        cond=try_convert,
-                        body=[
-                            T("${v8_arg_callback_options}.fallback = true;"),
-                            T("return;")
-                        ])
-                ]
-                symbol_def_node = SymbolDefinitionNode(symbol_node, nodes)
-                symbol_def_node.accumulate(
-                    CodeGenAccumulator.require_include_headers([
-                        "third_party/blink/renderer/bindings/core/v8/v8_ctype_traits.h",
-                    ]))
-                return symbol_def_node
-
-            return ("v8::Local<v8::Array>",
-                    S(blink_arg_name,
-                      definition_constructor=create_definition))
         elif argument.idl_type.unwrap().is_typed_array_type:
             assert "AllowShared" in argument.idl_type.effective_annotations
             unwrapped_idl_type = argument.idl_type.unwrap()
@@ -2618,8 +2550,7 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
 
     arg_decls = (["v8::Local<v8::Object> v8_arg0_receiver"] + list(
         map(lambda arg: "{} {}".format(arg.v8_type, arg.v8_arg_name),
-            arg_list)) +
-                 ["v8::FastApiCallbackOptions& v8_arg_callback_options"])
+            arg_list)))
     return_type = ("void" if function_like.return_type.is_undefined else
                    blink_type_info(function_like.return_type).value_t)
 
@@ -2648,14 +2579,21 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
     bind_callback_local_vars(body, cg_context)
 
     body.extend([
-        T("blink::NoAllocDirectCallScope no_alloc_direct_call_scope("
-          "${blink_receiver}, &${v8_arg_callback_options});"),
+        T("v8::HandleScope handle_scope(${isolate});"),
         EmptyNode(),
     ])
 
-    blink_arguments = list(
+    # If [CallWith=Isolate] is specified, make sure ${isolate} is passed first.
+    blink_arguments = list()
+    if "Isolate" in cg_context.member_like.extended_attributes.values_of(
+            "CallWith"):
+        blink_arguments.append("${isolate}")
+
+    # Append the method arguments next.
+    blink_arguments += list(
         map(lambda arg: "${{{}}}".format(arg.blink_arg_name), arg_list))
-    # If there are following optional arguments with default values, append
+
+    # If there are trailing optional arguments with default values, append
     # them filled with the default values.
     for argument in function_like.arguments[argument_count:]:
         if not argument.default_value:
@@ -2669,6 +2607,8 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
               "auto&& {}{{{}}};".format(blink_arg_name,
                                         default_expr.initializer_expr)))
         blink_arguments.append("${{{}}}".format(blink_arg_name))
+
+    # Pass ${exception_state} after the method arguments.
     if cg_context.may_throw_exception:
         blink_arguments.append("${exception_state}")
     body.append(
@@ -2682,84 +2622,6 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
                 body=T("return;")))
 
     return func_def
-
-
-def make_no_alloc_direct_call_for_testing_callback_def(cg_context,
-                                                       function_name):
-    assert isinstance(cg_context, CodeGenContext)
-    assert isinstance(function_name, str)
-
-    func_def = _make_empty_callback_def(cg_context, function_name)
-    body = func_def.body
-
-    body.extend([
-        make_v8_set_return_value(cg_context),
-    ])
-
-    node = ListNode([
-        TextNode("#if DCHECK_IS_ON()"),
-        func_def,
-        TextNode("#endif  // DCHECK_IS_ON()"),
-    ])
-    node.accumulate(
-        CodeGenAccumulator.require_include_headers(["base/dcheck_is_on.h"]))
-    return node
-
-
-def make_no_alloc_direct_call_for_testing_call(cg_context):
-    assert isinstance(cg_context, CodeGenContext)
-
-    T = TextNode
-    F = FormatNode
-
-    if "NoAllocDirectCall" not in cg_context.operation.extended_attributes:
-        return None
-
-    scope = SymbolScopeNode()
-    scope.register_code_symbol(
-        SymbolNode(
-            "v8_fast_api_callback_options",
-            "v8::FastApiCallbackOptions ${v8_fast_api_callback_options}"
-            " = v8::FastApiCallbackOptions::CreateForTesting(${isolate});"))
-    scope.extend([
-        F(("{}(${info}, ${v8_fast_api_callback_options});"),
-          callback_function_name(
-              cg_context.make_copy(no_alloc_direct_call_for_testing=True),
-              overload_index=cg_context.operation.overload_index)),
-        CxxUnlikelyIfNode(cond="${blink_receiver}->HasDeferredActions()",
-                          body=[
-                              T("${blink_receiver}->FlushDeferredActions();"),
-                              T("return;"),
-                          ]),
-        CxxLikelyIfNode(cond="!${v8_fast_api_callback_options}.fallback",
-                        body=T("return;")),
-    ])
-
-    return ListNode([
-        T("#if DCHECK_IS_ON()"),
-        T("// [NoAllocDirectCall]"),
-        CxxUnlikelyIfNode(cond=("RuntimeEnabledFeatures::"
-                                "FakeNoAllocDirectCallForTestingEnabled()"),
-                          body=scope),
-        T("#endif  // DCHECK_IS_ON()"),
-    ])
-
-
-def make_no_alloc_direct_call_flush_deferred_actions(cg_context):
-    assert isinstance(cg_context, CodeGenContext)
-
-    if "NoAllocDirectCall" not in cg_context.operation.extended_attributes:
-        return None
-
-    return SequenceNode([
-        TextNode("// [NoAllocDirectCall]"),
-        CxxUnlikelyIfNode(
-            cond="UNLIKELY(${blink_receiver}->HasDeferredActions())",
-            body=[
-                TextNode("${blink_receiver}->FlushDeferredActions();"),
-                TextNode("return;"),
-            ]),
-    ])
 
 
 def make_operation_entry(cg_context):
@@ -2793,13 +2655,9 @@ def make_operation_function_def(cg_context, function_name):
         EmptyNode(),
         make_check_coop_restrict_properties_access(cg_context),
         EmptyNode(),
-        make_no_alloc_direct_call_flush_deferred_actions(cg_context),
-        EmptyNode(),
         make_check_argument_length(cg_context),
         EmptyNode(),
         make_steps_of_ce_reactions(cg_context),
-        EmptyNode(),
-        make_no_alloc_direct_call_for_testing_call(cg_context),
         EmptyNode(),
         make_check_security_of_return_value(cg_context),
         make_v8_set_return_value(cg_context),
@@ -2828,18 +2686,6 @@ def make_operation_callback_def(cg_context, function_name):
                         overload_index=entry.operation.overload_index,
                         argument_count=entry.argument_count),
                     argument_count=entry.argument_count),
-                EmptyNode(),
-            ])
-        for operation in operation_group:
-            if "NoAllocDirectCall" not in operation.extended_attributes:
-                continue
-            cgc = cg_context.make_copy(operation=operation,
-                                       no_alloc_direct_call_for_testing=True)
-            nodes.extend([
-                make_no_alloc_direct_call_for_testing_callback_def(
-                    cgc,
-                    callback_function_name(
-                        cgc, overload_index=operation.overload_index)),
                 EmptyNode(),
             ])
 
@@ -4402,8 +4248,8 @@ def bind_installer_local_vars(code_node, cg_context):
           ("const bool ${is_in_secure_context} = "
            "${execution_context}->IsSecureContext();")),
         S("isolate", "v8::Isolate* ${isolate} = ${v8_context}->GetIsolate();"),
-        S("script_state",
-          "ScriptState* ${script_state} = ScriptState::From(${v8_context});"),
+        S("script_state", ("ScriptState* ${script_state} = "
+                           "ScriptState::From(${isolate}, ${v8_context});")),
         S("wrapper_type_info",
           ("const WrapperTypeInfo* const ${wrapper_type_info} = "
            "${class_name}::GetWrapperTypeInfo();")),

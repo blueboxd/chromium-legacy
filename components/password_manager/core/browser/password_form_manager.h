@@ -176,7 +176,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool IsMovableToAccountStore() const override;
 
   void Save() override;
-  void Update(const PasswordForm& credentials_to_update) override;
   bool IsUpdateAffectingPasswordsStoredInTheGoogleAccount() const override;
   void OnUpdateUsernameFromPrompt(const std::u16string& new_username) override;
   void OnUpdatePasswordFromPrompt(const std::u16string& new_password) override;
@@ -188,6 +187,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void OnPasswordsRevealed() override;
   void MoveCredentialsToAccountStore() override;
   void BlockMovingCredentialsToAccountStore() override;
+  PasswordForm::Store GetPasswordStoreForSaving(
+      const PasswordForm& password_form) const override;
 
   bool IsNewLogin() const;
   FormFetcher* GetFormFetcher();

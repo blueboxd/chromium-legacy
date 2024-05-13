@@ -49,12 +49,12 @@ found in the LICENSE file.
         android:persistent="false"/>
 
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
-        android:key="data_types_switches_summary"
-        android:summary="@string/data_types_switches_summary"/>
+        android:key="account_section_footer"
+        android:summary="@string/account_section_footer"/>
 
     <PreferenceCategory
-        android:key="control_your_data_category"
-        android:title="@string/prefs_control_your_data"/>
+        android:key="account_advanced_header"
+        android:title="@string/account_advanced_header"/>
 
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="google_activity_controls"

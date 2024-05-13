@@ -4,14 +4,13 @@
 
 #include "gpu/command_buffer/service/shared_image/d3d_image_utils.h"
 
+#include <dawn/native/D3D11Backend.h>
+
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 
-#if BUILDFLAG(USE_DAWN)
-#include <dawn/native/D3D11Backend.h>
 using dawn::native::d3d11::SharedTextureMemoryD3D11Texture2DDescriptor;
-#endif  // BUILDFLAG(USE_DAWN)
 
 namespace gpu {
 
@@ -40,7 +39,6 @@ bool ClearD3D11TextureToColor(
   return true;
 }
 
-#if BUILDFLAG(USE_DAWN)
 wgpu::Texture CreateDawnSharedTexture(
     const wgpu::SharedTextureMemory& shared_texture_memory,
     wgpu::TextureUsage usage,
@@ -85,12 +83,11 @@ wgpu::SharedTextureMemory CreateDawnSharedTextureMemory(
 
   shared_texture_memory = device.ImportSharedTextureMemory(&desc);
 
-  if (!shared_texture_memory) {
+  if (!shared_texture_memory || shared_texture_memory.IsDeviceLost()) {
     LOG(ERROR) << "Failed to create shared texture memory";
     return nullptr;
   }
 
-  DCHECK(!shared_texture_memory.IsDeviceLost());
   return shared_texture_memory;
 }
 
@@ -106,14 +103,12 @@ wgpu::SharedTextureMemory CreateDawnSharedTextureMemory(
   desc.label = "SharedImageD3D_SharedTextureMemory_Texture2D";
   shared_texture_memory = device.ImportSharedTextureMemory(&desc);
 
-  if (!shared_texture_memory) {
+  if (!shared_texture_memory || shared_texture_memory.IsDeviceLost()) {
     LOG(ERROR) << "Failed to create shared texture memory";
     return nullptr;
   }
 
-  DCHECK(!shared_texture_memory.IsDeviceLost());
   return shared_texture_memory;
 }
-#endif  // BUILDFLAG(USE_DAWN)
 
 }  // namespace gpu

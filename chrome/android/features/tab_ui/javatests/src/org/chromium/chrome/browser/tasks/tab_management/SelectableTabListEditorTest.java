@@ -192,7 +192,7 @@ public class SelectableTabListEditorTest {
                                     compositorViewHolder,
                                     /* displayGroups= */ true,
                                     mSnackbarManager,
-                                    TabProperties.UiType.SELECTABLE);
+                                    TabProperties.TabActionState.SELECTABLE);
 
                     mTabListEditorController = mTabListEditorCoordinator.getController();
                     mTabListEditorLayout =
@@ -297,10 +297,7 @@ public class SelectableTabListEditorTest {
                     }
                     // Don't notify to avoid snackbar appearing.
                     filter.mergeListOfTabsToGroup(
-                            tabs.subList(1, tabs.size()),
-                            tabs.get(0),
-                            /* isSameGroup= */ false,
-                            /* notify= */ false);
+                            tabs.subList(1, tabs.size()), tabs.get(0), /* notify= */ false);
                 });
     }
 
@@ -424,16 +421,16 @@ public class SelectableTabListEditorTest {
                 R.id.tab_list_editor_group_menu_item);
 
         mRobot.actionRobot.clickItemAtAdapterPosition(0);
-        mRobot.resultRobot.verifyToolbarActionViewDisabled(
-                R.id.tab_list_editor_group_menu_item);
+        mRobot.resultRobot.verifyToolbarActionViewEnabled(R.id.tab_list_editor_group_menu_item);
 
         mRobot.actionRobot.clickItemAtAdapterPosition(1);
-        mRobot.resultRobot.verifyToolbarActionViewEnabled(
-                R.id.tab_list_editor_group_menu_item);
+        mRobot.resultRobot.verifyToolbarActionViewEnabled(R.id.tab_list_editor_group_menu_item);
+
+        mRobot.actionRobot.clickItemAtAdapterPosition(0);
+        mRobot.resultRobot.verifyToolbarActionViewEnabled(R.id.tab_list_editor_group_menu_item);
 
         mRobot.actionRobot.clickItemAtAdapterPosition(1);
-        mRobot.resultRobot.verifyToolbarActionViewDisabled(
-                R.id.tab_list_editor_group_menu_item);
+        mRobot.resultRobot.verifyToolbarActionViewDisabled(R.id.tab_list_editor_group_menu_item);
     }
 
     @Test
@@ -500,7 +497,6 @@ public class SelectableTabListEditorTest {
         showSelectionEditor(tabs);
 
         final int closeId = R.id.tab_list_editor_close_menu_item;
-        final int groupId = R.id.tab_list_editor_group_menu_item;
         mRobot.resultRobot
                 .verifyToolbarActionViewDisabled(closeId)
                 .verifyToolbarActionViewWithText(closeId, "Close tabs");
@@ -1239,9 +1235,8 @@ public class SelectableTabListEditorTest {
 
         mRobot.resultRobot
                 .verifyTabListEditorIsVisible()
-                .verifyToolbarActionViewDisabled(R.id.tab_list_editor_group_menu_item)
-                .verifyToolbarActionViewWithText(
-                        R.id.tab_list_editor_group_menu_item, "Group tab")
+                .verifyToolbarActionViewEnabled(R.id.tab_list_editor_group_menu_item)
+                .verifyToolbarActionViewWithText(R.id.tab_list_editor_group_menu_item, "Group tab")
                 .verifyToolbarSelectionText("1 tab")
                 .verifyHasAtLeastNItemVisible(tabs.size() + 1)
                 .verifyItemSelectedAtAdapterPosition(0)
@@ -1693,10 +1688,9 @@ public class SelectableTabListEditorTest {
 
     @Test
     @MediumTest
-    public void testSelectionTabAccessibilityString() {
+    public void testSelectionTabAccessibilityChecked() {
         prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
-        String expectedAccessibilityString = "Select about:blank tab";
 
         showSelectionEditor(tabs);
         mRobot.resultRobot.verifyTabListEditorIsVisible();
@@ -1758,7 +1752,7 @@ public class SelectableTabListEditorTest {
     @Test
     @MediumTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    public void testToolbarActionViewAndMenuItemContentDescription() {
+    public void testToolbarActionViewAndMenuItemContentDescription() throws Exception {
         prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
@@ -1805,8 +1799,8 @@ public class SelectableTabListEditorTest {
         mRobot.actionRobot.clickItemAtAdapterPosition(0).clickToolbarMenuButton();
         assertEquals("Close 1 selected tab", close.getContentDescription());
         mRobot.resultRobot
-                .verifyToolbarMenuItemState("Group tab", /* enabled= */ false)
-                .verifyToolbarMenuItemWithContentDescription("Group tab", null);
+                .verifyToolbarMenuItemState("Group tab", /* enabled= */ true)
+                .verifyToolbarMenuItemWithContentDescription("Group tab", "Group 1 selected tab");
         Espresso.pressBack();
     }
 

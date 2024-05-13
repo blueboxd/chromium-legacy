@@ -103,10 +103,6 @@ void DumpAccessibilityTreeTest::SetUpCommandLine(
   // AccessibilitySelectListOpen.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "HTMLSelectListElement");
-  // kDisableAXMenuList is true on Chrome OS by default. Make it consistent
-  // for these cross-platform tests.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDisableAXMenuList, "false");
 }
 
 std::vector<std::string> DumpAccessibilityTreeTest::Dump(ui::AXMode mode) {
@@ -125,6 +121,8 @@ void DumpAccessibilityTreeTest::ChooseFeatures(
       features::kEnableAccessibilityAriaVirtualContent);
   // crbug.com/330686628 - temporary until enabled everywhere
   enabled_features->emplace_back(blink::features::kPasswordStrongLabel);
+  // crbug.com/339418716 - temporary until enabled by default
+  enabled_features->emplace_back(blink::features::kPermissionElement);
   DumpAccessibilityTestBase::ChooseFeatures(enabled_features,
                                             disabled_features);
 }
@@ -2993,6 +2991,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityParam) {
   RunHtmlTest(FILE_PATH_LITERAL("param.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityPermission) {
+  RunHtmlTest(FILE_PATH_LITERAL("permission.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityPopoverApi) {
   RunHtmlTest(FILE_PATH_LITERAL("popover-api.html"));
 }
@@ -3922,6 +3924,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, WhitespaceDynamic) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, TableWithPseudoElements) {
   RunHtmlTest(FILE_PATH_LITERAL("table-with-pseudo-elements.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, SvgImageNameFromTitle) {
+  RunHtmlTest(FILE_PATH_LITERAL("svg-image-name-from-title.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, IgnoreDuplicateRelationIds) {

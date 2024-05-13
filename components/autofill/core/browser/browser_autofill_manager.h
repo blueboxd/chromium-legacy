@@ -57,10 +57,6 @@
 #include "components/autofill/core/common/unique_ids.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
-namespace gfx {
-class RectF;
-}
-
 namespace autofill {
 
 class AutofillField;
@@ -154,8 +150,7 @@ class BrowserAutofillManager : public AutofillManager {
       AutofillSuggestionTriggerSource trigger_source) const;
   virtual void OnUserAcceptedCardsFromAccountOption();
   virtual void RefetchCardsAndUpdatePopup(const FormData& form,
-                                          const FormFieldData& field_data,
-                                          const gfx::RectF& element_bounds);
+                                          const FormFieldData& field_data);
 
   virtual void FillOrPreviewCreditCardForm(
       mojom::ActionPersistence action_persistence,
@@ -269,10 +264,9 @@ class BrowserAutofillManager : public AutofillManager {
   // AutofillManager:
   base::WeakPtr<AutofillManager> GetWeakPtr() override;
   bool ShouldClearPreviewedForm() override;
-  void OnFocusNoLongerOnFormImpl(bool had_interacted_form) override;
+  void OnFocusOnNonFormFieldImpl(bool had_interacted_form) override;
   void OnFocusOnFormFieldImpl(const FormData& form,
-                              const FormFieldData& field,
-                              const gfx::RectF& bounding_box) override;
+                              const FormFieldData& field) override;
   void OnDidFillAutofillFormDataImpl(const FormData& form,
                                      const base::TimeTicks timestamp) override;
   void OnDidEndTextFieldEditingImpl() override;
@@ -419,19 +413,15 @@ class BrowserAutofillManager : public AutofillManager {
                            mojom::SubmissionSource source) override;
   void OnTextFieldDidChangeImpl(const FormData& form,
                                 const FormFieldData& field,
-                                const gfx::RectF& bounding_box,
                                 const base::TimeTicks timestamp) override;
   void OnTextFieldDidScrollImpl(const FormData& form,
-                                const FormFieldData& field,
-                                const gfx::RectF& bounding_box) override {}
+                                const FormFieldData& field) override {}
   void OnAskForValuesToFillImpl(
       const FormData& form,
       const FormFieldData& field,
-      const gfx::RectF& transformed_box,
       AutofillSuggestionTriggerSource trigger_source) override;
   void OnSelectControlDidChangeImpl(const FormData& form,
-                                    const FormFieldData& field,
-                                    const gfx::RectF& bounding_box) override;
+                                    const FormFieldData& field) override;
   bool ShouldParseForms() override;
   void OnBeforeProcessParsedForms() override;
   void OnFormProcessed(const FormData& form,

@@ -439,12 +439,6 @@ void PasswordFormManager::Save() {
   client_->UpdateFormManagers();
 }
 
-void PasswordFormManager::Update(const PasswordForm& credentials_to_update) {
-  password_save_manager_->Update(credentials_to_update, observed_form(),
-                                 *parsed_submitted_form_);
-  client_->UpdateFormManagers();
-}
-
 bool PasswordFormManager::IsUpdateAffectingPasswordsStoredInTheGoogleAccount()
     const {
   signin::IdentityManager* identity_manager = client_->GetIdentityManager();
@@ -617,6 +611,11 @@ void PasswordFormManager::BlockMovingCredentialsToAccountStore() {
   DCHECK(!gaia_id.empty());
   password_save_manager_->BlockMovingToAccountStoreFor(
       GaiaIdHash::FromGaiaId(gaia_id));
+}
+
+PasswordForm::Store PasswordFormManager::GetPasswordStoreForSaving(
+    const PasswordForm& password_form) const {
+  return password_save_manager_->GetPasswordStoreForSaving(password_form);
 }
 
 bool PasswordFormManager::IsNewLogin() const {

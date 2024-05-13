@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+Testing.h"
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
@@ -79,6 +78,7 @@
 #import "ios/chrome/browser/ui/ntp/feed_sign_in_promo_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/feed_wrapper_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/home_start_data_source.h"
 #import "ios/chrome/browser/ui/ntp/incognito/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/logo_vendor.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
@@ -88,6 +88,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory_protocol.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+Testing.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
@@ -121,6 +122,7 @@
                                      FeedMenuCoordinatorDelegate,
                                      FeedSignInPromoDelegate,
                                      FeedWrapperViewControllerDelegate,
+                                     HomeStartDataSource,
                                      IdentityManagerObserverBridgeDelegate,
                                      NewTabPageContentDelegate,
                                      NewTabPageDelegate,
@@ -205,7 +207,7 @@
 @property(nonatomic, assign) DiscoverFeedService* discoverFeedService;
 
 // Metrics recorder for actions relating to the feed.
-@property(nonatomic, strong) FeedMetricsRecorder* feedMetricsRecorder;
+@property(nonatomic, weak) FeedMetricsRecorder* feedMetricsRecorder;
 
 // The header view controller containing the fake omnibox and logo.
 @property(nonatomic, strong)
@@ -382,6 +384,8 @@
   }
   self.feedWrapperViewController = nil;
   self.feedViewController = nil;
+  self.feedMetricsRecorder.followDelegate = nil;
+  self.feedMetricsRecorder.NTPMetricsDelegate = nil;
   self.feedMetricsRecorder = nil;
 
   [self.feedExpandedPref setObserver:nil];
@@ -523,6 +527,9 @@
   if (_selectedFeed == selectedFeed) {
     return;
   }
+  // Updates the NTP state with the newly selected feed.
+  [self saveNTPState];
+
   // Tell Metrics Recorder the feed has changed.
   [self.feedMetricsRecorder recordFeedTypeChangedFromFeed:_selectedFeed];
   _selectedFeed = selectedFeed;
@@ -680,6 +687,7 @@
   self.contentSuggestionsCoordinator.webState = self.webState;
   self.contentSuggestionsCoordinator.delegate = self;
   self.contentSuggestionsCoordinator.NTPMetricsDelegate = self;
+  self.contentSuggestionsCoordinator.homeStartDataSource = self;
   [self.contentSuggestionsCoordinator start];
 }
 
@@ -696,7 +704,9 @@
 
 // Configures `self.feedMetricsRecorder`.
 - (void)configureFeedMetricsRecorder {
-  self.feedMetricsRecorder.feedControlDelegate = self;
+  CHECK(self.webState);
+  self.feedMetricsRecorder.NTPState =
+      NewTabPageTabHelper::FromWebState(self.webState)->GetNTPState();
   self.feedMetricsRecorder.followDelegate = self;
   self.feedMetricsRecorder.NTPMetricsDelegate = self;
 }
@@ -929,6 +939,9 @@
   // Scroll position resets when changing the feed, so we set it back to what it
   // was.
   [self.NTPViewController setContentOffsetToTopOfFeedOrLess:scrollPosition];
+
+  // Updates the NTP state for the newly selected sort type.
+  [self saveNTPState];
 }
 
 - (BOOL)shouldFeedBeVisible {
@@ -1099,7 +1112,6 @@
   // feed, which could have been changed when a new web state was
   // inserted.
   [self.feedHeaderViewController updateForSelectedFeed];
-  self.feedMetricsRecorder.feedControlDelegate = self;
   self.feedMetricsRecorder.followDelegate = self;
 }
 

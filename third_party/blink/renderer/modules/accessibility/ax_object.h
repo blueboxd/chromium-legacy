@@ -370,9 +370,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
                                        const QualifiedName&);
 
   // Serialize the properties of this node into |node_data|.
-  //
-  // TODO(crbug.com/1068668): AX onion soup - finish migrating
-  // BlinkAXTreeSource::SerializeNode into AXObject::Serialize.
   void Serialize(ui::AXNodeData* node_data, ui::AXMode accessibility_mode) const;
 
   // Determine subclass type.
@@ -380,12 +377,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool IsAXNodeObject() const;
   virtual bool IsAXInlineTextBox() const;
   virtual bool IsList() const;
-  virtual bool IsAXListBox() const;
-  virtual bool IsAXListBoxOption() const;
-  virtual bool IsMenuList() const;
-  virtual bool IsMenuListOption() const;
-  virtual bool IsMenuListPopup() const;
-  virtual bool IsMockObject() const;
   virtual bool IsProgressIndicator() const;
   virtual bool IsAXRadioInput() const;
   virtual bool IsSlider() const;
@@ -877,7 +868,19 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Returns the cached role from DetermineRoleValue().
   ax::mojom::blink::Role RoleValue() const;
 
-  static ax::mojom::blink::Role AriaRoleStringToRoleEnum(const String&);
+  // The role attribute is a string consisting of an ordered list of one or more
+  // roles (aka tokens) separated by spaces. This method finds the first token
+  // in the string that matches an internal role enum and returns that enum.
+  //
+  // The roles listed after that first role are considered fallback roles. A
+  // fallback role can be used when the first role cannot be used (due to an
+  // authoring error). If a fallback role for a nameless form or region is
+  // needed, set ignore_form_and_region to true.
+  //
+  // https://w3c.github.io/aria/#document-handling_author-errors_roles
+  static ax::mojom::blink::Role FirstValidRoleInRoleString(
+      const String&,
+      bool ignore_form_and_region = false);
 
   // Return the equivalent ARIA name for an enumerated role, or g_null_atom.
   static const AtomicString& AriaRoleName(ax::mojom::blink::Role);
@@ -1217,12 +1220,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // A natural parent is one where the LayoutTreeBuilderTraversal::Parent()
   // matches the DOM node for the AXObject parent.
   // Counter examples:
-  // * Objects that can have some children, but the children are only of a
-  // certain type or from another part of the tree. For example, a <select> may
-  // be an innapropriate natural parent for all of its child nodes as determined
-  // by LayoutTreeBuilderTraversal, such as an <optgroup> or <div> in the shadow
-  // DOM, because an AXMenuList, if used, only allows <option>/AXMenuListOption
-  // children.
   // * An image cannot be a natural parent, because while it can be the parent
   // of <area> elements, there isn't a matching DOM parent-child relationship,
   // as the areas are associated via a <map> element.
@@ -1314,7 +1311,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool CanHaveChildren() const { return true; }
   void UpdateChildrenIfNecessary();
   bool NeedsToUpdateChildren() const;
-  virtual void SetNeedsToUpdateChildren(bool update = true);
+  void SetNeedsToUpdateChildren(bool update = true);
   virtual void ClearChildren();
   void DetachFromParent();
   virtual void SelectedOptions(AXObjectVector&) const {}

@@ -452,6 +452,15 @@ void SharedStorageWorkletHost::SelectURL(
     return;
   }
 
+  if (!blink::IsValidPrivateAggregationFilteringIdMaxBytes(
+          private_aggregation_config->filtering_id_max_bytes)) {
+    receiver_.ReportBadMessage("Invalid fitering_id_byte_size.");
+    LogSharedStorageWorkletError(
+        blink::SharedStorageWorkletErrorType::
+            kSelectURLNonWebVisibleInvalidFilteringIdMaxBytes);
+    return;
+  }
+
   if (!keep_alive_after_operation_) {
     receiver_.ReportBadMessage(
         "Received further operations when previous operation did not include "
@@ -508,8 +517,10 @@ void SharedStorageWorkletHost::SelectURL(
   GURL urn_uuid = pending_urn_uuid.value();
 
   std::string debug_message;
-  if (!IsSharedStorageSelectURLAllowed(&debug_message)) {
-    if (is_same_origin_worklet_) {
+  bool prefs_failure_is_site_setting_specific = false;
+  if (!IsSharedStorageSelectURLAllowed(
+          &debug_message, &prefs_failure_is_site_setting_specific)) {
+    if (is_same_origin_worklet_ || !prefs_failure_is_site_setting_specific) {
       std::move(callback).Run(
           /*success=*/false,
           /*error_message=*/
@@ -562,7 +573,8 @@ void SharedStorageWorkletHost::SelectURL(
 
   GetAndConnectToSharedStorageWorkletService()->RunURLSelectionOperation(
       name, urls, std::move(serialized_data),
-      MaybeBindPrivateAggregationHost(private_aggregation_config),
+      MaybeConstructPrivateAggregationOperationDetails(
+          private_aggregation_config),
       base::BindOnce(
           &SharedStorageWorkletHost::
               OnRunURLSelectionOperationOnWorkletScriptExecutionFinished,
@@ -603,6 +615,15 @@ void SharedStorageWorkletHost::Run(
     return;
   }
 
+  if (!blink::IsValidPrivateAggregationFilteringIdMaxBytes(
+          private_aggregation_config->filtering_id_max_bytes)) {
+    receiver_.ReportBadMessage("Invalid fitering_id_byte_size.");
+    LogSharedStorageWorkletError(
+        blink::SharedStorageWorkletErrorType::
+            kRunNonWebVisibleInvalidFilteringIdMaxBytes);
+    return;
+  }
+
   if (!keep_alive_after_operation_) {
     receiver_.ReportBadMessage(
         "Received further operations when previous operation did not include "
@@ -618,8 +639,10 @@ void SharedStorageWorkletHost::Run(
   keep_alive_after_operation_ = keep_alive_after_operation;
 
   std::string debug_message;
-  if (!IsSharedStorageAllowed(&debug_message)) {
-    if (is_same_origin_worklet_) {
+  bool prefs_failure_is_site_setting_specific = false;
+  if (!IsSharedStorageAllowed(&debug_message,
+                              &prefs_failure_is_site_setting_specific)) {
+    if (is_same_origin_worklet_ || !prefs_failure_is_site_setting_specific) {
       std::move(callback).Run(
           /*success=*/false,
           /*error_message=*/GetSharedStorageErrorMessage(
@@ -651,7 +674,8 @@ void SharedStorageWorkletHost::Run(
 
   GetAndConnectToSharedStorageWorkletService()->RunOperation(
       name, std::move(serialized_data),
-      MaybeBindPrivateAggregationHost(private_aggregation_config),
+      MaybeConstructPrivateAggregationOperationDetails(
+          private_aggregation_config),
       base::BindOnce(&SharedStorageWorkletHost::OnRunOperationOnWorkletFinished,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
@@ -1311,23 +1335,25 @@ SharedStorageWorkletHost::GetAndConnectToSharedStorageWorkletService() {
   return shared_storage_worklet_service_.get();
 }
 
-mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
-SharedStorageWorkletHost::MaybeBindPrivateAggregationHost(
+blink::mojom::PrivateAggregationOperationDetailsPtr
+SharedStorageWorkletHost::MaybeConstructPrivateAggregationOperationDetails(
     const blink::mojom::PrivateAggregationConfigPtr&
         private_aggregation_config) {
   CHECK(browser_context_, base::NotFatalUntil::M128);
   CHECK(private_aggregation_config);
 
   if (!blink::ShouldDefinePrivateAggregationInSharedStorage()) {
-    return mojo::PendingRemote<blink::mojom::PrivateAggregationHost>();
+    return nullptr;
   }
 
   PrivateAggregationManager* private_aggregation_manager =
       PrivateAggregationManager::GetManager(*browser_context_);
   CHECK(private_aggregation_manager, base::NotFatalUntil::M128);
 
-  mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
-      pending_pa_host_remote;
+  blink::mojom::PrivateAggregationOperationDetailsPtr pa_operation_details =
+      blink::mojom::PrivateAggregationOperationDetails::New(
+          mojo::PendingRemote<blink::mojom::PrivateAggregationHost>(),
+          private_aggregation_config->filtering_id_max_bytes);
 
   std::optional<base::TimeDelta> timeout =
       (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM118) &&
@@ -1335,40 +1361,45 @@ SharedStorageWorkletHost::MaybeBindPrivateAggregationHost(
           ? std::optional<base::TimeDelta>(base::Seconds(5))
           : std::nullopt;
 
+  // TODO(crbug.com/330744610): Allow filtering ID byte size to be set.
   bool success = private_aggregation_manager->BindNewReceiver(
       shared_storage_origin_, main_frame_origin_,
       PrivateAggregationBudgetKey::Api::kSharedStorage,
       private_aggregation_config->context_id, std::move(timeout),
       private_aggregation_config->aggregation_coordinator_origin,
-      pending_pa_host_remote.InitWithNewPipeAndPassReceiver());
+      private_aggregation_config->filtering_id_max_bytes,
+      pa_operation_details->pa_host.InitWithNewPipeAndPassReceiver());
   CHECK(success);
 
-  return pending_pa_host_remote;
+  return pa_operation_details;
 }
 
 bool SharedStorageWorkletHost::IsSharedStorageAllowed(
-    std::string* out_debug_message) {
+    std::string* out_debug_message,
+    bool* out_block_is_site_setting_specific) {
   RenderFrameHost* rfh =
       document_service_ ? &(document_service_->render_frame_host()) : nullptr;
   return GetContentClient()->browser()->IsSharedStorageAllowed(
       browser_context_, rfh, main_frame_origin_, shared_storage_origin_,
-      out_debug_message);
+      out_debug_message, out_block_is_site_setting_specific);
 }
 
 bool SharedStorageWorkletHost::IsSharedStorageSelectURLAllowed(
-    std::string* out_debug_message) {
+    std::string* out_debug_message,
+    bool* out_block_is_site_setting_specific) {
   CHECK(document_service_);
 
   // Will trigger a call to
   // `content_settings::PageSpecificContentSettings::BrowsingDataAccessed()` for
   // reporting purposes.
-  if (!IsSharedStorageAllowed(out_debug_message)) {
+  if (!IsSharedStorageAllowed(out_debug_message,
+                              out_block_is_site_setting_specific)) {
     return false;
   }
 
   return GetContentClient()->browser()->IsSharedStorageSelectURLAllowed(
       browser_context_, main_frame_origin_, shared_storage_origin_,
-      out_debug_message);
+      out_debug_message, out_block_is_site_setting_specific);
 }
 
 }  // namespace content

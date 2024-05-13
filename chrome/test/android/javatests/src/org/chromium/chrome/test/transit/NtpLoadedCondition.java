@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test.transit;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.transit.ConditionStatus;
 import org.chromium.base.test.transit.UiThreadCondition;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
@@ -13,11 +14,11 @@ import org.chromium.chrome.browser.ui.native_page.NativePage;
 
 /** Fulfilled when a native New Tab Page is loaded. */
 class NtpLoadedCondition extends UiThreadCondition {
-    private final PageLoadedCondition mPageLoadedCondition;
+    private final Supplier<Tab> mLoadedTabSupplier;
 
-    NtpLoadedCondition(PageLoadedCondition pageLoadedCondition) {
+    NtpLoadedCondition(Supplier<Tab> loadedTabSupplier) {
         super();
-        mPageLoadedCondition = pageLoadedCondition;
+        mLoadedTabSupplier = dependOnSupplier(loadedTabSupplier, "LoadedTab");
     }
 
     @Override
@@ -26,11 +27,8 @@ class NtpLoadedCondition extends UiThreadCondition {
     }
 
     @Override
-    public ConditionStatus check() {
-        Tab tab = mPageLoadedCondition.getMatchedTab();
-        if (tab == null) {
-            return notFulfilled("null tab");
-        }
+    protected ConditionStatus checkWithSuppliers() {
+        Tab tab = mLoadedTabSupplier.get();
 
         NativePage nativePage = tab.getNativePage();
         if (!tab.isIncognito()) {

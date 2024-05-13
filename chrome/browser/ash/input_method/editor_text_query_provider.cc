@@ -6,14 +6,15 @@
 
 #include <optional>
 
-#include "ash/constants/ash_features.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/values.h"
+#include "chrome/browser/ash/input_method/editor_helpers.h"
 #include "chrome/browser/ash/input_method/editor_metrics_recorder.h"
 #include "chrome/browser/manta/manta_service_factory.h"
 #include "chromeos/ash/services/orca/public/mojom/orca_service.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/manta/features.h"
 #include "components/manta/manta_service.h"
 #include "components/manta/manta_status.h"
@@ -54,7 +55,7 @@ std::map<std::string, std::string> CreateProviderRequest(
     provider_request["config_label"] = config_label;
   }
 
-  if (base::FeatureList::IsEnabled(features::kOrcaInternationalize)) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kOrcaInternationalize)) {
     provider_request["i18n"] = "true";
   }
 
@@ -89,8 +90,12 @@ orca::mojom::TextQueryErrorCode ConvertErrorCode(
 }
 
 orca::mojom::TextQueryErrorPtr ConvertErrorResponse(manta::MantaStatus status) {
-  return orca::mojom::TextQueryError::New(ConvertErrorCode(status.status_code),
-                                          status.message);
+  // In case the system locale mismatches the locale returned in the response,
+  // returns a generic error.
+
+  return orca::mojom::TextQueryError::New(
+      ConvertErrorCode(status.status_code),
+      /*message=*/GetSystemLocale() == status.locale ? status.message : "");
 }
 
 std::vector<orca::mojom::TextQueryResultPtr> ParseSuccessResponse(

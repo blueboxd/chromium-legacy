@@ -71,6 +71,8 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.omnibox.AutocompleteMatch;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -341,6 +343,11 @@ class LocationBarMediator
         mTemplateUrlServiceSupplier.onAvailable(
                 (templateUrlService) -> {
                     templateUrlService.addObserver(this);
+                    if (OmniboxFeatures.sUseFusedLocationProvider.isEnabled()
+                            && templateUrlService.isDefaultSearchEngineGoogle()) {
+                        GeolocationHeader.primeLocationForGeoHeaderIfEnabled(
+                                mProfileSupplier.get(), mTemplateUrlServiceSupplier.get());
+                    }
                 });
 
         mLocationBarLayout.onFinishNativeInitialization();
@@ -484,13 +491,22 @@ class LocationBarMediator
         updateButtonVisibility();
     }
 
-    /* package */ void onSuggestionsChanged(String autocompleteText, boolean defaultMatchIsSearch) {
+    /* package */ void onSuggestionsChanged(@Nullable AutocompleteMatch defaultMatch) {
         // TODO (https://crbug.com/1152501): Refactor the LBM/LBC relationship such that LBM doesn't
         // need to communicate with other coordinators like this.
-        mStatusCoordinator.onDefaultMatchClassified(defaultMatchIsSearch);
         String userText = mUrlCoordinator.getTextWithoutAutocomplete();
+        mStatusCoordinator.onDefaultMatchClassified(
+                // Zero suggest is always considered Search.
+                TextUtils.isEmpty(userText)
+                        ||
+                        // Otherwise, use the default match type (if possible), or assume Search (if
+                        // not).
+                        (defaultMatch != null ? defaultMatch.isSearchSuggestion() : true));
         if (mUrlCoordinator.shouldAutocomplete()) {
-            mUrlCoordinator.setAutocompleteText(userText, autocompleteText);
+            mUrlCoordinator.setAutocompleteText(
+                    userText,
+                    defaultMatch != null ? defaultMatch.getInlineAutocompletion() : null,
+                    defaultMatch != null ? defaultMatch.getAdditionalText() : null);
         }
 
         // Handle the case where suggestions (in particular zero suggest) are received without the

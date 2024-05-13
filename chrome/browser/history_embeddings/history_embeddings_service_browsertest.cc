@@ -29,7 +29,8 @@ class HistoryEmbeddingsBrowserTest : public InProcessBrowserTest {
     // The feature must be enabled first or else the service isn't initialized
     // properly.
     feature_list_.InitWithFeaturesAndParameters(
-        {{kHistoryEmbeddings, {{"UseMlEmbedder", "false"}}},
+        {{kHistoryEmbeddings,
+          {{"UseMlEmbedder", "false"}, {"SendQualityLog", "true"}}},
          {page_content_annotations::features::kPageContentAnnotations, {{}}}},
         /*disabled_features=*/{});
 
@@ -88,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(HistoryEmbeddingsBrowserTest, BrowserRetrievesPassages) {
 
   base::test::TestFuture<UrlPassages> future;
   callback_for_tests() = future.GetRepeatingCallback();
-  service()->RetrievePassages({}, *web_contents->GetPrimaryMainFrame());
+  service()->RetrievePassages(
+      {}, web_contents->GetPrimaryMainFrame()->GetWeakDocumentPtr());
 
   UrlPassages url_passages = future.Take();
 
@@ -187,6 +189,16 @@ IN_PROC_BROWSER_TEST_F(HistoryEmbeddingsBrowserTest,
                                       1);
   histogram_tester.ExpectUniqueSample(
       "History.Embeddings.NumMatchedUrlsVisible", 0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(HistoryEmbeddingsBrowserTest, LogDataIsPrepared) {
+  base::HistogramTester histogram_tester;
+  SearchResult result = {
+      ScoredUrlRow(ScoredUrl(0, 0, base::Time::Now(), 0.5f, 0, {})),
+  };
+  service()->SendQualityLog("test", result, 0, 1, 3, false);
+  histogram_tester.ExpectUniqueSample(
+      "History.Embeddings.Quality.LogEntryPrepared", true, 1);
 }
 
 }  // namespace history_embeddings

@@ -685,6 +685,7 @@ var availableTests = [
       var passkey = group.entries[group.entries.length - 1];
       chrome.test.assertTrue(passkey.isPasskey);
       chrome.test.assertEq(passkey.displayName, 'displayName');
+      chrome.test.assertEq(passkey.creationTime, 1000);
 
       // Ensure that all entry ids are unique.
       chrome.test.assertEq(group.entries.length, idSet.size);
@@ -745,6 +746,7 @@ var availableTests = [
       chrome.test.succeed();
     });
   },
+
   function isPasswordManagerPinAvailable() {
     var callback = function(available) {
       chrome.test.assertFalse(available);
@@ -752,6 +754,23 @@ var availableTests = [
     };
 
     chrome.passwordsPrivate.isPasswordManagerPinAvailable(callback);
+  },
+
+  function disconnectCloudAuthenticator() {
+    chrome.passwordsPrivate.disconnectCloudAuthenticator(success => {
+      chrome.test.assertFalse(success);
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+
+  function isConnectedToCloudAuthenticator() {
+    var callback = function(connected) {
+      chrome.test.assertFalse(connected);
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.isConnectedToCloudAuthenticator(callback);
   }
 ];
 

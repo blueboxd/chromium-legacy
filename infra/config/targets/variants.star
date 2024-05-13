@@ -79,10 +79,10 @@ targets.variant(
 )
 
 targets.variant(
-    name = "INTEL_UHD_630",
-    identifier = "Intel UHD 630",
+    name = "INTEL_UHD_630_OR_770",
+    identifier = "Intel UHD 630 or 770",
     mixins = [
-        "intel_uhd_630",
+        "intel_uhd_630_or_770",
     ],
 )
 
@@ -500,34 +500,5 @@ targets.variant(
     identifier = "10de:2184",
     mixins = [
         "win10_nvidia_gtx_1660_stable",
-    ],
-)
-
-# Model validation tests with no args as they are passed in from Google3.
-targets.variant(
-    name = "MODEL_VALIDATION_BASE",
-    identifier = "MODEL_VALIDATION_BASE",
-)
-
-targets.variant(
-    name = "MODEL_VALIDATION_TRUNK",
-    identifier = "MODEL_VALIDATION_TRUNK",
-    linux_args = [
-        "--chromedriver",
-        "chromedriver",
-        "--binary",
-        "chrome",
-    ],
-    mac_args = [
-        "--chromedriver",
-        "chromedriver",
-        "--binary",
-        "Google Chrome.app/Contents/MacOS/Google Chrome",
-    ],
-    win_args = [
-        "--chromedriver",
-        "chromedriver.exe",
-        "--binary",
-        "Chrome.exe",
     ],
 )

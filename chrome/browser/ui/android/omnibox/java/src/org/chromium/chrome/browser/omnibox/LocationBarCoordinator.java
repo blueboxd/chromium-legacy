@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
 import org.chromium.chrome.browser.omnibox.LocationBarMediator.OmniboxUma;
 import org.chromium.chrome.browser.omnibox.LocationBarMediator.SaveOfflineButtonState;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator.PageInfoAction;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
@@ -50,6 +51,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
+import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.action.OmniboxActionDelegate;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -327,6 +329,10 @@ public class LocationBarCoordinator
             mSubCoordinator =
                     new LocationBarCoordinatorPhone(
                             (LocationBarPhone) locationBarLayout, mStatusCoordinator);
+            ((UrlBar) mUrlBar)
+                    .setVerticalInset(
+                            context.getResources()
+                                    .getDimensionPixelSize(R.dimen.location_bar_vertical_margin));
         } else if (isTabletLayout()) {
             mSubCoordinator =
                     new LocationBarCoordinatorTablet((LocationBarTablet) locationBarLayout);
@@ -375,6 +381,7 @@ public class LocationBarCoordinator
 
         mLocationBarMediator.destroy();
         mLocationBarMediator = null;
+        GeolocationHeader.stopListeningForLocationUpdates();
 
         mDestroyed = true;
     }
@@ -494,8 +501,9 @@ public class LocationBarCoordinator
     }
 
     @Override
-    public void onSuggestionsChanged(String autocompleteText, boolean defaultMatchIsSearch) {
-        mLocationBarMediator.onSuggestionsChanged(autocompleteText, defaultMatchIsSearch);
+    public void onSuggestionsChanged(@Nullable AutocompleteMatch defaultMatch) {
+        assert defaultMatch == null || defaultMatch.allowedToBeDefaultMatch();
+        mLocationBarMediator.onSuggestionsChanged(defaultMatch);
     }
 
     @Override

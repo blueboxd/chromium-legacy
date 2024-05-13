@@ -18,13 +18,18 @@ import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/p
 import type {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 import {loadTimeData} from '../i18n_setup.js';
 
+import type {PerformanceBrowserProxy} from './performance_browser_proxy.js';
+import {PerformanceBrowserProxyImpl} from './performance_browser_proxy.js';
 import type {PerformanceMetricsProxy} from './performance_metrics_proxy.js';
-import {MemorySaverModeState, PerformanceMetricsProxyImpl} from './performance_metrics_proxy.js';
+import {MemorySaverModeAggressiveness, MemorySaverModeState, PerformanceMetricsProxyImpl} from './performance_metrics_proxy.js';
 import {getTemplate} from './performance_page.html.js';
 import type {ExceptionListElement} from './tab_discard/exception_list.js';
 
 export const MEMORY_SAVER_MODE_PREF =
     'performance_tuning.high_efficiency_mode.state';
+
+export const MEMORY_SAVER_MODE_AGGRESSIVENESS_PREF =
+    'performance_tuning.high_efficiency_mode.aggressiveness';
 
 export const DISCARD_RING_PREF =
     'performance_tuning.discard_ring_treatment.enabled';
@@ -54,11 +59,12 @@ export class SettingsPerformancePageElement extends
 
   static get properties() {
     return {
-      isMemorySaverMultistateModeEnabled_: {
+      isMemorySaverModeAggressivenessEnabled_: {
         readOnly: true,
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('isMemorySaverMultistateModeEnabled');
+          return loadTimeData.getBoolean(
+              'isMemorySaverModeAggressivenessEnabled');
         },
       },
 
@@ -70,10 +76,10 @@ export class SettingsPerformancePageElement extends
         },
       },
 
-      memorySaverModeStateEnum_: {
+      memorySaverModeAggressivenessEnum_: {
         readOnly: true,
         type: Object,
-        value: MemorySaverModeState,
+        value: MemorySaverModeAggressiveness,
       },
 
       numericUncheckedValues_: {
@@ -90,10 +96,12 @@ export class SettingsPerformancePageElement extends
 
   private numericUncheckedValues_: MemorySaverModeState[];
   private numericCheckedValue_: MemorySaverModeState[];
+  private browserProxy_: PerformanceBrowserProxy =
+      PerformanceBrowserProxyImpl.getInstance();
   private metricsProxy_: PerformanceMetricsProxy =
       PerformanceMetricsProxyImpl.getInstance();
 
-  private isMemorySaverMultistateModeEnabled_: boolean;
+  private isMemorySaverModeAggressivenessEnabled_: boolean;
 
   private isDiscardRingImprovementsEnabled_: boolean;
 
@@ -117,7 +125,13 @@ export class SettingsPerformancePageElement extends
         this.getPref<number>(MEMORY_SAVER_MODE_PREF).value);
   }
 
+  private onMemorySaverModeAggressivenessChange_() {
+    this.metricsProxy_.recordMemorySaverModeAggressivenessChanged(
+        this.getPref<number>(MEMORY_SAVER_MODE_AGGRESSIVENESS_PREF).value);
+  }
+
   private onDiscardRingChange_() {
+    this.browserProxy_.onDiscardRingTreatmentEnabledChanged();
     this.metricsProxy_.recordDiscardRingTreatmentEnabledChanged(
         this.getPref<boolean>(DISCARD_RING_PREF).value);
   }

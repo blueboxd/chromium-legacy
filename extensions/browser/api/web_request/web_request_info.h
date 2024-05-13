@@ -98,6 +98,23 @@ struct WebRequestInfo {
   // `extension_id`.
   void EraseDNRActionsForExtension(const ExtensionId& extension_id);
 
+  // Erases all actions in `dnr_actions` that have a priority less than that of
+  // the max priority allow rule for that action's extension in
+  // `allow_rule_max_priority`. This prevents lower priority actions matched in
+  // a different request stage to modify a request if they should've been
+  // bypassed by higher priority allow rules.
+  void EraseOutprioritizedDNRActions();
+
+  // Returns if the provided `allow_action` which was already matched against
+  // the request, should be recorded as a match, relative to the already matched
+  // actions in `dnr_actions`.
+  // This method currently makes two assumptions:
+  //  - `allow_action` outprioritizes all actions in `dnr_actions` after a prior
+  //    call to EraseOutprioritizedDNRActions().
+  //  - this is called in onHeadersReceived
+  bool ShouldRecordMatchedAllowRuleInOnHeadersReceived(
+      const declarative_net_request::RequestAction& allow_action) const;
+
   // A unique identifier for this request.
   const uint64_t id;
 

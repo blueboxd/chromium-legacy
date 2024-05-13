@@ -77,9 +77,6 @@ class CORE_EXPORT InlineLayoutAlgorithm final
                                 ExclusionSpace*);
 
   void PrepareBoxStates(const LineInfo&, const InlineBreakToken*);
-  void RebuildBoxStates(const LineInfo&,
-                        const InlineBreakToken*,
-                        InlineLayoutStateStack*) const;
 
   void PlaceOutOfFlowObjects(const LineInfo&,
                              const FontHeight&,
@@ -91,6 +88,8 @@ class CORE_EXPORT InlineLayoutAlgorithm final
                             LogicalLineItems* line_box);
 
   LayoutUnit ApplyTextAlign(LineInfo*);
+
+  void ApplyTextBoxTrim(const LineInfo&);
 
   // Add any trailing clearance requested by a BR 'clear' attribute on the line.
   // Return true if this was successful (this also includes cases where there is

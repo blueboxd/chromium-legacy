@@ -467,6 +467,8 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesDummyTitle", IDS_NTP_MODULES_DUMMY_TITLE},
       {"modulesFeedTitle", IDS_NTP_MODULES_FEED_TITLE},
       {"modulesTodayCalendarHeader", IDS_NTP_MODULES_TODAY_CALENDAR_HEADER},
+      {"modulesTodayCalendarDisableButtonText",
+       IDS_NTP_MODULES_TODAY_CALENDAR_DISABLE_BUTTON_TEXT},
       {"modulesGoogleCalendarTitle", IDS_NTP_MODULES_GOOGLE_CALENDAR_TITLE},
       {"modulesGoogleCalendarDisableButtonText",
        IDS_NTP_MODULES_GOOGLE_CALENDAR_DISABLE_BUTTON_TEXT},
@@ -658,8 +660,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       IsCartModuleEnabled() &&
           base::FeatureList::IsEnabled(
               ntp_features::kNtpChromeCartInHistoryClusterModule));
-
-  webui::SetupChromeRefresh2023(source);
 
   SearchboxHandler::SetupWebUIDataSource(
       source, profile,

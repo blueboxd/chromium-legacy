@@ -7,9 +7,10 @@
 #include "base/memory/raw_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "read_anything_app_model.h"
+#include "services/strings/grit/services_strings.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_serializable_tree.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class ReadAnythingAppModelTest : public ChromeRenderViewTest {
  public:
@@ -54,6 +55,10 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
 
   void SetDistillationInProgress(bool distillation) {
     model_->SetDistillationInProgress(distillation);
+  }
+
+  void SetSpeechPlaying(bool speech_playing) {
+    model_->set_speech_playing(speech_playing);
   }
 
   bool AreAllPendingUpdatesEmpty() {
@@ -383,7 +388,8 @@ TEST_F(ReadAnythingAppModelTest,
   ui::AXNodeData static_text_start_node;
   static_text_start_node.id = 3;
   static_text_start_node.role = ax::mojom::Role::kStaticText;
-  static_text_start_node.SetNameChecked(string_constants::kPDFPageStart);
+  static_text_start_node.SetNameChecked(
+      l10n_util::GetStringUTF8(IDS_PDF_OCR_RESULT_BEGIN));
   banner_node.child_ids = {static_text_start_node.id};
 
   ui::AXNodeData content_info_node;
@@ -393,7 +399,8 @@ TEST_F(ReadAnythingAppModelTest,
   ui::AXNodeData static_text_end_node;
   static_text_end_node.id = 5;
   static_text_end_node.role = ax::mojom::Role::kStaticText;
-  static_text_end_node.SetNameChecked(string_constants::kPDFPageEnd);
+  static_text_end_node.SetNameChecked(
+      l10n_util::GetStringUTF8(IDS_PDF_OCR_RESULT_END));
   content_info_node.child_ids = {static_text_end_node.id};
 
   ui::AXNodeData root;
@@ -661,6 +668,64 @@ TEST_F(ReadAnythingAppModelTest,
   // Send update 1. Since distillation is in progress, this will not be
   // unserialized yet.
   SetDistillationInProgress(true);
+  AccessibilityEventReceived({updates[1]});
+  EXPECT_EQ(1u, GetNumPendingUpdates(tree_id_));
+
+  // Send update 2. This is still not unserialized yet.
+  AccessibilityEventReceived({updates[2]});
+  EXPECT_EQ(2u, GetNumPendingUpdates(tree_id_));
+
+  // Complete distillation which unserializes the pending updates and distills
+  // them.
+  UnserializePendingUpdates(tree_id_);
+  EXPECT_EQ(0u, GetNumPendingUpdates(tree_id_));
+  ASSERT_TRUE(AreAllPendingUpdatesEmpty());
+}
+
+TEST_F(ReadAnythingAppModelTest, SpeechPlaying_TreeUpdateReceivedOnActiveTree) {
+  // Set the name of each node to be its id.
+  ui::AXTreeUpdate initial_update;
+  SetUpdateTreeID(&initial_update);
+  initial_update.root_id = 1;
+  initial_update.nodes.resize(3);
+  std::vector<int> child_ids;
+  for (int i = 0; i < 3; i++) {
+    int id = i + 2;
+    child_ids.push_back(id);
+    initial_update.nodes[i].id = id;
+    initial_update.nodes[i].role = ax::mojom::Role::kStaticText;
+    initial_update.nodes[i].SetNameChecked(base::NumberToString(id));
+  }
+  AccessibilityEventReceived({initial_update});
+
+  std::vector<ui::AXTreeUpdate> updates;
+  for (int i = 0; i < 3; i++) {
+    int id = i + 5;
+    child_ids.push_back(id);
+
+    ui::AXTreeUpdate update;
+    SetUpdateTreeID(&update);
+    ui::AXNodeData root;
+    root.id = 1;
+    root.child_ids = child_ids;
+
+    ui::AXNodeData node;
+    node.id = id;
+    node.role = ax::mojom::Role::kStaticText;
+    node.SetNameChecked(base::NumberToString(id));
+    update.root_id = root.id;
+    update.nodes = {root, node};
+    updates.push_back(update);
+  }
+
+  // Send update 0, which starts distillation.
+  AccessibilityEventReceived({updates[0]});
+  EXPECT_EQ(0u, GetNumPendingUpdates(tree_id_));
+  ASSERT_TRUE(AreAllPendingUpdatesEmpty());
+
+  // Send update 1. Since distillation is in progress, this will not be
+  // unserialized yet.
+  SetSpeechPlaying(true);
   AccessibilityEventReceived({updates[1]});
   EXPECT_EQ(1u, GetNumPendingUpdates(tree_id_));
 

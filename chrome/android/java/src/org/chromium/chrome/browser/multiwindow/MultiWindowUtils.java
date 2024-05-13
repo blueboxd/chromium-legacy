@@ -47,6 +47,8 @@ import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.ui.desktop_windowing.AppHeaderUtils;
+import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.components.ukm.UkmRecorder;
 import org.chromium.ui.display.DisplayAndroidManager;
@@ -71,6 +73,14 @@ public class MultiWindowUtils implements ActivityStateListener {
                             ChromeFeatureList.TAB_WINDOW_MANAGER_REPORT_INDICES_MISMATCH,
                             "activity_creation_timestamp_diff_threshold_ms",
                             1000);
+
+    static final String HISTOGRAM_NUM_ACTIVITIES_DESKTOP_WINDOW =
+            "Android.MultiInstance.NumActivities.DesktopWindow";
+    static final String HISTOGRAM_NUM_INSTANCES_DESKTOP_WINDOW =
+            "Android.MultiInstance.NumInstances.DesktopWindow";
+    static final String HISTOGRAM_DESKTOP_WINDOW_COUNT_NEW_INSTANCE_SUFFIX = ".NewInstance";
+    static final String HISTOGRAM_DESKTOP_WINDOW_COUNT_EXISTING_INSTANCE_SUFFIX =
+            ".ExistingInstance";
 
     private static MultiWindowUtils sInstance = new MultiWindowUtils();
 
@@ -836,6 +846,50 @@ public class MultiWindowUtils implements ActivityStateListener {
         assert windowId != INVALID_INSTANCE_ID
                 : "A valid instance ID was not found for the specified activity.";
         return windowId;
+    }
+
+    /**
+     * Record the number of running ChromeTabbedActivity's as well as the total number of Chrome
+     * instances when a new ChromeTabbedActivity is created in a desktop window.
+     *
+     * @param instanceAllocationType The {@link InstanceAllocationType} for the new activity.
+     * @param isColdStart Whether app startup is a cold start.
+     */
+    public static void maybeRecordDesktopWindowCountHistograms(
+            @Nullable DesktopWindowStateProvider desktopWindowStateProvider,
+            @InstanceAllocationType int instanceAllocationType,
+            boolean isColdStart) {
+        // Emit the histogram only for an activity that starts in a desktop window.
+        if (!AppHeaderUtils.isAppInDesktopWindow(desktopWindowStateProvider)) return;
+
+        // Emit the histogram only for a newly created activity that is cold-started.
+        if (!isColdStart) return;
+
+        // Emit histograms for running activity count.
+        recordDesktopWindowCountHistograms(
+                instanceAllocationType,
+                HISTOGRAM_NUM_ACTIVITIES_DESKTOP_WINDOW,
+                MultiInstanceManagerApi31.getRunningTabbedActivityCount());
+
+        // Emit histograms for total instance count.
+        recordDesktopWindowCountHistograms(
+                instanceAllocationType, HISTOGRAM_NUM_INSTANCES_DESKTOP_WINDOW, getInstanceCount());
+    }
+
+    private static void recordDesktopWindowCountHistograms(
+            @InstanceAllocationType int instanceAllocationType, String histogramName, int count) {
+        // Emit generic histogram, irrespective of instance allocation type.
+        RecordHistogram.recordExactLinearHistogram(histogramName, count, getMaxInstances() + 1);
+
+        // Emit histogram variant based on instance allocation type.
+        String histogramSuffix = HISTOGRAM_DESKTOP_WINDOW_COUNT_NEW_INSTANCE_SUFFIX;
+        if (instanceAllocationType != InstanceAllocationType.NEW_INSTANCE_NEW_TASK
+                && instanceAllocationType != InstanceAllocationType.PREFER_NEW_INSTANCE_NEW_TASK) {
+            histogramSuffix = HISTOGRAM_DESKTOP_WINDOW_COUNT_EXISTING_INSTANCE_SUFFIX;
+        }
+
+        RecordHistogram.recordExactLinearHistogram(
+                histogramName + histogramSuffix, count, getMaxInstances() + 1);
     }
 
     public static void setInstanceForTesting(MultiWindowUtils instance) {

@@ -307,6 +307,13 @@ BASE_FEATURE(kEnableTcpPortRandomization,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+BASE_FEATURE(kAvoidEntryCreationForNoStore,
+             "AvoidEntryCreationForNoStore",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<int> kAvoidEntryCreationForNoStoreCacheSize{
+    &kAvoidEntryCreationForNoStore, "AvoidEntryCreationForNoStoreCacheSize",
+    1000};
+
 // Prefetch to follow normal semantics instead of 5-minute rule
 // https://crbug.com/1345207
 BASE_FEATURE(kPrefetchFollowsNormalCacheSemantics,
@@ -382,10 +389,6 @@ const base::FeatureParam<base::TimeDelta> kIpPrivacyProxyListMinFetchInterval{
 const base::FeatureParam<bool> kIpPrivacyDirectOnly{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyDirectOnly",
     /*default_value=*/false};
-
-const base::FeatureParam<std::string> kIpPrivacyProxyBPsk{
-    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyProxyBPsk",
-    /*default_value=*/""};
 
 const base::FeatureParam<bool> kIpPrivacyIncludeOAuthTokenInGetProxyConfig{
     &kEnableIpProtectionProxy,

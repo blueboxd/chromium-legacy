@@ -31,6 +31,10 @@ message CrossUserSharingPrivateKey {
   // The key version, used for key rotation.
   optional int32 version = 1;
   // Private key on Curve25519 (32 bytes).
+  // Encryption: Hybrid Public Key Encryption (HPKE)
+  // KEM: DHKEM_X25519_HKDF_SHA256
+  // KDF: HKDF_SHA256
+  // AEAD: CHACHA20_POLY1305
   optional bytes x25519_private_key = 2;
 }
 
@@ -38,6 +42,10 @@ message CrossUserSharingPublicKey {
   // The key version, used for key rotation and consensus.
   optional int32 version = 1;
   // Public key on Curve25519 (32 bytes).
+  // Encryption: Hybrid Public Key Encryption (HPKE)
+  // KEM: DHKEM_X25519_HKDF_SHA256
+  // KDF: HKDF_SHA256
+  // AEAD: CHACHA20_POLY1305
   optional bytes x25519_public_key = 2;
 }
 
@@ -249,7 +257,11 @@ message NigoriSpecifics {
     // Every ramp stage is differentiated with its own entry in the enum.
     enum AutoUpgradeCohort {
       AUTO_UPGRADE_COHORT_UNSPECIFIED = 0;
-      TEST_GROUP_1 = 1;
+      // Used for testing the auto-upgrade metrics & infrastructure only.
+      TEST_GROUP = 1;
+      // Evaluation group for the first eligibility criteria (Android device
+      // with LSKF, Gaia PWD public key & between 5 and 50 passwords).
+      ANDROID_LSKF_GAIA_PASSWORD_5_50_PASSWORDS_EVALUATION = 2;
     }
     // ID of cohort account belongs to. Only use IDs defined within
     // AutoUpgradeCohort enum.

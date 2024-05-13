@@ -113,6 +113,9 @@ class ReadAnythingAppController
   void SetLanguageCode(const std::string& code) override;
   void SetDefaultLanguageCode(const std::string& code) override;
   void ScreenAIServiceReady() override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void OnDeviceLocked() override;
+#endif
 
   // gin templates:
   ui::AXNodeID RootId() const;
@@ -179,6 +182,7 @@ class ReadAnythingAppController
   bool IsReadAloudEnabled() const;
   bool IsChromeOsAsh() const;
   bool IsAutoVoiceSwitchingEnabled() const;
+  bool IsLanguagePackDownloadingEnabled() const;
   bool IsAutomaticWordHighlightingEnabled() const;
   void OnStandardLineSpacing();
   void OnLooseLineSpacing();
@@ -195,6 +199,7 @@ class ReadAnythingAppController
   void OnSpeechRateChange(double rate);
   void OnVoiceChange(const std::string& voice, const std::string& lang);
   void OnLanguagePrefChange(const std::string& lang, bool enabled);
+  bool RequiresDistillation();
   void TurnedHighlightOn();
   void TurnedHighlightOff();
   double GetLineSpacingValue(int line_spacing) const;
@@ -202,6 +207,7 @@ class ReadAnythingAppController
   std::vector<std::string> GetSupportedFonts() const;
   void RequestImageDataUrl(ui::AXNodeID node_id) const;
   std::string GetImageDataUrl(ui::AXNodeID node_id) const;
+  void OnSpeechPlayingStateChanged(bool paused);
 
   // The language code that should be used to determine which voices are
   // supported for speech.
@@ -316,8 +322,11 @@ class ReadAnythingAppController
                           int letter_spacing);
   void SetLanguageForTesting(const std::string& language_code);
 
-  // Helper for logging UmaHistograms based on times recorded in WebUI.
+  // Helpers for logging UmaHistograms based on times recorded in WebUI.
+  void LogUmaHistogramTimes(int64_t time, std::string metric);
   void LogUmaHistogramLongTimes(int64_t time, std::string metric);
+  void IncrementMetricCount(std::string metric);
+  void LogSpeechEventCounts();
 
   void LogSpeechErrorEvent(std::string error_code);
 

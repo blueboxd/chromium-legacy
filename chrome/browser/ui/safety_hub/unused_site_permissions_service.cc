@@ -23,6 +23,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_service.h"
 #include "chrome/common/chrome_features.h"
@@ -236,12 +237,17 @@ bool UnusedSitePermissionsService::UnusedSitePermissionsResult::
 
 std::u16string UnusedSitePermissionsService::UnusedSitePermissionsResult::
     GetNotificationString() const {
+#if !BUILDFLAG(IS_ANDROID)
   if (revoked_permissions_.empty()) {
     return std::u16string();
   }
   return l10n_util::GetPluralStringFUTF16(
       IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_MENU_NOTIFICATION,
       revoked_permissions_.size());
+#else
+  // Menu notifications are not present on Android.
+  return std::u16string();
+#endif
 }
 
 int UnusedSitePermissionsService::UnusedSitePermissionsResult::
@@ -541,7 +547,7 @@ UnusedSitePermissionsService::UpdateOnUIThread(
   return GetRevokedPermissions();
 }
 
-std::unique_ptr<UnusedSitePermissionsService::Result>
+std::unique_ptr<UnusedSitePermissionsService::UnusedSitePermissionsResult>
 UnusedSitePermissionsService::GetRevokedPermissions() {
   ContentSettingsForOneType settings = hcsm()->GetSettingsForOneType(
       ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS);
@@ -567,6 +573,13 @@ UnusedSitePermissionsService::GetRevokedPermissions() {
         revoked_permissions.metadata.lifetime());
     permissions_data.constraints.set_lifetime(
         revoked_permissions.metadata.lifetime());
+
+    auto* chooser_permissions_data_dict = stored_value.GetDict().FindDict(
+        permissions::kRevokedChooserPermissionsKey);
+    if (chooser_permissions_data_dict) {
+      permissions_data.chooser_permissions_data =
+          chooser_permissions_data_dict->Clone();
+    }
 
     result->AddRevokedPermission(permissions_data);
   }

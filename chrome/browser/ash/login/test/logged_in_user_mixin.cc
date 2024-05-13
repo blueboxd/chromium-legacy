@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 
+#include <initializer_list>
 #include <optional>
 
 #include "base/check.h"
+#include "base/containers/flat_set.h"
 #include "chrome/browser/ash/login/test/cryptohome_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/user_auth_config.h"
@@ -28,8 +30,24 @@ user_manager::UserType ConvertUserType(LoggedInUserMixin::LogInType type) {
   switch (type) {
     case LoggedInUserMixin::LogInType::kChild:
       return user_manager::UserType::kChild;
-    case LoggedInUserMixin::LogInType::kRegular:
+    case LoggedInUserMixin::LogInType::kConsumer:
+    case LoggedInUserMixin::LogInType::kConsumerCustomDomain:
+    case LoggedInUserMixin::LogInType::kManaged:
       return user_manager::UserType::kRegular;
+  }
+}
+
+const AccountId AccountIdForType(LoggedInUserMixin::LogInType type) {
+  switch (type) {
+    case LoggedInUserMixin::LogInType::kChild:
+    case LoggedInUserMixin::LogInType::kConsumer:
+      return AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
+                                            FakeGaiaMixin::kFakeUserGaiaId);
+    case LoggedInUserMixin::LogInType::kConsumerCustomDomain:
+    case LoggedInUserMixin::LogInType::kManaged:
+      return AccountId::FromUserEmailGaiaId(
+          FakeGaiaMixin::kEnterpriseUser1,
+          FakeGaiaMixin::kEnterpriseUser1GaiaId);
   }
 }
 
@@ -45,18 +63,15 @@ std::vector<LoginManagerMixin::TestUserInfo> GetInitialUsers(
 
 LoggedInUserMixin::LoggedInUserMixin(
     InProcessBrowserTestMixinHost* mixin_host,
-    LogInType type,
-    net::EmbeddedTestServer* embedded_test_server,
     InProcessBrowserTest* test_base,
-    bool should_launch_browser,
-    std::optional<AccountId> account_id,
-    std::optional<test::UserAuthConfig> auth_config,
+    net::EmbeddedTestServer* embedded_test_server,
+    LogInType type,
     bool include_initial_user,
-    bool use_embedded_policy_server)
+    std::optional<AccountId> account_id,
+    std::optional<test::UserAuthConfig> auth_config)
     : InProcessBrowserTestMixin(mixin_host),
-      user_(account_id.value_or(
-                AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
-                                               FakeGaiaMixin::kFakeUserGaiaId)),
+      login_type_(type),
+      user_(account_id.value_or(AccountIdForType(type)),
             auth_config.value_or(
                 test::UserAuthConfig::Create(test::kDefaultAuthSetup)),
             ConvertUserType(type)),
@@ -67,20 +82,14 @@ LoggedInUserMixin::LoggedInUserMixin(
                      GetInitialUsers(user_, include_initial_user),
                      &fake_gaia_,
                      &cryptohome_),
-      embedded_policy_server_(mixin_host),
-      user_policy_(
-          mixin_host,
-          user_.account_id,
-          use_embedded_policy_server ? &embedded_policy_server_ : nullptr),
+      embedded_policy_server_(mixin_host,
+                              {EmbeddedPolicyTestServerMixin::Capabilities::
+                                   PER_USER_MANAGEMENT_STATUS}),
+      user_policy_(mixin_host, user_.account_id, &embedded_policy_server_),
       user_policy_helper_(user_.account_id.GetUserEmail(),
                           &embedded_policy_server_),
       embedded_test_server_setup_(mixin_host, embedded_test_server),
-      test_base_(test_base) {
-  // By default, LoginManagerMixin will set up user session manager not to
-  // launch browser as part of user session setup - use this to override that
-  // behavior.
-  login_manager_.set_should_launch_browser(should_launch_browser);
-}
+      test_base_(test_base) {}
 
 LoggedInUserMixin::~LoggedInUserMixin() = default;
 
@@ -91,19 +100,29 @@ void LoggedInUserMixin::SetUpOnMainThread() {
   test_base_->host_resolver()->AddRule("*", "127.0.0.1");
 }
 
-void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
-                                  bool wait_for_active_session,
-                                  bool request_policy_update,
-                                  bool skip_post_login_screens) {
-  if (skip_post_login_screens) {
-    // Ensures logging in doesn't hang on the post login Gaia screens.
-    login_manager_.SkipPostLoginScreens();
+void LoggedInUserMixin::LogInUser(
+    std::initializer_list<LoggedInUserMixin::LoginDetails> login_details) {
+  LogInUser(base::flat_set<LoggedInUserMixin::LoginDetails>(login_details));
+}
+
+void LoggedInUserMixin::LogInUser(
+    const base::flat_set<LoggedInUserMixin::LoginDetails> const_login_details) {
+  base::flat_set<LoggedInUserMixin::LoginDetails> login_details(
+      const_login_details);
+  if (login_details.contains(LoginDetails::kUserOnboarding)) {
+    if (!login_details.contains(LoginDetails::kDontWaitForSession)) {
+      LOG(INFO) << "Implying kDontWaitForSession as test use kUserOnboarding";
+      login_details.insert(LoginDetails::kDontWaitForSession);
+    }
   } else {
-    CHECK(!wait_for_active_session)
-        << "wait_for_active_session must be false if skip_post_login_screen is "
-           "false as there might not be an active session after a login.";
+    login_manager_.SkipPostLoginScreens();
   }
-  login_manager_.set_should_wait_for_profile(wait_for_active_session);
+  login_manager_.SetShouldLaunchBrowser(
+      !login_details.contains(LoginDetails::kNoBrowserLaunch));
+
+  login_manager_.set_should_wait_for_profile(
+      !login_details.contains(LoginDetails::kDontWaitForSession));
+
   UserContext user_context = LoginManagerMixin::CreateDefaultUserContext(user_);
   user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
   if (user_.user_type == user_manager::UserType::kChild) {
@@ -112,15 +131,21 @@ void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
 
     fake_gaia_.SetupFakeGaiaForChildUser(
         user_.account_id.GetUserEmail(), user_.account_id.GetGaiaId(),
-        FakeGaiaMixin::kFakeRefreshToken, issue_any_scope_token);
+        FakeGaiaMixin::kFakeRefreshToken,
+        login_details.contains(LoginDetails::kUseAnyScopeToken));
   } else {
     fake_gaia_.SetupFakeGaiaForLogin(user_.account_id.GetUserEmail(),
                                      user_.account_id.GetGaiaId(),
                                      FakeGaiaMixin::kFakeRefreshToken);
   }
-  if (request_policy_update) {
-    // Child users require user policy, set up an empty one so the user can get
-    // through login.
+
+  if (!login_details.contains(LoginDetails::kNoPolicyForUser)) {
+    if (login_type_ == LogInType::kChild ||
+        login_type_ == LogInType::kManaged) {
+      embedded_policy_server_.MarkUserAsManaged(user_.account_id);
+    }
+    // Managed users require user policy, set up an empty one so the user can
+    // get through login.
     GetUserPolicyMixin()->RequestPolicyUpdate();
   }
   if (!include_initial_user_) {
@@ -135,7 +160,7 @@ void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
     login_manager_.AttemptLoginUsingAuthenticator(
         user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
   }
-  if (wait_for_active_session) {
+  if (!login_details.contains(LoginDetails::kDontWaitForSession)) {
     login_manager_.WaitForActiveSession();
     // If should_launch_browser was set to true, then ensures
     // InProcessBrowserTest::browser() doesn't return nullptr.

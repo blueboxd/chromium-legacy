@@ -23,10 +23,6 @@ BASE_FEATURE(kApiReadingList,
              "ApiReadingList",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kApiUserScripts,
-             "ApiUserScripts",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kApiUserScriptsMultipleWorlds,
              "ApiUserScriptsMultipleWorlds",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -72,6 +68,15 @@ BASE_FEATURE(kExtensionDynamicURLRedirection,
 BASE_FEATURE(kExtensionManifestV2DeprecationWarning,
              "ExtensionManifestV2DeprecationWarning",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kExtensionManifestV2ExceptionList,
+             "ExtensionManifestV2ExceptionList",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<std::string> kExtensionManifestV2ExceptionListParam(
+    &kExtensionManifestV2ExceptionList,
+    /*name=*/"mv2_exception_list",
+    /*default_value=*/"");
 
 BASE_FEATURE(kExtensionSidePanelIntegration,
              "ExtensionSidePanelIntegration",
@@ -141,10 +146,6 @@ BASE_FEATURE(kTelemetryExtensionPendingApprovalApi,
 BASE_FEATURE(kExtensionsZipFileInstalledInProfileDir,
              "ExtensionsZipFileInstalledInProfileDir",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionsServiceWorkerOptimizedEventDispatch,
-             "ExtensionsServiceWorkerOptimizedEventDispatch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNewWebstoreURL,
              "NewWebstoreURL",

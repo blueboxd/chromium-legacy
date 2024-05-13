@@ -87,6 +87,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/fallback_autocomplete_unrecognized_metrics.h"
+#include "components/autofill/core/browser/metrics/field_filling_stats_and_score_metrics.h"
 #include "components/autofill/core/browser/metrics/form_events/form_event_logger_base.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
 #include "components/autofill/core/browser/metrics/log_event.h"
@@ -203,7 +204,8 @@ std::map<std::string, std::string> FormFillingStatsToSurveyStringData(
       {"Manually filled to same type",
        base::NumberToString(filling_stats.num_manually_filled_to_same_type)},
       {"Manually filled to a different type",
-       base::NumberToString(filling_stats.num_manually_filled_to_differt_type)},
+       base::NumberToString(
+           filling_stats.num_manually_filled_to_different_type)},
       {"Manually filled to an unknown type",
        base::NumberToString(filling_stats.num_manually_filled_to_unknown_type)},
       {"Total corrected", base::NumberToString(filling_stats.TotalCorrected())},
@@ -332,8 +334,7 @@ void LogTimeDelayForSingleFieldFormFill(
       delay);
 }
 
-FillDataType GetEventTypeFromSingleFieldSuggestionSuggestionType(
-    SuggestionType type) {
+FillDataType GetEventTypeFromSingleFieldSuggestionType(SuggestionType type) {
   switch (type) {
     case SuggestionType::kAutocompleteEntry:
       return FillDataType::kSingleFieldFormFillerAutocomplete;
@@ -523,6 +524,7 @@ bool IsTriggerSourceOnlyRelevantForCompose(
   switch (source) {
     case AutofillSuggestionTriggerSource::kTextareaFocusedWithoutClick:
     case AutofillSuggestionTriggerSource::kComposeDialogLostFocus:
+    case AutofillSuggestionTriggerSource::kComposeDelayedProactiveNudge:
       return true;
     case AutofillSuggestionTriggerSource::kUnspecified:
     case AutofillSuggestionTriggerSource::kFormControlElementClicked:
@@ -688,11 +690,9 @@ void BrowserAutofillManager::OnUserAcceptedCardsFromAccountOption() {
 
 void BrowserAutofillManager::RefetchCardsAndUpdatePopup(
     const FormData& form,
-    const FormFieldData& field_data,
-    const gfx::RectF& element_bounds) {
+    const FormFieldData& field_data) {
   external_delegate_->OnQuery(
-      form, field_data, element_bounds,
-      AutofillSuggestionTriggerSource::kShowCardsFromAccount);
+      form, field_data, AutofillSuggestionTriggerSource::kShowCardsFromAccount);
   AutofillField* autofill_field = GetAutofillField(form, field_data);
   FieldType field_type = autofill_field
                              ? autofill_field->Type().GetStorableType()
@@ -1030,7 +1030,6 @@ void BrowserAutofillManager::ProcessPendingFormForUpload() {
 void BrowserAutofillManager::OnTextFieldDidChangeImpl(
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& bounding_box,
     const TimeTicks timestamp) {
   FormStructure* form_structure = nullptr;
   AutofillField* autofill_field = nullptr;
@@ -1087,7 +1086,6 @@ bool BrowserAutofillManager::IsFormNonSecure(const FormData& form) const {
 void BrowserAutofillManager::OnAskForValuesToFillImpl(
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& transformed_box,
     AutofillSuggestionTriggerSource trigger_source) {
   if (base::FeatureList::IsEnabled(features::kAutofillDisableFilling)) {
     return;
@@ -1101,7 +1099,7 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   }
 
   external_delegate_->SetCurrentDataListValues(field.datalist_options());
-  external_delegate_->OnQuery(form, field, transformed_box, trigger_source);
+  external_delegate_->OnQuery(form, field, trigger_source);
 
   std::vector<Suggestion> suggestions;
   SuggestionsContext context;
@@ -1459,7 +1457,7 @@ void BrowserAutofillManager::FillOrPreviewCreditCardForm(
                                   /*is_refill=*/false);
 }
 
-void BrowserAutofillManager::OnFocusNoLongerOnFormImpl(
+void BrowserAutofillManager::OnFocusOnNonFormFieldImpl(
     bool had_interacted_form) {
   // For historical reasons, Chrome takes action on this message only if focus
   // was previously on a form with which the user had interacted.
@@ -1485,8 +1483,7 @@ void BrowserAutofillManager::OnFocusNoLongerOnFormImpl(
 
 void BrowserAutofillManager::OnFocusOnFormFieldImpl(
     const FormData& form,
-    const FormFieldData& field,
-    const gfx::RectF& bounding_box) {
+    const FormFieldData& field) {
   if (pending_form_data_ &&
       pending_form_data_->global_id() != form.global_id()) {
     // A new form has received the focus, so we may have votes to upload for the
@@ -1527,8 +1524,7 @@ void BrowserAutofillManager::OnFocusOnFormFieldImpl(
 
 void BrowserAutofillManager::OnSelectControlDidChangeImpl(
     const FormData& form,
-    const FormFieldData& field,
-    const gfx::RectF& bounding_box) {
+    const FormFieldData& field) {
   // TODO(crbug.com/40564270): Handle select control change.
 }
 
@@ -1673,8 +1669,7 @@ void BrowserAutofillManager::OnSingleFieldSuggestionSelected(
           GetFillingProductFromSuggestionType(type))) {
     autofill_trigger_field->AppendLogEventIfNotRepeated(
         TriggerFillFieldLogEvent{
-            .data_type =
-                GetEventTypeFromSingleFieldSuggestionSuggestionType(type),
+            .data_type = GetEventTypeFromSingleFieldSuggestionType(type),
             .associated_country_code = "",
             .timestamp = AutofillClock::Now()});
   }
@@ -1780,7 +1775,6 @@ void BrowserAutofillManager::AnalyzeJavaScriptChangedAutofilledValue(
       base::FeatureList::IsEnabled(
           features::kAutofillFixCachingOnJavaScriptChanges)) {
     field.set_is_autofilled(false);
-    field.set_previously_autofilled(true);
   }
   // We are interested in reporting the events where JavaScript resets an
   // autofilled value immediately after filling. For a reset, the value
@@ -1884,10 +1878,9 @@ void BrowserAutofillManager::OnGetSingleFieldSuggestionsCallback(
       suggestions, base::TimeTicks::Now() - request_start_time);
   // TODO(b/309163415): Replace parameter of FormFieldData in
   // `TryToShowTouchToFill` by FieldGlobalId.
-  if (form_element_was_clicked && touch_to_fill_delegate_ &&
-      base::FeatureList::IsEnabled(features::kAutofillEnableServerIban) &&
-      touch_to_fill_delegate_->TryToShowTouchToFill(
-          form, *form.FindFieldByGlobalId(field_id))) {
+  const FormFieldData* form_field = form.FindFieldByGlobalId(field_id);
+  if (form_field && form_element_was_clicked && touch_to_fill_delegate_ &&
+      touch_to_fill_delegate_->TryToShowTouchToFill(form, *form_field)) {
     return;
   }
   external_delegate_->OnSuggestionsReturned(field_id, suggestions);

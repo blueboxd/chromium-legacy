@@ -291,6 +291,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Return RenderWidgetHostView from RWHIER.
   std::vector<RenderWidgetHostView*> GetRenderWidgetHostViewsForTests();
 
+  bool IsDelegatedInkRendererBoundForTest() {
+    return delegated_ink_point_renderer_.is_bound();
+  }
+
   // Adds the given accessibility mode to the current accessibility mode
   // bitmap.
   void AddAccessibilityModeForTesting(ui::AXMode mode);
@@ -774,6 +778,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void NotifyStorageAccessed(RenderFrameHostImpl*,
                              blink::mojom::StorageTypeAccessed storage_type,
                              bool blocked) override;
+  void OnVibrate(RenderFrameHostImpl*) override;
+
   std::optional<blink::ParsedPermissionsPolicy>
   GetPermissionsPolicyForIsolatedWebApp(RenderFrameHostImpl* source) override;
 
@@ -927,6 +933,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       PreloadingAttempt* preloading_attempt,
       base::RepeatingCallback<bool(const GURL&)>,
       base::RepeatingCallback<void(NavigationHandle&)>) override;
+  void CancelAllPrerendering() override;
   void BackNavigationLikely(PreloadingPredictor predictor,
                             WindowOpenDisposition disposition) override;
   void SetOwnerLocationForDebug(
@@ -1056,7 +1063,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // bool IsFullscreen() const override;
   blink::mojom::DisplayMode GetDisplayMode() const override;
   ui::WindowShowState GetWindowShowState() override;
-  DevicePostureProviderImpl* GetDevicePostureProvider() override;
+  blink::mojom::DevicePostureProvider* GetDevicePostureProvider() override;
   bool GetResizable() override;
   void LostPointerLock(RenderWidgetHostImpl* render_widget_host) override;
   bool HasPointerLock(RenderWidgetHostImpl* render_widget_host) override;
@@ -1073,6 +1080,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DidChangeScreenOrientation() override;
   gfx::Rect GetWindowsControlsOverlayRect() const override;
   VisibleTimeRequestTrigger& GetVisibleTimeRequestTrigger() final;
+  gfx::mojom::DelegatedInkPointRenderer* GetDelegatedInkRenderer(
+      ui::Compositor* compositor) override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 
@@ -1680,6 +1689,17 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Clears a pending contents that has been closed before being shown.
   void OnWebContentsDestroyed(WebContentsImpl* web_contents);
 
+  // Creates and adds to the map a destruction observer watching
+  // `render_widget_host`. There must be no observer already watching
+  // `render_widget_host`.
+  void AddRenderWidgetHostDestructionObserver(
+      RenderWidgetHost* render_widget_host);
+
+  // Deletes and removes from the map a destruction observer
+  // watching `render_widget_host`. No-op if there is no such observer.
+  void RemoveRenderWidgetHostDestructionObserver(
+      RenderWidgetHost* render_widget_host);
+
   // Clears a pending render widget host that has been closed before being
   // shown.
   void OnRenderWidgetHostDestroyed(RenderWidgetHost* render_widget_host);
@@ -1691,16 +1711,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Deletes and removes from the map a destruction observer
   // watching `web_contents`. No-op if there is no such observer.
   void RemoveWebContentsDestructionObserver(WebContentsImpl* web_contents);
-
-  // Creates and adds to the map a destruction observer watching
-  // `render_widget_host`. No-op if such an observer already exists.
-  void AddRenderWidgetHostDestructionObserver(
-      RenderWidgetHost* render_widget_host);
-
-  // Deletes and removes from the map a destruction observer
-  // watching `render_widget_host`. No-op if there is no such observer.
-  void RemoveRenderWidgetHostDestructionObserver(
-      RenderWidgetHost* render_widget_host);
 
   // Traverses all the WebContents in the WebContentsTree and creates a set of
   // all the unique RenderWidgetHostViews.
@@ -2116,6 +2126,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WakeLock held to ensure screen capture keeps the display on. E.g., for
   // presenting through tab capture APIs.
   mojo::Remote<device::mojom::WakeLock> capture_wake_lock_;
+
+  // Remote end of the connection for sending delegated ink points to viz to
+  // support the delegated ink trails feature.
+  mojo::Remote<gfx::mojom::DelegatedInkPointRenderer>
+      delegated_ink_point_renderer_;
 
   // The visibility of the WebContents. Initialized from
   // |CreateParams::initially_hidden|. Updated from

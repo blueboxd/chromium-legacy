@@ -24,6 +24,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -52,6 +53,7 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/viz/common/features.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
@@ -63,6 +65,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/closewatcher/close_listener_manager.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/device_posture/device_posture_provider_impl.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -98,6 +101,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -159,6 +163,7 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
@@ -187,6 +192,7 @@
 #include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/color/color_provider_utils.h"
+#include "ui/compositor/compositor.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/base_event_utils.h"
@@ -1198,6 +1204,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   preferred_contrast_ = native_theme->GetPreferredContrast();
   prefers_reduced_transparency_ = native_theme->GetPrefersReducedTransparency();
   inverted_colors_ = native_theme->GetInvertedColors();
+  renderer_preferences_.caret_blink_interval =
+      native_theme->GetCaretBlinkInterval();
 
   screen_change_monitor_ =
       std::make_unique<ScreenChangeMonitor>(base::BindRepeating(
@@ -2890,11 +2898,11 @@ void WebContentsImpl::AttachInnerWebContents(
                                render_frame_host_impl);
 
   // Create a proxy in top-level RenderFrameHostManager, pointing to the
-  // SiteInstance of the outer WebContents. The proxy will be used to send
+  // SiteInstanceGroup of the outer WebContents. The proxy will be used to send
   // postMessage to the inner WebContents.
   auto* proxy =
       inner_main_frame->browsing_context_state()->CreateOuterDelegateProxy(
-          render_frame_host_impl->GetSiteInstance(),
+          render_frame_host_impl->GetSiteInstance()->group(),
           inner_main_frame->frame_tree_node(), blink::RemoteFrameToken());
   if (remote_frame && remote_frame_host_receiver) {
     proxy->BindRemoteFrameInterfaces(std::move(remote_frame),
@@ -3213,9 +3221,6 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.strict_powerful_feature_restrictions = command_line.HasSwitch(
       switches::kEnableStrictPowerfulFeatureRestrictions);
 
-  prefs.fake_no_alloc_direct_call_for_testing_enabled =
-      command_line.HasSwitch(switches::kEnableFakeNoAllocDirectCallForTesting);
-
   const std::string blockable_mixed_content_group =
       base::FieldTrialList::FindFullName("BlockableMixedContent");
   prefs.strictly_block_blockable_mixed_content =
@@ -3470,6 +3475,12 @@ void WebContentsImpl::NotifyStorageAccessed(
                              storage_type, blocked);
 }
 
+void WebContentsImpl::OnVibrate(RenderFrameHostImpl* rfh) {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnVibrate",
+                        "render_frame_host", rfh);
+  observers_.NotifyObservers(&WebContentsObserver::VibrationRequested);
+}
+
 std::optional<blink::ParsedPermissionsPolicy>
 WebContentsImpl::GetPermissionsPolicyForIsolatedWebApp(
     RenderFrameHostImpl* source) {
@@ -3693,12 +3704,13 @@ void WebContentsImpl::AddRenderWidgetHostDestructionObserver(
       TRACE_DISABLED_BY_DEFAULT("content.verbose"),
       "WebContentsImpl::AddRenderWidgetHostDestructionObserver");
 
-  if (!base::Contains(render_widget_host_destruction_observers_,
-                      render_widget_host)) {
-    render_widget_host_destruction_observers_[render_widget_host] =
-        std::make_unique<RenderWidgetHostDestructionObserver>(
-            this, render_widget_host);
-  }
+  DCHECK(!base::Contains(render_widget_host_destruction_observers_,
+                         render_widget_host));
+
+  render_widget_host_destruction_observers_.insert(
+      {render_widget_host,
+       std::make_unique<RenderWidgetHostDestructionObserver>(
+           this, render_widget_host)});
 }
 
 void WebContentsImpl::RemoveRenderWidgetHostDestructionObserver(
@@ -3902,7 +3914,8 @@ RenderWidgetHostInputEventRouter* WebContentsImpl::GetInputEventRouter() {
 
     if (!rwh_input_event_router_.get()) {
       rwh_input_event_router_ =
-          std::make_unique<RenderWidgetHostInputEventRouter>();
+          std::make_unique<RenderWidgetHostInputEventRouter>(
+              GetHostFrameSinkManager());
     }
   }
   return rwh_input_event_router_.get();
@@ -4152,7 +4165,8 @@ ui::WindowShowState WebContentsImpl::GetWindowShowState() {
                        : ui::SHOW_STATE_DEFAULT;
 }
 
-DevicePostureProviderImpl* WebContentsImpl::GetDevicePostureProvider() {
+blink::mojom::DevicePostureProvider*
+WebContentsImpl::GetDevicePostureProvider() {
   return DevicePostureProviderImpl::GetOrCreate(this);
 }
 
@@ -4790,9 +4804,8 @@ RenderWidgetHostImpl* WebContentsImpl::CreateNewPopupWidget(
     return nullptr;
   }
 
-  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::CreateSelfOwned(
-      &primary_frame_tree_, this, site_instance_group, route_id, IsHidden(),
-      std::make_unique<FrameTokenMessageQueue>());
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostFactory::CreateSelfOwned(
+      &primary_frame_tree_, this, site_instance_group, route_id, IsHidden());
 
   widget_host->BindWidgetInterfaces(std::move(blink_widget_host),
                                     std::move(blink_widget));
@@ -4806,8 +4819,9 @@ RenderWidgetHostImpl* WebContentsImpl::CreateNewPopupWidget(
   widget_view->SetWidgetType(WidgetType::kPopup);
 
   // Save the created widget associated with the route so we can show it later.
-  pending_widgets_[GlobalRoutingID(site_instance_group->process()->GetID(),
-                                   route_id)] = widget_host;
+  pending_widgets_.insert(
+      {GlobalRoutingID(site_instance_group->process()->GetID(), route_id),
+       widget_host});
   AddRenderWidgetHostDestructionObserver(widget_host);
 
   return widget_host;
@@ -7230,9 +7244,9 @@ void WebContentsImpl::EnumerateDirectory(
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::EnumerateDirectory",
                         "render_frame_host", render_frame_host,
                         "directory_path", directory_path);
-  base::ScopedClosureRunner cancel_chooser(base::BindOnce(
-      &FileChooserImpl::FileSelectListenerImpl::FileSelectionCanceled,
-      listener));
+  absl::Cleanup cancel_chooser = [&listener] {
+    listener->FileSelectionCanceled();
+  };
   if (visibility_ == Visibility::HIDDEN) {
     // Do not allow background tab to open file chooser.
     return;
@@ -7250,7 +7264,7 @@ void WebContentsImpl::EnumerateDirectory(
   if (delegate_) {
     active_file_chooser_ = std::move(file_chooser);
     delegate_->EnumerateDirectory(this, std::move(listener), directory_path);
-    std::ignore = cancel_chooser.Release();
+    std::move(cancel_chooser).Cancel();
   }
 }
 
@@ -8016,9 +8030,9 @@ void WebContentsImpl::RunFileChooser(
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RunFileChooser",
                         "render_frame_host", render_frame_host);
 
-  base::ScopedClosureRunner cancel_chooser(base::BindOnce(
-      &FileChooserImpl::FileSelectListenerImpl::FileSelectionCanceled,
-      listener));
+  absl::Cleanup cancel_chooser = [&listener] {
+    listener->FileSelectionCanceled();
+  };
   if (visibility_ == Visibility::HIDDEN) {
     // Do not allow background tab to open file chooser.
     return;
@@ -8036,7 +8050,7 @@ void WebContentsImpl::RunFileChooser(
   if (delegate_) {
     active_file_chooser_ = std::move(file_chooser);
     delegate_->RunFileChooser(render_frame_host, std::move(listener), params);
-    std::ignore = cancel_chooser.Release();
+    std::move(cancel_chooser).Cancel();
   }
 }
 
@@ -8805,11 +8819,12 @@ void WebContentsImpl::EnsureOpenerProxiesExist(
       // process but we intentionally do not expose the embedder's opener chain
       // to it.
       source_web_contents->GetRenderManager()->CreateRenderFrameProxy(
-          GetSiteInstance(),
+          GetSiteInstance()->group(),
           source_web_contents->GetPrimaryMainFrame()->browsing_context_state());
     } else {
       source_rfh->frame_tree_node()->render_manager()->CreateOpenerProxies(
-          GetSiteInstance(), nullptr, source_rfh->browsing_context_state());
+          GetSiteInstance()->group(), nullptr,
+          source_rfh->browsing_context_state());
     }
   }
 }
@@ -10392,6 +10407,8 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   bool prefers_reduced_transparency =
       observed_theme->GetPrefersReducedTransparency();
   bool inverted_colors = observed_theme->GetInvertedColors();
+  base::TimeDelta caret_blink_interval =
+      observed_theme->GetCaretBlinkInterval();
   bool preferences_changed = false;
 
   if (using_dark_colors_ != using_dark_colors) {
@@ -10421,6 +10438,14 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
   if (preferences_changed) {
     NotifyPreferencesChanged();
+  }
+
+  // Only caret blink interval from NativeTheme impacts
+  // blink::RendererPreferences, which are not synced in
+  // NotifyPreferencesChanged(). Sync these if the interval has changed.
+  if (renderer_preferences_.caret_blink_interval != caret_blink_interval) {
+    renderer_preferences_.caret_blink_interval = caret_blink_interval;
+    SyncRendererPrefs();
   }
 }
 
@@ -10722,6 +10747,26 @@ VisibleTimeRequestTrigger& WebContentsImpl::GetVisibleTimeRequestTrigger() {
   return visible_time_request_trigger_;
 }
 
+gfx::mojom::DelegatedInkPointRenderer* WebContentsImpl::GetDelegatedInkRenderer(
+    ui::Compositor* compositor) {
+  if (!delegated_ink_point_renderer_.is_bound()) {
+    // The remote can't be bound if the compositor is null, so bail if
+    // that is the case so we don't crash by trying to use an unbound
+    // remote.
+    if (!compositor) {
+      return nullptr;
+    }
+
+    TRACE_EVENT_INSTANT0("delegated_ink_trails",
+                         "Binding mojo interface for delegated ink points.",
+                         TRACE_EVENT_SCOPE_THREAD);
+    compositor->SetDelegatedInkPointRenderer(
+        delegated_ink_point_renderer_.BindNewPipeAndPassReceiver());
+    delegated_ink_point_renderer_.reset_on_disconnect();
+  }
+  return delegated_ink_point_renderer_.get();
+}
+
 std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
     const GURL& prerendering_url,
     PreloadingTriggerType trigger_type,
@@ -10753,6 +10798,11 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
         prerendering_url);
   }
   return nullptr;
+}
+
+void WebContentsImpl::CancelAllPrerendering() {
+  GetPrerenderHostRegistry()->CancelAllHosts(
+      PrerenderFinalStatus::kAllPrerenderingCanceled);
 }
 
 void WebContentsImpl::BackNavigationLikely(PreloadingPredictor predictor,

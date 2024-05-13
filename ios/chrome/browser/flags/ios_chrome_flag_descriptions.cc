@@ -65,13 +65,6 @@ const char kAutofillEnableMerchantDomainInUnmaskCardRequestDescription[] =
     "merchant_domain parameter populated with the last origin of the main "
     "frame.";
 
-const char kAutofillEnablePaymentsMandatoryReauthName[] =
-    "Enable mandatory re-auth for payments autofill";
-const char kAutofillEnablePaymentsMandatoryReauthDescription[] =
-    "When this is enabled, in use-cases where we would not have triggered any "
-    "user-visible authentication to autofill payment methods, we will trigger "
-    "a device authentication.";
-
 const char kAutofillEnablePrefetchingRiskDataForRetrievalName[] =
     "Enable prefetching of risk data during payments autofill retrieval";
 const char kAutofillEnablePrefetchingRiskDataForRetrievalDescription[] =
@@ -953,10 +946,22 @@ const char kScreenTimeIntegrationName[] = "Enables ScreenTime Integration";
 const char kScreenTimeIntegrationDescription[] =
     "Enables integration with ScreenTime in iOS 14.0 and above.";
 
+const char kSegmentationPlatformIosModuleRankerCachingName[] =
+    "Enabled Magic Stack Segmentation Ranking Caching";
+const char kSegmentationPlatformIosModuleRankerCachingDescription[] =
+    "Enables the Segmentation platform to cache the Magic Stack module rank "
+    "for Start";
+
 const char kSegmentationPlatformIosModuleRankerName[] =
     "Enable Magic Stack Segmentation Ranking";
 const char kSegmentationPlatformIosModuleRankerDescription[] =
     "Enables the Segmentation platform to rank Magic Stack modules";
+
+const char kSegmentationPlatformIosModuleRankerSplitBySurfaceName[] =
+    "Enable Magic Stack Segmentation Ranking split by surface";
+const char kSegmentationPlatformIosModuleRankerSplitBySurfaceDescription[] =
+    "Enables the Magic Stack module ranking to be split by surface for "
+    "engagement";
 
 const char kSendUmaOverAnyNetwork[] =
     "Send UMA data over any network available.";

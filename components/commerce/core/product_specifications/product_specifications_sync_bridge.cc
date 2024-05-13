@@ -9,6 +9,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/uuid.h"
+#include "components/sync/base/deletion_origin.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -75,21 +76,28 @@ ProductSpecificationsSyncBridge::ApplyIncrementalSyncChanges(
       case syncer::EntityChange::ACTION_UPDATE: {
         auto local_specifics = entries_.find(change->storage_key());
         if (local_specifics != entries_.end()) {
+          sync_pb::CompareSpecifics before = local_specifics->second;
           // Overwrite if specifics from sync are more recent.
           if (specifics.update_time_unix_epoch_micros() >
               local_specifics->second.update_time_unix_epoch_micros()) {
             entries_[change->storage_key()] = specifics;
             batch->WriteData(change->storage_key(),
                              specifics.SerializeAsString());
-            OnSpecificsUpdated(specifics);
+            OnSpecificsUpdated(before, specifics);
           }
         }
         break;
       }
       case syncer::EntityChange::ACTION_DELETE:
+        auto it = entries_.find(change->storage_key());
+        if (it == entries_.end()) {
+          break;
+        }
+        ProductSpecificationsSet deleted_set =
+            ProductSpecificationsSet::FromProto(it->second);
         entries_.erase(change->storage_key());
         batch->DeleteData(change->storage_key());
-        OnSpecificsRemoved(change->storage_key());
+        OnSpecificsRemoved(deleted_set);
         break;
     }
   }
@@ -170,6 +178,7 @@ ProductSpecificationsSyncBridge::UpdateProductSpecificationsSet(
   // Sync is mandatory for this feature to be usable.
   CHECK(change_processor()->IsTrackingMetadata());
 
+  sync_pb::CompareSpecifics before = it->second;
   sync_pb::CompareSpecifics& specifics = it->second;
   specifics.set_update_time_unix_epoch_micros(
       base::Time::Now().InMillisecondsSinceUnixEpoch());
@@ -189,7 +198,7 @@ ProductSpecificationsSyncBridge::UpdateProductSpecificationsSet(
 
   batch->WriteData(specifics.uuid(), specifics.SerializeAsString());
   Commit(std::move(batch));
-  OnSpecificsUpdated(specifics);
+  OnSpecificsUpdated(before, specifics);
   return specifics;
 }
 
@@ -199,16 +208,24 @@ void ProductSpecificationsSyncBridge::DeleteProductSpecificationsSet(
     return;
   }
 
+  auto it = entries_.find(uuid);
+  if (it == entries_.end()) {
+    return;
+  }
+  ProductSpecificationsSet deleted_set =
+      ProductSpecificationsSet::FromProto(it->second);
+
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
 
-  change_processor()->Delete(uuid, batch->GetMetadataChangeList());
+  change_processor()->Delete(uuid, syncer::DeletionOrigin::Unspecified(),
+                             batch->GetMetadataChangeList());
 
   entries_.erase(uuid);
   batch->DeleteData(uuid);
 
   Commit(std::move(batch));
-  OnSpecificsRemoved(uuid);
+  OnSpecificsRemoved(deleted_set);
 }
 
 void ProductSpecificationsSyncBridge::OnStoreCreated(
@@ -290,17 +307,19 @@ void ProductSpecificationsSyncBridge::OnSpecificsAdded(
 }
 
 void ProductSpecificationsSyncBridge::OnSpecificsUpdated(
-    const sync_pb::CompareSpecifics& compare_specifics) {
+    const sync_pb::CompareSpecifics& before,
+    const sync_pb::CompareSpecifics& after) {
   for (auto& observer : observers_) {
     observer.OnProductSpecificationsSetUpdate(
-        ProductSpecificationsSet::FromProto(compare_specifics));
+        ProductSpecificationsSet::FromProto(before),
+        ProductSpecificationsSet::FromProto(after));
   }
 }
 
 void ProductSpecificationsSyncBridge::OnSpecificsRemoved(
-    const std::string& uuid) {
+    const ProductSpecificationsSet& removed_set) {
   for (auto& observer : observers_) {
-    observer.OnProductSpecificationsSetRemoved(uuid);
+    observer.OnProductSpecificationsSetRemoved(removed_set);
   }
 }
 

@@ -534,6 +534,9 @@ class Browser : public TabStripModelObserver,
   SigninViewController* signin_view_controller() {
     return &signin_view_controller_;
   }
+  BrowserWindowFeatures* browser_window_features() const {
+    return features_.get();
+  }
 
   base::WeakPtr<Browser> AsWeakPtr();
   base::WeakPtr<const Browser> AsWeakPtr() const;
@@ -1168,6 +1171,11 @@ class Browser : public TabStripModelObserver,
   // and the browser closed, false if the browser should stay open and the
   // downloads running.
   void InProgressDownloadResponse(bool cancel_downloads);
+
+  // Called when the user has decided whether to proceed or not with the browser
+  // closure, in case the cookie migration notice was shown. |proceed_closing|
+  // is true if the browser can  be closed.
+  void CookieMigrationNoticeResponse(bool proceed_closing);
 
   // Called when all warnings have completed when attempting to close the
   // browser directly (e.g. via hotkey, close button, terminate signal, etc.)

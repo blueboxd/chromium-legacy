@@ -1757,7 +1757,10 @@ Range* Document::caretRangeFromPoint(int x, int y) {
   return CreateRangeAdjustedToTreeScope(*this, range_compliant_position);
 }
 
-CaretPosition* Document::caretPositionFromPoint(float x, float y) {
+CaretPosition* Document::caretPositionFromPoint(
+    float x,
+    float y,
+    const HeapVector<Member<ShadowRoot>>& shadow_roots) {
   if (!GetLayoutView()) {
     return nullptr;
   }
@@ -1768,8 +1771,19 @@ CaretPosition* Document::caretPositionFromPoint(float x, float y) {
     return nullptr;
   }
 
-  return CreateCaretPosition(
-      position_with_affinity.GetPosition().ParentAnchoredEquivalent());
+  Node* anchor_node = position_with_affinity.AnchorNode();
+  bool adjust_position = false;
+  while (anchor_node->IsInShadowTree() &&
+         !shadow_roots.Contains(anchor_node->GetTreeScope())) {
+    anchor_node = anchor_node->OwnerShadowHost();
+    adjust_position = true;
+  }
+  Position adjusted_position = adjust_position
+                                   ? Position::InParentBeforeNode(*anchor_node)
+                                   : position_with_affinity.GetPosition();
+  CHECK(!adjusted_position.IsNull());
+
+  return CreateCaretPosition(adjusted_position.ParentAnchoredEquivalent());
 }
 
 Element* Document::scrollingElement() {
@@ -1793,6 +1807,12 @@ Element* Document::ScrollingElementNoLayout() {
   }
 
   return body();
+}
+
+bool Document::KeyboardFocusableScrollersEnabled() {
+  return RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+         !RuntimeEnabledFeatures::KeyboardFocusableScrollersOptOutEnabled(
+             GetExecutionContext());
 }
 
 /*
@@ -2497,7 +2517,7 @@ void Document::UpdateStyle() {
   style_engine.UpdateStyleAndLayoutTree();
 
   LayoutView* layout_view = GetLayoutView();
-  layout_view->UpdateMarkersAndCountersAfterStyleChange();
+  layout_view->UpdateCountersAfterStyleChange();
   layout_view->RecalcScrollableOverflow();
 
 #if DCHECK_IS_ON()
@@ -3460,8 +3480,7 @@ void Document::SetPrinting(PrintingState state) {
     GetStyleEngine().MarkViewportStyleDirty();
     // Separate UA sheet for printing.
     GetStyleEngine().MarkAllElementsForStyleRecalc(
-        StyleChangeReasonForTracing::Create(
-            style_change_reason::kStyleSheetChange));
+        StyleChangeReasonForTracing::Create(style_change_reason::kPrinting));
 
     if (documentElement() && GetFrame() && !GetFrame()->IsMainFrame() &&
         GetFrame()->Owner() && GetFrame()->Owner()->IsDisplayNone()) {
@@ -6064,8 +6083,10 @@ void Document::EnqueueOverscrollEventForNode(Node* target,
 void Document::EnqueueSnapChangedEvent(Node* target,
                                        Member<Node>& block_target,
                                        Member<Node>& inline_target) {
-  Event* snapchanged_event = SnapEvent::Create(event_type_names::kSnapchanged,
-                                               block_target, inline_target);
+  Event* snapchanged_event = SnapEvent::Create(
+      event_type_names::kSnapchanged,
+      (target->IsDocumentNode() ? Event::Bubbles::kYes : Event::Bubbles::kNo),
+      block_target, inline_target);
   snapchanged_event->SetTarget(target);
   scripted_animation_controller_->EnqueuePerFrameEvent(snapchanged_event);
 }
@@ -6073,10 +6094,12 @@ void Document::EnqueueSnapChangedEvent(Node* target,
 void Document::EnqueueSnapChangingEvent(Node* target,
                                         Member<Node>& block_target,
                                         Member<Node>& inline_target) {
-  Event* snapchanged_event = SnapEvent::Create(event_type_names::kSnapchanging,
-                                               block_target, inline_target);
-  snapchanged_event->SetTarget(target);
-  scripted_animation_controller_->EnqueuePerFrameEvent(snapchanged_event);
+  Event* snapchanging_event = SnapEvent::Create(
+      event_type_names::kSnapchanging,
+      (target->IsDocumentNode() ? Event::Bubbles::kYes : Event::Bubbles::kNo),
+      block_target, inline_target);
+  snapchanging_event->SetTarget(target);
+  scripted_animation_controller_->EnqueuePerFrameEvent(snapchanging_event);
 }
 
 void Document::EnqueueMoveEvent() {
@@ -9093,6 +9116,18 @@ void Document::CountDeprecation(mojom::WebFeature feature) {
     execution_context_->CountDeprecation(feature);
 }
 
+void Document::CountWebDXFeature(mojom::blink::WebDXFeature feature) const {
+  if (execution_context_) {
+    execution_context_->CountWebDXFeature(feature);
+  }
+}
+
+void Document::CountWebDXFeature(mojom::blink::WebDXFeature feature) {
+  if (execution_context_) {
+    execution_context_->CountWebDXFeature(feature);
+  }
+}
+
 void Document::CountProperty(CSSPropertyID property) const {
   if (DocumentLoader* loader = Loader()) {
     loader->GetUseCounter().Count(
@@ -9110,6 +9145,13 @@ void Document::CountAnimatedProperty(CSSPropertyID property) const {
 bool Document::IsUseCounted(mojom::WebFeature feature) const {
   if (DocumentLoader* loader = Loader()) {
     return loader->GetUseCounter().IsCounted(feature);
+  }
+  return false;
+}
+
+bool Document::IsWebDXFeatureCounted(mojom::blink::WebDXFeature feature) const {
+  if (DocumentLoader* loader = Loader()) {
+    return loader->GetUseCounter().IsWebDXFeatureCounted(feature);
   }
   return false;
 }

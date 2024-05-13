@@ -233,8 +233,8 @@ declare_args() {
        (clang_use_default_sample_profile || clang_sample_profile_path != ""))
 }
 
-assert(!(llvm_force_head_revision && use_remoteexec),
-       "can't use rbe with trunk clang")
+assert(!(llvm_force_head_revision && use_remoteexec && host_os != "linux"),
+       "rbe with locally built clang only works on linux")
 
 # default_include_dirs ---------------------------------------------------------
 #
@@ -2346,13 +2346,16 @@ if (is_win) {
       common_optimize_on_cflags += [ "-fno-unique-section-names" ]
     }
 
-    common_optimize_on_ldflags += [
-      # Specifically tell the linker to perform optimizations.
-      # See http://lwn.net/Articles/192624/ .
-      # -O2 enables string tail merge optimization in lld.
-      "-Wl,-O2",
-      "-Wl,--gc-sections",
-    ]
+    if (is_official_build) {
+      common_optimize_on_ldflags += [
+        # Specifically tell the linker to perform optimizations.
+        # See http://lwn.net/Articles/192624/.
+        # -O2 enables string tail merge optimization in lld.
+        "-Wl,-O2",
+      ]
+    }
+
+    common_optimize_on_ldflags += [ "-Wl,--gc-sections" ]
   }
 
   # We cannot rely on errno being set after math functions,

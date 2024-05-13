@@ -57,6 +57,7 @@ class MockComposeClient : public compose::ComposeClient {
               (override));
   MOCK_METHOD(compose::PageUkmTracker*, getPageUkmTracker, (), (override));
   MOCK_METHOD(void, DisableProactiveNudge, (), (override));
+  MOCK_METHOD(void, OpenProactiveNudgeSettings, (), (override));
 };
 
 class MockAutofillDriver : public autofill::TestAutofillDriver {
@@ -191,12 +192,10 @@ TEST_F(
       autofill::AutofillSuggestionTriggerSource::kComposeDialogLostFocus,
       /*has_session=*/false);
   ASSERT_TRUE(suggestion.has_value());
-  // Checks that the 3 expected child suggestions exist.
+  // Checks that the 2 expected child suggestions exist.
   EXPECT_THAT(
       suggestion->children,
       ElementsAre(
-          EqualsSuggestion(
-              autofill::SuggestionType::kComposeNeverShowOnThisSiteAgain),
           EqualsSuggestion(autofill::SuggestionType::kComposeDisable),
           EqualsSuggestion(autofill::SuggestionType::kComposeGoToSettings)));
 }

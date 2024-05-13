@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.history;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.ui.favicon.FaviconHelper.DefaultFaviconHelper
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.components.browser_ui.util.TraceEventVectorDrawableCompat;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
+import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListUtils;
 
@@ -41,9 +43,11 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
     private final int mMinIconSize;
     private final int mDisplayedIconSize;
     private final int mEndPadding;
+    private final int mChipLeadingPadding;
 
     private boolean mIsItemRemoved;
     private BooleanSupplier mShowSourceApp;
+    private ChipView mChipView;
 
     public HistoryItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -51,8 +55,9 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
         mMinIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size);
         mDisplayedIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         mIconGenerator = FaviconUtils.createCircularIconGenerator(context);
-        mEndPadding =
-                context.getResources().getDimensionPixelSize(R.dimen.default_list_row_padding);
+        mEndPadding = getResources().getDimensionPixelSize(R.dimen.default_list_row_padding);
+        mChipLeadingPadding =
+                getResources().getDimensionPixelSize(R.dimen.history_item_leading_padding);
     }
 
     @Override
@@ -76,6 +81,10 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
                 getResources()
                         .getDimensionPixelSize(R.dimen.history_item_remove_button_lateral_padding),
                 getPaddingBottom());
+
+        findViewById(R.id.chip_description).setVisibility(View.VISIBLE);
+        mChipView = findViewById(R.id.chip);
+        mChipView.getPrimaryTextView().setEllipsize(TextUtils.TruncateAt.END);
     }
 
     @Override
@@ -85,7 +94,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
         super.setItem(item);
 
         mTitleView.setText(item.getTitle());
-        mDescriptionView.setText(getDescription(item));
+        mDescriptionView.setText(item.getDomain());
+        updateChipView(item);
         SelectableListUtils.setContentDescriptionContext(
                 getContext(),
                 mRemoveButton,
@@ -121,22 +131,28 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
         mShowSourceApp = showSourceApp;
     }
 
-    protected String getDescription(HistoryItem item) {
-        String domain = item.getDomain();
-        if (!mShowSourceApp.getAsBoolean()) return domain;
-
-        String appId = item.getAppId();
-        if (appId == null) return domain;
-
-        AppInfo appInfo = mAppInfoCache.get(appId);
-        if (!appInfo.isValid()) return domain;
-        CharSequence label = appInfo.label;
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(domain);
-        sb.append(" - ");
-        sb.append(getContext().getResources().getString(R.string.history_app_attribution, label));
-        return sb.toString();
+    private void updateChipView(HistoryItem item) {
+        boolean showChipView = false;
+        if (mShowSourceApp.getAsBoolean()) {
+            String appId = item.getAppId();
+            if (appId != null) {
+                AppInfo appInfo = mAppInfoCache.get(appId);
+                if (appInfo.isValid()) {
+                    var sourceApp =
+                            getResources()
+                                    .getString(R.string.history_app_attribution, appInfo.label);
+                    mChipView.setPaddingRelative(
+                            mChipLeadingPadding,
+                            mChipView.getPaddingTop(),
+                            mChipView.getPaddingEnd(),
+                            mChipView.getPaddingBottom());
+                    mChipView.getPrimaryTextView().setText(sourceApp);
+                    mChipView.setIcon(appInfo.icon, false);
+                    showChipView = true;
+                }
+            }
+        }
+        mChipView.setVisibility(showChipView ? View.VISIBLE : View.GONE);
     }
 
     /**

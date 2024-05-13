@@ -7,13 +7,16 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <variant>
 #include <vector>
 
 #include "base/barrier_callback.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/sync_sessions/session_sync_service.h"
+#include "components/visited_url_ranking/internal/history_url_visit_data_fetcher.h"
 #include "components/visited_url_ranking/internal/session_url_visit_data_fetcher.h"
 #include "components/visited_url_ranking/public/fetch_options.h"
 #include "components/visited_url_ranking/public/fetch_result.h"
@@ -38,16 +41,20 @@ std::vector<URLVisitAggregate> ComputeURLVisitAggregates(
     for (std::pair<const URLMergeKey, URLVisitAggregate::URLVisitVariant>&
              url_data : result.data) {
       URLVisitAggregate& aggregate = url_visit_map[url_data.first];
-      if (std::holds_alternative<URLVisitAggregate::TabData>(url_data.second)) {
-        auto& tab_data = std::get<URLVisitAggregate::TabData>(url_data.second);
-        aggregate.fetcher_data_map.emplace(
-            tab_data.last_active_tab.session_name.has_value()
-                ? Fetcher::kSession
-                : Fetcher::kTabModel,
-            std::move(tab_data));
-      }
-      // TODO(crbug.com/330580109): Add support for history fetcher and
-      // associated aggregate data type.
+      std::visit(
+          URLVisitVariantHelper{
+              [&aggregate](URLVisitAggregate::TabData& tab_data) {
+                aggregate.fetcher_data_map.emplace(
+                    tab_data.last_active_tab.session_name.has_value()
+                        ? Fetcher::kSession
+                        : Fetcher::kTabModel,
+                    std::move(tab_data));
+              },
+              [&aggregate](URLVisitAggregate::HistoryData& history_data) {
+                aggregate.fetcher_data_map.emplace(Fetcher::kHistory,
+                                                   std::move(history_data));
+              }},
+          url_data.second);
     }
   }
 

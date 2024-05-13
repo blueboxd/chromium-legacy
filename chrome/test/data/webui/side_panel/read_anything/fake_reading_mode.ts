@@ -135,6 +135,9 @@ export class FakeReadingMode {
   // shortcuts.
   onCopy() {}
 
+  // Called when speech is paused or played.
+  onSpeechPlayingStateChanged(_paused: boolean) {}
+
   // Called when the Read Anything panel is scrolled.
   onScroll(_onSelection: boolean) {}
 
@@ -216,6 +219,9 @@ export class FakeReadingMode {
 
   // Called when the voice used for speech is changed via the webui toolbar.
   onVoiceChange(_voice: string, _lang: string) {}
+
+  // Called when a tracked count-based metric is incremented.
+  incrementMetricCount(_metric: string) {}
 
   // Called when the highlight granularity is changed via the webui toolbar.
   turnedHighlightOn() {
@@ -374,4 +380,10 @@ export class FakeReadingMode {
   }
 
   logMetric(_time: number, _metricName: string) : void {}
+
+  logLongMetric(_time: number, _metricName: string): void {}
+
+  logSpeechError(errorCode: string): void {
+    console.error('Read Aloud got a speech error during test:', errorCode);
+  }
 }

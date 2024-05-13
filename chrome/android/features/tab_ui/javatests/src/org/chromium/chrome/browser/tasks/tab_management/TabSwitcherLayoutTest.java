@@ -35,6 +35,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabGroupInTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
@@ -188,7 +189,7 @@ public class TabSwitcherLayoutTest {
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
-                    .setRevision(4)
+                    .setRevision(5)
                     .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_START)
                     .build();
 
@@ -1679,7 +1680,7 @@ public class TabSwitcherLayoutTest {
         assertNotNull(snackbarManager.getCurrentSnackbarForTesting());
 
         // Verify close this tab group and undo in tab switcher.
-        closeFirstTabInTabSwitcher(cta);
+        closeFirstTabGroupInTabSwitcher(cta);
         assertTrue(
                 snackbarManager.getCurrentSnackbarForTesting().getController()
                         instanceof UndoBarController);
@@ -1704,6 +1705,9 @@ public class TabSwitcherLayoutTest {
         mergeAllNormalTabsToAGroup(cta);
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 1);
+
+        verifyFirstCardTitle("2 tabs");
+        verifyFirstCardColor(TabGroupColorId.GREY);
 
         // Click the close action button to close the group
         String closeButtonText = cta.getString(R.string.close_tab_group_menu_item);
@@ -1734,6 +1738,9 @@ public class TabSwitcherLayoutTest {
         mergeAllNormalTabsToAGroup(cta);
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 1);
+
+        verifyFirstCardTitle("2 tabs");
+        verifyFirstCardColor(TabGroupColorId.GREY);
 
         // Click the rename action button to rename the group
         String renameButtonText = cta.getString(R.string.rename_tab_group_menu_item);
@@ -1788,6 +1795,9 @@ public class TabSwitcherLayoutTest {
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 1);
 
+        verifyFirstCardTitle("2 tabs");
+        verifyFirstCardColor(TabGroupColorId.GREY);
+
         // Click the rename action button to rename the group
         String renameButtonText = cta.getString(R.string.rename_tab_group_menu_item);
         onView(withId(R.id.action_button)).perform(click());
@@ -1841,6 +1851,9 @@ public class TabSwitcherLayoutTest {
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 1);
 
+        verifyFirstCardTitle("2 tabs");
+        verifyFirstCardColor(TabGroupColorId.GREY);
+
         // Click the ungroup action button to ungroup the group
         String ungroupButtonText = cta.getString(R.string.ungroup_tab_group_menu_item);
         onView(withId(R.id.action_button)).perform(click());
@@ -1873,6 +1886,9 @@ public class TabSwitcherLayoutTest {
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 1);
 
+        verifyFirstCardTitle("2 tabs");
+        verifyFirstCardColor(TabGroupColorId.GREY);
+
         // Click the ungroup action button to ungroup the group
         String ungroupButtonText = cta.getString(R.string.ungroup_tab_group_menu_item);
         onView(withId(R.id.action_button)).perform(click());
@@ -1904,6 +1920,9 @@ public class TabSwitcherLayoutTest {
         mergeAllNormalTabsToAGroup(cta);
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 1);
+
+        verifyFirstCardTitle("2 tabs");
+        verifyFirstCardColor(TabGroupColorId.GREY);
 
         // Click the ungroup action button to ungroup the group
         String ungroupButtonText = cta.getString(R.string.ungroup_tab_group_menu_item);
@@ -1939,8 +1958,10 @@ public class TabSwitcherLayoutTest {
     @Test
     @MediumTest
     @EnableFeatures({
+        ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS,
         ChromeFeatureList.TAB_GROUP_PARITY_ANDROID,
         ChromeFeatureList.TAB_GROUP_PANE_ANDROID,
+        ChromeFeatureList.TAB_GROUP_SYNC_ANDROID,
     })
     public void testTabGroupOverflowMenuInTabSwitcher_deleteGroupAccept() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -1951,6 +1972,9 @@ public class TabSwitcherLayoutTest {
         mergeAllNormalTabsToAGroup(cta);
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 1);
+
+        verifyFirstCardTitle("2 tabs");
+        verifyFirstCardColor(TabGroupColorId.GREY);
 
         // Click the delete action button to close the group
         String deleteButtonText = cta.getString(R.string.delete_tab_group_menu_item);
@@ -1971,8 +1995,10 @@ public class TabSwitcherLayoutTest {
     @Test
     @MediumTest
     @EnableFeatures({
+        ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS,
         ChromeFeatureList.TAB_GROUP_PARITY_ANDROID,
         ChromeFeatureList.TAB_GROUP_PANE_ANDROID,
+        ChromeFeatureList.TAB_GROUP_SYNC_ANDROID,
     })
     public void testTabGroupOverflowMenuInTabSwitcher_deleteGroupDecline() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -1983,6 +2009,9 @@ public class TabSwitcherLayoutTest {
         mergeAllNormalTabsToAGroup(cta);
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 1);
+
+        verifyFirstCardTitle("2 tabs");
+        verifyFirstCardColor(TabGroupColorId.GREY);
 
         // Click the delete action button to close the group
         String deleteButtonText = cta.getString(R.string.delete_tab_group_menu_item);
@@ -2003,13 +2032,14 @@ public class TabSwitcherLayoutTest {
     @Test
     @MediumTest
     @EnableFeatures({
+        ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS,
         ChromeFeatureList.TAB_GROUP_PARITY_ANDROID,
         ChromeFeatureList.TAB_GROUP_PANE_ANDROID,
+        ChromeFeatureList.TAB_GROUP_SYNC_ANDROID,
     })
     public void testTabGroupOverflowMenuInTabSwitcher_deleteGroupDoNotShowAgain() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        // TODO(b/338529212): Update the expected string once the content description is correct.
-        String expectedDescription = "Close tab group with 2 tabs, color Grey.";
+        String expectedDescription = "Open the tab group action menu for tab group Test";
         SnackbarManager snackbarManager = cta.getSnackbarManager();
         createTabs(cta, false, 4);
         enterTabSwitcher(cta);
@@ -2021,7 +2051,16 @@ public class TabSwitcherLayoutTest {
                 new ArrayList<>(
                         Arrays.asList(normalTabModel.getTabAt(2), normalTabModel.getTabAt(3)));
         createTabGroup(cta, false, tabGroup);
-        verifyGroupVisualDataDialogOpenedAndDismiss(cta);
+        // Verify the visual data dialog exists.
+        verifyModalDialogShowingAnimationCompleteInTabSwitcher();
+        onViewWaiting(withId(R.id.visual_data_dialog_layout), /* checkRootDialog= */ true)
+                .check(matches(isDisplayed()));
+
+        // Change the title.
+        editGroupVisualDataDialogTitle(cta, "Test");
+        // Accept the change.
+        onView(withId(R.id.positive_button)).perform(click());
+        verifyModalDialogHidingAnimationCompleteInTabSwitcher();
         verifyTabSwitcherCardCount(cta, 3);
 
         // Merge first two tabs into a group.
@@ -2032,7 +2071,7 @@ public class TabSwitcherLayoutTest {
         verifyGroupVisualDataDialogOpenedAndDismiss(cta);
         verifyTabSwitcherCardCount(cta, 2);
 
-        // Click the delete action button to close the group
+        // Click the delete action button to close the group "Test"
         String deleteButtonText = cta.getString(R.string.delete_tab_group_menu_item);
         onView(allOf(withContentDescription(expectedDescription), withId(R.id.action_button)))
                 .perform(click());
@@ -2062,6 +2101,32 @@ public class TabSwitcherLayoutTest {
         verifyTabSwitcherCardCount(cta, 0);
         CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
         verifyTabSwitcherCardCount(cta, 1);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({
+        ChromeFeatureList.TAB_GROUP_PARITY_ANDROID,
+        ChromeFeatureList.TAB_GROUP_PANE_ANDROID,
+    })
+    @DisableFeatures({
+        ChromeFeatureList.TAB_GROUP_SYNC_ANDROID,
+    })
+    public void testTabGroupOverflowMenuInTabSwitcher_deleteGroupNoShowSyncDisabled() {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyGroupVisualDataDialogOpenedAndDismiss(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Verify the delete action button does not exist
+        String deleteButtonText = cta.getString(R.string.delete_tab_group_menu_item);
+        onView(withId(R.id.action_button)).perform(click());
+        onView(allOf(withText(deleteButtonText), withId(R.id.menu_item_text)))
+                .check(doesNotExist());
     }
 
     @Test
@@ -2429,7 +2494,6 @@ public class TabSwitcherLayoutTest {
     })
     public void testGroupMerge_UndoBarGoneAfterManualUngroup() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        SnackbarManager snackbarManager = mActivityTestRule.getActivity().getSnackbarManager();
         createTabs(cta, false, 3);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 3);
@@ -2662,7 +2726,7 @@ public class TabSwitcherLayoutTest {
         // Temporarily save the tab to get the rootId later.
         Tab tab2 = normalTabModel.getTabAt(1);
 
-        closeFirstTabInTabSwitcher(cta);
+        closeFirstTabGroupInTabSwitcher(cta);
         assertTrue(
                 snackbarManager.getCurrentSnackbarForTesting().getController()
                         instanceof UndoBarController);
@@ -2720,7 +2784,7 @@ public class TabSwitcherLayoutTest {
         Tab tab2 = normalTabModel.getTabAt(1);
         int groupRootId = tab2.getRootId();
 
-        closeFirstTabInTabSwitcher(cta);
+        closeFirstTabGroupInTabSwitcher(cta);
         assertTrue(
                 snackbarManager.getCurrentSnackbarForTesting().getController()
                         instanceof UndoBarController);

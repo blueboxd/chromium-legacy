@@ -53,7 +53,7 @@ class CORE_EXPORT LineBreaker {
               ExclusionSpace*);
   ~LineBreaker();
 
-  const InlineItemsData& ItemsData() const { return items_data_; }
+  const InlineItemsData& ItemsData() const { return *items_data_; }
 
   // True if the last line has `box-decoration-break: clone`, which affected the
   // size.
@@ -123,13 +123,14 @@ class CORE_EXPORT LineBreaker {
   // This LineBreaker handles only [start, end_item_index) of `Items()`.
   void SetInputRange(InlineItemTextIndex start,
                      wtf_size_t end_item_index,
-                     WhitespaceState initial_whitespace_state);
+                     WhitespaceState initial_whitespace_state,
+                     const LineBreaker* parent);
 
  private:
   Document& GetDocument() const { return node_.GetDocument(); }
 
   const String& Text() const { return text_content_; }
-  const HeapVector<InlineItem>& Items() const { return items_data_.items; }
+  const HeapVector<InlineItem>& Items() const { return items_data_->items; }
 
   String TextContentForLineBreak() const;
 
@@ -222,8 +223,11 @@ class CORE_EXPORT LineBreaker {
                                              InlineItemResult*);
   // Returns false if we can't handle the current InlineItem as a ruby.
   bool HandleRuby(LineInfo* line_info);
+  // `mode`: Must be kMaxContent or kContent.
+  // `limit`: Must be non-negative or kIndefiniteSize, which means no auto-wrap.
   LineInfo CreateSubLineInfo(InlineItemTextIndex start,
                              wtf_size_t end_item_index,
+                             LineBreakerMode mode,
                              LayoutUnit limit,
                              WhitespaceState initial_whitespace_state);
   InlineItemResult* AddRubyColumnResult(
@@ -344,6 +348,9 @@ class CORE_EXPORT LineBreaker {
   // True when current box allows line wrapping.
   bool auto_wrap_ = false;
 
+  // Disallow line wrapping even if the ComputedStyle allows it.
+  bool disallow_auto_wrap_ = false;
+
   // True when current box should fallback to break anywhere if it overflows.
   bool break_anywhere_if_overflow_ = false;
 
@@ -386,7 +393,7 @@ class CORE_EXPORT LineBreaker {
   bool has_considered_creating_break_token_ = false;
 #endif
 
-  const InlineItemsData& items_data_;
+  const InlineItemsData* items_data_;
 
   // `end_item_index_` is usually `Items().size()`.
   // SetInputRange() updates it.
@@ -459,6 +466,9 @@ class CORE_EXPORT LineBreaker {
 
   // This has a valid object if is_svg_text_.
   std::unique_ptr<ResolvedTextLayoutAttributesIterator> svg_resolved_iterator_;
+
+  // This member is available after calling SetInputRange().
+  const LineBreaker* parent_breaker_ = nullptr;
 };
 
 }  // namespace blink

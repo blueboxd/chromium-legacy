@@ -177,6 +177,12 @@ Preload::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
           RedirectedPrerenderingUrlHasEffectiveUrl;
     case PrerenderFinalStatus::kActivationUrlHasEffectiveUrl:
       return Preload::PrerenderFinalStatusEnum::ActivationUrlHasEffectiveUrl;
+    case PrerenderFinalStatus::kJavaScriptInterfaceAdded:
+      return Preload::PrerenderFinalStatusEnum::JavaScriptInterfaceAdded;
+    case PrerenderFinalStatus::kJavaScriptInterfaceRemoved:
+      return Preload::PrerenderFinalStatusEnum::JavaScriptInterfaceRemoved;
+    case PrerenderFinalStatus::kAllPrerenderingCanceled:
+      return Preload::PrerenderFinalStatusEnum::AllPrerenderingCanceled;
   }
 }
 

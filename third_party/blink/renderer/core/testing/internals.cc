@@ -3615,6 +3615,13 @@ bool Internals::isUseCounted(Document* document, uint32_t feature) {
   return document->IsUseCounted(static_cast<WebFeature>(feature));
 }
 
+bool Internals::isWebDXFeatureUseCounted(Document* document, uint32_t feature) {
+  if (feature >= static_cast<int32_t>(WebDXFeature::kNumberOfFeatures)) {
+    return false;
+  }
+  return document->IsWebDXFeatureCounted(static_cast<WebDXFeature>(feature));
+}
+
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
   return document->IsPropertyCounted(
@@ -3832,7 +3839,7 @@ String Internals::getParsedImportMap(Document* document,
   if (!import_map)
     return "{}";
 
-  return import_map->ToString();
+  return import_map->ToStringForTesting();
 }
 
 void Internals::setDeviceEmulationScale(float scale,
@@ -4007,6 +4014,18 @@ void Internals::setBackForwardCacheRestorationBufferSize(unsigned int maxSize) {
   WindowPerformance& perf =
       *DOMWindowPerformance::performance(*document_->domWindow());
   perf.setBackForwardCacheRestorationBufferSizeForTest(maxSize);
+}
+
+void Internals::setEventTimingBufferSize(unsigned int maxSize) {
+  WindowPerformance& perf =
+      *DOMWindowPerformance::performance(*document_->domWindow());
+  perf.setEventTimingBufferSizeForTest(maxSize);
+}
+
+void Internals::stopResponsivenessMetricsUkmSampling() {
+  WindowPerformance& perf =
+      *DOMWindowPerformance::performance(*document_->domWindow());
+  perf.GetResponsivenessMetrics().StopUkmSamplingForTesting();
 }
 
 Vector<String> Internals::getCreatorScripts(HTMLImageElement* img) {

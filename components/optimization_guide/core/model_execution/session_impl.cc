@@ -24,6 +24,7 @@
 #include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
+#include "components/optimization_guide/proto/model_quality_metadata.pb.h"
 #include "components/optimization_guide/proto/string_value.pb.h"
 #include "components/optimization_guide/proto/text_safety_model_metadata.pb.h"
 
@@ -59,6 +60,26 @@ void InvokeStreamingCallbackWithRemoteResult(
     streaming_result.response = base::unexpected(result.error());
   }
   callback.Run(std::move(streaming_result));
+}
+
+proto::InternalOnDeviceModelExecutionInfo MakeTextSafetyExecutionLog(
+    const std::string& text,
+    const on_device_model::mojom::SafetyInfoPtr& safety_info,
+    bool is_unsafe) {
+  proto::InternalOnDeviceModelExecutionInfo ts_execution_info;
+  ts_execution_info.mutable_request()
+      ->mutable_text_safety_model_request()
+      ->set_text(text);
+  auto* ts_resp = ts_execution_info.mutable_response()
+                      ->mutable_text_safety_model_response();
+  *ts_resp->mutable_scores() = {safety_info->class_scores.begin(),
+                                safety_info->class_scores.end()};
+  ts_resp->set_is_unsafe(is_unsafe);
+  if (safety_info->language) {
+    ts_resp->set_language_code(safety_info->language->code);
+    ts_resp->set_language_confidence(safety_info->language->reliability);
+  }
+  return ts_execution_info;
 }
 
 }  // namespace
@@ -382,7 +403,6 @@ void SessionImpl::ExecuteModel(
   options->max_output_tokens = features::GetOnDeviceModelMaxTokensForOutput();
   options->top_k = sampling_params_.top_k;
   options->temperature = sampling_params_.temperature;
-  options->safety_interval = on_device_state_->opts.safety_cfg.TokenInterval();
 
   RunNextRequestSafetyCheckOrBeginExecution(std::move(options), 0);
 }
@@ -442,12 +462,14 @@ void SessionImpl::OnRequestSafetyResult(
   bool is_unsafe = on_device_state_->opts.safety_cfg.IsRequestUnsafe(
       request_check_idx, safety_info);
   bool is_unsupported_language =
+      !on_device_state_->opts.safety_cfg
+           .ShouldIgnoreLanguageResultForRequestCheck(request_check_idx) &&
       on_device_state_->opts.safety_cfg
           .IsTextInUnsupportedOrUndeterminedLanguage(safety_info);
 
   // Log the check execution.
-  on_device_state_->AddTextSafetyExecutionLogging(
-      check_input_text, safety_info, is_unsafe);
+  on_device_state_->AddModelExecutionLog(
+      MakeTextSafetyExecutionLog(check_input_text, safety_info, is_unsafe));
 
   // Handle the result.
   if (is_unsafe || is_unsupported_language) {
@@ -479,6 +501,10 @@ void SessionImpl::BeginRequestExecution(
 // on_device_model::mojom::StreamingResponder:
 void SessionImpl::OnResponse(on_device_model::mojom::ResponseChunkPtr chunk) {
   on_device_state_->timer_for_first_response.Stop();
+
+  proto::OnDeviceModelServiceResponse* logged_response =
+      on_device_state_->MutableLoggedResponse();
+
   if (on_device_state_->current_response.empty()) {
     base::TimeDelta time_to_first_response =
         base::TimeTicks::Now() - on_device_state_->start;
@@ -487,46 +513,40 @@ void SessionImpl::OnResponse(on_device_model::mojom::ResponseChunkPtr chunk) {
             {"OptimizationGuide.ModelExecution.OnDeviceFirstResponseTime.",
              GetStringNameForModelExecutionFeature(feature_)}),
         time_to_first_response);
-    on_device_state_->MutableLoggedResponse()
-        ->set_time_to_first_response_millis(
-            time_to_first_response.InMilliseconds());
+    logged_response->set_time_to_first_response_millis(
+        time_to_first_response.InMilliseconds());
   }
 
-  if (!on_device_state_->MutableLoggedResponse()->has_repeats()) {
-    // Only continue updating the response if repeats have not been detected.
-    on_device_state_->current_response += chunk->text;
+  on_device_state_->current_response += chunk->text;
+  on_device_state_->num_unchecked_response_tokens++;
 
-    // Check for repeats here instead of SendResponse since we see each new
-    // token as it comes in here, and SendResponse will only see tokens if
-    // safety info is available.
-    int num_repeats = features::GetOnDeviceModelNumRepeats();
-    if (num_repeats > 1 &&
-        HasRepeatingSuffix(features::GetOnDeviceModelMinRepeatChars(),
-                           num_repeats, on_device_state_->current_response)) {
-      on_device_state_->MutableLoggedResponse()->set_has_repeats(true);
-      LogResponseHasRepeats(feature_, true);
+  if (HasRepeatingSuffix(on_device_state_->current_response)) {
+    // If a repeat is detected, halt the response, and cancel/finish early.
+    on_device_state_->receiver.reset();
+    logged_response->set_has_repeats(true);
+    LogResponseHasRepeats(feature_, true);
+
+    if (features::GetOnDeviceModelRetractRepeats()) {
+      logged_response->set_status(
+          proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
+      CancelPendingResponse(ExecuteModelResult::kResponseHadRepeats,
+                            ModelExecutionError::kFiltered);
+      return;
     }
-  }
 
-  if (features::ShouldUseTextSafetyRemoteFallbackForEligibleFeatures() ||
-      on_device_state_->opts.safety_cfg.HasRawOutputCheck()) {
-    // If using remote text safety fallback, or an explicit output check,
-    // we will not be streaming. Do not process partial responses.
+    // Artificially send the OnComplete event to finish processing.
+    OnComplete(on_device_model::mojom::ResponseSummary::New());
     return;
   }
 
-  bool chunk_provided_safety_info = false;
-  if (chunk->safety_info) {
-    on_device_state_->current_safety_info = std::move(chunk->safety_info);
-    chunk_provided_safety_info = true;
+  uint32_t interval = on_device_state_->opts.safety_cfg.TokenInterval();
+  if (interval == 0 ||
+      on_device_state_->num_unchecked_response_tokens < interval) {
+    // Not enough new data to be worth re-evaluating yet.
+    return;
   }
 
-  // Only proceed to send the response if we are not evaluating text safety or
-  // if there are text safety scores to evaluate.
-  if (!on_device_state_->opts.safety_cfg.IsMissingSafetyInfo(
-          chunk_provided_safety_info)) {
-    SendResponse(ResponseType::kPartial, on_device_state_->current_response);
-  }
+  RunRawOutputSafetyCheck();
 }
 
 void SessionImpl::OnComplete(
@@ -545,33 +565,31 @@ void SessionImpl::OnComplete(
       time_to_completion.InMilliseconds());
   on_device_state_->opts.model_client->OnResponseCompleted();
 
-  if (on_device_state_->opts.safety_cfg.HasRawOutputCheck()) {
-    // The stream should be complete, but explicitly reset the receiver to
-    // avoid any async surprises from misbehaving remote.
-    on_device_state_->receiver.reset();
-    RunRawOutputSafetyCheck();
+  on_device_state_->model_response_complete = true;
+
+  if (on_device_state_->num_unchecked_response_tokens == 0) {
+    // We've already requested the evaluation. Check if it finished.
+    MaybeSendCompleteResponse();
     return;
   }
-
-  if (on_device_state_->opts.safety_cfg.IsMissingSafetyInfo(
-          !!summary->safety_info)) {
-    on_device_state_->receiver.ReportBadMessage(
-        "Missing required safety scores on complete");
-    CancelPendingResponse(
-        ExecuteModelResult::kResponseCompleteButNoRequiredSafetyScores,
-        ModelExecutionError::kGenericFailure);
-    return;
-  }
-
-  if (summary->safety_info) {
-    on_device_state_->current_safety_info = std::move(summary->safety_info);
-  }
-  SendResponse(ResponseType::kComplete, on_device_state_->current_response);
+  RunRawOutputSafetyCheck();
 }
 
 void SessionImpl::RunRawOutputSafetyCheck() {
+  on_device_state_->num_unchecked_response_tokens = 0;
+
+  if (!on_device_state_->opts.safety_cfg.HasRawOutputCheck()) {
+    // There is no safety config, so skip safety evaluations.
+    on_device_state_->latest_safe_raw_output.length =
+        on_device_state_->current_response.size();
+    on_device_state_->latest_safe_raw_output.log = std::nullopt;
+    SendResponse(ResponseType::kPartial);
+    MaybeSendCompleteResponse();
+    return;
+  }
+
   auto check_input = on_device_state_->opts.safety_cfg.GetRawOutputCheckInput(
-    on_device_state_->current_response);
+      on_device_state_->current_response);
   if (!check_input) {
     // This mostly likely means a malformed safety config.
     DestroyOnDeviceStateAndFallbackToRemote(
@@ -582,14 +600,52 @@ void SessionImpl::RunRawOutputSafetyCheck() {
       check_input->input_string,
       base::BindOnce(&SessionImpl::OnRawOutputSafetyResult,
                      on_device_state_->session_weak_ptr_factory_.GetWeakPtr(),
-                     check_input->input_string));
+                     check_input->input_string,
+                     on_device_state_->current_response.size()));
 }
 
 void SessionImpl::OnRawOutputSafetyResult(
     std::string safety_check_text,
+    size_t raw_output_size,
     on_device_model::mojom::SafetyInfoPtr safety_info) {
-  on_device_state_->current_safety_info = std::move(safety_info);
-  SendResponse(ResponseType::kComplete, safety_check_text);
+  const bool is_unsupported_language =
+      on_device_state_->opts.safety_cfg
+          .IsTextInUnsupportedOrUndeterminedLanguage(safety_info);
+  const bool is_unsafe =
+      on_device_state_->opts.safety_cfg.IsUnsafeText(safety_info);
+  auto log =
+      MakeTextSafetyExecutionLog(safety_check_text, safety_info, is_unsafe);
+  if (is_unsafe || is_unsupported_language) {
+    if (on_device_state_->histogram_logger) {
+      on_device_state_->histogram_logger->set_result(
+          ExecuteModelResult::kUsedOnDeviceOutputUnsafe);
+    }
+    on_device_state_->AddModelExecutionLog(log);
+    if (features::GetOnDeviceModelRetractUnsafeContent()) {
+      CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
+                            is_unsupported_language
+                                ? ModelExecutionError::kUnsupportedLanguage
+                                : ModelExecutionError::kFiltered);
+
+      return;
+    }
+  }
+  on_device_state_->latest_safe_raw_output.length = raw_output_size;
+  on_device_state_->latest_safe_raw_output.log = std::move(log);
+  SendResponse(ResponseType::kPartial);
+  MaybeSendCompleteResponse();
+}
+
+void SessionImpl::MaybeSendCompleteResponse() {
+  if (on_device_state_->model_response_complete &&
+      on_device_state_->latest_safe_raw_output.length ==
+          on_device_state_->current_response.size()) {
+    if (on_device_state_->latest_safe_raw_output.log) {
+      on_device_state_->AddModelExecutionLog(
+          *on_device_state_->latest_safe_raw_output.log);
+    }
+    SendResponse(ResponseType::kComplete);
+  }
 }
 
 on_device_model::mojom::Session& SessionImpl::GetOrCreateSession() {
@@ -651,43 +707,23 @@ void SessionImpl::CancelPendingResponse(ExecuteModelResult result,
   }
 }
 
-void SessionImpl::SendResponse(
-    ResponseType response_type,
-    const std::string& safety_check_text) {
+void SessionImpl::SendResponse(ResponseType response_type) {
   const bool is_complete = response_type != ResponseType::kPartial;
-  const bool is_unsupported_language =
-      on_device_state_->opts.safety_cfg
-          .IsTextInUnsupportedOrUndeterminedLanguage(
-              on_device_state_->current_safety_info);
-  const bool is_unsafe = on_device_state_->opts.safety_cfg.IsUnsafeText(
-      on_device_state_->current_safety_info);
-  if (is_unsafe || is_unsupported_language || is_complete) {
-    on_device_state_->AddTextSafetyExecutionLogging(
-      safety_check_text, on_device_state_->current_safety_info,
-      is_unsafe);
-  }
-  if (is_unsafe || is_unsupported_language) {
-    if (on_device_state_->histogram_logger) {
-      on_device_state_->histogram_logger->set_result(
-          ExecuteModelResult::kUsedOnDeviceOutputUnsafe);
-    }
 
-    if (features::GetOnDeviceModelRetractUnsafeContent()) {
-      CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
-                            is_unsupported_language
-                                ? ModelExecutionError::kUnsupportedLanguage
-                                : ModelExecutionError::kFiltered);
-
-      return;
-    }
+  if (!is_complete &&
+      features::ShouldUseTextSafetyRemoteFallbackForEligibleFeatures()) {
+    // We don't send streaming responses in this mode.
+    return;
   }
 
+  std::string safe_response = on_device_state_->current_response.substr(
+      0, on_device_state_->latest_safe_raw_output.length);
   proto::OnDeviceModelServiceResponse* logged_response =
       on_device_state_->MutableLoggedResponse();
 
-  logged_response->set_output_string(on_device_state_->current_response);
+  logged_response->set_output_string(safe_response);
 
-  std::string redacted_response = on_device_state_->current_response;
+  std::string redacted_response = safe_response;
   auto redact_result =
       on_device_state_->opts.adapter->Redact(*last_message_, redacted_response);
   if (redact_result == RedactResult::kReject) {
@@ -707,41 +743,16 @@ void SessionImpl::SendResponse(
     return;
   }
 
-  if (!is_complete &&
-      on_device_state_->MutableLoggedResponse()->has_repeats()) {
-    if (features::GetOnDeviceModelRetractRepeats()) {
-      logged_response->set_status(
-          proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
-      CancelPendingResponse(ExecuteModelResult::kResponseHadRepeats,
-                            ModelExecutionError::kFiltered);
-      return;
-    }
-
-    // If a repeat is detected, halt the response, and artificially send the
-    // OnComplete event.
-    on_device_state_->receiver.reset();
-    auto summary = on_device_model::mojom::ResponseSummary::New();
-    if (on_device_state_->current_safety_info) {
-      summary->safety_info = std::move(on_device_state_->current_safety_info);
-    }
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SessionImpl::OnComplete,
-                       on_device_state_->session_weak_ptr_factory_.GetWeakPtr(),
-                       std::move(summary)));
-  } else if (is_complete &&
-             !on_device_state_->MutableLoggedResponse()->has_repeats()) {
-    // Log completed responses with no repeats to calculate percentage of
-    // responses that have repeats.
-    LogResponseHasRepeats(feature_, false);
-  }
-
   if (!is_complete) {
     SendPartialResponseCallback(*output);
     return;
   }
 
-  on_device_state_->model_response_complete = true;
+  if (!on_device_state_->MutableLoggedResponse()->has_repeats()) {
+    // Log completed responses with no repeats to calculate percentage of
+    // responses that have repeats.
+    LogResponseHasRepeats(feature_, false);
+  }
 
   if (features::ShouldUseTextSafetyRemoteFallbackForEligibleFeatures()) {
     RunTextSafetyRemoteFallbackAndCompletionCallback(std::move(*output));
@@ -910,44 +921,33 @@ SessionImpl::OnDeviceState::MutableLoggedResponse() {
       ->mutable_on_device_model_service_response();
 }
 
-void SessionImpl::OnDeviceState::AddTextSafetyExecutionLogging(
-        const std::string& text,
-        const on_device_model::mojom::SafetyInfoPtr& safety_info,
-        bool is_unsafe) {
-  if (!safety_info) {
-    return;
-  }
-
+void SessionImpl::OnDeviceState::AddModelExecutionLog(
+    const proto::InternalOnDeviceModelExecutionInfo& log) {
   CHECK(log_ai_data_request);
 
-  auto* ts_execution_info = log_ai_data_request->mutable_model_execution_info()
-                                ->mutable_on_device_model_execution_info()
-                                ->add_execution_infos();
-  ts_execution_info->mutable_request()
-      ->mutable_text_safety_model_request()
-      ->set_text(text);
-  auto* ts_resp = ts_execution_info->mutable_response()
-                      ->mutable_text_safety_model_response();
-  *ts_resp->mutable_scores() = {safety_info->class_scores.begin(),
-                                safety_info->class_scores.end()};
-  ts_resp->set_is_unsafe(is_unsafe);
-  if (safety_info->language) {
-    ts_resp->set_language_code(safety_info->language->code);
-  }
+  log_ai_data_request->mutable_model_execution_info()
+      ->mutable_on_device_model_execution_info()
+      ->add_execution_infos()
+      ->CopyFrom(log);
 }
 
 void SessionImpl::OnDeviceState::ResetRequestState() {
   receiver.reset();
   callback.Reset();
   current_response.clear();
-  current_safety_info.reset();
   start = base::TimeTicks();
   timer_for_first_response.Stop();
   histogram_logger.reset();
   log_ai_data_request.reset();
+  num_unchecked_response_tokens = 0;
+  latest_safe_raw_output.length = 0;
+  latest_safe_raw_output.log = std::nullopt;
   model_response_complete = false;
   session_weak_ptr_factory_.InvalidateWeakPtrs();
 }
+
+SessionImpl::OnDeviceState::SafeRawOutput::SafeRawOutput() = default;
+SessionImpl::OnDeviceState::SafeRawOutput::~SafeRawOutput() = default;
 
 SessionImpl::ExecuteModelHistogramLogger::~ExecuteModelHistogramLogger() {
   base::UmaHistogramEnumeration(

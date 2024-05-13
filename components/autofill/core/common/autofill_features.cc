@@ -80,6 +80,13 @@ BASE_FEATURE(kAutofillDefaultToCityAndNumber,
              "AutofillDefaultToCityAndNumber",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// If enabled, no prefix matching is applied to filter credit card number
+// suggestions.
+// TODO(crbug.com/338932642): Clean up if launched.
+BASE_FEATURE(kAutofillDontPrefixMatchCreditCardNumbers,
+             "AutofillDontPrefixMatchCreditCardNumbers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // FormStructure::RetrieveFromCache used to preserve an AutofillField's
 // is_autofilled from the cache of previously parsed forms. This makes little
 // sense because the renderer sends us the autofill state and has the most
@@ -305,10 +312,10 @@ BASE_FEATURE(kAutofillFixCachingOnJavaScriptChanges,
              "AutofillFixCachingOnJavaScriptChanges",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Changes the semantics of FocusOnFormField() and FocusNoLongerOnForm() so that
+// Changes the semantics of FocusOnFormField() and FocusOnNonFormField() so that
 // - FocusOnFormField() is called when the focus moves to another field,
 //   including fields owned by form, unowned fields, and contenteditables.
-// - FocusNoLongerOnForm() is called in all remaining cases.
+// - FocusOnNonFormField() is called in all remaining cases.
 // See crbug.com/337690061 for details.
 // This is a kill switch.
 // TODO(crbug.com/337690061): Remove when cleaning up
@@ -461,7 +468,7 @@ BASE_FEATURE(kAutofillSkipPreFilledFields,
 // TODO(crbug.com/40146444): Remove once launched.
 BASE_FEATURE(kAutofillParsingPatternProvider,
              "AutofillParsingPatternProvider",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The specific pattern set is controlled by the `kAutofillParsingPatternActive`
 // parameter. One of "default", "experimental", "nextgen".
@@ -679,7 +686,7 @@ BASE_FEATURE(kAutofillEnableCacheForRegexMatching,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int>
     kAutofillEnableCacheForRegexMatchingCacheSizeParam{
-        &kAutofillEnableCacheForRegexMatching, "cache_size", 300};
+        &kAutofillEnableCacheForRegexMatching, "cache_size", 1000};
 
 // When enabled, various deduplication related metrics are logged on startup
 // and on import.

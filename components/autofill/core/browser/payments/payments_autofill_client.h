@@ -23,6 +23,7 @@ struct CardUnmaskPromptOptions;
 class CreditCard;
 class CreditCardCvcAuthenticator;
 class CreditCardOtpAuthenticator;
+class Iban;
 class MigratableCreditCard;
 class OtpUnmaskDelegate;
 struct CardUnmaskChallengeOption;
@@ -42,6 +43,17 @@ class PaymentsAutofillClient : public RiskDataLoader {
  public:
   ~PaymentsAutofillClient() override;
 
+  enum class SaveIbanOfferUserDecision {
+    // The user accepted IBAN save.
+    kAccepted,
+
+    // The user explicitly declined IBAN save.
+    kDeclined,
+
+    // The user ignored the IBAN save prompt.
+    kIgnored,
+  };
+
   // Callback to run if user presses the Save button in the migration dialog.
   // Will pass a vector of GUIDs of cards that the user selected to upload to
   // LocalCardMigrationManager.
@@ -54,6 +66,13 @@ class PaymentsAutofillClient : public RiskDataLoader {
   // storage.
   using MigrationDeleteCardCallback =
       base::RepeatingCallback<void(const std::string&)>;
+  // Callback to run after local/upload IBAN save is offered. The callback runs
+  // with `user_decision` indicating whether the prompt was accepted, declined,
+  // or ignored. `nickname` is optionally provided by the user when IBAN local
+  // or upload save is offered, and can be an empty string.
+  using SaveIbanPromptCallback =
+      base::OnceCallback<void(SaveIbanOfferUserDecision user_decision,
+                              std::u16string_view nickname)>;
 
 #if BUILDFLAG(IS_ANDROID)
   // Gets the AutofillSaveCardBottomSheetBridge or creates one if it doesn't
@@ -61,8 +80,8 @@ class PaymentsAutofillClient : public RiskDataLoader {
   virtual AutofillSaveCardBottomSheetBridge*
   GetOrCreateAutofillSaveCardBottomSheetBridge();
 #elif !BUILDFLAG(IS_IOS)
-  // Runs `show_migration_dialog_closure` if the user accepts the card migration
-  // offer. This causes the card migration dialog to be shown.
+  // Runs `show_migration_dialog_closure` if the user accepts the card
+  // migration offer. This causes the card migration dialog to be shown.
   virtual void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure);
 
@@ -107,6 +126,21 @@ class PaymentsAutofillClient : public RiskDataLoader {
   // Hides save card offer or confirmation prompt.
   virtual void HideSaveCardPromptPrompt();
 
+  // Runs `callback` once the user makes a decision with respect to the
+  // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
+  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
+  virtual void ConfirmSaveIbanLocally(const Iban& iban,
+                                      bool should_show_prompt,
+                                      SaveIbanPromptCallback callback);
+
+  // Runs `callback` once the user makes a decision with respect to the
+  // offer-to-upload prompt. On desktop, shows the offer-to-upload bubble if
+  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
+  virtual void ConfirmUploadIbanToCloud(const Iban& iban,
+                                        LegalMessageLines legal_message_lines,
+                                        bool should_show_prompt,
+                                        SaveIbanPromptCallback callback);
+
   // Show/dismiss the progress dialog which contains a throbber and a text
   // message indicating that something is in progress.
   virtual void ShowAutofillProgressDialog(
@@ -120,6 +154,25 @@ class PaymentsAutofillClient : public RiskDataLoader {
   virtual void ShowCardUnmaskOtpInputDialog(
       const CardUnmaskChallengeOption& challenge_option,
       base::WeakPtr<OtpUnmaskDelegate> delegate);
+
+  // Shows a dialog for the user to choose/confirm the authentication
+  // to use in card unmasking.
+  virtual void ShowUnmaskAuthenticatorSelectionDialog(
+      const std::vector<CardUnmaskChallengeOption>& challenge_options,
+      base::OnceCallback<void(const std::string&)>
+          confirm_unmask_challenge_option_callback,
+      base::OnceClosure cancel_unmasking_closure);
+
+  // Dismisses the selection dialog to open the authentication dialog.
+  // `server_success` dictates whether we received a success response
+  // from the server, with true representing success and false representing
+  // failure. A successful server response means that the issuer has sent an OTP
+  // and we can move on to the next portion of this flow.
+  // This should be invoked upon server accepting the authentication method, in
+  // which case, we dismiss the selection dialog to open the authentication
+  // dialog.
+  virtual void DismissUnmaskAuthenticatorSelectionDialog(bool server_success);
+
   // Invoked when we receive the server response of the OTP unmask request.
   virtual void OnUnmaskOtpVerificationResult(OtpUnmaskResult unmask_result);
 

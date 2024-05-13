@@ -8,7 +8,6 @@
 
 #include "base/check_is_test.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -33,13 +32,18 @@ const int kScreenAICleanUpDelayInDays = 30;
 const char kMinExpectedVersion[] = "123.1";
 
 bool IsDeviceCompatible() {
+#if BUILDFLAG(IS_LINUX)
+#if defined(ARCH_CPU_X86_FAMILY)
   // Check if the CPU has the required instruction set to run the Screen AI
   // library.
-#if BUILDFLAG(IS_LINUX)
-  if (!base::CPU().has_sse41()) {
+  static const bool has_sse41 = base::CPU().has_sse41();
+#else
+  static constexpr bool has_sse41 = false;
+#endif  // defined(ARCH_CPU_X86_FAMILY)
+  if (!has_sse41) {
     return false;
   }
-#endif
+#endif  // BUILDFLAG(IS_LINUX)
   return true;
 }
 
@@ -79,19 +83,6 @@ bool ScreenAIInstallState::VerifyLibraryVersion(const base::Version& version) {
   }
 
   return true;
-}
-
-// TODO(b/41489907): Remove this function once it's known why the binary is
-// sometimes not available.
-// static
-bool ScreenAIInstallState::VerifyLibraryAvailablity(
-    const base::FilePath& install_dir) {
-    // TODO(b/41489907): Try adding a browser test for this case.
-    bool binary_available =
-        base::PathExists(install_dir.Append(GetComponentBinaryFileName()));
-    base::UmaHistogramBoolean(
-        "Accessibility.ScreenAI.Component.BinaryAvailable", binary_available);
-    return binary_available;
 }
 
 ScreenAIInstallState::ScreenAIInstallState() {

@@ -129,6 +129,7 @@
 #include "components/find_in_page/find_types.h"
 #include "components/google/core/common/google_util.h"
 #include "components/lens/buildflags.h"
+#include "components/lens/lens_features.h"
 #include "components/media_router/browser/media_router_dialog_controller.h"  // nogncheck
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
@@ -1927,7 +1928,7 @@ void OpenTaskManager(Browser* browser) {
 }
 
 void OpenFeedbackDialog(Browser* browser,
-                        FeedbackSource source,
+                        feedback::FeedbackSource source,
                         const std::string& description_template,
                         const std::string& category_tag) {
   base::RecordAction(UserMetricsAction("Feedback"));
@@ -2229,13 +2230,11 @@ void ExecLensOverlay(Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents();
   CHECK(web_contents);
 
-  // TODO(https://crbug.com/330808104): This should become a CHECK. If the
-  // menu item is clickable, then the controller must be enabled.
   LensOverlayController* const controller =
       LensOverlayController::GetController(web_contents);
-  if (controller && controller->Enabled()) {
-    controller->ShowUI();
-  }
+  CHECK(controller);
+  controller->ShowUI(LensOverlayController::InvocationSource::kAppMenu);
+  browser->window()->NotifyPromoFeatureUsed(lens::features::kLensOverlay);
 }
 
 void ExecLensRegionSearch(Browser* browser) {

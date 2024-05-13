@@ -1573,8 +1573,11 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   UnregisterHost(GetID());
 
   // Remove the cache handles for the client at teardown if relevant.
-  if (GetGpuDiskCacheFactorySingleton()) {
-    gpu_client_->RemoveDiskCacheHandles();
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuShaderDiskCache)) {
+    if (GetGpuDiskCacheFactorySingleton()) {
+        gpu_client_->RemoveDiskCacheHandles();
+    }
   }
 
   // "Cleanup in progress"
@@ -1874,11 +1877,10 @@ void RenderProcessHostImpl::BindIndexedDB(
     return;
   }
 
-  auto [state_checker, token] =
-      IndexedDBClientStateCheckerFactory::InitializePendingRemote(rfh_id);
   storage_partition_impl_->BindIndexedDB(
       storage::BucketLocator::ForDefaultBucket(storage_key),
-      std::move(state_checker), token, std::move(receiver));
+      IndexedDBClientStateCheckerFactory::InitializePendingRemote(rfh_id),
+      std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindBucketManagerHost(
@@ -3367,7 +3369,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   AppendCompositorCommandLineFlags(command_line);
 
   command_line->AppendSwitchASCII(switches::kRendererClientId,
-                                  std::to_string(GetID()));
+                                  base::NumberToString(GetID()));
 
   // Synchronize unix/monotonic clocks across consistent processes.
   if (base::TimeTicks::IsConsistentAcrossProcesses()) {
@@ -3412,7 +3414,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMojoCoreLibraryPath,
     switches::kDisable2dCanvasImageChromium,
     switches::kDisableYUVImageDecoding,
-    switches::kDisableAXMenuList,
     switches::kDisableAcceleratedVideoDecode,
     switches::kDisableBackForwardCache,
     switches::kDisableBackgroundTimerThrottling,
@@ -4302,7 +4303,6 @@ IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
 
 #if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
 void RenderProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
-  filter->RegisterAssociatedInterfaces(channel_.get());
   channel_->AddFilter(filter->GetFilter());
 }
 #endif

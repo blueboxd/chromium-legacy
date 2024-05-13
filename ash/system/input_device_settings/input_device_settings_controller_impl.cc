@@ -873,6 +873,25 @@ void InputDeviceSettingsControllerImpl::RegisterProfilePrefs(
   pref_registry->RegisterIntegerPref(
       prefs::kInsertKeyModifier,
       static_cast<int>(ui::mojom::SixPackShortcutModifier::kNone));
+  pref_registry->RegisterIntegerPref(prefs::kPageUpRemappingNudgeShownCount, 0);
+  pref_registry->RegisterIntegerPref(prefs::kPageDownRemappingNudgeShownCount,
+                                     0);
+  pref_registry->RegisterIntegerPref(prefs::kHomeRemappingNudgeShownCount, 0);
+  pref_registry->RegisterIntegerPref(prefs::kEndRemappingNudgeShownCount, 0);
+  pref_registry->RegisterIntegerPref(prefs::kDeleteRemappingNudgeShownCount, 0);
+  pref_registry->RegisterIntegerPref(prefs::kInsertRemappingNudgeShownCount, 0);
+  pref_registry->RegisterTimePref(prefs::kPageUpRemappingNudgeLastShown,
+                                  base::Time());
+  pref_registry->RegisterTimePref(prefs::kPageDownRemappingNudgeLastShown,
+                                  base::Time());
+  pref_registry->RegisterTimePref(prefs::kHomeRemappingNudgeLastShown,
+                                  base::Time());
+  pref_registry->RegisterTimePref(prefs::kEndRemappingNudgeLastShown,
+                                  base::Time());
+  pref_registry->RegisterTimePref(prefs::kDeleteRemappingNudgeLastShown,
+                                  base::Time());
+  pref_registry->RegisterTimePref(prefs::kInsertRemappingNudgeLastShown,
+                                  base::Time());
 }
 
 void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
@@ -962,6 +981,25 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     pref_service->ClearPref(prefs::kSixPackKeyPageUpNotificationsRemaining);
     pref_service->ClearPref(prefs::kSixPackKeyPageDownNotificationsRemaining);
     pref_service->ClearPref(prefs::kSixPackKeyInsertNotificationsRemaining);
+  }
+
+  if (!features::IsModifierSplitEnabled()) {
+    pref_service->ClearPref(prefs::kTopRowRemappingNudgeShownCount);
+    pref_service->ClearPref(prefs::kPageUpRemappingNudgeShownCount);
+    pref_service->ClearPref(prefs::kPageDownRemappingNudgeShownCount);
+    pref_service->ClearPref(prefs::kHomeRemappingNudgeShownCount);
+    pref_service->ClearPref(prefs::kEndRemappingNudgeShownCount);
+    pref_service->ClearPref(prefs::kDeleteRemappingNudgeShownCount);
+    pref_service->ClearPref(prefs::kInsertRemappingNudgeShownCount);
+    pref_service->ClearPref(prefs::kCapsLockRemappingNudgeShownCount);
+    pref_service->ClearPref(prefs::kTopRowRemappingNudgeLastShown);
+    pref_service->ClearPref(prefs::kPageUpRemappingNudgeLastShown);
+    pref_service->ClearPref(prefs::kPageDownRemappingNudgeLastShown);
+    pref_service->ClearPref(prefs::kHomeRemappingNudgeLastShown);
+    pref_service->ClearPref(prefs::kEndRemappingNudgeLastShown);
+    pref_service->ClearPref(prefs::kDeleteRemappingNudgeLastShown);
+    pref_service->ClearPref(prefs::kInsertRemappingNudgeLastShown);
+    pref_service->ClearPref(prefs::kCapsLockRemappingNudgeLastShown);
   }
   active_pref_service_ = pref_service;
   active_account_id_ = Shell::Get()->session_controller()->GetActiveAccountId();
@@ -1785,6 +1823,10 @@ void InputDeviceSettingsControllerImpl::OnKeyboardListUpdated(
           keyboard, bluetooth_devices_observer_.get())] = mojom_keyboard->id;
     }
     InitializeKeyboardSettings(mojom_keyboard.get());
+    if (features::IsWelcomeExperienceEnabled()) {
+      notification_controller_->NotifyKeyboardFirstTimeConnected(
+          *mojom_keyboard);
+    }
     keyboards_.insert_or_assign(keyboard.id, std::move(mojom_keyboard));
     DispatchKeyboardConnected(keyboard.id);
   }
@@ -1812,6 +1854,10 @@ void InputDeviceSettingsControllerImpl::OnTouchpadListUpdated(
           touchpad, bluetooth_devices_observer_.get())] = mojom_touchpad->id;
     }
     InitializeTouchpadSettings(mojom_touchpad.get());
+    if (features::IsWelcomeExperienceEnabled()) {
+      notification_controller_->NotifyTouchpadFirstTimeConnected(
+          *mojom_touchpad);
+    }
     touchpads_.insert_or_assign(touchpad.id, std::move(mojom_touchpad));
     DispatchTouchpadConnected(touchpad.id);
   }
@@ -2304,6 +2350,46 @@ void InputDeviceSettingsControllerImpl::DispatchCustomizablePenButtonPressed(
   }
 }
 
+void InputDeviceSettingsControllerImpl::DispatchKeyboardBatteryInfoChanged(
+    DeviceId id) {
+  CHECK(base::Contains(keyboards_, id));
+  CHECK(features::IsWelcomeExperienceEnabled());
+  const auto& keyboard = *keyboards_.at(id);
+  for (auto& observer : observers_) {
+    observer.OnKeyboardBatteryInfoChanged(keyboard);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::
+    DispatchGraphicsTabletBatteryInfoChanged(DeviceId id) {
+  CHECK(base::Contains(graphics_tablets_, id));
+  CHECK(features::IsWelcomeExperienceEnabled());
+  const auto& graphics_tablet = *graphics_tablets_.at(id);
+  for (auto& observer : observers_) {
+    observer.OnGraphicsTabletBatteryInfoChanged(graphics_tablet);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::DispatchMouseBatteryInfoChanged(
+    DeviceId id) {
+  CHECK(base::Contains(mice_, id));
+  CHECK(features::IsWelcomeExperienceEnabled());
+  const auto& mouse = *mice_.at(id);
+  for (auto& observer : observers_) {
+    observer.OnMouseBatteryInfoChanged(mouse);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::DispatchTouchpadBatteryInfoChanged(
+    DeviceId id) {
+  CHECK(base::Contains(touchpads_, id));
+  CHECK(features::IsWelcomeExperienceEnabled());
+  const auto& touchpad = *touchpads_.at(id);
+  for (auto& observer : observers_) {
+    observer.OnTouchpadBatteryInfoChanged(touchpad);
+  }
+}
+
 void InputDeviceSettingsControllerImpl::RefreshInternalPointingStickSettings() {
   for (auto& [id, pointing_stick] : pointing_sticks_) {
     if (pointing_stick->is_external) {
@@ -2464,24 +2550,28 @@ void InputDeviceSettingsControllerImpl::DeviceBatteryChanged(
       updated_battery_info->percentage.value(),
       GetChargeStateFromBluetoothDevice(updated_battery_info->charge_state));
 
-  if (auto* keyboard = FindKeyboard(device_id); keyboard != nullptr) {
-    keyboard->battery_info = std::move(mojom_battery_info);
+  if (auto* kb = FindKeyboard(device_id); kb != nullptr) {
+    kb->battery_info = std::move(mojom_battery_info);
+    DispatchKeyboardBatteryInfoChanged(device_id);
     return;
   }
 
   if (auto* mouse = FindMouse(device_id); mouse != nullptr) {
     mouse->battery_info = std::move(mojom_battery_info);
+    DispatchMouseBatteryInfoChanged(device_id);
     return;
   }
 
   if (auto* touchpad = FindTouchpad(device_id); touchpad != nullptr) {
     touchpad->battery_info = std::move(mojom_battery_info);
+    DispatchTouchpadBatteryInfoChanged(device_id);
     return;
   }
 
   if (auto* graphics_tablet = FindGraphicsTablet(device_id);
       graphics_tablet != nullptr) {
     graphics_tablet->battery_info = std::move(mojom_battery_info);
+    DispatchGraphicsTabletBatteryInfoChanged(device_id);
     return;
   }
 }

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/pagination_state.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/block_break_token.h"
@@ -875,14 +876,40 @@ void PrePaintTreeWalk::WalkPageContainer(
             PhysicalFragment::kPageContainer);
   const auto& page_container =
       To<PhysicalBoxFragment>(*page_container_link.get());
-  PhysicalOffset adjustment = page_container_link.offset;
+
+  PrePaintTreeWalkContext page_container_context(
+      parent_context, parent_context.NeedsTreeBuilderContext());
+  PrePaintInfo container_pre_paint_info =
+      CreatePrePaintInfo(page_container_link, page_container_context);
+  WalkInternal(*page_container_link->GetLayoutObject(), page_container_context,
+               &container_pre_paint_info);
+
+  // Calculate the offset into the stitched coordinate system, where each page
+  // is stacked after oneanother in the block direction. Example: in
+  // horizontal-tb mode, if the page height is 800px and this is the third
+  // page, the offset will 1600px.
+  PhysicalOffset pagination_adjustment =
+      StitchedPageContentRect(page_container).offset;
+
   for (const PhysicalFragmentLink& grandchild : page_container.Children()) {
     DCHECK_EQ(grandchild->GetBoxType(), PhysicalFragment::kPageBorderBox);
 
     // This is a page border box, which contains the page contents area fragment
     // (the fragmentainer that contains a portion of the document's fragmented
     // contents).
+    PrePaintTreeWalkContext page_border_box_context(
+        page_container_context,
+        page_container_context.NeedsTreeBuilderContext());
+    if (page_border_box_context.tree_builder_context) {
+      PrePaintInfo border_box_pre_paint_info =
+          CreatePrePaintInfo(grandchild, page_border_box_context);
+      PaintPropertyTreeBuilder builder(
+          *grandchild->GetLayoutObject(), &border_box_pre_paint_info,
+          page_border_box_context.tree_builder_context.value());
+      builder.UpdateForPageBorderBox(page_container);
+    }
 
+    // A page border box fragment should only have one child: the page area.
     const PhysicalFragmentLink& page_area = grandchild->Children()[0];
     DCHECK_EQ(page_area->GetBoxType(), PhysicalFragment::kPageArea);
 
@@ -895,14 +922,28 @@ void PrePaintTreeWalk::WalkPageContainer(
       PaintPropertyTreeBuilderFragmentContext& fragment_context =
           page_area_context.tree_builder_context->fragment_context;
       containing_block_context = &fragment_context.current;
-      containing_block_context->paint_offset += adjustment;
+      containing_block_context->paint_offset += pagination_adjustment;
+
+      PaginationState* pagination_state =
+          parent_object.GetFrameView()->GetPaginationState();
+      ObjectPaintProperties& pagination_paint_properties =
+          pagination_state->EnsureContentAreaProperties(
+              *containing_block_context->transform,
+              *containing_block_context->clip);
+      // Insert transform and clipping nodes between the paint properties of the
+      // LayoutView and the document contents. They will be updated as each page
+      // is painted.
+      containing_block_context->transform =
+          pagination_paint_properties.Transform();
+      containing_block_context->clip =
+          pagination_paint_properties.OverflowClip();
     }
 
     WalkFragmentainer(parent_object, page_area, page_area_context,
                       fragmentainer_idx);
 
     if (containing_block_context) {
-      containing_block_context->paint_offset -= adjustment;
+      containing_block_context->paint_offset -= pagination_adjustment;
     }
   }
 }

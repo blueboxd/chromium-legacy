@@ -16,6 +16,8 @@
 namespace ash::file_system_provider {
 
 using FileErrorCallback = base::OnceCallback<void(base::File::Error)>;
+using OnItemEvictedCallback =
+    base::RepeatingCallback<void(const base::FilePath&)>;
 
 // Alias to explain the inner int indicates `bytes_read`.
 using FileErrorOrBytesRead = base::FileErrorOr<int>;
@@ -44,9 +46,9 @@ class ContentCache {
   // when the bytes exist in the content cache and can be read (the actual bytes
   // will be stored in the `buffer` and `callback` invoked on finish) and false
   // if the bytes don't exist.
-  virtual bool StartReadBytes(
+  virtual void ReadBytes(
       const OpenedCloudFile& file,
-      net::IOBuffer* buffer,
+      scoped_refptr<net::IOBuffer> buffer,
       int64_t offset,
       int length,
       ProvidedFileSystemInterface::ReadChunkReceivedCallback callback) = 0;
@@ -58,11 +60,18 @@ class ContentCache {
   //     contiguous chunk to be written.
   //   - No other writer must be writing to the file at the moment
   // If any conditions are not satisfied, return false.
-  virtual bool StartWriteBytes(const OpenedCloudFile& file,
-                               net::IOBuffer* buffer,
-                               int64_t offset,
-                               int length,
-                               FileErrorCallback callback) = 0;
+  virtual void WriteBytes(const OpenedCloudFile& file,
+                          scoped_refptr<net::IOBuffer> buffer,
+                          int64_t offset,
+                          int length,
+                          FileErrorCallback callback) = 0;
+
+  // Reads and writes are performed in "chunks". An attempt is made to re-use
+  // open file descriptors to avoid opening/closing them on every chunk request.
+  // This requires any N requests of `StartReadBytes` or `StartWriteBytes` to be
+  // followed by a `CloseFile` to ensure any open file descriptors are properly
+  // cleaned up.
+  virtual void CloseFile(const OpenedCloudFile& file) = 0;
 
   // Load files from the content cache directory and the SQLite database. In the
   // event files have been orphaned (i.e. they are on disk with no DB entry or
@@ -77,6 +86,11 @@ class ContentCache {
   // is inaccessible from this point onwards despite it remaining on disk and
   // the database. It will be removed when `RemoveItems()` is called.
   virtual void Evict(const base::FilePath& file_path) = 0;
+
+  // Call this on_item_evicted_callback with the item's FSP path when it is
+  // evicted.
+  virtual void SetOnItemEvictedCallback(
+      OnItemEvictedCallback on_item_evicted_callback) = 0;
 
   // Remove items which have their `evicted` bool set to true. If an
   // removal is already in progress, the callback will be queued to be called

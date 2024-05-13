@@ -243,7 +243,7 @@ public class TabSwitcherCoordinator
                             true,
                             mMediator,
                             null,
-                            TabProperties.UiType.CLOSABLE,
+                            TabProperties.TabActionState.CLOSABLE,
                             null,
                             this::getMessageManager,
                             container,
@@ -254,8 +254,7 @@ public class TabSwitcherCoordinator
                             true,
                             emptyImageResId,
                             emptyHeadingStringResId,
-                            emptySubheadingStringResId,
-                            () -> refreshTabList());
+                            emptySubheadingStringResId);
 
             mTabListCoordinator.setOnLongPressTabItemEventListener(this);
 
@@ -332,6 +331,7 @@ public class TabSwitcherCoordinator
     private void initTabGridDialogCoordinator() {
         var currentTabModelFilterSupplier =
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilterSupplier();
+
         mTabGridDialogCoordinator =
                 new TabGridDialogCoordinator(
                         mActivity,
@@ -347,7 +347,8 @@ public class TabSwitcherCoordinator
                         TabSwitcherCoordinator.this::getTabGridDialogAnimationSourceView,
                         mGridDialogScrimCoordinator,
                         mTabListCoordinator.getTabGroupTitleEditor(),
-                        mRootView);
+                        mRootView,
+                        /* actionConfirmationManager= */ null);
     }
 
     private ScrimCoordinator createScrimCoordinator() {
@@ -451,11 +452,6 @@ public class TabSwitcherCoordinator
     @Override
     public void setTabSwitcherRecyclerViewPosition(RecyclerViewPosition recyclerViewPosition) {
         mTabListCoordinator.setRecyclerViewPosition(recyclerViewPosition);
-    }
-
-    @Override
-    public void refreshTabList() {
-        mMediator.refreshTabList();
     }
 
     @Override

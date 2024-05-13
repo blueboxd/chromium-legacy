@@ -24,6 +24,13 @@ class Longhand : public CSSProperty {
  public:
   // Parses and consumes a longhand property value from the token range.
   // Returns nullptr if the input is invalid.
+  //
+  // NOTE: This function must accept arbitrary tokens after the value,
+  // without returning error. In particular, it must not check for
+  // end-of-stream, since it may be called as part of parsing a shorthand, or
+  // there may be “!important” after the value that the caller is responsible
+  // the caller is responsible for consuming. End-of-stream is checked
+  // by the caller (after potentially consuming “!important”).
   virtual const CSSValue* ParseSingleValueFromRange(
       CSSParserTokenRange&,
       const CSSParserContext&,

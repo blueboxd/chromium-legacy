@@ -95,7 +95,7 @@ ui::WindowShowState RenderWidgetHostDelegate::GetWindowShowState() {
   return ui::WindowShowState::SHOW_STATE_DEFAULT;
 }
 
-DevicePostureProviderImpl*
+blink::mojom::DevicePostureProvider*
 RenderWidgetHostDelegate::GetDevicePostureProvider() {
   return nullptr;
 }
@@ -147,6 +147,11 @@ RenderViewHostDelegateView* RenderWidgetHostDelegate::GetDelegateView() {
 bool RenderWidgetHostDelegate::IsWidgetForPrimaryMainFrame(
     RenderWidgetHostImpl*) {
   return false;
+}
+
+gfx::mojom::DelegatedInkPointRenderer*
+RenderWidgetHostDelegate::GetDelegatedInkRenderer(ui::Compositor* compositor) {
+  return nullptr;
 }
 
 ukm::SourceId RenderWidgetHostDelegate::GetCurrentPageUkmSourceId() {

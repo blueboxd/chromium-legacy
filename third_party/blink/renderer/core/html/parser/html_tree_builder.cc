@@ -974,8 +974,9 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     case HTMLTag::kTr:
       ParseError(token);
       break;
-    case HTMLTag::kPermission:
-      if (RuntimeEnabledFeatures::PermissionElementEnabled()) {
+    case HTMLTag::kPermissionOrUnknown:
+      if (RuntimeEnabledFeatures::PermissionElementEnabled(
+              tree_.OwnerDocumentForCurrentNode().GetExecutionContext())) {
         tree_.ReconstructTheActiveFormattingElements();
         tree_.InsertSelfClosingHTMLElementDestroyingToken(token);
         frameset_ok_ = false;
@@ -1553,6 +1554,9 @@ void HTMLTreeBuilder::ProcessStartTag(AtomicHTMLToken* token) {
           return;
         }
         case HTMLTag::kInput:
+          UseCounter::Count(tree_.CurrentNode()->GetDocument(),
+                            WebFeature::kHTMLInputInSelect);
+          [[fallthrough]];
         case HTMLTag::kKeygen:
         case HTMLTag::kTextarea: {
           ParseError(token);

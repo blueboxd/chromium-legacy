@@ -178,6 +178,12 @@ if (chrome.readingMode) {
     assert(readAnythingApp, 'no app');
     readAnythingApp.languageChanged();
   };
+
+  chrome.readingMode.onLockScreen = () => {
+    const readAnythingApp = document.querySelector('read-anything-app');
+    assert(readAnythingApp, 'no app');
+    readAnythingApp.onLockScreen();
+  };
 }
 
 
@@ -197,9 +203,18 @@ export enum WordBoundaryMode {
 }
 
 export interface SpeechPlayingState {
+  // Did the user press play or pause
   paused: boolean;
   pauseSource?: PauseActionSource;
+  // Has the user pressed `play` on this page.
+  // TODO rename `speechStarted`, `paused` and `speechActuallyPlaying` to be
+  // clearer.
   speechStarted: boolean;
+  // Indicates that speech is currently playing. This differs from `paused`.
+  // When a user presses the play button, paused becomes false, but
+  // `speechActuallyPlaying` will tell us whether audio actually started playing
+  // yet.
+  speechActuallyPlaying: boolean;
 }
 
 export interface WordBoundaryState {
@@ -220,7 +235,7 @@ export interface WordBoundaryState {
 export interface ReadAnythingElement {
   $: {
     toolbar: ReadAnythingToolbarElement,
-    flexParent: HTMLElement,
+    appFlexParent: HTMLElement,
     container: HTMLElement,
   };
 }
@@ -240,8 +255,25 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     return getTemplate();
   }
 
+  static get properties() {
+    return {
+      speechPlayingState: {
+        type: Object,
+        observer: 'onSpeechPlayingStateChanged_',
+      },
+    };
+  }
+
   private startTime = Date.now();
   private constructorTime: number;
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  override _attachDom(dom: Node|null): ShadowRoot|null {
+    if (dom) {
+      this.appendChild(dom);
+    }
+    return null;
+  }
 
   // Maps a DOM node to the AXNodeID that was used to create it. DOM nodes and
   // AXNodeIDs are unique, so this is a two way map where either DOM node or
@@ -279,6 +311,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   // visual feedback that a voice is about to be spoken.
   private speechEngineLoaded: boolean = true;
 
+  // Sometimes distillations are queued up while distillation is happening so
+  // when the current distillation finishes, we re-distill immediately. In that
+  // case we shouldn't allow playing speech until the next distillation to avoid
+  // resetting speech right after starting it.
+  private willDrawAgainSoon_: boolean = false;
+
   // After the first utterance has been spoken, we should assume that the
   // speech engine has loaded, and we shouldn't adjust the play / pause
   // disabled state based on the message.onStart callback to avoid flickering.
@@ -304,6 +342,9 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   // need to download Natural voices for automatically
   private languagesForVoiceDownloads: Set<string> = new Set();
 
+  // Metrics captured for logging.
+  private playSessionStartTime: number = -1;
+
   // State for speech synthesis paused/play state needs to be tracked explicitly
   // because there are bugs with window.speechSynthesis.paused and
   // window.speechSynthesis.speaking on some platforms.
@@ -311,6 +352,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     paused: true,
     pauseSource: PauseActionSource.DEFAULT,
     speechStarted: false,
+    speechActuallyPlaying: false,
   };
 
   maxSpeechLength = 175;
@@ -363,7 +405,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // panel. This follows Side Panel best practices and prevents loading
     // artifacts from showing if the side panel is shown before content is
     // ready.
-    listenOnce(this.$.flexParent, 'dom-change', () => {
+    listenOnce(this.$.appFlexParent, 'dom-change', () => {
       setTimeout(() => chrome.readingMode.shouldShowUi(), 0);
     });
 
@@ -372,6 +414,14 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     if (this.isReadAloudEnabled_) {
       this.synth.onvoiceschanged = () => {
         this.getVoices(/*refresh =*/ true);
+        // If the selected voice is now unavailable, such as after an install,
+        // reselect a new voice.
+        if (this.selectedVoice &&
+            !this.availableVoices.some(
+                voice => areVoicesEqual(voice, this.selectedVoice!))) {
+          this.selectedVoice = undefined;
+          this.getSpeechSynthesisVoice();
+        }
       };
     }
 
@@ -382,9 +432,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       if (!this.hasContent_ || !this.speechPlayingState.paused) {
         return;
       }
-      const shadowRoot = this.shadowRoot;
-      assert(shadowRoot, 'no shadow root');
-      const selection = shadowRoot.getSelection();
+      const selection = this.getSelection();
       assert(selection, 'no selection');
       const {anchorNode, anchorOffset, focusNode, focusOffset} = selection;
       if (!anchorNode || !focusNode) {
@@ -406,9 +454,30 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         focusNodeId = this.getHighlightedAncestorId_(focusNode);
         adjustedFocusOffset += this.getOffsetInAncestor(focusNode);
       }
-      assert(anchorNodeId && focusNodeId, 'anchor or focus node is undefined');
+      if (!anchorNodeId || !focusNodeId) {
+        return;
+      }
+
       chrome.readingMode.onSelectionChange(
           anchorNodeId, adjustedAnchorOffset, focusNodeId, adjustedFocusOffset);
+      // If there's been a selection, clear the current
+      // Read Aloud highlight.
+      const element = document.querySelector('.' + currentReadHighlightClass);
+      if (element && anchorNodeId && focusNodeId) {
+        element.classList.remove(currentReadHighlightClass);
+      }
+
+      // Clear the previously read highlight if there's been a selection.
+      // If speech is resumed, this won't be restored.
+      // TODO(b/40927698): Restore the previous highlight after speech
+      // is resumed after a selection.
+      this.previousHighlight_.forEach((element) => {
+        if (element) {
+          element.className = '';
+        }
+      });
+      this.previousHighlight_ = [];
+
     };
 
     document.onscroll = () => {
@@ -422,6 +491,28 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       chrome.readingMode.onCopy();
       return false;
     };
+  }
+
+  // Record metrics
+  private recordPlayClick() {
+    this.incrementMetricCount('Play');
+  }
+
+  private recordPauseClick() {
+    this.incrementMetricCount('Pause');
+  }
+
+  private recordNextClick() {
+    this.incrementMetricCount('NextButton');
+  }
+
+  private recordPreviousClick() {
+    this.incrementMetricCount('PreviousButton');
+  }
+
+  private incrementMetricCount(action: string) {
+    chrome.readingMode.incrementMetricCount(
+        'Accessibility.ReadAnything.ReadAloud' + action + 'SessionCount');
   }
 
   private getOffsetInAncestor(node: Node): number {
@@ -468,6 +559,11 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // getHtmlTag might return '#document' which is not a valid to pass to
     // createElement.
     if (htmlTag === '#document') {
+      htmlTag = 'div';
+    }
+
+    // Only one body tag is allowed per document.
+    if (htmlTag === 'body') {
       htmlTag = 'div';
     }
 
@@ -604,6 +700,8 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // Each time we rebuild the subtree, we should clear the node id of the
     // first text node.
     this.firstTextNodeSetForReadAloud = null;
+    this.synth.cancel();
+    this.clearReadAloudState();
     const container = this.$.container;
 
     // Remove all children from container. Use `replaceChildren` rather than
@@ -623,6 +721,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       return;
     }
 
+    this.willDrawAgainSoon_ = chrome.readingMode.requiresDistillation;
     const node = this.buildSubtree_(rootId);
     if (!node.textContent) {
       return;
@@ -682,9 +781,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   getSelection(): any {
-    const shadowRoot = this.shadowRoot;
-    assert(shadowRoot, 'no shadow root');
-    const selection = shadowRoot.getSelection();
+    const selection = document.getSelection();
     return selection;
   }
 
@@ -758,12 +855,8 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   updateLinks() {
-    if (!this.shadowRoot) {
-      return;
-    }
-
     const selector = this.shouldShowLinks() ? 'span[data-link]' : 'a';
-    const elements = this.shadowRoot.querySelectorAll(selector);
+    const elements = this.querySelectorAll(selector);
 
     for (const elem of elements) {
       assert(elem instanceof HTMLElement, 'link is not an HTMLElement');
@@ -890,8 +983,9 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // TODO(crbug.com/40927698): Additional logic to find default voice if there
     // isn't a voice marked as default
     const baseLang = this.speechSynthesisLanguage;
+    const allPossibleVoices = this.getVoices();
     const voicesForLanguage =
-        this.getVoices().filter(voice => voice.lang.startsWith(baseLang));
+        allPossibleVoices.filter(voice => voice.lang.startsWith(baseLang));
 
     if (!voicesForLanguage || (voicesForLanguage.length === 0)) {
       // Stay with the current voice if no voices are available for this
@@ -901,13 +995,34 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
           this.getVoices().find(({default: isDefaultVoice}) => isDefaultVoice);
     }
 
-    // The default voice doesn't always match with the actual default voice
-    // of the device, therefore use the language code to find a voice first.
-    const defaultVoiceForLanguage =
-        voicesForLanguage.find(({default: isDefaultVoice}) => isDefaultVoice);
+    // First try to choose a voice only from currently enabled locales for this
+    // language.
+    const voicesForEnabledLocale = voicesForLanguage.filter(
+        voice =>
+            this.enabledLanguagesInPref.includes(voice.lang.toLowerCase()));
+    if (!voicesForEnabledLocale || voicesForEnabledLocale.length === 0) {
+      // If there are no enabled locales for this language, choose a voice
+      // labeled default among all enabled voices, or the first enabled voice.
+      const allVoicesForEnabledLocales = allPossibleVoices.filter(
+          v => this.enabledLanguagesInPref.includes(v.lang.toLowerCase()));
+      if (!allVoicesForEnabledLocales) {
+        // If there are no enabled locales, we can't select a voice. So return
+        // undefined so we can disable the play button.
+        return undefined;
+      } else {
+        const defaultVoiceForEnabledLocales = allVoicesForEnabledLocales.find(
+            ({default: isDefaultVoice}) => isDefaultVoice);
+        return defaultVoiceForEnabledLocales ? defaultVoiceForEnabledLocales :
+                                               allVoicesForEnabledLocales[0];
+      }
+    }
+
+    // Get the default voice for the currently enabled locale.
+    const defaultVoiceForLanguage = voicesForEnabledLocale.find(
+        ({default: isDefaultVoice}) => isDefaultVoice);
 
     return defaultVoiceForLanguage ? defaultVoiceForLanguage :
-                                     voicesForLanguage[0];
+                                     voicesForEnabledLocale[0];
   }
 
   // Attempt to get a new voice using the current language. In theory, the
@@ -1068,6 +1183,14 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       this.previewVoicePlaying = null;
     };
 
+    // TODO(b/40927698): There should probably be more sophisticated error
+    // handling for voice previews, but for now, simply setting the preview
+    // voice to null should be sufficient to reset state if an error is
+    // encountered during a preview.
+    utterance.onerror = () => {
+      this.previewVoicePlaying = null;
+    };
+
     this.synth.speak(utterance);
   }
 
@@ -1085,18 +1208,26 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
   private onPlayPauseClick_() {
     if (this.speechPlayingState.paused) {
+      this.playSessionStartTime = Date.now();
+      this.recordPlayClick();
       this.playSpeech();
     } else {
+      this.logSpeechPlaySession();
+      this.recordPauseClick();
       this.stopSpeech(PauseActionSource.BUTTON_CLICK);
     }
   }
 
+  private onSpeechPlayingStateChanged_() {
+    chrome.readingMode.onSpeechPlayingStateChanged(
+        this.speechPlayingState.paused);
+  }
+
   stopSpeech(pauseSource: PauseActionSource) {
-    // TODO(crbug.com/40927698): When pausing, can we pause on a word boundary
-    // and continue playing from the previous word?
     this.speechPlayingState = {
       ...this.speechPlayingState,
       paused: true,
+      speechActuallyPlaying: false,
       pauseSource,
     };
 
@@ -1127,7 +1258,19 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
   }
 
+  private logSpeechPlaySession() {
+    // Don't log a playback session just in case something has gotten out of
+    // sync and we call stopSpeech before playSpeech.
+    if (this.playSessionStartTime > 0) {
+      chrome.readingMode.logLongMetric(
+          Date.now() - this.playSessionStartTime,
+          'Accessibility.ReadAnything.SpeechPlaybackSession');
+      this.playSessionStartTime = -1;
+    }
+  }
+
   private playNextGranularity_() {
+    this.recordNextClick();
     this.synth.cancel();
     this.resetPreviousHighlight();
     // Reset the word boundary index whenever we move the granularity position.
@@ -1140,6 +1283,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   private playPreviousGranularity_() {
+    this.recordPreviousClick();
     this.synth.cancel();
     // This must be called BEFORE calling
     // chrome.readingMode.movePositionToPreviousGranularity so we can accurately
@@ -1172,7 +1316,11 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         this.highlightAndPlayInterruptedMessage();
       }
 
-      this.speechPlayingState = {paused: false, speechStarted: true};
+      this.speechPlayingState = {
+        paused: false,
+        speechStarted: true,
+        speechActuallyPlaying: this.speechPlayingState.speechActuallyPlaying,
+      };
 
       // Hide links when speech resumes. We only hide links when the page was
       // paused from the play/pause button.
@@ -1194,7 +1342,11 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       return;
     }
     if (container.textContent) {
-      this.speechPlayingState = {paused: false, speechStarted: true};
+      this.speechPlayingState = {
+        paused: false,
+        speechStarted: true,
+        speechActuallyPlaying: this.speechPlayingState.speechActuallyPlaying,
+      };
       // Hide links when speech begins playing.
       if (chrome.readingMode.linksEnabled) {
         this.updateLinks();
@@ -1327,7 +1479,6 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       // with no feedback.
       this.speechEngineLoaded = true;
 
-      // TODO(crbug.com/40927698): Add more sophisticated error handling.
       if (error.error === 'interrupted') {
         // SpeechSynthesis.cancel() was called, therefore, do nothing.
         return;
@@ -1405,6 +1556,13 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       // We've gotten the signal that the speech engine has loaded, therefore
       // we can enable the Read Aloud buttons.
       this.speechEngineLoaded = true;
+
+      if (!this.speechPlayingState.speechActuallyPlaying) {
+        this.speechPlayingState = {
+          ...this.speechPlayingState,
+          speechActuallyPlaying: true,
+        };
+      }
     };
 
     message.onend = () => {
@@ -1430,8 +1588,6 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         this.onSpeechFinished();
       }
     };
-
-    // TODO(crbug.com/40927698): Add word callbacks for word highlighting.
 
     const voice = this.getSpeechSynthesisVoice();
     if (!voice) {
@@ -1610,6 +1766,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
     // Clear the formatting we added for highlighting.
     this.updateContent();
+    this.logSpeechPlaySession();
   }
 
   private clearReadAloudState() {
@@ -1617,6 +1774,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       paused: true,
       pauseSource: PauseActionSource.DEFAULT,
       speechStarted: false,
+      speechActuallyPlaying: false,
     };
     this.previousHighlight_ = [];
     this.resetToDefaultWordBoundaryState();
@@ -1656,6 +1814,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         [...this.enabledLanguagesInPref, toggledLanguage];
 
     chrome.readingMode.onLanguagePrefChange(toggledLanguage, !currentlyEnabled);
+
+    if (!currentlyEnabled && !this.selectedVoice) {
+      // If there were no enabled languages (and thus no selected voice), select
+      // a voice.
+      this.getSpeechSynthesisVoice();
+    }
   }
 
   private resetSpeechPostSettingChange_() {
@@ -2016,6 +2180,13 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         this.getSelectionTextColorVar(skColorToRgba(backgroundColor)));
   }
 
+  // If the screen is locked during speech, we should stop speaking.
+  onLockScreen() {
+    if (!this.speechPlayingState.paused) {
+      this.stopSpeech(PauseActionSource.DEFAULT);
+    }
+  }
+
   languageChanged() {
     this.speechSynthesisLanguage = chrome.readingMode.baseLanguageForSpeech;
     this.$.toolbar.updateFonts();
@@ -2029,8 +2200,11 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   // change.
   isReadAloudPlayable(
       hasContent: boolean = this.hasContent_,
-      speechEngineLoaded: boolean = this.speechEngineLoaded) {
-    return hasContent && speechEngineLoaded;
+      selectedVoice: SpeechSynthesisVoice|undefined = this.selectedVoice,
+      speechEngineLoaded: boolean = this.speechEngineLoaded,
+      willDrawAgainSoon: boolean = this.willDrawAgainSoon_): boolean {
+    return hasContent && speechEngineLoaded && (selectedVoice !== undefined) &&
+        !willDrawAgainSoon;
   }
 
   // Kicks off a workflow to install a voice pack.
@@ -2040,6 +2214,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   // 4) Upon response, if we see the voice is not installed and that it's in
   // installVoicePackIfPossible, then we trigger an install request
   private installVoicePackIfPossible(langOrLocale: string) {
+    if (!chrome.readingMode.isLanguagePackDownloadingEnabled) {
+      return;
+    }
+
     const langCodeForVoicePackManager =
         convertLangOrLocaleForVoicePackManager(langOrLocale);
 

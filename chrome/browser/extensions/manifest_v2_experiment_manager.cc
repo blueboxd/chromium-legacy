@@ -8,13 +8,22 @@
 #include "chrome/browser/extensions/mv2_experiment_stage.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/pref_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
 
 namespace extensions {
 
 namespace {
+
+// Stores the bit for whether the user has acknowledged the MV2 deprecation
+// warning for a given extension.
+constexpr PrefMap kMV2DeprecationExtensionWarningAcknowledgedPref = {
+    "mv2_deprecation_warning_ack", PrefType::kBool,
+    PrefScope::kExtensionSpecific};
 
 class ManifestV2ExperimentManagerFactory
     : public BrowserContextKeyedServiceFactory {
@@ -42,6 +51,7 @@ ManifestV2ExperimentManagerFactory::ManifestV2ExperimentManagerFactory()
           "ManifestV2ExperimentManager",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionManagementFactory::GetInstance());
+  DependsOn(ExtensionPrefsFactory::GetInstance());
 }
 
 ManifestV2ExperimentManager*
@@ -65,12 +75,27 @@ KeyedService* ManifestV2ExperimentManagerFactory::BuildServiceInstanceFor(
   return new ManifestV2ExperimentManager(context);
 }
 
+MV2ExperimentStage CalculateCurrentExperimentStage() {
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kExtensionManifestV2DeprecationWarning)) {
+    return MV2ExperimentStage::kWarning;
+  }
+
+  return MV2ExperimentStage::kNone;
+}
+
 }  // namespace
 
 ManifestV2ExperimentManager::ManifestV2ExperimentManager(
     content::BrowserContext* browser_context)
-    : extension_management_(
-          ExtensionManagementFactory::GetForBrowserContext(browser_context)) {}
+    : experiment_stage_(CalculateCurrentExperimentStage()),
+      // Note: passing `ExtensionManagement` is safe and guaranteed to outlive
+      // the `impact_checker_` because this class is a KeyedService that depends
+      // on `ExtensionManagement`.
+      impact_checker_(
+          experiment_stage_,
+          ExtensionManagementFactory::GetForBrowserContext(browser_context)),
+      extension_prefs_(ExtensionPrefs::Get(browser_context)) {}
 ManifestV2ExperimentManager::~ManifestV2ExperimentManager() = default;
 
 // static
@@ -87,49 +112,27 @@ BrowserContextKeyedServiceFactory* ManifestV2ExperimentManager::GetFactory() {
 }
 
 MV2ExperimentStage ManifestV2ExperimentManager::GetCurrentExperimentStage() {
-  if (base::FeatureList::IsEnabled(
-          extensions_features::kExtensionManifestV2DeprecationWarning)) {
-    return MV2ExperimentStage::kWarning;
-  }
-
-  return MV2ExperimentStage::kNone;
+  return experiment_stage_;
 }
 
 bool ManifestV2ExperimentManager::IsExtensionAffected(
     const Extension& extension) {
-  // Only consider any extensions if the experiment is enabled.
-  if (GetCurrentExperimentStage() == MV2ExperimentStage::kNone) {
-    return false;
-  }
+  return impact_checker_.IsExtensionAffected(extension);
+}
 
-  // Only extensions < MV3.
-  if (extension.manifest_version() >= 3) {
-    return false;
-  }
+bool ManifestV2ExperimentManager::DidUserAcknowledgeWarning(
+    const ExtensionId& extension_id) {
+  bool acknowledged = false;
+  return extension_prefs_->ReadPrefAsBoolean(
+             extension_id, kMV2DeprecationExtensionWarningAcknowledgedPref,
+             &acknowledged) &&
+         acknowledged;
+}
 
-  // Only extensions (not platform apps, etc).
-  if (!extension.is_extension() && !extension.is_login_screen_extension()) {
-    return false;
-  }
-
-  // Ignore component extensions (they're implementation details of Chrome).
-  if (Manifest::IsComponentLocation(extension.location())) {
-    return false;
-  }
-
-  // TODO(https://crbug.com/337191307): Finalize behavior for unpacked,
-  // commandline, default-installed, OS-installed, etc extensions.
-
-  // Ignore MV2 extensions that are allowed by policy.
-  if (extension_management_->IsExemptFromMV2DeprecationByPolicy(
-          extension.manifest_version(), extension.id(),
-          extension.manifest()->type())) {
-    return false;
-  }
-
-  // The extension is an MV2 (or lower) extension; we should warn the user
-  // about it.
-  return true;
+void ManifestV2ExperimentManager::MarkWarningAsAcknowledged(
+    const ExtensionId& extension_id) {
+  extension_prefs_->SetBooleanPref(
+      extension_id, kMV2DeprecationExtensionWarningAcknowledgedPref, true);
 }
 
 }  // namespace extensions

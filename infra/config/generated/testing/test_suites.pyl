@@ -15,6 +15,7 @@
         ],
         'args': [
           '--disable-field-trial-config',
+          '--store-tombstones',
         ],
         'ci_only': True,
         'swarming': {
@@ -424,11 +425,8 @@
           'has_native_resultdb_integration',
         ],
         'remove_mixins': [
-          'android_r',
           'bullhead',
-          'flame',
           'marshmallow',
-          'mdarcy',
           'oreo_fleet',
           'pie_fleet',
           'walleye',
@@ -1016,11 +1014,11 @@
           'junit-swarming-emulator',
         ],
         'remove_mixins': [
+          'walleye',
+          'pie_fleet',
           'emulator-4-cores',
           'nougat-x86-emulator',
           'oreo-x86-emulator',
-          'walleye',
-          'pie_fleet',
         ],
       },
       'base_junit_tests': {
@@ -1268,11 +1266,11 @@
           'junit-swarming-emulator',
         ],
         'remove_mixins': [
+          'walleye',
+          'pie_fleet',
           'emulator-4-cores',
           'nougat-x86-emulator',
           'oreo-x86-emulator',
-          'walleye',
-          'pie_fleet',
         ],
       },
       'webapk_client_junit_tests': {
@@ -1750,11 +1748,8 @@
     'cronet_sizes_suite': {
       'cronet_sizes': {
         'remove_mixins': [
-          'android_r',
           'bullhead',
-          'flame',
           'marshmallow',
-          'mdarcy',
           'oreo_fleet',
           'pie_fleet',
           'walleye',
@@ -3562,6 +3557,24 @@
       },
     },
 
+    'gpu_webgl_conformance_gles_passthrough_graphite_telemetry_tests': {
+      'webgl_conformance_gles_passthrough_graphite_tests': {
+        'telemetry_test_name': 'webgl1_conformance',
+        'mixins': [
+          'has_native_resultdb_integration',
+          'gpu_integration_test_common_args',
+        ],
+        'args': [
+          '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu --enable-features=SkiaGraphite',
+          '$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile',
+        ],
+        'ci_only': True,
+        'swarming': {
+          'shards': 3,
+        },
+      },
+    },
+
     'gpu_webgl_conformance_gles_passthrough_telemetry_tests': {
       'webgl_conformance_gles_passthrough_tests': {
         'telemetry_test_name': 'webgl1_conformance',
@@ -4284,6 +4297,17 @@
       'minidump_uploader_test': {},
     },
 
+    'model_validation_tests_light_suite': {
+      'model_validation_tests_light': {
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--out_dir=.',
+        ],
+      },
+    },
+
     'model_validation_tests_suite': {
       'model_validation_tests': {
         'mixins': [
@@ -4291,6 +4315,24 @@
         ],
         'args': [
           '--out_dir=.',
+        ],
+        'linux_args': [
+          '--chromedriver',
+          'chromedriver',
+          '--binary',
+          'chrome',
+        ],
+        'mac_args': [
+          '--chromedriver',
+          'chromedriver',
+          '--binary',
+          'Google Chrome.app/Contents/MacOS/Google Chrome',
+        ],
+        'win_args': [
+          '--chromedriver',
+          'chromedriver.exe',
+          '--binary',
+          'Chrome.exe',
         ],
       },
     },
@@ -4306,11 +4348,8 @@
     'monochrome_public_apk_checker_isolated_script': {
       'monochrome_public_apk_checker': {
         'remove_mixins': [
-          'android_r',
           'bullhead',
-          'flame',
           'marshmallow',
-          'mdarcy',
           'oreo_fleet',
           'pie_fleet',
           'walleye',
@@ -4522,6 +4561,11 @@
           'chromedriver.exe',
           '--binary',
           'Chrome.exe',
+        ],
+      },
+      'ondevice_stability_tests_light': {
+        'mixins': [
+          'has_native_resultdb_integration',
         ],
       },
     },
@@ -5200,6 +5244,9 @@
         'mixins': [
           'webview_cts_archive',
         ],
+        'args': [
+          '--store-tombstones',
+        ],
         'swarming': {
           'shards': 2,
         },
@@ -5251,6 +5298,9 @@
         'mixins': [
           'webview_cts_archive',
         ],
+        'args': [
+          '--store-tombstones',
+        ],
         'swarming': {
           'shards': 2,
         },
@@ -5265,6 +5315,7 @@
         ],
         'args': [
           '--disable-field-trial-config',
+          '--store-tombstones',
         ],
         'swarming': {
           'shards': 2,
@@ -5279,6 +5330,7 @@
         ],
         'args': [
           '--store-data-dependencies-in-temp',
+          '--store-tombstones',
         ],
         'swarming': {
           'shards': 2,
@@ -5302,6 +5354,7 @@
         ],
         'args': [
           '--disable-field-trial-config',
+          '--store-tombstones',
         ],
         'swarming': {
           'shards': 2,
@@ -5314,6 +5367,9 @@
         'mixins': [
           'webview_cts_archive',
         ],
+        'args': [
+          '--store-tombstones',
+        ],
         'swarming': {
           'shards': 2,
         },
@@ -5324,6 +5380,9 @@
       'webview_trichrome_cts_tests': {
         'mixins': [
           'webview_cts_archive',
+        ],
+        'args': [
+          '--store-tombstones',
         ],
       },
     },
@@ -6209,6 +6268,7 @@
       'gpu_webcodecs_validating_telemetry_test',
       'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',
+      'gpu_webgl_conformance_gles_passthrough_graphite_telemetry_tests',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_validating_telemetry_tests',
     ],
@@ -7616,12 +7676,8 @@
     },
 
     'optimization_guide_desktop_script_tests': {
-      'model_validation_tests_suite': {
-        'variants': [
-          'MODEL_VALIDATION_BASE',
-          'MODEL_VALIDATION_TRUNK',
-        ],
-      },
+      'model_validation_tests_light_suite': {},
+      'model_validation_tests_suite': {},
       'ondevice_quality_tests_suite': {},
       'ondevice_stability_tests_suite': {},
     },
@@ -7629,7 +7685,7 @@
     'optimization_guide_linux_gtests': {
       'optimization_guide_gpu_gtests': {
         'variants': [
-          'INTEL_UHD_630',
+          'INTEL_UHD_630_OR_770',
           'NVIDIA_GEFORCE_GTX_1660',
         ],
       },
@@ -7641,24 +7697,25 @@
     },
 
     'optimization_guide_linux_script_tests': {
+      'model_validation_tests_light_suite': {
+        'mixins': [
+          'gce',
+        ],
+      },
       'model_validation_tests_suite': {
         'mixins': [
           'gce',
         ],
-        'variants': [
-          'MODEL_VALIDATION_BASE',
-          'MODEL_VALIDATION_TRUNK',
-        ],
       },
       'ondevice_quality_tests_suite': {
         'variants': [
-          'INTEL_UHD_630',
+          'INTEL_UHD_630_OR_770',
           'NVIDIA_GEFORCE_GTX_1660',
         ],
       },
       'ondevice_stability_tests_suite': {
         'variants': [
-          'INTEL_UHD_630',
+          'INTEL_UHD_630_OR_770',
           'NVIDIA_GEFORCE_GTX_1660',
         ],
       },
@@ -7668,7 +7725,7 @@
       'optimization_guide_gpu_gtests': {
         'variants': [
           'AMD_RADEON_RX_5500_XT',
-          'INTEL_UHD_630',
+          'INTEL_UHD_630_OR_770',
           'NVIDIA_GEFORCE_GTX_1660',
         ],
       },
@@ -7680,26 +7737,27 @@
     },
 
     'optimization_guide_win_script_tests': {
-      'model_validation_tests_suite': {
+      'model_validation_tests_light_suite': {
         'mixins': [
           'gce',
         ],
-        'variants': [
-          'MODEL_VALIDATION_BASE',
-          'MODEL_VALIDATION_TRUNK',
+      },
+      'model_validation_tests_suite': {
+        'mixins': [
+          'gce',
         ],
       },
       'ondevice_quality_tests_suite': {
         'variants': [
           'AMD_RADEON_RX_5500_XT',
-          'INTEL_UHD_630',
+          'INTEL_UHD_630_OR_770',
           'NVIDIA_GEFORCE_GTX_1660',
         ],
       },
       'ondevice_stability_tests_suite': {
         'variants': [
           'AMD_RADEON_RX_5500_XT',
-          'INTEL_UHD_630',
+          'INTEL_UHD_630_OR_770',
           'NVIDIA_GEFORCE_GTX_1660',
         ],
       },

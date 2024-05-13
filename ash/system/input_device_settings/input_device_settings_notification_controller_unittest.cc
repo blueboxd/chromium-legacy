@@ -579,6 +579,31 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
 
   controller()->ShowTopRowRewritingNudge();
   EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kTopRowKeyNoMatchNudgeId));
+  CancelNudge(kTopRowKeyNoMatchNudgeId);
+
+  // Call top row remapping nudge again before 24 hours, the nudge should not
+  // show.
+  controller()->ShowTopRowRewritingNudge();
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kTopRowKeyNoMatchNudgeId));
+
+  // Pretend top row remapping was called before 24 hours, should show nudge
+  // again.
+  Shell::Get()->session_controller()->GetActivePrefService()->SetTime(
+      prefs::kTopRowRemappingNudgeLastShown,
+      base::Time::Now() - base::Hours(24));
+  controller()->ShowTopRowRewritingNudge();
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kTopRowKeyNoMatchNudgeId));
+  CancelNudge(kTopRowKeyNoMatchNudgeId);
+
+  // Pretend top row remapping nudge was called 3 times, should not show
+  // nudge again.
+  Shell::Get()->session_controller()->GetActivePrefService()->SetTime(
+      prefs::kTopRowRemappingNudgeLastShown,
+      base::Time::Now() - base::Hours(24));
+  Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
+      prefs::kTopRowRemappingNudgeShownCount, 3u);
+  controller()->ShowTopRowRewritingNudge();
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kTopRowKeyNoMatchNudgeId));
 }
 
 TEST_F(InputDeviceSettingsNotificationControllerTest,
@@ -662,15 +687,40 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   CancelNudge(kSixPackKeyNoMatchNudgeId);
   EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
 
-  // Six pack key VKEY_NEXT is not in the prefDict, should not show anything.
+  // Six pack key VKEY_NEXT is not in the prefDict, should default show kSearch.
   controller()->ShowSixPackKeyRewritingNudge(
       ui::VKEY_NEXT, ui::mojom::SixPackShortcutModifier::kSearch);
-  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  CancelNudge(kSixPackKeyNoMatchNudgeId);
 
   // Call the method with a non six pack key, should not show anything.
   // Six pack key VKEY_NEXT is not in the prefDict, should not show anything.
   controller()->ShowSixPackKeyRewritingNudge(
       ui::VKEY_BRIGHTNESS_UP, ui::mojom::SixPackShortcutModifier::kSearch);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+
+  // Call VKEY_PRIOR again before 24 hours, the nudge should not show.
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_PRIOR, ui::mojom::SixPackShortcutModifier::kAlt);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+
+  // Pretend VKEY_PRIOR was called before 24 hours, should show nudge again.
+  Shell::Get()->session_controller()->GetActivePrefService()->SetTime(
+      prefs::kPageUpRemappingNudgeLastShown,
+      base::Time::Now() - base::Hours(24));
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_PRIOR, ui::mojom::SixPackShortcutModifier::kAlt);
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  CancelNudge(kSixPackKeyNoMatchNudgeId);
+
+  // Pretend VKEY_PRIOR has called 3 times, should not show nudge again.
+  Shell::Get()->session_controller()->GetActivePrefService()->SetTime(
+      prefs::kPageUpRemappingNudgeLastShown,
+      base::Time::Now() - base::Hours(24));
+  Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
+      prefs::kPageUpRemappingNudgeShownCount, 3u);
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_PRIOR, ui::mojom::SixPackShortcutModifier::kAlt);
   EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
 }
 
@@ -683,6 +733,149 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
 
   controller()->ShowCapsLockRewritingNudge();
   EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kCapsLockNoMatchNudgeId));
+  CancelNudge(kCapsLockNoMatchNudgeId);
+
+  // Call caps lock nudge again before 24 hours, the nudge should not show.
+  controller()->ShowCapsLockRewritingNudge();
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kCapsLockNoMatchNudgeId));
+
+  // Pretend caps lock was called before 24 hours, should show nudge again.
+  Shell::Get()->session_controller()->GetActivePrefService()->SetTime(
+      prefs::kCapsLockRemappingNudgeLastShown,
+      base::Time::Now() - base::Hours(24));
+  controller()->ShowCapsLockRewritingNudge();
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kCapsLockNoMatchNudgeId));
+  CancelNudge(kCapsLockNoMatchNudgeId);
+
+  // Pretend caps lock nudge was called 3 times, should not show nudge again.
+  Shell::Get()->session_controller()->GetActivePrefService()->SetTime(
+      prefs::kCapsLockRemappingNudgeLastShown,
+      base::Time::Now() - base::Hours(24));
+  Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
+      prefs::kCapsLockRemappingNudgeShownCount, 3u);
+  controller()->ShowCapsLockRewritingNudge();
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kCapsLockNoMatchNudgeId));
+}
+
+TEST_F(InputDeviceSettingsNotificationControllerTest,
+       NotifyKeyboardFirstTimeConnected) {
+  size_t expected_notification_count = 1;
+  mojom::KeyboardPtr mojom_keyboard = mojom::Keyboard::New();
+  mojom_keyboard->device_key = "0001:0001";
+  mojom_keyboard->id = 1;
+  mojom_keyboard->settings = mojom::KeyboardSettings::New();
+
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetActivePrefService();
+
+  EXPECT_TRUE(prefs->GetList(prefs::kKeyboardsWelcomeNotificationSeen).empty());
+  controller()->NotifyKeyboardFirstTimeConnected(*mojom_keyboard);
+  EXPECT_EQ(prefs->GetList(prefs::kKeyboardsWelcomeNotificationSeen).size(),
+            1u);
+  EXPECT_TRUE(
+      base::Contains(prefs->GetList(prefs::kKeyboardsWelcomeNotificationSeen),
+                     base::Value("0001:0001")));
+  controller()->NotifyKeyboardFirstTimeConnected(*mojom_keyboard);
+  EXPECT_EQ(prefs->GetList(prefs::kKeyboardsWelcomeNotificationSeen).size(),
+            1u);
+  EXPECT_EQ(expected_notification_count++,
+            message_center()->NotificationCount());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(
+      "welcome_experience_keyboards_1"));
+
+  mojom_keyboard->id = 2;
+  mojom_keyboard->device_key = "0001:0002";
+
+  controller()->NotifyKeyboardFirstTimeConnected(*mojom_keyboard);
+  EXPECT_EQ(prefs->GetList(prefs::kKeyboardsWelcomeNotificationSeen).size(),
+            2u);
+  EXPECT_TRUE(
+      base::Contains(prefs->GetList(prefs::kKeyboardsWelcomeNotificationSeen),
+                     base::Value("0001:0002")));
+  EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(
+      "welcome_experience_keyboards_2"));
+}
+
+TEST_F(InputDeviceSettingsNotificationControllerTest,
+       NotifyTouchpadFirstTimeConnected) {
+  size_t expected_notification_count = 1;
+  mojom::TouchpadPtr mojom_touchpad = mojom::Touchpad::New();
+  mojom_touchpad->device_key = "0001:0001";
+  mojom_touchpad->id = 1;
+  mojom_touchpad->settings = mojom::TouchpadSettings::New();
+
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetActivePrefService();
+
+  EXPECT_TRUE(prefs->GetList(prefs::kTouchpadsWelcomeNotificationSeen).empty());
+  controller()->NotifyTouchpadFirstTimeConnected(*mojom_touchpad);
+  EXPECT_EQ(prefs->GetList(prefs::kTouchpadsWelcomeNotificationSeen).size(),
+            1u);
+  EXPECT_TRUE(
+      base::Contains(prefs->GetList(prefs::kTouchpadsWelcomeNotificationSeen),
+                     base::Value("0001:0001")));
+  controller()->NotifyTouchpadFirstTimeConnected(*mojom_touchpad);
+  EXPECT_EQ(prefs->GetList(prefs::kTouchpadsWelcomeNotificationSeen).size(),
+            1u);
+  EXPECT_EQ(expected_notification_count++,
+            message_center()->NotificationCount());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(
+      "welcome_experience_touchpad_1"));
+
+  mojom_touchpad->id = 2;
+  mojom_touchpad->device_key = "0001:0002";
+
+  controller()->NotifyTouchpadFirstTimeConnected(*mojom_touchpad);
+  EXPECT_EQ(prefs->GetList(prefs::kTouchpadsWelcomeNotificationSeen).size(),
+            2u);
+  EXPECT_TRUE(
+      base::Contains(prefs->GetList(prefs::kTouchpadsWelcomeNotificationSeen),
+                     base::Value("0001:0002")));
+  EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(
+      "welcome_experience_touchpad_2"));
+}
+
+TEST_F(InputDeviceSettingsNotificationControllerTest,
+       NotifyPointingStickFirstTimeConnected) {
+  size_t expected_notification_count = 1;
+  mojom::PointingStickPtr mojom_pointing_stick = mojom::PointingStick::New();
+  mojom_pointing_stick->device_key = "0001:0001";
+  mojom_pointing_stick->id = 1;
+  mojom_pointing_stick->settings = mojom::PointingStickSettings::New();
+
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetActivePrefService();
+
+  EXPECT_TRUE(
+      prefs->GetList(prefs::kPointingSticksWelcomeNotificationSeen).empty());
+  controller()->NotifyPointingStickFirstTimeConnected(*mojom_pointing_stick);
+  EXPECT_EQ(
+      prefs->GetList(prefs::kPointingSticksWelcomeNotificationSeen).size(), 1u);
+  EXPECT_TRUE(base::Contains(
+      prefs->GetList(prefs::kPointingSticksWelcomeNotificationSeen),
+      base::Value("0001:0001")));
+  controller()->NotifyPointingStickFirstTimeConnected(*mojom_pointing_stick);
+  EXPECT_EQ(
+      prefs->GetList(prefs::kPointingSticksWelcomeNotificationSeen).size(), 1u);
+  EXPECT_EQ(expected_notification_count++,
+            message_center()->NotificationCount());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(
+      "welcome_experience_pointing_stick_1"));
+
+  mojom_pointing_stick->id = 2;
+  mojom_pointing_stick->device_key = "0001:0002";
+
+  controller()->NotifyPointingStickFirstTimeConnected(*mojom_pointing_stick);
+  EXPECT_EQ(
+      prefs->GetList(prefs::kPointingSticksWelcomeNotificationSeen).size(), 2u);
+  EXPECT_TRUE(base::Contains(
+      prefs->GetList(prefs::kPointingSticksWelcomeNotificationSeen),
+      base::Value("0001:0002")));
+  EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(
+      "welcome_experience_pointing_stick_2"));
 }
 
 }  // namespace ash

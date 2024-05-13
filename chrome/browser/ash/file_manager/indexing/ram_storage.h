@@ -32,51 +32,56 @@ class RamStorage : public IndexStorage {
   // RAM implementation of IndexStorage methods.
 
   // Inverted index and plain index functions.
-  const std::set<int64_t> GetUrlIdsForAugmentedTermId(
-      int64_t augmented_term_id) const override;
-  const std::set<int64_t> GetAugmentedTermIdsForUrl(
-      int64_t url_id) const override;
+  const std::set<int64_t> GetUrlIdsForTermId(int64_t term_id) const override;
+  const std::set<int64_t> GetTermIdsForUrl(int64_t url_id) const override;
 
   // Posting list support.
-  int32_t AddToPostingList(int64_t agumented_term_id, int64_t url_id) override;
-  int32_t DeleteFromPostingList(int64_t augmented_term_id,
-                                int64_t url_id) override;
-
-  // Augmented term ID management.
-  int64_t GetAugmentedTermId(const std::string& field_name,
-                             int64_t term_id) const override;
-  int64_t GetOrCreateAugmentedTermId(const std::string& field_name,
-                                     int64_t term_id) override;
+  int32_t AddToPostingList(int64_t term_id, int64_t url_id) override;
+  int32_t DeleteFromPostingList(int64_t term_id, int64_t url_id) override;
 
   // Term ID management.
-  int64_t GetTermId(const std::string& term_bytes) const override;
-  int64_t GetOrCreateTermId(const std::string& term_bytes) override;
+  int64_t GetTermId(const Term& term) const override;
+  int64_t GetOrCreateTermId(const Term& term) override;
+
+  // Token ID management.
+  int64_t GetTokenId(const std::string& token_bytes) const override;
+  int64_t GetOrCreateTokenId(const std::string& token0_bytes) override;
 
   // URL ID management.
-  int64_t GetUrlId(const GURL& url) override;
+  int64_t GetUrlId(const GURL& url) const override;
   int64_t GetOrCreateUrlId(const GURL& url) override;
   int64_t DeleteUrl(const GURL& url) override;
 
   // FileInfo management.
-  int64_t PutFileInfo(int64_t url_id, const FileInfo& file_info) override;
+  int64_t PutFileInfo(const FileInfo& file_info) override;
   int64_t GetFileInfo(int64_t url_id, FileInfo* info) const override;
   int64_t DeleteFileInfo(int64_t url_id) override;
 
   // Miscellaneous.
-  void AddAugmentedTermIdsForUrl(const std::set<int64_t>& augmented_term_ids,
-                                 int64_t url_id) override;
-  void AddToTermList(int64_t url_id, int64_t term_id) override;
-  void DeleteFromTermList(int64_t url_id, int64_t term_id) override;
+  void AddTermIdsForUrl(const std::set<int64_t>& term_ids,
+                        int64_t url_id) override;
+  void DeleteTermIdsForUrl(const std::set<int64_t>& term_ids,
+                           int64_t url_id) override;
 
  private:
-  // Maps from stringified terms to a unique ID.
-  std::map<std::string, int64_t> term_map_;
-  int64_t term_id_ = 0;
+  // Adds to the inverted posting lists the specified `term_id`. This may be
+  // a no-op if the given term has previously been associated with the file
+  // info ID.
+  void AddToPlainIndex(int64_t url_id, int64_t term_id);
 
-  // Maps field and term to a single term ID. It uses term_id rather than
-  // term to minimize memory usage.
-  std::map<std::tuple<std::string, int64_t>, int64_t> augmented_term_map_;
-  int64_t augmented_term_id_ = 0;
+  // Removes the given `term_id` from the inverted posting lists of the
+  // specified `url_id`. This may be a no-op if the term_id is not present
+  // on the term list for the given `url_id`.
+  void DeleteFromPlainIndex(int64_t url_id, int64_t term_id);
+
+  // Maps from stringified tokens to a unique ID.
+  std::map<std::string, int64_t> token_map_;
+  int64_t token_id_ = 0;
+
+  // Maps field and token ID to a single term ID. It uses token_id rather than
+  // token value to minimize memory usage.
+  std::map<std::tuple<std::string, int64_t>, int64_t> term_map_;
+  int64_t term_id_ = 0;
 
   // Maps a file URL to a unique ID. The GURL is the data uniquely identifying
   // a file. Hence we use the GURL rather than the whole FileInfo. For example,
@@ -88,12 +93,14 @@ class RamStorage : public IndexStorage {
   // Maps url_id to the corresponding FileInfo.
   std::map<int64_t, FileInfo> url_id_to_file_info_;
 
-  // A posting list, which is a map from an augmented term ID to a set of all
+  // A posting list, which is a map from an term ID to a set of all
   // URL IDs that represent files that has this term ID associated with them.
   std::map<int64_t, std::set<int64_t>> posting_lists_;
 
-  // A map from URL ID to augmented term IDs that are stored for a given file.
-  std::map<int64_t, std::set<int64_t>> inverted_posting_lists_;
+  // A map from URL ID to term IDs that are stored for a given file.
+  // This works like a plain index (mapping from URL ID to all terms known
+  // for that URL ID).
+  std::map<int64_t, std::set<int64_t>> plain_index_;
 
   // A pre-allocated empty ID set, returned when we have no ID set available.
   const std::set<int64_t> empty_id_set_;

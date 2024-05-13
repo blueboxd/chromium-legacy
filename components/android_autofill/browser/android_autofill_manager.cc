@@ -55,7 +55,6 @@ void AndroidAutofillManager::OnFormSubmittedImpl(
 void AndroidAutofillManager::OnTextFieldDidChangeImpl(
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& bounding_box,
     const TimeTicks timestamp) {
   auto* provider = GetAutofillProvider();
   if (!provider) {
@@ -66,7 +65,7 @@ void AndroidAutofillManager::OnTextFieldDidChangeImpl(
   // cleared by blink. Check `provider` cache.
   bool cached_is_autofilled = provider->GetCachedIsAutofilled(field);
 
-  provider->OnTextFieldDidChange(this, form, field, bounding_box, timestamp);
+  provider->OnTextFieldDidChange(this, form, field, timestamp);
 
   if (auto* logger = GetEventFormLogger(form, field)) {
     if (cached_is_autofilled) {
@@ -79,24 +78,21 @@ void AndroidAutofillManager::OnTextFieldDidChangeImpl(
 
 void AndroidAutofillManager::OnTextFieldDidScrollImpl(
     const FormData& form,
-    const FormFieldData& field,
-    const gfx::RectF& bounding_box) {
+    const FormFieldData& field) {
   if (auto* provider = GetAutofillProvider())
-    provider->OnTextFieldDidScroll(this, form, field, bounding_box);
+    provider->OnTextFieldDidScroll(this, form, field);
 }
 
 void AndroidAutofillManager::OnAskForValuesToFillImpl(
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& bounding_box,
     AutofillSuggestionTriggerSource trigger_source) {
   auto* provider = GetAutofillProvider();
   if (!provider) {
     return;
   }
 
-  provider->OnAskForValuesToFill(this, form, field, bounding_box,
-                                 trigger_source);
+  provider->OnAskForValuesToFill(this, form, field, trigger_source);
 
   if (auto* logger = GetEventFormLogger(form, field)) {
     logger->OnDidInteractWithAutofillableForm();
@@ -105,28 +101,26 @@ void AndroidAutofillManager::OnAskForValuesToFillImpl(
 
 void AndroidAutofillManager::OnFocusOnFormFieldImpl(
     const FormData& form,
-    const FormFieldData& field,
-    const gfx::RectF& bounding_box) {
+    const FormFieldData& field) {
   if (auto* provider = GetAutofillProvider())
-    provider->OnFocusOnFormField(this, form, field, bounding_box);
+    provider->OnFocusOnFormField(this, form, field);
 }
 
 void AndroidAutofillManager::OnSelectControlDidChangeImpl(
     const FormData& form,
-    const FormFieldData& field,
-    const gfx::RectF& bounding_box) {
+    const FormFieldData& field) {
   if (auto* provider = GetAutofillProvider())
-    provider->OnSelectControlDidChange(this, form, field, bounding_box);
+    provider->OnSelectControlDidChange(this, form, field);
 }
 
 bool AndroidAutofillManager::ShouldParseForms() {
   return true;
 }
 
-void AndroidAutofillManager::OnFocusNoLongerOnFormImpl(
+void AndroidAutofillManager::OnFocusOnNonFormFieldImpl(
     bool had_interacted_form) {
   if (auto* provider = GetAutofillProvider())
-    provider->OnFocusNoLongerOnForm(this, had_interacted_form);
+    provider->OnFocusOnNonFormField(this, had_interacted_form);
 }
 
 void AndroidAutofillManager::OnDidFillAutofillFormDataImpl(

@@ -19,6 +19,7 @@ import {getTemplate} from './lens_overlay_app.html.js';
 
 export interface LensOverlayAppElement {
   $: {
+    backgroundScrim: HTMLElement,
     closeButton: CrIconButtonElement,
     feedbackButton: CrIconButtonElement,
     initialToast: InitialToastElement,
@@ -41,10 +42,7 @@ export class LensOverlayAppElement extends PolymerElement {
         type: Boolean,
         reflectToAttribute: true,
       },
-      isImageRendered: {
-        type: Boolean,
-        reflectToAttribute: true,
-      },
+      isImageRendered: Boolean,
     };
   }
 
@@ -77,8 +75,12 @@ export class LensOverlayAppElement extends PolymerElement {
     this.listenerIds = [];
   }
 
+  private onBackgroundScrimClicked() {
+    this.browserProxy.handler.closeRequestedByOverlayBackgroundClick();
+  }
+
   private onCloseButtonClick() {
-    this.browserProxy.handler.closeRequestedByOverlay();
+    this.browserProxy.handler.closeRequestedByOverlayCloseButton();
   }
 
   private onFeedbackButtonClick() {
@@ -115,7 +117,11 @@ export class LensOverlayAppElement extends PolymerElement {
   }
 
   private closeInitialToast() {
-    this.$.initialToast.triggerHideAnimation();
+    this.$.initialToast.triggerHideMessageAnimation();
+  }
+
+  private hideInitialToastGradient() {
+    this.$.initialToast.triggerHideScrimAnimation();
   }
 
   private onScreenshotRendered() {

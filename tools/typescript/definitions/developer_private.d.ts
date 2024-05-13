@@ -95,6 +95,15 @@ declare global {
         CHROME = 'CHROME',
       }
 
+      export enum SafetyCheckWarningReason {
+        UNPUBLISHED = 'UNPUBLISHED',
+        POLICY = 'POLICY',
+        MALWARE = 'MALWARE',
+        OFFSTORE = 'OFFSTORE',
+        UNWANTED = 'UNWANTED',
+        NO_PRIVACY_PRACTICE = 'NO_PRIVACY_PRACTICE',
+      }
+
       export interface AccessModifier {
         isEnabled: boolean;
         isActive: boolean;
@@ -253,8 +262,10 @@ declare global {
         webStoreUrl: string;
         showSafeBrowsingAllowlistWarning: boolean;
         showAccessRequestsInToolbar: boolean;
+        safetyCheckWarningReason: SafetyCheckWarningReason;
         acknowledgeSafetyCheckWarning: boolean;
         pinnedToToolbar?: boolean;
+        isAffectedByMV2Deprecation: boolean;
       }
 
       export interface ProfileInfo {
@@ -273,6 +284,8 @@ declare global {
         hostAccess?: HostAccess;
         showAccessRequestsInToolbar?: boolean;
         acknowledgeSafetyCheckWarning?: boolean;
+        acknowledgeSafetyCheckWarningReason?: SafetyCheckWarningReason;
+        acknowledgeMv2DeprecationWarning?: boolean;
         pinnedToToolbar?: boolean;
       }
 

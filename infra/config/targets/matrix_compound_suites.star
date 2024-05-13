@@ -1495,12 +1495,8 @@ targets.legacy_matrix_compound_suite(
 targets.legacy_matrix_compound_suite(
     name = "optimization_guide_desktop_script_tests",
     basic_suites = {
-        "model_validation_tests_suite": targets.legacy_matrix_config(
-            variants = [
-                "MODEL_VALIDATION_BASE",
-                "MODEL_VALIDATION_TRUNK",
-            ],
-        ),
+        "model_validation_tests_suite": None,
+        "model_validation_tests_light_suite": None,
         "ondevice_quality_tests_suite": None,
         "ondevice_stability_tests_suite": None,
     },
@@ -1517,7 +1513,7 @@ targets.legacy_matrix_compound_suite(
         "optimization_guide_gpu_gtests": targets.legacy_matrix_config(
             # TODO(b:322815244): Add AMD variant once driver issues are fixed.
             variants = [
-                "INTEL_UHD_630",
+                "INTEL_UHD_630_OR_770",
                 "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),
@@ -1531,20 +1527,21 @@ targets.legacy_matrix_compound_suite(
             mixins = [
                 "gce",
             ],
-            variants = [
-                "MODEL_VALIDATION_BASE",
-                "MODEL_VALIDATION_TRUNK",
+        ),
+        "model_validation_tests_light_suite": targets.legacy_matrix_config(
+            mixins = [
+                "gce",
             ],
         ),
         "ondevice_quality_tests_suite": targets.legacy_matrix_config(
             variants = [
-                "INTEL_UHD_630",
+                "INTEL_UHD_630_OR_770",
                 "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),
         "ondevice_stability_tests_suite": targets.legacy_matrix_config(
             variants = [
-                "INTEL_UHD_630",
+                "INTEL_UHD_630_OR_770",
                 "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),
@@ -1562,7 +1559,7 @@ targets.legacy_matrix_compound_suite(
         "optimization_guide_gpu_gtests": targets.legacy_matrix_config(
             variants = [
                 "AMD_RADEON_RX_5500_XT",
-                "INTEL_UHD_630",
+                "INTEL_UHD_630_OR_770",
                 "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),
@@ -1576,22 +1573,23 @@ targets.legacy_matrix_compound_suite(
             mixins = [
                 "gce",
             ],
-            variants = [
-                "MODEL_VALIDATION_BASE",
-                "MODEL_VALIDATION_TRUNK",
+        ),
+        "model_validation_tests_light_suite": targets.legacy_matrix_config(
+            mixins = [
+                "gce",
             ],
         ),
         "ondevice_quality_tests_suite": targets.legacy_matrix_config(
             variants = [
                 "AMD_RADEON_RX_5500_XT",
-                "INTEL_UHD_630",
+                "INTEL_UHD_630_OR_770",
                 "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),
         "ondevice_stability_tests_suite": targets.legacy_matrix_config(
             variants = [
                 "AMD_RADEON_RX_5500_XT",
-                "INTEL_UHD_630",
+                "INTEL_UHD_630_OR_770",
                 "NVIDIA_GEFORCE_GTX_1660",
             ],
         ),

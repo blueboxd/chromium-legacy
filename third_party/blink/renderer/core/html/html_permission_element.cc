@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -247,7 +248,8 @@ HTMLPermissionElement::HTMLPermissionElement(Document& document)
       permission_observer_receivers_(this, document.GetExecutionContext()),
       embedded_permission_control_receiver_(this,
                                             document.GetExecutionContext()) {
-  DCHECK(RuntimeEnabledFeatures::PermissionElementEnabled());
+  DCHECK(RuntimeEnabledFeatures::PermissionElementEnabled(
+      document.GetExecutionContext()));
   SetHasCustomStyleCallbacks();
   intersection_observer_ = IntersectionObserver::Create(
       GetDocument(),
@@ -336,6 +338,33 @@ void HTMLPermissionElement::DetachLayoutTree(bool performing_reattach) {
   if (auto* view = GetDocument().View()) {
     view->UnregisterFromLifecycleNotifications(this);
   }
+}
+
+void HTMLPermissionElement::Focus(const FocusParams& params) {
+  // This will only apply to `focus` and `blur` JS API. Other focus types (like
+  // accessibility focusing and manual user focus), will still be permitted as
+  // usual.
+  if (params.type == mojom::blink::FocusType::kScript) {
+    return;
+  }
+
+  HTMLElement::Focus(params);
+}
+
+bool HTMLPermissionElement::SupportsFocus(UpdateBehavior) const {
+  // The permission element is only focusable if it has a valid type.
+  return !permission_descriptors_.empty();
+}
+
+int HTMLPermissionElement::DefaultTabIndex() const {
+  // The permission element behaves similarly to a button and therefore is
+  // focusable via keyboard by default.
+  return 0;
+}
+
+CascadeFilter HTMLPermissionElement::GetCascadeFilter() const {
+  // Reject all properties for which 'kValidForPermissionElement' is false.
+  return CascadeFilter(CSSProperty::kValidForPermissionElement, false);
 }
 
 // static
@@ -591,7 +620,8 @@ void HTMLPermissionElement::RegisterPermissionObserver(
   permission_observer_receivers_.Add(observer.InitWithNewPipeAndPassReceiver(),
                                      descriptor->name, GetTaskRunner());
   GetPermissionService()->AddPermissionObserver(
-      descriptor.Clone(), current_status, std::move(observer));
+      descriptor.Clone(), current_status, /*should_include_device_status=*/true,
+      std::move(observer));
 }
 
 void HTMLPermissionElement::OnPermissionStatusChange(

@@ -57,7 +57,6 @@
 #include "chromeos/ash/services/nearby/public/mojom/nearby_share_target_types.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/cross_device/logging/logging.h"
-#include "components/metrics/structured/structured_metrics_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -252,7 +251,7 @@ bool IsOutOfStorage(const base::FilePath& file_path,
 
 int64_t GeneratePayloadId() {
   int64_t payload_id = 0;
-  crypto::RandBytes(&payload_id, sizeof(payload_id));
+  crypto::RandBytes(base::byte_span_from_ref(payload_id));
   return payload_id;
 }
 
@@ -383,12 +382,10 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
 
   // Register logging observers.
   AddObserver(logger_.get());
-  if (base::FeatureList::IsEnabled(metrics::structured::kNearbyShareMetrics)) {
-    AddObserver(discovery_metric_logger_.get());
-    AddObserver(throughput_metric_logger_.get());
-    AddObserver(attachment_metric_logger_.get());
-    AddObserver(neaby_share_metric_logger_.get());
-  }
+  AddObserver(discovery_metric_logger_.get());
+  AddObserver(throughput_metric_logger_.get());
+  AddObserver(attachment_metric_logger_.get());
+  AddObserver(neaby_share_metric_logger_.get());
 
   GetBluetoothAdapter();
 
@@ -417,12 +414,10 @@ NearbySharingServiceImpl::~NearbySharingServiceImpl() {
 
   // Unregister observers.
   RemoveObserver(logger_.get());
-  if (base::FeatureList::IsEnabled(metrics::structured::kNearbyShareMetrics)) {
-    RemoveObserver(discovery_metric_logger_.get());
-    RemoveObserver(throughput_metric_logger_.get());
-    RemoveObserver(attachment_metric_logger_.get());
-    RemoveObserver(neaby_share_metric_logger_.get());
-  }
+  RemoveObserver(discovery_metric_logger_.get());
+  RemoveObserver(throughput_metric_logger_.get());
+  RemoveObserver(attachment_metric_logger_.get());
+  RemoveObserver(neaby_share_metric_logger_.get());
 }
 
 void NearbySharingServiceImpl::Shutdown() {

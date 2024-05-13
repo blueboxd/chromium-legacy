@@ -171,6 +171,14 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
        IDS_PASSWORD_MANAGER_UI_DELETE_DIALOG_TITLE},
       {"done", IDS_DONE},
       {"disable", IDS_DISABLE},
+      {"disconnectCloudAuthenticatorButton",
+       IDS_PASSKEYS_MANAGER_UI_UNENROLL_BUTTON},
+      {"disconnectCloudAuthenticatorToastMessage",
+       IDS_PASSKEYS_MANAGER_UI_UNENROLL_TOAST_MESSAGE},
+      {"disconnectCloudAuthenticatorTitle",
+       IDS_PASSKEYS_MANAGER_UI_UNENROLL_TITLE},
+      {"disconnectCloudAuthenticatorDescription",
+       IDS_PASSKEYS_MANAGER_UI_UNENROLL_DESCRIPTION},
       {"displayNameCopiedToClipboard",
        IDS_PASSWORD_MANAGER_UI_DISPLAY_NAME_COPIED_TO_CLIPBOARD},
       {"displayNameLabel", IDS_PASSWORD_MANAGER_UI_DISPLAY_NAME_LABEL},
@@ -309,8 +317,6 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
        IDS_PASSWORD_MANAGER_UI_PASSKEY_DETAILS_CARD_DELETE_BUTTON_NO_USERNAME_ARIA_LABEL},
       {"passkeyManagementInfoLabel",
        IDS_PASSWORD_MANAGER_UI_PASSKEY_MANAGEMENT_INFO_LABEL},
-       {"passkeyManagementWithPinInfoLabel",
-       IDS_PASSWORD_MANAGER_UI_PASSKEY_MANAGEMENT_WITH_PIN_INFO_LABEL},
       {"passwordCopiedToClipboard",
        IDS_PASSWORD_MANAGER_UI_PASSWORD_COPIED_TO_CLIPBOARD},
       {"passwordDeleted", IDS_PASSWORD_MANAGER_UI_PASSWORD_DELETED},
@@ -570,7 +576,6 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
-  webui::SetupChromeRefresh2023(source);
   return source;
 }
 

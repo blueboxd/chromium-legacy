@@ -38,8 +38,6 @@ PerformanceSidePanelUI::PerformanceSidePanelUI(content::WebUI* web_ui,
     webui::AddLocalizedString(source, str.name, str.id);
   }
 
-  webui::SetupChromeRefresh2023(source);
-
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kSidePanelPerformanceResources,
@@ -48,14 +46,8 @@ PerformanceSidePanelUI::PerformanceSidePanelUI(content::WebUI* web_ui,
   source->AddResourcePaths(base::make_span(kSidePanelSharedResources,
                                            kSidePanelSharedResourcesSize));
 
-  source->AddBoolean(
-      "isPerformanceCPUInterventionEnabled",
-      base::FeatureList::IsEnabled(
-          performance_manager::features::kPerformanceCPUIntervention));
-  source->AddBoolean(
-      "isPerformanceMemoryInterventionEnabled",
-      base::FeatureList::IsEnabled(
-          performance_manager::features::kPerformanceMemoryIntervention));
+  source->AddBoolean("isPerformanceCPUInterventionEnabled", false);
+  source->AddBoolean("isPerformanceMemoryInterventionEnabled", false);
 
   url::Component query(0, static_cast<int>(url.query_piece().length()));
   url::Component key, value;

@@ -81,7 +81,7 @@ class PaintLayerScrollableAreaTest : public PaintControllerPaintTest {
   // Default browser preferred color scheme is light. The method sets both
   // browser-based and the OS-based preferred color schemes to dark.
   void SetPreferredColorSchemesToDark(ColorSchemeHelper& color_scheme_helper) {
-    color_scheme_helper.SetBrowserPreferredColorScheme(
+    color_scheme_helper.SetPreferredRootScrollbarColorScheme(
         mojom::blink::PreferredColorScheme::kDark);
     color_scheme_helper.SetPreferredColorScheme(
         mojom::blink::PreferredColorScheme::kDark);
@@ -90,8 +90,9 @@ class PaintLayerScrollableAreaTest : public PaintControllerPaintTest {
   void AssertDefaultPreferredColorSchemes() const {
     ASSERT_EQ(GetDocument().GetPreferredColorScheme(),
               mojom::blink::PreferredColorScheme::kLight);
-    ASSERT_EQ(GetDocument().GetSettings()->GetBrowserPreferredColorScheme(),
-              mojom::blink::PreferredColorScheme::kLight);
+    ASSERT_EQ(
+        GetDocument().GetSettings()->GetPreferredRootScrollbarColorScheme(),
+        mojom::blink::PreferredColorScheme::kLight);
   }
 
   void ExpectEqAllScrollControlsNeedPaintInvalidation(
@@ -402,12 +403,12 @@ TEST_P(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
   ASSERT_TRUE(white_layer);
   ASSERT_TRUE(black_layer);
 
-  ASSERT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
-            none_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
-  ASSERT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
-            white_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
-  ASSERT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
-            black_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  ASSERT_EQ(mojom::blink::ColorScheme::kLight,
+            none_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
+  ASSERT_EQ(mojom::blink::ColorScheme::kLight,
+            white_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
+  ASSERT_EQ(mojom::blink::ColorScheme::kDark,
+            black_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
 }
 
 TEST_P(PaintLayerScrollableAreaTest,
@@ -426,25 +427,25 @@ TEST_P(PaintLayerScrollableAreaTest,
     </div>
   )HTML");
   PaintLayer* scroll_paint_layer = GetPaintLayerByElementId("scroller");
-  EXPECT_EQ(
-      ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
-      scroll_paint_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kLight,
+            scroll_paint_layer->GetScrollableArea()
+                ->GetOverlayScrollbarColorScheme());
 
   GetElementById("scroller")
       ->setAttribute(html_names::kStyleAttr,
                      AtomicString("background: rgb(34, 85, 51);"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(
-      ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
-      scroll_paint_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kDark,
+            scroll_paint_layer->GetScrollableArea()
+                ->GetOverlayScrollbarColorScheme());
 
   GetElementById("scroller")
       ->setAttribute(html_names::kStyleAttr,
                      AtomicString("background: rgb(236, 143, 185);"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(
-      ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
-      scroll_paint_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kLight,
+            scroll_paint_layer->GetScrollableArea()
+                ->GetOverlayScrollbarColorScheme());
 }
 
 // The scrollbar overlay color theme should follow the used color scheme when a
@@ -479,22 +480,22 @@ TEST_P(PaintLayerScrollableAreaTest, PreferredOverlayScrollbarColorTheme) {
   PaintLayer* none_layer = GetPaintLayerByElementId("none");
   PaintLayer* white_layer = GetPaintLayerByElementId("white");
   PaintLayer* black_layer = GetPaintLayerByElementId("black");
-  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
-            none_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
-  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
-            white_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
-  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
-            black_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kDark,
+            none_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kLight,
+            white_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kDark,
+            black_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
 
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kLight);
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
-            none_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
-  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
-            white_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
-  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
-            black_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kLight,
+            none_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kLight,
+            white_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kDark,
+            black_layer->GetScrollableArea()->GetOverlayScrollbarColorScheme());
 }
 
 TEST_P(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
@@ -1640,7 +1641,7 @@ TEST_P(PaintLayerScrollableAreaTest, UsedColorSchemeRootScrollbarsDark) {
             mojom::blink::ColorScheme::kLight);
 
   // Change browser preferred color scheme to dark.
-  color_scheme_helper.SetBrowserPreferredColorScheme(
+  color_scheme_helper.SetPreferredRootScrollbarColorScheme(
       mojom::blink::PreferredColorScheme::kDark);
   UpdateAllLifecyclePhasesForTest();
 

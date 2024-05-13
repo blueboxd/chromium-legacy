@@ -206,6 +206,11 @@ const char kSingleTab[] = "SingleTab";
 const char kPriceChange[] = "PriceChange";
 const char kTabResumptionForAndroidHome[] = "TabResumption";
 
+// Input Context keys for freshness for Android Home modules.
+const char kSingleTabFreshness[] = "single_tab_freshness";
+const char kPriceChangeFreshness[] = "price_change_freshness";
+const char kTabResumptionForAndroidHomeFreshness[] = "tab_resumption_freshness";
+
 // Labels for IOS modules for ranking.
 const char kMostVisitedTiles[] = "MostVisitedTiles";
 const char kShortcuts[] = "Shortcuts";
@@ -219,6 +224,7 @@ const char kShortcutsFreshness[] = "shortcuts_freshness";
 const char kSafetyCheckFreshness[] = "safety_check_freshness";
 const char kTabResumptionFreshness[] = "tab_resumption_freshness";
 const char kParcelTrackingFreshness[] = "parcel_tracking_freshness";
+const char kIsShowingStartSurface[] = "is_showing_start_surface";
 
 // Labels for desktop new tab page drive module model.
 // Any updates to these strings need to also update the field trials allowlist

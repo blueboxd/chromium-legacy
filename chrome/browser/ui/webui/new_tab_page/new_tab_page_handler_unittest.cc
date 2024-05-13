@@ -40,7 +40,7 @@
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
-#include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/browser/ui/webui/webui_util_desktop.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -319,7 +319,7 @@ class NewTabPageHandlerTest : public testing::Test {
                   VerifyCustomBackgroundImageURL)
           .Times(1);
     }
-    webui::SetThemeProviderForTesting(&mock_theme_provider_);
+    webui::SetThemeProviderForTestingDeprecated(&mock_theme_provider_);
     web_contents_->SetColorProviderSource(&mock_color_provider_source_);
 
     EXPECT_FALSE(
@@ -513,14 +513,7 @@ TEST_P(NewTabPageHandlerThemeTest, SetTheme) {
   EXPECT_FALSE(theme->background_image_attribution_url.has_value());
   EXPECT_FALSE(theme->background_image_collection_id.has_value());
   ASSERT_TRUE(theme->most_visited);
-  // TODO (crbug/1519999): The following needs to be reviewed. See the
-  //                       referenced bug for details.
-  if (features::IsChromeRefresh2023()) {
-    EXPECT_EQ(SkColorSetRGB(0, 0, CustomizeChromeSidePanel() ? 6 : 8),
-              theme->most_visited->background_color);
-  } else {
-    EXPECT_EQ(SkColorSetRGB(0, 0, 8), theme->most_visited->background_color);
-  }
+  EXPECT_EQ(SkColorSetRGB(0, 0, 6), theme->most_visited->background_color);
   EXPECT_TRUE(theme->most_visited->use_white_tile_icon);
   EXPECT_EQ(false, theme->most_visited->is_dark);
 }
@@ -1256,8 +1249,7 @@ TEST_F(NewTabPageHandlerTest, MaybeShowFeaturePromo_CustomizeChrome) {
 
 TEST_F(NewTabPageHandlerTest, MaybeShowFeaturePromo_CustomizeChromeRefresh) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures({features::kChromeRefresh2023},
-                            {features::kChromeWebuiRefresh2023});
+  features.InitWithFeatures({features::kChromeRefresh2023}, {});
 
   EXPECT_CALL(*mock_feature_promo_helper_, IsSigninModalDialogOpen)
       .WillRepeatedly(testing::Return(false));

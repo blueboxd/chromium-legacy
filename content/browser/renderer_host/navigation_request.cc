@@ -18,7 +18,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/safe_ref.h"
 #include "base/metrics/field_trial_params.h"
@@ -167,6 +166,7 @@
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -1111,15 +1111,6 @@ bool IsFailedDownload(bool is_download,
   return is_download && headers &&
          !network::IsSuccessfulStatus(headers->response_code());
 }
-
-#define SCOPED_SET_NOW(name, time_field)                           \
-  base::ScopedClosureRunner name(base::BindOnce(                   \
-      [](base::WeakPtr<NavigationRequest> navigation_request) {    \
-        if (navigation_request) {                                  \
-          navigation_request->time_field = base::TimeTicks::Now(); \
-        }                                                          \
-      },                                                           \
-      weak_factory_.GetWeakPtr()))
 
 // Returns if the given `rfh` should be evicted from BackForwardCache due to
 // ongoing navigation.
@@ -5211,7 +5202,12 @@ void NavigationRequest::OnStartChecksComplete(
       base::StrCat({"Navigation.WillStartRequestToLoaderStart.",
                     IsInMainFrame() ? "MainFrame" : "Subframe"}),
       base::TimeTicks::Now() - will_start_request_time_);
-  SCOPED_SET_NOW(scoped_set_now, loader_start_time_);
+  absl::Cleanup scoped_set_now = [navigation_request =
+                                      weak_factory_.GetWeakPtr()] {
+    if (navigation_request) {
+      navigation_request->loader_start_time_ = base::TimeTicks::Now();
+    }
+  };
 
   loader_->Start();
   // DO NOT ADD CODE after this. The previous call to
@@ -6028,12 +6024,16 @@ void NavigationRequest::CommitNavigation() {
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         reporter_remote;
     coep_reporter()->Clone(reporter_remote.InitWithNewPipeAndPassReceiver());
+    service_worker_container_info = service_worker_handle_->TakeContainerInfo();
+
     // Notify the service worker navigation handle that navigation commit is
     // about to go.
-    service_worker_handle_->OnBeginNavigationCommit(
-        GetRenderFrameHost()->GetGlobalId(),
-        policy_container_builder_->FinalPolicies(), std::move(reporter_remote),
-        &service_worker_container_info, commit_params_->document_ukm_source_id);
+    if (service_worker_handle_->service_worker_client()) {
+      service_worker_handle_->service_worker_client()->CommitResponse(
+          GetRenderFrameHost()->GetGlobalId(),
+          policy_container_builder_->FinalPolicies(),
+          std::move(reporter_remote), commit_params_->document_ukm_source_id);
+    }
   }
 
   // Determine if top-level navigation is allowed without sticky user
@@ -6133,8 +6133,9 @@ void NavigationRequest::CommitNavigation() {
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
       std::move(service_worker_container_info), document_token_,
       devtools_navigation_token_);
-  if (service_worker_handle_ && service_worker_handle_->container_host()) {
-    service_worker_handle_->container_host()->SetContainerReady();
+  if (service_worker_handle_ &&
+      service_worker_handle_->service_worker_client()) {
+    service_worker_handle_->service_worker_client()->SetContainerReady();
   }
   UpdateNavigationHandleTimingsOnCommitSent();
 
@@ -7530,10 +7531,11 @@ void NavigationRequest::DidCommitNavigation(
     frame_tree_node()->SetCollapsed(false);
   }
 
-  if (service_worker_handle_) {
+  if (service_worker_handle_ &&
+      service_worker_handle_->service_worker_client()) {
     // Notify the service worker navigation handle that the navigation finished
     // committing.
-    service_worker_handle_->OnEndNavigationCommit();
+    service_worker_handle_->service_worker_client()->OnEndNavigationCommit();
   }
 
   // TODO(crbug.com/40249865): consider using NavigationOrDocumentHandle

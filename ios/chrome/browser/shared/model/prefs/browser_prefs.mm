@@ -793,6 +793,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(spotlight::kSpotlightLastIndexingVersionKey, 0);
   registry->RegisterTimePref(spotlight::kSpotlightLastIndexingDateKey,
                              base::Time());
+
+  registry->RegisterDictionaryPref(
+      prefs::kContentNotificationsEnrollmentEligibility);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -1020,4 +1023,7 @@ void MigrateObsoleteUserDefault() {
 
   // TODO(b/322004644): Remove in M124+. Added 02/2024.
   [defaults removeObjectForKey:@"TimestampAppLaunchedOnColdStart"];
+
+  // Added 05/2024.
+  [defaults removeObjectForKey:@"lastSignificantUserEventVideo"];
 }

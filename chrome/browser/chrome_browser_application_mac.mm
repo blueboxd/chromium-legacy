@@ -148,10 +148,9 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 }
 
 + (void)initialize {
-  // Turn all deallocated Objective-C objects into zombies, keeping
-  // the most recent 10,000 of them on the treadmill.
-  ObjcEvilDoers::ZombieEnable(true, 10000);
-
+  if (self != [BrowserCrApplication class]) {
+    return;
+  }
   chrome::InstallObjcExceptionPreprocessor();
 
   cocoa_l10n_util::ApplyForcedRTL();

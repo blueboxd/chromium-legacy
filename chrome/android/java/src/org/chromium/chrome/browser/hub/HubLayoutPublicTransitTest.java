@@ -99,7 +99,7 @@ public class HubLayoutPublicTransitTest {
     public void testChangeTabSwitcherPanes() {
         PageStation page = mInitialStateRule.startOnBlankPageBatched();
 
-        PageAppMenuFacility appMenu = page.openAppMenu();
+        PageAppMenuFacility appMenu = page.openGenericAppMenu();
         IncognitoNewTabPageStation incognitoNewTabPage = appMenu.openNewIncognitoTab();
 
         HubIncognitoTabSwitcherStation incognitoTabSwitcher =
@@ -126,7 +126,7 @@ public class HubLayoutPublicTransitTest {
 
         PageStation page = mInitialStateRule.startOnBlankPageBatched();
 
-        PageAppMenuFacility appMenu = page.openAppMenu();
+        PageAppMenuFacility appMenu = page.openGenericAppMenu();
         NewTabPageStation newTabPage = appMenu.openNewTab();
 
         HubTabSwitcherStation tabSwitcher = newTabPage.openHub(HubTabSwitcherStation.class);
@@ -142,8 +142,8 @@ public class HubLayoutPublicTransitTest {
         NewTabPageStation destination =
                 NewTabPageStation.newBuilder()
                         .withActivityTestRule(sActivityTestRule)
-                        .withIsOpeningTab(false)
-                        .withIsSelectingTab(true)
+                        .withIsOpeningTabs(0)
+                        .withIsSelectingTabs(1)
                         .build();
         Trip.travelSync(
                 currentStation,

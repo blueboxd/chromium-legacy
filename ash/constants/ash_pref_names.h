@@ -181,6 +181,10 @@ inline constexpr char kEduCoexistenceToSAcceptedVersion[] =
 inline constexpr char kOnDeviceAppControlsSetupCompleted[] =
     "on_device_app_controls.setup_completed";
 
+// A list pref containing details of the apps blocked by on device controls.
+inline constexpr char kOnDeviceAppControlsBlockedApps[] =
+    "on_device_app_controls.blocked_apps";
+
 // A boolean pref indicating whether welcome page should be skipped in
 // in-session 'Add account' flow.
 inline constexpr char kShouldSkipInlineLoginWelcomePage[] =
@@ -201,6 +205,10 @@ inline constexpr char kHasHotspotUsedBefore[] = "ash.hotspot.has_used_before";
 // A boolean pref that controls whether input noise cancellation is enabled.
 inline constexpr char kInputNoiseCancellationEnabled[] =
     "ash.input_noise_cancellation_enabled";
+
+// A boolean pref that controls whether input style transfer is enabled.
+inline constexpr char kInputStyleTransferEnabled[] =
+    "ash.input_style_transfer_enabled";
 
 // The name of an integer pref that counts the number of times we have shown
 // the multitask menu education nudge.
@@ -317,6 +325,11 @@ inline constexpr char kLauncherResultEverLaunched[] =
 // show in launcher.
 inline constexpr char kLauncherSearchCategoryControlStatus[] =
     "launcher.search_category_control_status";
+
+// A time pref indicating the last time a local file scan is logged in launcher
+// search.
+inline constexpr char kLauncherSearchLastFileScanLogTime[] =
+    "launcher.search_last_file_scan_log_time";
 
 // Dictionary pref to store data on the distribution of provider relevance
 // scores for the launcher normalizer.
@@ -495,10 +508,6 @@ inline constexpr char kAccessibilityMonoAudioEnabled[] =
 // A boolean pref which determines if mouse keys are enabled.
 inline constexpr char kAccessibilityMouseKeysEnabled[] =
     "settings.a11y.mouse_keys.enabled";
-// A boolean pref which determines if you can pause mouse keys with a
-// keyboard shortcut.
-inline constexpr char kAccessibilityMouseKeysShortcutToPauseEnabled[] =
-    "settings.a11y.mouse_keys.ctrl_to_pause_enabled";
 // A boolean pref which determines if mouse keys is automatically disabled in
 // text fields.
 inline constexpr char kAccessibilityMouseKeysDisableInTextFields[] =
@@ -1169,6 +1178,11 @@ inline constexpr char kPowerQuickDimEnabled[] = "power.quick_dim_enabled";
 // Quick lock delay is used inside powerd to control the delay time for a screen
 // lock to happen if the user is detected to be absent.
 inline constexpr char kPowerQuickLockDelay[] = "power.quick_lock_delay.ms";
+
+// A `TimeDelta` pref for the duration when the critical notification is
+// displayed to when no outcome has occurred yet. Updates every 15 seconds.
+inline constexpr char kCriticalStateDuration[] =
+    "ash.power_notification.critical_state_duration";
 
 // A boolean pref that reflects the value of the policy
 // DeviceEphemeralNetworkPoliciesEnabled.
@@ -2185,8 +2199,10 @@ inline constexpr char kBirchUseWeather[] = "ash.birch.use_weather";
 // A boolean pref indicating whether Birch should use release notes data.
 inline constexpr char kBirchUseReleaseNotes[] = "ash.birch.use_release_notes";
 
-// A preference to keep track of the device registered time.
-inline constexpr char kDeviceRegisteredTime[] = "DeviceRegisteredTime";
+// A boolean pref that holds whether the user dismissed the extended updates
+// notification.
+inline constexpr char kExtendedUpdatesNotificationDismissed[] =
+    "ash.extended_updates.notification_dismissed";
 
 //-----------------------------------------------------------------------------
 // Language related Prefs

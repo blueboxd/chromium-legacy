@@ -95,6 +95,7 @@ void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
       "Full name", "name", "", FormControlType::kInputText, "name")};
   form.fields.front().set_is_focusable(true);
   form.fields.front().set_should_autocomplete(true);
+  form.fields.front().set_bounds(element_bounds);
 
   // Not adding a profile would result in `AskForValuesToFill()` not finding any
   // suggestions and hiding the Autofill Popup.
@@ -111,7 +112,7 @@ void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
   TestAutofillManagerWaiter waiter(driver.GetAutofillManager(),
                                    {AutofillManagerEvent::kAskForValuesToFill});
   driver.renderer_events().AskForValuesToFill(
-      form, form.fields.front(), element_bounds,
+      form, form.fields.front(),
       AutofillSuggestionTriggerSource::kFormControlElementClicked);
   testing::AssertionResult waiter_assertion_result = waiter.Wait();
   if (!waiter_assertion_result) {
@@ -141,18 +142,11 @@ void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
 
   // Showing the Autofill Popup is an asynchronous task.
   if (expect_popup_to_be_shown) {
-    int counter = 0;
     // `base::RunLoop().RunUntilIdle()` can cause flakiness when waiting for the
     // popup to be shown.
-    if (!base::test::RunUntil([&]() {
-          counter++;
-          return !delegate->popup_hidden();
-        })) {
+    if (!base::test::RunUntil([&]() { return !delegate->popup_hidden(); })) {
       return testing::AssertionFailure()
-             << " " << __func__
-             << "(): Showing the autofill popup timed out. RunUntil checked "
-                "the condition "
-             << counter << " times. ";
+             << " " << __func__ << "(): Showing the autofill popup timed out.";
     }
   } else {
     // `base::test::RunUntil()` cannot be used to wait for something not to

@@ -116,6 +116,9 @@ class ShoppingServiceHandler
   void ShowFeedback() override;
   void GetAllProductSpecificationsSets(
       GetAllProductSpecificationsSetsCallback callback) override;
+  void GetProductSpecificationsSetByUuid(
+      const base::Uuid& uuid,
+      GetProductSpecificationsSetByUuidCallback callback) override;
   void AddProductSpecificationsSet(
       const std::string& name,
       const std::vector<GURL>& urls,
@@ -140,9 +143,11 @@ class ShoppingServiceHandler
       const ProductSpecificationsSet& set) override;
 
   void OnProductSpecificationsSetUpdate(
+      const ProductSpecificationsSet& before,
       const ProductSpecificationsSet& set) override;
 
-  void OnProductSpecificationsSetRemoved(const base::Uuid& uuid) override;
+  void OnProductSpecificationsSetRemoved(
+      const ProductSpecificationsSet& set) override;
 
   static std::vector<shopping_service::mojom::BookmarkProductInfoPtr>
   BookmarkListToMojoList(

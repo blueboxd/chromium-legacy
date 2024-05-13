@@ -78,6 +78,9 @@ extern const base::FeatureParam<bool> kMemorySaverShowRecommendedBadge;
 
 // Round 2.5 Performance Controls features
 
+// This enables the UI for adjusting the aggresiveness of memory saver mode.
+BASE_DECLARE_FEATURE(kMemorySaverModeAggressiveness);
+
 // Whether to enable showing improvements to the discarded tab indicator, namely
 // increasing the size of the favicon, as well as removing the transparency and
 // updating the color of the discard ring.
@@ -89,8 +92,8 @@ BASE_DECLARE_FEATURE(kDiscardRingImprovements);
 // configuring performance settings.
 BASE_DECLARE_FEATURE(kPerformanceControlsSidePanel);
 
-// This enables the CPU performance interventions within the side panel.
-BASE_DECLARE_FEATURE(kPerformanceCPUIntervention);
+// This enables the performance detection backend and interventions UI.
+BASE_DECLARE_FEATURE(kPerformanceIntervention);
 
 #if BUILDFLAG(IS_WIN)
 // Prefetch the main browser DLL when a new node is added to the PM graph
@@ -117,9 +120,6 @@ extern const base::FeatureParam<int> kCPUMaxActionableTabs;
 // Minimum percentage to improve CPU health for a tab to be actionable
 extern const base::FeatureParam<int> kMinimumActionableTabCPUPercentage;
 
-// This enables the Memory performance interventions within the side panel.
-BASE_DECLARE_FEATURE(kPerformanceMemoryIntervention);
-
 // This represents the duration that Memory must be over the threshold before
 // a notification is triggered.
 extern const base::FeatureParam<base::TimeDelta> kMemoryTimeOverThreshold;
@@ -137,12 +137,7 @@ extern const base::FeatureParam<bool> kBoostChildFrames;
 
 extern const base::FeatureParam<bool> kDownvoteAdFrames;
 
-// When enabled, Memory Saver supports the different modes defined in the
-// `ModalMemorySaverMode` enum.
-BASE_DECLARE_FEATURE(kModalMemorySaver);
-
-// When set, makes Memory Saver behave as the specified mode if it's  enabled.
-extern const base::FeatureParam<int> kModalMemorySaverMode;
+BASE_DECLARE_FEATURE(kPMLoadingPageVoter);
 
 // Policy that evicts the BFCache of pages that become non visible or the
 // BFCache of all pages when the system is under memory pressure.
@@ -160,10 +155,6 @@ extern const base::FeatureParam<base::TimeDelta> kDelayBeforeLogging;
 
 // If Chrome CPU utilization is over the specified percent then we will log it.
 extern const base::FeatureParam<int> kThresholdChromeCPUPercent;
-
-// When enabled, the PageResource2 UKM is logged twice, once using Resource
-// Attribution and once using legacy measurements, to compare the results.
-BASE_DECLARE_FEATURE(kResourceAttributionValidation);
 
 // When enabled, background pages that use a lot of CPU may be frozen when
 // Battery Saver is active.

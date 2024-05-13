@@ -147,7 +147,6 @@ class CONTENT_EXPORT IndexedDBBucketContext
     base::RepeatingCallback<void(
         mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         /*client_state_checker_remote*/,
-        const base::UnguessableToken& /*client_token*/,
         mojo::PendingReceiver<blink::mojom::IDBFactory> /*pending_receiver*/)>
         on_receiver_bounced;
 
@@ -284,7 +283,6 @@ class CONTENT_EXPORT IndexedDBBucketContext
   void AddReceiver(
       mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
-      base::UnguessableToken client_token,
       mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver);
 
   // blink::mojom::IDBFactory implementation:
@@ -304,10 +302,9 @@ class CONTENT_EXPORT IndexedDBBucketContext
                       bool force_close) override;
 
   // Finishes filling in `info` with data relevant to idb-internals and passes
-  // the result back via `result`.
-  void FillInMetadata(
-      storage::mojom::IdbBucketMetadataPtr info,
-      base::OnceCallback<void(storage::mojom::IdbBucketMetadataPtr)> result);
+  // the result back via the return value.
+  storage::mojom::IdbBucketMetadataPtr FillInMetadata(
+      storage::mojom::IdbBucketMetadataPtr info);
 
   // This exists to facilitate unit tests. Since `this` is owned via a
   // `SequenceBound`, it's not possible to directly grab pointer to `this`.
@@ -357,8 +354,7 @@ class CONTENT_EXPORT IndexedDBBucketContext
   struct ReceiverContext {
     ReceiverContext(
         mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
-            client_state_checker_remote,
-        base::UnguessableToken token);
+            client_state_checker_remote);
 
     ~ReceiverContext();
 
@@ -369,8 +365,6 @@ class CONTENT_EXPORT IndexedDBBucketContext
 
     mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote;
-
-    base::UnguessableToken client_token;
   };
 
   // Used to synchronize the global throttling of LevelDB cleanup operations.

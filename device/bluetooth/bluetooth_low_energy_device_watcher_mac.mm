@@ -81,7 +81,7 @@ void BluetoothLowEnergyDeviceWatcherMac::OnPropertyListFileChangedOnFileThread(
   //  }
   NSURL* plist_file = base::apple::FilePathToNSURL(path);
   NSDictionary* bluetooth_info_dictionary =
-      [NSDictionary dictionaryWithContentsOfURL:plist_file error:nil];
+      [NSDictionary dictionaryWithContentsOfURL:plist_file];
 
   // |bluetooth_info_dictionary| is nil if there was an error reading the file
   // or if the content of the read file cannot be represented by a dictionary.

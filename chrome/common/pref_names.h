@@ -1919,6 +1919,17 @@ inline constexpr char kChromeDataRegionSetting[] = "chrome_data_region_setting";
 inline constexpr char kNetworkAnnotationBlocklist[] =
     "network_annotation_blocklist";
 
+// Booleans indicating whether the user had dismissed the dialog with "Dont ask
+// again". This value is assumed false, if true the dialog should not show.
+inline constexpr char kTabGroupsDeletionSkipDialogOnDelete[] =
+    "tab_groups.deletion.skip_dialog_on_delete";
+inline constexpr char kTabGroupsDeletionSkipDialogOnUngroup[] =
+    "tab_groups.deletion.skip_dialog_on_ungroup";
+inline constexpr char kTabGroupsDeletionSkipDialogOnRemoveTab[] =
+    "tab_groups.deletion.skip_dialog_on_remove_tab";
+inline constexpr char kTabGroupsDeletionSkipDialogOnCloseTab[] =
+    "tab_groups.deletion.skip_dialog_on_close_tab";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
@@ -3598,10 +3609,14 @@ inline constexpr char kTabStatsDiscardsExternal[] =
 inline constexpr char kTabStatsDiscardsUrgent[] = "tab_stats.discards_urgent";
 inline constexpr char kTabStatsDiscardsProactive[] =
     "tab_stats.discards_proactive";
+inline constexpr char kTabStatsDiscardsSuggested[] =
+    "tab_stats.discards_suggested";
 inline constexpr char kTabStatsReloadsExternal[] = "tab_stats.reloads_external";
 inline constexpr char kTabStatsReloadsUrgent[] = "tab_stats.reloads_urgent";
 inline constexpr char kTabStatsReloadsProactive[] =
     "tab_stats.reloads_proactive";
+inline constexpr char kTabStatsReloadsSuggested[] =
+    "tab_stats.reloads_suggested";
 
 // A list of origins (URLs) to treat as "secure origins" for debugging purposes.
 inline constexpr char kUnsafelyTreatInsecureOriginAsSecure[] =
@@ -3907,10 +3922,6 @@ inline constexpr char kDesktopSharingHubEnabled[] =
 // Pref name for the last major version where the What's New page was
 // successfully shown.
 inline constexpr char kLastWhatsNewVersion[] = "browser.last_whats_new_version";
-// Pref name for the whether whats new refresh page has been shown
-// successfully.
-inline constexpr char kHasShownRefreshWhatsNew[] =
-    "browser.has_shown_refresh_2023_whats_new";
 // A boolean indicating whether the Lens Region search feature should be enabled
 // if supported.
 inline constexpr char kLensRegionSearchEnabled[] =

@@ -124,6 +124,7 @@
 #include "chrome/browser/ui/overscroll_pref_manager.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
+#include "chrome/browser/ui/signin/cookie_clear_on_exit_migration_notice.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
@@ -358,6 +359,43 @@ bool IsOnKioskSplashScreen() {
 #endif
 }
 
+// Returns a pair [last_window, last_window_for_profile] indicating if `browser`
+// is the only browser in total and for this profile.
+// Ignores browsers that are in the process of closing.
+std::pair<bool, bool> IsLastWindow(const Browser& browser) {
+  bool last_window = true;
+  bool last_window_for_profile = true;
+  for (Browser* other_browser : *BrowserList::GetInstance()) {
+    // Don't count this browser window or any other in the process of closing.
+    // Window closing may be delayed, and windows that are in the process of
+    // closing don't count against our totals.
+    if (other_browser == &browser ||
+        other_browser->IsAttemptingToCloseBrowser()) {
+      continue;
+    }
+
+    last_window = false;
+
+    if (other_browser->profile() == browser.profile()) {
+      last_window_for_profile = false;
+      break;
+    }
+  }
+
+  return {last_window, last_window_for_profile};
+}
+
+// Returns whether the cookie migration notice should be shown: the migration
+// is not complete, and this is the last browser window open for this profile.
+bool ShouldShowCookieMigrationNoticeForBrowser(const Browser& browser) {
+  if (!CanShowCookieClearOnExitMigrationNotice(browser)) {
+    return false;
+  }
+
+  auto [last_window, last_window_for_profile] = IsLastWindow(browser);
+  return last_window_for_profile;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -560,6 +598,12 @@ Browser::Browser(const CreateParams& params)
   if (params.skip_window_init_for_testing)
     return;
 
+  // BrowserWindowFeatures need to be initialized before browser window
+  // creation, so that the features can be used in creating components
+  // in browser window.
+  features_ = BrowserWindowFeatures::CreateBrowserWindowFeatures();
+  features_->Init(this);
+
   window_ = params.window ? params.window.get()
                           : CreateBrowserWindow(std::unique_ptr<Browser>(this),
                                                 params.user_gesture,
@@ -588,8 +632,6 @@ Browser::Browser(const CreateParams& params)
   }
 
   BrowserList::AddBrowser(this);
-  features_ = BrowserWindowFeatures::CreateBrowserWindowFeatures();
-  features_->Init(this);
 }
 
 Browser::~Browser() {
@@ -895,12 +937,30 @@ Browser::WarnBeforeClosingResult Browser::MaybeWarnBeforeClosing(
   // before-unload handlers by setting `force_skip_warning_user_on_close_` to
   // true or there are no pending downloads we need to prompt about) then
   // there's no need to warn.
-  if (force_skip_warning_user_on_close_ || CanCloseWithInProgressDownloads())
+  if (force_skip_warning_user_on_close_) {
     return WarnBeforeClosingResult::kOkToClose;
+  }
+
+  // `CanCloseWithInProgressDownloads()` may trigger a modal dialog.
+  bool can_close_with_downloads = CanCloseWithInProgressDownloads();
+  if (can_close_with_downloads &&
+      !ShouldShowCookieMigrationNoticeForBrowser(*this)) {
+    return WarnBeforeClosingResult::kOkToClose;
+  }
+
+  // If there is no download warning, show the cookie migration notice now.
+  // Otherwise, the download warning is being shown. Cookie migration notice
+  // will be shown after, if needed.
+  if (can_close_with_downloads) {
+    ShowCookieClearOnExitMigrationNotice(
+        *this, base::BindOnce(&Browser::CookieMigrationNoticeResponse,
+                              weak_factory_.GetWeakPtr()));
+  }
 
   DCHECK(!warn_before_closing_callback_)
       << "Tried to close window during close warning; dialog should be modal.";
   warn_before_closing_callback_ = std::move(warn_callback);
+
   return WarnBeforeClosingResult::kDoNotClose;
 }
 
@@ -1068,23 +1128,11 @@ Browser::DownloadCloseType Browser::OkToCloseWithInProgressDownloads(
 
   // Figure out how many windows are open total, and associated with this
   // profile, that are relevant for the ok-to-close decision.
-  int profile_window_count = 0;
-  int total_window_count = 0;
-  for (Browser* browser : *BrowserList::GetInstance()) {
-    // Don't count this browser window or any other in the process of closing.
-    // Window closing may be delayed, and windows that are in the process of
-    // closing don't count against our totals.
-    if (browser == this || browser->IsAttemptingToCloseBrowser())
-      continue;
-
-    if (browser->profile() == profile())
-      profile_window_count++;
-    total_window_count++;
-  }
+  auto [last_window, last_window_for_profile] = IsLastWindow(*this);
 
   // If there aren't any other windows, we're at browser shutdown,
   // which would cancel all current downloads.
-  if (total_window_count == 0) {
+  if (last_window) {
     *num_downloads_blocking = total_download_count;
     return DownloadCloseType::kBrowserShutdown;
   }
@@ -1094,7 +1142,7 @@ Browser::DownloadCloseType Browser::OkToCloseWithInProgressDownloads(
   // those downloads would be cancelled by our window (-> profile) close.
   DownloadCoreService* download_core_service =
       DownloadCoreServiceFactory::GetForBrowserContext(profile());
-  if ((profile_window_count == 0) &&
+  if (last_window_for_profile &&
       (download_core_service->BlockingShutdownCount() > 0) &&
       (profile()->IsIncognitoProfile() || profile()->IsGuestSession())) {
     *num_downloads_blocking = download_core_service->BlockingShutdownCount();
@@ -2952,8 +3000,15 @@ bool Browser::CanCloseWithInProgressDownloads() {
 void Browser::InProgressDownloadResponse(bool cancel_downloads) {
   if (cancel_downloads) {
     cancel_download_confirmation_state_ = RESPONSE_RECEIVED;
-    std::move(warn_before_closing_callback_)
-        .Run(WarnBeforeClosingResult::kOkToClose);
+
+    if (ShouldShowCookieMigrationNoticeForBrowser(*this)) {
+      ShowCookieClearOnExitMigrationNotice(
+          *this, base::BindOnce(&Browser::CookieMigrationNoticeResponse,
+                                weak_factory_.GetWeakPtr()));
+    } else {
+      std::move(warn_before_closing_callback_)
+          .Run(WarnBeforeClosingResult::kOkToClose);
+    }
     return;
   }
 
@@ -2967,6 +3022,12 @@ void Browser::InProgressDownloadResponse(bool cancel_downloads) {
 
   std::move(warn_before_closing_callback_)
       .Run(WarnBeforeClosingResult::kDoNotClose);
+}
+
+void Browser::CookieMigrationNoticeResponse(bool proceed_closing) {
+  std::move(warn_before_closing_callback_)
+      .Run(proceed_closing ? WarnBeforeClosingResult::kOkToClose
+                           : WarnBeforeClosingResult::kDoNotClose);
 }
 
 void Browser::FinishWarnBeforeClosing(WarnBeforeClosingResult result) {

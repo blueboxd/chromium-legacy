@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tab_group_sync;
 
+import android.util.Pair;
+
 import org.chromium.base.Token;
 import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.chrome.browser.tab.Tab;
@@ -14,6 +16,7 @@ import org.chromium.components.tab_group_sync.SavedTabGroup;
 import org.chromium.components.tab_group_sync.SavedTabGroupTab;
 import org.chromium.components.tab_group_sync.TabGroupSyncService;
 import org.chromium.components.tab_groups.TabGroupColorId;
+import org.chromium.url.GURL;
 
 import java.util.List;
 import java.util.Set;
@@ -53,7 +56,7 @@ public class RemoteTabGroupMutationHelper {
 
         // Add tabs to the group.
         int rootId = TabGroupSyncUtils.getRootId(mTabGroupModelFilter, groupId);
-        List<Tab> tabs = mTabGroupModelFilter.getRelatedTabList(rootId);
+        List<Tab> tabs = mTabGroupModelFilter.getRelatedTabListForRootId(rootId);
         for (int position = 0; position < tabs.size(); position++) {
             addTab(groupId, tabs.get(position), position);
         }
@@ -86,13 +89,17 @@ public class RemoteTabGroupMutationHelper {
     }
 
     public void addTab(LocalTabGroupId tabGroupId, Tab tab, int position) {
+        Pair<GURL, String> urlAndTitle =
+                TabGroupSyncUtils.getFilteredUrlAndTitle(tab.getUrl(), tab.getTitle());
         mTabGroupSyncService.addTab(
-                tabGroupId, tab.getId(), tab.getTitle(), tab.getUrl(), position);
+                tabGroupId, tab.getId(), urlAndTitle.second, urlAndTitle.first, position);
     }
 
     public void updateTab(LocalTabGroupId tabGroupId, Tab tab, int position) {
+        Pair<GURL, String> urlAndTitle =
+                TabGroupSyncUtils.getFilteredUrlAndTitle(tab.getUrl(), tab.getTitle());
         mTabGroupSyncService.updateTab(
-                tabGroupId, tab.getId(), tab.getTitle(), tab.getUrl(), position);
+                tabGroupId, tab.getId(), urlAndTitle.second, urlAndTitle.first, position);
     }
 
     public void moveTab(LocalTabGroupId tabGroupId, int tabId, int newPosition) {
@@ -113,16 +120,17 @@ public class RemoteTabGroupMutationHelper {
         // Update tab ID mapping for tabs in the group.
         SavedTabGroup group = mTabGroupSyncService.getGroup(localGroupId);
         int rootId = TabGroupSyncUtils.getRootId(mTabGroupModelFilter, localGroupId);
-        List<Integer> tabIds = mTabGroupModelFilter.getRelatedTabIds(rootId);
+        List<Tab> tabs = mTabGroupModelFilter.getRelatedTabListForRootId(rootId);
         // We just reconciled local state with sync. The tabs should match.
-        assert tabIds.size() == group.savedTabs.size()
+        assert tabs.size() == group.savedTabs.size()
                 : "Local tab count doesn't match with remote : local #"
-                        + tabIds.size()
+                        + tabs.size()
                         + " vs remote #"
                         + group.savedTabs.size();
-        for (int i = 0; i < group.savedTabs.size() && i < tabIds.size(); i++) {
+        for (int i = 0; i < group.savedTabs.size() && i < tabs.size(); i++) {
             SavedTabGroupTab savedTab = group.savedTabs.get(i);
-            mTabGroupSyncService.updateLocalTabId(localGroupId, savedTab.syncId, tabIds.get(i));
+            mTabGroupSyncService.updateLocalTabId(
+                    localGroupId, savedTab.syncId, tabs.get(i).getId());
         }
     }
 

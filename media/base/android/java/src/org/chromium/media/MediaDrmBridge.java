@@ -109,7 +109,7 @@ public class MediaDrmBridge {
     // associated meta data, e.g. mime types, key types.
     private MediaDrmSessionManager mSessionManager;
 
-    // The persistent storage to record origin provisioning informations.
+    // The persistent storage to record origin provisioning information.
     private MediaDrmStorageBridge mStorage;
 
     // Whether the current MediaDrmBridge instance is waiting for provisioning response.
@@ -171,7 +171,7 @@ public class MediaDrmBridge {
                 r.run();
 
                 if (mIsProvisioning) {
-                    Log.d(TAG, "provision triggerred while running deferred CreateMediaCrypto()");
+                    Log.d(TAG, "provision triggered while running deferred CreateMediaCrypto()");
                     return;
                 }
             }
@@ -1281,7 +1281,7 @@ public class MediaDrmBridge {
         // supported by Widevine.
         String version = getPropertyString(MediaDrm.PROPERTY_VERSION);
         Log.i(TAG, "Version: %s", version);
-        if (isWidevine()) {
+        if (isWidevine() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             Log.i(
                     TAG,
                     "oemCryptoBuildInformation: %s",

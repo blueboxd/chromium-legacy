@@ -83,7 +83,9 @@ class MockModelExecutor
  public:
   MOCK_METHOD(bool,
               CanCreateOnDeviceSession,
-              (optimization_guide::ModelBasedCapabilityKey feature));
+              (optimization_guide::ModelBasedCapabilityKey feature,
+               raw_ptr<optimization_guide::OnDeviceModelEligibilityReason>
+                   debug_reason));
   MOCK_METHOD(std::unique_ptr<Session>,
               StartSession,
               (optimization_guide::ModelBasedCapabilityKey feature,
@@ -777,6 +779,7 @@ TEST_F(ChromeComposeClientTest, TestShouldTriggerProactiveNudgeEnabledUKM) {
   compose::Config& config = compose::GetMutableConfigForTesting();
   config.proactive_nudge_enabled = true;
   config.proactive_nudge_show_probability = 1.0;
+  config.proactive_nudge_delay = base::Seconds(0);
 
   autofill::FormData form_data;
   form_data.url = web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL();
@@ -814,6 +817,11 @@ TEST_F(ChromeComposeClientTest, TestShouldTriggerProactiveNudgeEnabledUKM) {
           testing::Pair(
               ukm::builders::Compose_PageEvents::kProactiveNudgeShouldShowName,
               1)));
+
+  // Check Compose.ProactiveNudge.CTR metrics.
+  histograms().ExpectBucketCount(
+      compose::kComposeProactiveNudgeCtr,
+      compose::ComposeProactiveNudgeCtrEvent::kNudgeDisplayed, 1);
 }
 
 TEST_F(ChromeComposeClientTest,
@@ -842,6 +850,28 @@ TEST_F(ChromeComposeClientTest,
        ukm::builders::Compose_PageEvents::kProactiveNudgeShouldShowName});
 
   ASSERT_EQ(ukm_entries.size(), 0UL);
+}
+
+TEST_F(ChromeComposeClientTest, TestProactiveNudgeMSBBDisabled) {
+  SetPrefsForComposeMSBBState(false);
+  autofill::FormData form_data;
+  form_data.url = web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL();
+  form_data.fields = {autofill::test::CreateTestFormField(
+      "label0", "name0", "value0", autofill::FormControlType::kTextArea)};
+
+  autofill::FormFieldData selected_field_data = form_data.fields[0];
+  selected_field_data.set_origin(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin());
+  const autofill::AutofillSuggestionTriggerSource trigger_source =
+      autofill::AutofillSuggestionTriggerSource::kTextFieldDidChange;
+
+  // Will fail because MSBB is not set
+  EXPECT_FALSE(
+      client().ShouldTriggerPopup(selected_field_data, trigger_source));
+
+  histograms().ExpectBucketCount(
+      compose::kComposeProactiveNudgeShowStatus,
+      compose::ComposeShowStatus::kProactiveNudgeDisabledByMSBB, 1);
 }
 
 TEST_F(ChromeComposeClientTest, TestComposeShouldTriggerSavedStateNudgeUKM) {
@@ -1523,6 +1553,11 @@ TEST_F(ChromeComposeClientTest,
   histograms().ExpectBucketCount(
       compose::kComposeSessionEventCounts,
       compose::ComposeSessionEventTypes::kInsertClicked, 1);
+
+  // Check Compose.ProactiveNudge.CTR metrics.
+  histograms().ExpectBucketCount(
+      compose::kComposeProactiveNudgeCtr,
+      compose::ComposeProactiveNudgeCtrEvent::kDialogOpened, 1);
 }
 
 // Test that opening the saved state dialog with selected text does not start
@@ -1604,6 +1639,65 @@ TEST_F(ChromeComposeClientTest, TestClearStateWhenOpenWithSelectedText) {
   histograms().ExpectUniqueSample(
       compose::kComposeSessionCloseReason,
       compose::ComposeSessionCloseReason::kNewSessionWithSelectedText, 1);
+}
+
+TEST_F(ChromeComposeClientTest,
+       TestContextMenuNotRecordedAsProactiveInQualityLogs) {
+  field_data().set_value(u"user selected text");
+  ShowDialogAndBindMojoWithFieldData(
+      field_data(), base::NullCallback(),
+      autofill::AutofillComposeDelegate::UiEntryPoint::kContextMenu);
+
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future;
+
+  EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
+      .WillRepeatedly(testing::Invoke(
+          [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
+                  response) {
+            quality_test_future.SetValue(std::move(response));
+          }));
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> test_future;
+  BindComposeFutureToOnResponseReceived(test_future);
+  page_handler()->Compose("a user typed this", false);
+  compose::mojom::ComposeResponsePtr result = test_future.Take();
+  client().CloseUI(compose::mojom::CloseReason::kInsertButton);
+
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> quality_result =
+      quality_test_future.Take();
+  EXPECT_FALSE(
+      quality_result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+          ->started_with_proactive_nudge());
+}
+
+TEST_F(ChromeComposeClientTest, TestProactiveNudgeRecordedInQualityLogs) {
+  field_data().set_value(u"user selected text");
+  ShowDialogAndBindMojoWithFieldData(
+      field_data(), base::NullCallback(),
+      autofill::AutofillComposeDelegate::UiEntryPoint::kAutofillPopup);
+
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future;
+
+  EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
+      .WillRepeatedly(testing::Invoke(
+          [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
+                  response) {
+            quality_test_future.SetValue(std::move(response));
+          }));
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> test_future;
+  BindComposeFutureToOnResponseReceived(test_future);
+  page_handler()->Compose("a user typed this", false);
+  compose::mojom::ComposeResponsePtr result = test_future.Take();
+  client().CloseUI(compose::mojom::CloseReason::kInsertButton);
+
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> quality_result =
+      quality_test_future.Take();
+  EXPECT_TRUE(
+      quality_result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+          ->started_with_proactive_nudge());
 }
 
 // Checks proper propagation of Compose config params.

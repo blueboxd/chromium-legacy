@@ -731,29 +731,34 @@ TEST_F(AutofillAgentTest, JavaScriptChangedValue_AutofillState) {
 }
 
 class AutofillAgentSubmissionTest : public AutofillAgentTest,
-                                    public testing::WithParamInterface<bool> {
+                                    public testing::WithParamInterface<int> {
  public:
   AutofillAgentSubmissionTest() {
-    if (improved_submission_detection()) {
-      scoped_feature_list.InitWithFeatures(
-          {features::kAutofillReplaceCachedWebElementsByRendererIds,
-           features::kAutofillReplaceFormElementObserver},
-          /*disabled_features=*/{});
-    } else {
-      scoped_feature_list.InitAndDisableFeature(
-          features::kAutofillReplaceFormElementObserver);
-    }
+    EXPECT_LE(GetParam(), 3);
+    std::vector<base::test::FeatureRef> features = {
+        features::kAutofillUnifyAndFixFormTracking,
+        features::kAutofillReplaceCachedWebElementsByRendererIds,
+        features::kAutofillReplaceFormElementObserver};
+
+    std::vector<base::test::FeatureRef> enabled_features(
+        features.begin(), features.begin() + GetParam());
+    std::vector<base::test::FeatureRef> disabled_features(
+        features.begin() + GetParam(), features.end());
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
-  bool improved_submission_detection() { return GetParam(); }
+  bool improved_submission_detection() {
+    return base::FeatureList::IsEnabled(
+        features::kAutofillReplaceFormElementObserver);
+  }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(AutofillSubmissionTest,
                          AutofillAgentSubmissionTest,
-                         ::testing::Bool());
+                         ::testing::Values(0, 1, 2, 3));
 
 // Test that AutofillAgent::JavaScriptChangedValue updates the
 // last interacted saved state.
@@ -1201,7 +1206,7 @@ class AutofillAgentTestFocus : public AutofillAgentTest {
 };
 
 // Tests that when the focus moves from field to field, FocusedElementChanged()
-// fires FocusOnFormField() and FocusNoLongerOnForm().
+// fires FocusOnFormField() and FocusOnNonFormField().
 TEST_F(AutofillAgentTestFocus, FireFocusEventsWhenCyclingThroughFields) {
   testing::MockFunction<void(std::string_view)> checkpoint;
   {
@@ -1209,10 +1214,9 @@ TEST_F(AutofillAgentTestFocus, FireFocusEventsWhenCyclingThroughFields) {
     // Moves the focus one field to another.
     for (std::string_view id : kPermutationOfFields) {
       EXPECT_CALL(checkpoint, Call(id));
-      EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm).Times(0);
-      EXPECT_CALL(
-          autofill_driver(),
-          FocusOnFormField(_, HasFieldId(GetFieldRendererIdById(id)), _));
+      EXPECT_CALL(autofill_driver(), FocusOnNonFormField).Times(0);
+      EXPECT_CALL(autofill_driver(),
+                  FocusOnFormField(_, HasFieldId(GetFieldRendererIdById(id))));
     }
   }
   for (std::string_view id : kPermutationOfFields) {
@@ -1223,7 +1227,7 @@ TEST_F(AutofillAgentTestFocus, FireFocusEventsWhenCyclingThroughFields) {
 
 // Tests that when the focus switches between an uneditable <div> and
 // a field, FocusedElementChanged() fires FocusOnFormField() and
-// FocusNoLongerOnForm().
+// FocusOnNonFormField().
 TEST_F(AutofillAgentTestFocus,
        FireFocusEventsWhenSwitchingBetweenFieldAndNonField) {
   testing::MockFunction<void(std::string_view)> checkpoint;
@@ -1231,13 +1235,12 @@ TEST_F(AutofillAgentTestFocus,
     testing::InSequence s;
     for (std::string_view id : kPermutationOfFields) {
       EXPECT_CALL(checkpoint, Call("uneditable"));
-      EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm);
+      EXPECT_CALL(autofill_driver(), FocusOnNonFormField);
       EXPECT_CALL(autofill_driver(), FocusOnFormField).Times(0);
       EXPECT_CALL(checkpoint, Call(id));
-      EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm).Times(0);
-      EXPECT_CALL(
-          autofill_driver(),
-          FocusOnFormField(_, HasFieldId(GetFieldRendererIdById(id)), _));
+      EXPECT_CALL(autofill_driver(), FocusOnNonFormField).Times(0);
+      EXPECT_CALL(autofill_driver(),
+                  FocusOnFormField(_, HasFieldId(GetFieldRendererIdById(id))));
     }
   }
   for (std::string_view id : kPermutationOfFields) {
@@ -1256,11 +1259,11 @@ TEST_F(AutofillAgentTestFocus, FireFocusEventsForNullElement) {
     EXPECT_CALL(checkpoint, Call("owned_field"));
     EXPECT_CALL(autofill_driver(), FocusOnFormField);
     EXPECT_CALL(checkpoint, Call("null"));
-    EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm);
+    EXPECT_CALL(autofill_driver(), FocusOnNonFormField);
     EXPECT_CALL(checkpoint, Call("contenteditable"));
     EXPECT_CALL(autofill_driver(), FocusOnFormField);
     EXPECT_CALL(checkpoint, Call("null"));
-    EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm);
+    EXPECT_CALL(autofill_driver(), FocusOnNonFormField);
   }
   checkpoint.Call("owned_field");
   FocusedElementChanged("owned_field");

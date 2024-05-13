@@ -5851,6 +5851,7 @@ interface MLContext
     method compute
     method constructor
     method createBuffer
+    method dispatch
     method readBuffer
     method writeBuffer
 interface MLGraph
@@ -9621,7 +9622,6 @@ interface ShadowRoot : DocumentFragment
     setter fullscreenElement
     setter innerHTML
     setter onslotchange
-    setter serializable
 interface SharedStorage
     attribute @@toStringTag
     getter worklet
@@ -13123,6 +13123,7 @@ namespace console
     setter location
     setter locationbar
     setter menubar
+    setter model
     setter name
     setter navigation
     setter offscreenBuffering
@@ -13277,6 +13278,7 @@ namespace console
     setter status
     setter statusbar
     setter toolbar
+    setter translation
     setter visualViewport
 PASS successfullyParsed is true
 

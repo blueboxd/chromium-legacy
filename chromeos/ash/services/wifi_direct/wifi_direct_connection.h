@@ -7,6 +7,8 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/ash/components/wifi_p2p/wifi_p2p_controller.h"
+#include "chromeos/ash/components/wifi_p2p/wifi_p2p_group.h"
 #include "chromeos/ash/services/wifi_direct/public/mojom/wifi_direct_manager.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -22,33 +24,30 @@ class WifiDirectConnection : public mojom::WifiDirectConnection {
                 mojo::PendingRemote<mojom::WifiDirectConnection>>;
 
   static InstanceWithPendingRemotePair Create(
-      int shill_id,
-      uint32_t frequency,
-      int network_id,
+      const WifiP2PGroup& group_metadata,
       base::OnceClosure disconnect_handler);
 
   WifiDirectConnection(const WifiDirectConnection&) = delete;
   WifiDirectConnection& operator=(const WifiDirectConnection&) = delete;
   ~WifiDirectConnection() override;
 
-  int get_shill_id() { return shill_id_; }
+  // Returns a boolean indicating if the current device is the owner or not.
+  bool IsOwner() const;
 
   // mojom::WifiDirectConnection
-  void GetFrequency(GetFrequencyCallback callback) override;
+  void GetProperties(GetPropertiesCallback callback) override;
   void AssociateSocket(mojo::PlatformHandle socket,
                        AssociateSocketCallback callback) override;
 
   void FlushForTesting();
 
  private:
-  WifiDirectConnection(int shill_id, uint32_t frequency, int network_id);
+  WifiDirectConnection(const WifiP2PGroup& group_metadata);
   mojo::PendingRemote<mojom::WifiDirectConnection> CreateRemote(
       base::OnceClosure disconnect_handler);
 
   mojo::Receiver<mojom::WifiDirectConnection> receiver_{this};
-  int shill_id_;
-  uint32_t frequency_;
-  int network_id_;
+  WifiP2PGroup group_metadata_;
 };
 
 }  // namespace ash::wifi_direct

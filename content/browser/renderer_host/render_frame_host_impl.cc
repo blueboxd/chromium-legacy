@@ -320,6 +320,12 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #endif
 
+#if defined(AX_FAIL_FAST_BUILD)
+#include "base/command_line.h"
+#include "content/public/browser/ax_inspect_factory.h"
+#include "ui/accessibility/accessibility_switches.h"
+#endif
+
 namespace features {
 BASE_FEATURE(kDisableFrameNameUpdateOnNonCurrentRenderFrameHost,
              "DisableFrameNameUpdateOnNonCurrentRenderFrameHost",
@@ -2134,9 +2140,11 @@ void RenderFrameHostImpl::DidEnterBackForwardCacheInternal() {
     return;
   }
 
-  for (auto& entry : service_worker_container_hosts_) {
-    if (base::WeakPtr<ServiceWorkerContainerHost> host = entry.second)
-      host->OnEnterBackForwardCache();
+  for (auto& entry : service_worker_clients_) {
+    if (base::WeakPtr<ServiceWorkerClient> service_worker_client =
+            entry.second) {
+      service_worker_client->OnEnterBackForwardCache();
+    }
   }
 
   DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(this)
@@ -2178,9 +2186,11 @@ void RenderFrameHostImpl::WillLeaveBackForwardCacheInternal() {
     return;
   }
 
-  for (auto& entry : service_worker_container_hosts_) {
-    if (base::WeakPtr<ServiceWorkerContainerHost> host = entry.second)
-      host->OnRestoreFromBackForwardCache();
+  for (auto& entry : service_worker_clients_) {
+    if (base::WeakPtr<ServiceWorkerClient> service_worker_client =
+            entry.second) {
+      service_worker_client->OnRestoreFromBackForwardCache();
+    }
   }
 
   DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(this)
@@ -7126,13 +7136,6 @@ void RenderFrameHostImpl::SetCommitCallbackInterceptorForTesting(
   commit_callback_interceptor_ = interceptor;
 }
 
-void RenderFrameHostImpl::SetCreateNewPopupCallbackForTesting(
-    const CreateNewPopupWidgetCallbackForTesting& callback) {
-  // This DCHECK aims to avoid unexpected replacement of a callback.
-  DCHECK(!create_new_popup_widget_callback_ || !callback);
-  create_new_popup_widget_callback_ = callback;
-}
-
 void RenderFrameHostImpl::SetUnloadACKCallbackForTesting(
     const UnloadACKCallbackForTesting& callback) {
   // This DCHECK aims to avoid unexpected replacement of a callback.
@@ -7377,10 +7380,48 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
   }
 
   DCHECK(delegate_->GetAccessibilityMode().has_mode(ui::AXMode::kNativeAPIs));
-  if (!browser_accessibility_manager_->OnAccessibilityEvents(details)) {
+  bool accessibility_error =
+      !browser_accessibility_manager_->OnAccessibilityEvents(details);
+  if (accessibility_error) {
     // OnAccessibilityEvents returns false in IPC error conditions.
     UnrecoverableAccessibilityError();
   }
+
+#if defined(AX_FAIL_FAST_BUILD)
+  // Don't exercise the accessibility tree when we either had an
+  // accessibility failure or if we are not allowed to fire events
+  if (accessibility_error && browser_accessibility_manager_->CanFireEvents()) {
+    ExerciseAccessibilityForTest();
+  }
+#endif
+}
+
+void RenderFrameHostImpl::ExerciseAccessibilityForTest() {
+#if defined(AX_FAIL_FAST_BUILD)
+  // When running a debugging/sanitizer build with
+  // --force-renderer-accessibility, exercise the properties for every node, to
+  // ensure no crashes or assertions are triggered. This helpfully runs for all
+  // web tests on builder linux-blink-web-tests-force-accessibility-rel, as well
+  // as for some clusterfuzz runs.
+  static int g_max_ax_tree_exercise_iterations = 3;  // Avoid timeouts.
+  static int count = 0;
+  if (browser_accessibility_manager_->GetBrowserAccessibilityRoot()
+              ->GetChildCount() > 0 &&
+      !browser_accessibility_manager_->GetBrowserAccessibilityRoot()
+           ->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
+      ++count <= g_max_ax_tree_exercise_iterations) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(::switches::kForceRendererAccessibility)) {
+      std::unique_ptr<ui::AXTreeFormatter> formatter(
+          AXInspectFactory::CreatePlatformFormatter());
+      formatter->SetPropertyFilters({{"*", ui::AXPropertyFilter::ALLOW}});
+      std::string formatted_tree = formatter->Format(
+          browser_accessibility_manager_->GetBrowserAccessibilityRoot());
+      VLOG(1) << "\n\n******** Formatted tree ********\n\n"
+              << formatted_tree << "\n*********************************\n\n";
+    }
+  }
+#endif
 }
 
 bool RenderFrameHostImpl::IsInactiveAndDisallowActivation(uint64_t reason) {
@@ -7971,12 +8012,6 @@ void RenderFrameHostImpl::ShowPopupMenu(
 
   if (delegate()->GetVisibility() != Visibility::VISIBLE) {
     // Don't create popups for hidden tabs. https://crbug.com/1521345
-    send_did_cancel(std::move(popup_client));
-    return;
-  }
-
-  if (show_popup_menu_callback_for_testing_) {
-    std::move(show_popup_menu_callback_for_testing_).Run(bounds);
     send_did_cancel(std::move(popup_client));
     return;
   }
@@ -9582,9 +9617,6 @@ void RenderFrameHostImpl::CreateNewPopupWidget(
     return;
   // The renderer-owned widget was created before sending the IPC received here.
   widget->RendererWidgetCreated(/*for_frame_widget=*/false);
-
-  if (create_new_popup_widget_callback_)
-    create_new_popup_widget_callback_.Run(widget);
 }
 
 void RenderFrameHostImpl::GetKeepAliveHandleFactory(
@@ -12255,14 +12287,17 @@ void RenderFrameHostImpl::ResetPermissionsPolicy(
   auto isolation_info = GetSiteInstance()->GetWebExposedIsolationInfo();
 
   if (IsOutermostMainFrame() && isolation_info.is_isolated_application()) {
-    // In Isolated Apps, the top level frame should use the policy declared in
-    // the Web App Manifest.
-    if (auto isolated_web_app_permissions_policy =
-            delegate_->GetPermissionsPolicyForIsolatedWebApp(this)) {
-      permissions_policy_ = blink::PermissionsPolicy::CreateFromParsedPolicy(
-          *isolated_web_app_permissions_policy, last_committed_origin_);
-      return;
-    }
+    // Isolated Apps start with a base policy as defined by the
+    // permissions_policy field in its Web App Manifest, which is an allowlist,
+    // and then have headers further restrict the policy if applicable. This
+    // needs to be handled differently than the normal permissions policy
+    // behavior, which uses a fully permissive policy as its base permissions
+    // policy and accepts rules specifying which permissions policy features
+    // should be blocked, aka a blocklist.
+    permissions_policy_ = blink::PermissionsPolicy::CreateFromParsedPolicy(
+        header_policy, delegate_->GetPermissionsPolicyForIsolatedWebApp(this),
+        last_committed_origin_);
+    return;
   }
 
   RenderFrameHostImpl* parent_frame_host = GetParent();
@@ -14000,20 +14035,6 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   ResetPermissionsPolicy(params.permissions_policy_header);
 
   permissions_policy_header_ = params.permissions_policy_header;
-  auto isolation_info = GetSiteInstance()->GetWebExposedIsolationInfo();
-  // Isolated Apps start with a base policy as defined by the permissions_policy
-  // field in its Web App Manifest, which is an allowlist, and then have headers
-  // further restrict the policy if applicable. This needs to be handled
-  // differently than the normal permissions policy behavior, which uses a fully
-  // permissive policy as its base permissions policy and accepts rules
-  // specifying which permissions policy features should be blocked, aka a
-  // blocklist.
-  if (isolation_info.is_isolated_application() && IsOutermostMainFrame()) {
-    // If we reach this code then in ResetPermissionsPolicy, we created the
-    // PermissionsPolicy object using the policy from the manifest.
-    permissions_policy_->SetHeaderPolicyForIsolatedApp(
-        params.permissions_policy_header);
-  }
   document_policy_ = blink::DocumentPolicy::CreateWithHeaderPolicy({
       params.document_policy_header,  // document_policy_header
       {},                             // endpoint_map
@@ -14243,6 +14264,20 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
   same_document_navigation_requests_.erase(navigation_token);
 }
 
+bool IsDocumentPolicyIncludeJSCallStacksInCrashReportsEnabled(
+    content::RenderFrameHost* rfh) {
+  if (std::optional<bool> state = base::FeatureList::GetStateIfOverridden(
+          blink::features::kDocumentPolicyIncludeJSCallStacksInCrashReports);
+      state.has_value()) {
+    return state.value();
+  }
+  content::RuntimeFeatureStateDocumentData* document_data =
+      content::RuntimeFeatureStateDocumentData::GetForCurrentDocument(rfh);
+  CHECK(document_data);
+  return document_data->runtime_feature_state_read_context()
+      .IsDocumentPolicyIncludeJSCallStacksInCrashReportsEnabled();
+}
+
 void RenderFrameHostImpl::MaybeGenerateCrashReport(
     base::TerminationStatus status,
     int exit_code) {
@@ -14290,9 +14325,8 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
   if (!reason.empty()) {
     body.Set("reason", reason);
     if (reason == "unresponsive" &&
-        base::FeatureList::IsEnabled(
-            blink::features::
-                kDocumentPolicyIncludeJSCallStacksInCrashReports)) {
+        IsDocumentPolicyIncludeJSCallStacksInCrashReportsEnabled(
+            FromFrameToken(GetProcess()->GetID(), GetFrameToken()))) {
       RenderProcessHostImpl* rph =
           static_cast<RenderProcessHostImpl*>(GetProcess());
       const std::string& unresponsive_document_javascript_call_stack =
@@ -14760,32 +14794,31 @@ void RenderFrameHostImpl::SendBeforeUnload(
       is_reload, std::move(before_unload_closure));
 }
 
-void RenderFrameHostImpl::AddServiceWorkerContainerHost(
+void RenderFrameHostImpl::AddServiceWorkerClient(
     const std::string& uuid,
-    base::WeakPtr<content::ServiceWorkerContainerHost> host) {
+    base::WeakPtr<content::ServiceWorkerClient> service_worker_client) {
   if (IsInBackForwardCache()) {
     // RenderFrameHost entered BackForwardCache before adding
-    // ServiceWorkerContainerHost. In this case, evict the entry from the cache.
+    // ServiceWorkerClient. In this case, evict the entry from the cache.
     EvictFromBackForwardCacheWithReason(
         BackForwardCacheMetrics::NotRestoredReason::
             kEnteredBackForwardCacheBeforeServiceWorkerHostAdded);
   }
-  DCHECK(!base::Contains(service_worker_container_hosts_, uuid));
-  last_committed_service_worker_host_ = host;
-  service_worker_container_hosts_[uuid] = std::move(host);
+  DCHECK(!base::Contains(service_worker_clients_, uuid));
+  last_committed_service_worker_client_ = service_worker_client;
+  service_worker_clients_[uuid] = std::move(service_worker_client);
 }
 
-void RenderFrameHostImpl::RemoveServiceWorkerContainerHost(
-    const std::string& uuid) {
-  DCHECK(!service_worker_container_hosts_.empty());
-  DCHECK(base::Contains(service_worker_container_hosts_, uuid));
-  service_worker_container_hosts_.erase(uuid);
+void RenderFrameHostImpl::RemoveServiceWorkerClient(const std::string& uuid) {
+  DCHECK(!service_worker_clients_.empty());
+  DCHECK(base::Contains(service_worker_clients_, uuid));
+  service_worker_clients_.erase(uuid);
 }
 
-base::WeakPtr<ServiceWorkerContainerHost>
-RenderFrameHostImpl::GetLastCommittedServiceWorkerHost() {
+base::WeakPtr<ServiceWorkerClient>
+RenderFrameHostImpl::GetLastCommittedServiceWorkerClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return last_committed_service_worker_host_;
+  return last_committed_service_worker_client_;
 }
 
 bool RenderFrameHostImpl::MaybeInterceptCommitCallback(
@@ -16327,6 +16360,14 @@ RenderFrameHostImpl::CreateSharedDictionaryAccessObserver() {
   return remote;
 }
 
+mojo::PendingRemote<device::mojom::VibrationManagerListener>
+RenderFrameHostImpl::CreateVibrationManagerListener() {
+  mojo::PendingRemote<device::mojom::VibrationManagerListener> remote;
+  vibration_manager_listeners_.Add(this,
+                                   remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
 #if BUILDFLAG(ENABLE_MDNS)
 void RenderFrameHostImpl::CreateMdnsResponder(
     mojo::PendingReceiver<network::mojom::MdnsResponder> receiver) {
@@ -16382,6 +16423,10 @@ void RenderFrameHostImpl::OnTrustTokensAccessed(
 void RenderFrameHostImpl::OnSharedDictionaryAccessed(
     network::mojom::SharedDictionaryAccessDetailsPtr details) {
   delegate_->OnSharedDictionaryAccessed(this, *details);
+}
+
+void RenderFrameHostImpl::OnVibrate() {
+  delegate_->OnVibrate(this);
 }
 
 void RenderFrameHostImpl::SetEmbeddingToken(

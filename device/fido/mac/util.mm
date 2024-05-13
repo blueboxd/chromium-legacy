@@ -187,16 +187,35 @@ CodeSigningState ProcessIsSigned() {
                                     : CodeSigningState::kNotSigned;
 }
 
+std::optional<bool>& GetBiometricOverride() {
+  static std::optional<bool> flag;
+  return flag;
+}
+
+ScopedBiometricsOverride::ScopedBiometricsOverride(bool has_biometrics) {
+  std::optional<bool>& flag = GetBiometricOverride();
+  // Overrides don't nest.
+  CHECK(!flag.has_value());
+  flag = has_biometrics;
+}
+
+ScopedBiometricsOverride::~ScopedBiometricsOverride() {
+  std::optional<bool>& flag = GetBiometricOverride();
+  CHECK(flag.has_value());
+  flag.reset();
+}
+
 bool DeviceHasBiometricsAvailable() {
   if (@available(macOS 10.12.2, *)) {
-    LAContext* context = [[LAContext alloc] init];
-    NSError* nserr;
-    return
-        [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                             error:&nserr];
+    std::optional<bool>& flag = GetBiometricOverride();
+    if (flag.has_value()) {
+      return *flag;
+    }
+
+    return crypto::AppleKeychainV2::GetInstance().LAContextCanEvaluatePolicy(
+        LAPolicyDeviceOwnerAuthenticationWithBiometrics, /*error=*/nil);
   } else {
     return NO;
   }
 }
-
 }  // namespace device::fido::mac

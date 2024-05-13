@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/shell.h"
+#include "ash/style/rounded_label_widget.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_focusable_view.h"
@@ -72,6 +73,58 @@ OverviewGroupItem::OverviewGroupItem(const Windows& windows,
 }
 
 OverviewGroupItem::~OverviewGroupItem() = default;
+
+void OverviewGroupItem::SetOpacity(float opacity) {
+  OverviewItemBase::SetOpacity(opacity);
+
+  for (const auto& overview_item : overview_items_) {
+    overview_item->SetOpacity(opacity);
+  }
+}
+
+aura::Window::Windows OverviewGroupItem::GetWindowsForHomeGesture() {
+  aura::Window::Windows windows = OverviewItemBase::GetWindowsForHomeGesture();
+
+  for (const auto& overview_item : overview_items_) {
+    aura::Window::Windows item_windows =
+        overview_item->GetWindowsForHomeGesture();
+    windows.insert(windows.end(), item_windows.begin(), item_windows.end());
+  }
+
+  return windows;
+}
+
+void OverviewGroupItem::HideForSavedDeskLibrary(bool animate) {
+  for (const auto& item : overview_items_) {
+    item->HideForSavedDeskLibrary(animate);
+  }
+
+  OverviewItemBase::HideForSavedDeskLibrary(animate);
+}
+
+void OverviewGroupItem::RevertHideForSavedDeskLibrary(bool animate) {
+  for (const auto& item : overview_items_) {
+    item->RevertHideForSavedDeskLibrary(animate);
+  }
+
+  OverviewItemBase::RevertHideForSavedDeskLibrary(animate);
+}
+
+void OverviewGroupItem::UpdateMirrorsForDragging(bool is_touch_dragging) {
+  // TODO(http://b/339516036): Revisit whether we should update mirror for the
+  // group's `item_widget_` after the blue background issue is resolved.
+  for (const auto& overview_item : overview_items_) {
+    overview_item->UpdateMirrorsForDragging(is_touch_dragging);
+  }
+}
+
+void OverviewGroupItem::DestroyMirrorsForDragging() {
+  // TODO(http://b/339516036): Revisit whether we should destroy mirror for the
+  // group's `item_widget_` after the blue background issue is resolved.
+  for (const auto& overview_item : overview_items_) {
+    overview_item->DestroyMirrorsForDragging();
+  }
+}
 
 aura::Window* OverviewGroupItem::GetWindow() {
   // TODO(michelefan): `GetWindow()` will be replaced by `GetWindows()` in a
@@ -209,12 +262,7 @@ gfx::RectF OverviewGroupItem::GetTargetBoundsWithInsets() const {
 }
 
 gfx::RectF OverviewGroupItem::GetTransformedBounds() const {
-  // TODO(michelefan): This is a temporary placeholder for the transformed
-  // bounds calculation, which needs to be updated when we start working on the
-  // actual implementation of this function.
-  CHECK_GE(overview_items_.size(), 1u);
-  CHECK_LE(overview_items_.size(), 2u);
-  return overview_items_[0]->GetTransformedBounds();
+  return GetWindowsUnionScreenBounds();
 }
 
 float OverviewGroupItem::GetItemScale(int height) {
@@ -305,8 +353,6 @@ void OverviewGroupItem::UpdateRoundedCornersAndShadow() {
   RefreshShadowVisuals(/*shadow_visible=*/true);
 }
 
-void OverviewGroupItem::SetOpacity(float opacity) {}
-
 float OverviewGroupItem::GetOpacity() const {
   // TODO(michelefan): This is a temporary placeholder value. The opacity
   // settings will be handled in a separate task.
@@ -330,10 +376,6 @@ void OverviewGroupItem::OnStartingAnimationComplete() {
     item->OnStartingAnimationComplete();
   }
 }
-
-void OverviewGroupItem::HideForSavedDeskLibrary(bool animate) {}
-
-void OverviewGroupItem::RevertHideForSavedDeskLibrary(bool animate) {}
 
 void OverviewGroupItem::CloseWindows() {
   for (const auto& overview_item : overview_items_) {
@@ -365,9 +407,6 @@ void OverviewGroupItem::OnOverviewItemContinuousScroll(
     const gfx::Transform& target_transform,
     float scroll_ratio) {}
 
-void OverviewGroupItem::SetVisibleDuringItemDragging(bool visible,
-                                                     bool animate) {}
-
 void OverviewGroupItem::UpdateCannotSnapWarningVisibility(bool animate) {}
 
 void OverviewGroupItem::HideCannotSnapWarning(bool animate) {}
@@ -379,10 +418,6 @@ void OverviewGroupItem::OnMovingItemToAnotherDesk() {
     overview_item->OnMovingItemToAnotherDesk();
   }
 }
-
-void OverviewGroupItem::UpdateMirrorsForDragging(bool is_touch_dragging) {}
-
-void OverviewGroupItem::DestroyMirrorsForDragging() {}
 
 void OverviewGroupItem::Shutdown() {}
 
@@ -466,7 +501,7 @@ void OverviewGroupItem::CreateItemWidget() {
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(CreateOverviewItemWidgetParams(
       desks_util::GetActiveDeskContainerForRoot(overview_grid_->root_window()),
-      "OverviewGroupItemWidget", /*accept_events=*/true));
+      "OverviewGroupItemWidget", /*accept_events=*/false));
 
   CreateShadow();
 

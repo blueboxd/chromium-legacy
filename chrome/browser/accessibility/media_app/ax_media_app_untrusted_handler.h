@@ -118,6 +118,7 @@ class AXMediaAppUntrustedHandler
   size_t pages_ocred_on_initial_load_ = 0u;
   // `AXMediaApp` should outlive this handler.
   raw_ptr<AXMediaApp> media_app_;
+  bool has_landmark_node_ = true;
   ui::AXTreeManager document_;
   std::unique_ptr<TreeSource> document_source_;
   std::unique_ptr<TreeSerializer> document_serializer_;
@@ -132,6 +133,7 @@ class AXMediaAppUntrustedHandler
 
  private:
   size_t ComputePagesPerBatch() const;
+  std::vector<ui::AXNodeData> CreateStatusNodesWithLandmark() const;
   void SendAXTreeToAccessibilityService(const ui::AXTreeManager& manager,
                                         TreeSerializer& serializer);
   void UpdateDocumentTree();
@@ -148,6 +150,7 @@ class AXMediaAppUntrustedHandler
   void StitchDocumentTree();
   bool HasRendererTerminatedDueToBadPageId(const std::string& method_name,
                                            const std::string& page_id);
+  std::unique_ptr<gfx::Transform> MakeTransformFromOffsetAndScale() const;
 
   base::ScopedObservation<ui::AXPlatform, ui::AXModeObserver>
       ax_mode_observation_{this};
@@ -155,7 +158,9 @@ class AXMediaAppUntrustedHandler
   raw_ref<content::BrowserContext> browser_context_;
   mojo::Remote<media_app_ui::mojom::OcrUntrustedPage> media_app_page_;
   gfx::RectF viewport_box_;
+  float scale_factor_ = 0.0f;
   base::circular_deque<std::string> dirty_page_ids_;
+  bool text_extracted_ = false;
   ui::AXTreeID document_tree_id_ = ui::AXTreeID::CreateNewAXTreeID();
   SEQUENCE_CHECKER(sequence_checker_);
   std::optional<mojo::ReportBadMessageCallback> bad_message_callback_ =

@@ -62,6 +62,8 @@
 // TODO(zhongyi): Remove once the bug is resolved.
 #include <dlfcn.h>
 #include <pthread.h>
+
+#include "net/base/apple/guarded_fd.h"
 #endif  // BUILDFLAG(IS_APPLE) && !BUILDFLAG(CRONET_BUILD)
 
 #if BUILDFLAG(IS_MAC)
@@ -220,7 +222,10 @@ int UDPSocketPosix::AdoptOpenedSocket(AddressFamily address_family,
 
 int UDPSocketPosix::ConfigureOpenedSocket() {
 #if BUILDFLAG(IS_APPLE) && !BUILDFLAG(CRONET_BUILD)
-  PCHECK(change_fdguard_np(socket_, nullptr, 0, &kSocketFdGuard,
+  // https://crbug.com/41271555: Guard against a file descriptor being closed
+  // out from underneath the socket.
+  guardid_t guardid = reinterpret_cast<guardid_t>(this);
+  PCHECK(change_fdguard_np(socket_, nullptr, 0, &guardid,
                            GUARD_CLOSE | GUARD_DUP, nullptr) == 0);
 #endif  // BUILDFLAG(IS_APPLE) && !BUILDFLAG(CRONET_BUILD)
   socket_hash_ = GetSocketFDHash(socket_);
@@ -259,25 +264,28 @@ void UDPSocketPosix::Close() {
   DCHECK(ok);
 
   // Verify that |socket_| hasn't been corrupted. Needed to debug
-  // crbug.com/906005.
+  // https://crbug.com/41426706.
   CHECK_EQ(socket_hash_, GetSocketFDHash(socket_));
   TRACE_EVENT("base", perfetto::StaticString{"CloseSocketUDP"});
 
 #if BUILDFLAG(IS_APPLE) && !BUILDFLAG(CRONET_BUILD)
   // Attempt to clear errors on the socket so that they are not returned by
   // close(). This seems to be effective at clearing some, but not all,
-  // EPROTOTYPE errors. See https://crbug.com/1151048.
+  // EPROTOTYPE errors. See https://crbug.com/40732798.
   int value = 0;
   socklen_t value_len = sizeof(value);
   HANDLE_EINTR(getsockopt(socket_, SOL_SOCKET, SO_ERROR, &value, &value_len));
 
-  if (IGNORE_EINTR(guarded_close_np(socket_, &kSocketFdGuard)) != 0) {
+  // https://crbug.com/41271555: Guard against a file descriptor being closed
+  // out from underneath the socket.
+  guardid_t guardid = reinterpret_cast<guardid_t>(this);
+  if (IGNORE_EINTR(guarded_close_np(socket_, &guardid)) != 0) {
     // There is a bug in the Mac OS kernel that it can return an ENOTCONN or
     // EPROTOTYPE error. In this case we don't know whether the file descriptor
     // is still allocated or not. We cannot safely close the file descriptor
     // because it may have been reused by another thread in the meantime. We may
     // leak file handles here and cause a crash indirectly later. See
-    // https://crbug.com/1151048.
+    // https://crbug.com/40732798.
     PCHECK(errno == ENOTCONN || errno == EPROTOTYPE);
   }
 #else

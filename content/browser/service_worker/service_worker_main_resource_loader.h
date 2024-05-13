@@ -25,6 +25,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/mojom/network_interface_change_listener.mojom.h"
+#include "services/network/public/mojom/service_worker_router_info.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/service_worker/embedded_worker_status.h"
 #include "third_party/blink/public/common/service_worker/service_worker_router_rule.h"
@@ -34,7 +36,7 @@
 
 namespace content {
 
-class ServiceWorkerContainerHost;
+class ServiceWorkerClient;
 class ServiceWorkerVersion;
 
 // ServiceWorkerMainResourceLoader is the URLLoader used for main resource
@@ -73,7 +75,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
   // is used instead of NavigationURLLoaderImpl.
   ServiceWorkerMainResourceLoader(
       NavigationLoaderInterceptor::FallbackCallback fallback_callback,
-      base::WeakPtr<ServiceWorkerContainerHost> container_host,
+      base::WeakPtr<ServiceWorkerClient> service_worker_client,
       int frame_tree_node_id,
       base::TimeTicks find_registration_start_time);
 
@@ -178,9 +180,15 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
 
   void OnBlobReadingComplete(int net_error);
 
+  void SetCommitResponsibility(FetchResponseFrom fetch_response_from) override;
+
   void OnConnectionClosed();
   void DeleteIfNeeded();
 
+  network::mojom::ServiceWorkerStatus ConvertToServiceWorkerStatus(
+      blink::EmbeddedWorkerStatus embedded_status,
+      bool is_warming_up,
+      bool is_warmed_up);
   std::string GetInitialServiceWorkerStatusString();
   std::string GetFrameTreeNodeTypeString();
   bool IsEligibleForRecordingTimingMetrics();
@@ -250,7 +258,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
 
   network::ResourceRequest resource_request_;
 
-  base::WeakPtr<ServiceWorkerContainerHost> container_host_;
+  base::WeakPtr<ServiceWorkerClient> service_worker_client_;
   const int frame_tree_node_id_;
 
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
@@ -275,18 +283,8 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
 
   Status status_ = Status::kNotStarted;
 
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class InitialServiceWorkerStatus {
-    kRunning = 0,
-    kStarting = 1,
-    kStopping = 2,
-    kStopped = 3,
-    kWarmingUp = 4,
-    kWarmedUp = 5,
-    kMaxValue = kWarmedUp,
-  };
-  std::optional<InitialServiceWorkerStatus> initial_service_worker_status_;
+  std::optional<network::mojom::ServiceWorkerStatus>
+      initial_service_worker_status_;
   const bool is_browser_startup_completed_;
   enum class FrameTreeNodeType {
     kOutermostMainFrame = 0,

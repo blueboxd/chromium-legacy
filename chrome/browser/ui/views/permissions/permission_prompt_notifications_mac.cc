@@ -6,8 +6,6 @@
 #include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 
@@ -56,6 +54,10 @@ PermissionPromptNotificationsMac::GetTabSwitchingBehavior() {
 permissions::PermissionPromptDisposition
 PermissionPromptNotificationsMac::GetPromptDisposition() const {
   return permissions::PermissionPromptDisposition::MAC_OS_PROMPT;
+}
+
+bool PermissionPromptNotificationsMac::IsAskPrompt() const {
+  return true;
 }
 
 std::optional<gfx::Rect>

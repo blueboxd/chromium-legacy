@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/autofill/payments/autofill_snackbar_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/chrome_payments_autofill_client.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
-#include "chrome/browser/ui/autofill/payments/iban_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/mandatory_reauth_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/view_factory.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
@@ -76,7 +75,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/credit_card_risk_based_authenticator.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
@@ -85,7 +83,6 @@
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
-#include "components/autofill/core/browser/ui/payments/card_unmask_authentication_selection_dialog_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_otp_input_dialog_controller_impl.h"
 #include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
@@ -161,7 +158,6 @@
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
-#include "chrome/browser/ui/autofill/payments/virtual_card_selection_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
@@ -530,32 +526,6 @@ void ChromeAutofillClient::ShowAutofillSettings(
 #endif  // BUILDFLAG(IS_ANDROID)
 }
 
-void ChromeAutofillClient::ShowUnmaskAuthenticatorSelectionDialog(
-    const std::vector<CardUnmaskChallengeOption>& challenge_options,
-    base::OnceCallback<void(const std::string&)>
-        confirm_unmask_challenge_option_callback,
-    base::OnceClosure cancel_unmasking_closure) {
-  CHECK(!card_unmask_authentication_selection_controller_);
-  card_unmask_authentication_selection_controller_ =
-      std::make_unique<CardUnmaskAuthenticationSelectionDialogControllerImpl>(
-          challenge_options,
-          std::move(confirm_unmask_challenge_option_callback),
-          std::move(cancel_unmasking_closure));
-  card_unmask_authentication_selection_controller_->ShowDialog(
-      base::BindOnce(&CreateAndShowCardUnmaskAuthenticationSelectionDialog,
-                     &GetWebContents()));
-}
-
-void ChromeAutofillClient::DismissUnmaskAuthenticatorSelectionDialog(
-    bool server_success) {
-  if (card_unmask_authentication_selection_controller_) {
-    card_unmask_authentication_selection_controller_
-        ->DismissDialogUponServerProcessedAuthenticationMethodRequest(
-            server_success);
-    card_unmask_authentication_selection_controller_.reset();
-  }
-}
-
 void ChromeAutofillClient::ShowVirtualCardEnrollDialog(
     const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
     base::OnceClosure accept_virtual_card_callback,
@@ -649,15 +619,6 @@ bool ChromeAutofillClient::CloseWebauthnDialog() {
     return controller->CloseDialog();
 
   return false;
-}
-
-void ChromeAutofillClient::OfferVirtualCardOptions(
-    const std::vector<raw_ptr<CreditCard, VectorExperimental>>& candidates,
-    base::OnceCallback<void(const std::string&)> callback) {
-  VirtualCardSelectionDialogControllerImpl::CreateForWebContents(
-      web_contents());
-  VirtualCardSelectionDialogControllerImpl::FromWebContents(web_contents())
-      ->ShowDialog(candidates, std::move(callback));
 }
 
 #else  // BUILDFLAG(IS_ANDROID)
@@ -763,32 +724,6 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
 #endif
 }
 
-void ChromeAutofillClient::ConfirmSaveIbanLocally(
-    const Iban& iban,
-    bool should_show_prompt,
-    SaveIbanPromptCallback callback) {
-#if !BUILDFLAG(IS_ANDROID)
-  // Do lazy initialization of IbanBubbleControllerImpl.
-  IbanBubbleControllerImpl::CreateForWebContents(web_contents());
-  IbanBubbleControllerImpl::FromWebContents(web_contents())
-      ->OfferLocalSave(iban, should_show_prompt, std::move(callback));
-#endif
-}
-
-void ChromeAutofillClient::ConfirmUploadIbanToCloud(
-    const Iban& iban,
-    LegalMessageLines legal_message_lines,
-    bool should_show_prompt,
-    SaveIbanPromptCallback callback) {
-#if !BUILDFLAG(IS_ANDROID)
-  // Do lazy initialization of IbanBubbleControllerImpl.
-  IbanBubbleControllerImpl::CreateForWebContents(web_contents());
-  IbanBubbleControllerImpl::FromWebContents(web_contents())
-      ->OfferUploadSave(iban, std::move(legal_message_lines),
-                        should_show_prompt, std::move(callback));
-#endif
-}
-
 void ChromeAutofillClient::ConfirmCreditCardFillAssist(
     const CreditCard& card,
     base::OnceClosure callback) {
@@ -878,6 +813,7 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
                                               std::move(callback));
 }
 
+// TODO(b/309163844): Add follow-up ManualFallback for showing IBANs.
 bool ChromeAutofillClient::ShowTouchToFillCreditCard(
     base::WeakPtr<TouchToFillDelegate> delegate,
     base::span<const autofill::CreditCard> cards_to_suggest) {
@@ -894,8 +830,20 @@ bool ChromeAutofillClient::ShowTouchToFillCreditCard(
       delegate, std::move(cards_to_suggest));
 #else
   // Touch To Fill is not supported on Desktop.
-  NOTREACHED();
-  return false;
+  NOTREACHED_NORETURN();
+#endif
+}
+
+bool ChromeAutofillClient::ShowTouchToFillIban(
+    base::WeakPtr<TouchToFillDelegate> delegate,
+    base::span<const autofill::Iban> ibans_to_suggest) {
+#if BUILDFLAG(IS_ANDROID)
+  return touch_to_fill_payment_method_controller_.Show(
+      std::make_unique<TouchToFillPaymentMethodViewImpl>(web_contents()),
+      delegate, std::move(ibans_to_suggest));
+#else
+  // Touch To Fill is not supported on Desktop.
+  NOTREACHED_NORETURN();
 #endif
 }
 
@@ -910,7 +858,7 @@ void ChromeAutofillClient::HideTouchToFillCreditCard() {
 
 void ChromeAutofillClient::ShowAutofillSuggestions(
     const PopupOpenArgs& open_args,
-    base::WeakPtr<AutofillPopupDelegate> delegate) {
+    base::WeakPtr<AutofillSuggestionDelegate> delegate) {
   // The Autofill Popup cannot open if it overlaps with another popup.
   // Therefore, the IPH is hidden before showing the Autofill Popup.
   HideAutofillFieldIphForManualFallbackFeature();
@@ -1242,7 +1190,7 @@ std::u16string ChromeAutofillClient::GetAccountHolderName() {
 
 void ChromeAutofillClient::ShowAutofillSuggestionsImpl(
     const PopupOpenArgs& open_args,
-    base::WeakPtr<AutofillPopupDelegate> delegate) {
+    base::WeakPtr<AutofillSuggestionDelegate> delegate) {
   // Convert element_bounds to be in screen space.
   const gfx::Rect client_area = web_contents()->GetContainerBounds();
   const gfx::RectF element_bounds_in_screen_space =

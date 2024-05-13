@@ -151,6 +151,10 @@ test("device_unittests") {
     "//ui/resources:ui_test_pak_data",
   ]
 
+  if (is_android && enable_chrome_android_internal) {
+    data_deps += [ "//clank/build/bot/filters:device_unittests_filters" ]
+  }
+
   if (!is_ios) {
     deps += [
       "//device/fido",
@@ -209,10 +213,7 @@ test("device_unittests") {
       "//services/data_decoder/public/cpp:test_support",
     ]
 
-    data = [
-      "fido/enclave/verify/testdata/logentry.json",
-      "fido/enclave/verify/testdata/logentry_noverification.json",
-    ]
+    data = [ "fido/enclave/verify/testdata/" ]
 
     if (is_chromeos_lacros) {
       deps += [ "//chromeos/startup" ]

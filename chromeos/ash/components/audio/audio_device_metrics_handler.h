@@ -106,6 +106,25 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO)
       "ChromeOS.AudioSelection.Output.SystemNotSwitchAudio."
       "BeforeAndAfterAudioDeviceSet";
 
+  // A series of histogram metrics to record the before and after condition
+  // of audio device types when users override the system selection decision.
+  static constexpr char
+      kUserOverrideSystemSwitchInputBeforeAndAfterAudioDeviceSet[] =
+          "ChromeOS.AudioSelection.Input.UserOverrideSystemSwitchAudio."
+          "BeforeAndAfterAudioDeviceSet";
+  static constexpr char
+      kUserOverrideSystemNotSwitchInputBeforeAndAfterAudioDeviceSet[] =
+          "ChromeOS.AudioSelection.Input.UserOverrideSystemNotSwitchAudio."
+          "BeforeAndAfterAudioDeviceSet";
+  static constexpr char
+      kUserOverrideSystemSwitchOutputBeforeAndAfterAudioDeviceSet[] =
+          "ChromeOS.AudioSelection.Output.UserOverrideSystemSwitchAudio."
+          "BeforeAndAfterAudioDeviceSet";
+  static constexpr char
+      kUserOverrideSystemNotSwitchOutputBeforeAndAfterAudioDeviceSet[] =
+          "ChromeOS.AudioSelection.Output.UserOverrideSystemNotSwitchAudio."
+          "BeforeAndAfterAudioDeviceSet";
+
   // A series of histogram metrics to record system selection decision after
   // audio device has changed.
   static constexpr char kSystemSwitchInputAudioChromeRestarts[] =
@@ -261,6 +280,12 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO)
   static constexpr char kAudioSelectionExceptionRuleMetrics[] =
       "ChromeOS.AudioSelection.ExceptionRulesMet";
 
+  // A histogram metric to record when audio selection notification events
+  // happen. Audio selection notification events are detailed in
+  // AudioSelectionNotificationEvents.
+  static constexpr char kAudioSelectionNotification[] =
+      "ChromeOS.AudioSelection.Notification";
+
   // A series of audio selection events used to record the audio selection
   // performance. Note that these values are persisted to histograms so existing
   // values should remain unchanged and new values should be added to the end.
@@ -347,6 +372,30 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO)
     kMaxValue = kOutputRule4UnplugDeviceCausesUnseenSet,
   };
 
+  // A series of audio selection notification events used to record the audio
+  // selection notification metrics. Note that these values are persisted to
+  // histograms so existing values should remain unchanged and new values should
+  // be added to the end.
+  enum class AudioSelectionNotificationEvents {
+    // Notification with single source both input and output devices shows up.
+    kNotificationWithBothInputAndOutputDevicesShowsUp = 0,
+    // Notification with single source only input device shows up.
+    kNotificationWithInputOnlyDeviceShowsUp = 1,
+    // Notification with single source only output device shows up.
+    kNotificationWithOutputOnlyDeviceShowsUp = 2,
+    // Notification with multiple sources shows up.
+    kNotificationWithMultipleSourcesDevicesShowsUp = 3,
+    // Notification with single source both input and output devices is clicked.
+    kNotificationWithBothInputAndOutputDevicesClicked = 4,
+    // Notification with single source only input device is clicked.
+    kNotificationWithInputOnlyDeviceClicked = 5,
+    // Notification with single source only output device is clicked.
+    kNotificationWithOutputOnlyDeviceClicked = 6,
+    // Notification with multiple sources is clicked.
+    kNotificationWithMultipleSourcesDevicesClicked = 7,
+    kMaxValue = kNotificationWithMultipleSourcesDevicesClicked,
+  };
+
   // Record the histogram of system decision of switching or not switching after
   // audio device is added or removed. Only record if there are more than one
   // available devices.
@@ -370,11 +419,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO)
       const AudioDeviceList& previous_device_list,
       const AudioDeviceList& current_device_list) const;
 
-  // Record user overrides system decision metrics.
-  void RecordUserOverrideMetrics(const std::string_view histogram_name,
-                                 AudioSelectionEvents audio_selection_event,
-                                 int time_delta_since_system_decision) const;
-
   // Record user overrides system decision metrics in the case of chrome
   // restarts, including system boots and users sign out, as well as the case of
   // normal user hotplug or unplug.
@@ -392,6 +436,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO)
   // Records when audio selection exception rules are met.
   void RecordExceptionRulesMet(AudioSelectionExceptionRules rule);
 
+  // Records when audio selection notification events happen.
+  void RecordNotificationEvents(
+      AudioSelectionNotificationEvents notification_event);
+
   void set_is_chrome_restarts(bool is_chrome_restarts) {
     is_chrome_restarts_ = is_chrome_restarts;
   }
@@ -405,6 +453,13 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO)
   }
 
  private:
+  // A helper function to record user overrides system decision metrics and
+  // directly calls uma histogram function.
+  void RecordUserOverrideMetricsHelper(
+      const std::string_view histogram_name,
+      AudioSelectionEvents audio_selection_event,
+      int time_delta_since_system_decision) const;
+
   // Clear the timer of system switch/not switch decision.
   void ResetSystemSwitchTimestamp(bool is_input);
 
@@ -425,6 +480,12 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO)
   std::optional<base::TimeTicks> output_switched_by_system_at_ = std::nullopt;
   std::optional<base::TimeTicks> output_not_switched_by_system_at_ =
       std::nullopt;
+
+  // The device set bits calculated by EncodeBeforeAndAfterAudioDeviceSets
+  // function to record the audio devices types when users override the system
+  // decision.
+  uint32_t before_and_after_input_device_set_bits_ = 0;
+  uint32_t before_and_after_output_device_set_bits_ = 0;
 
   // The timestamp when devices have changed, including devices added/removed
   // and devices changed. Used for recording the time elaspsed between two

@@ -104,34 +104,33 @@ class ServiceWorkerRemoteContainerEndpoint {
       client_receiver_;
 };
 
-struct ServiceWorkerContainerHostAndInfo {
-  ServiceWorkerContainerHostAndInfo(
-      base::WeakPtr<ServiceWorkerContainerHost> host,
+struct ServiceWorkerClientAndInfo {
+  ServiceWorkerClientAndInfo(
+      base::WeakPtr<ServiceWorkerClient> service_worker_client,
       blink::mojom::ServiceWorkerContainerInfoForClientPtr);
 
-  ServiceWorkerContainerHostAndInfo(const ServiceWorkerContainerHostAndInfo&) =
+  ServiceWorkerClientAndInfo(const ServiceWorkerClientAndInfo&) = delete;
+  ServiceWorkerClientAndInfo& operator=(const ServiceWorkerClientAndInfo&) =
       delete;
-  ServiceWorkerContainerHostAndInfo& operator=(
-      const ServiceWorkerContainerHostAndInfo&) = delete;
 
-  ~ServiceWorkerContainerHostAndInfo();
+  ~ServiceWorkerClientAndInfo();
 
-  base::WeakPtr<ServiceWorkerContainerHost> host;
+  base::WeakPtr<ServiceWorkerClient> service_worker_client;
   blink::mojom::ServiceWorkerContainerInfoForClientPtr info;
 };
 
 // Creates a container host that finished navigation. Test code can typically
 // use this function, but if more control is required
-// CreateContainerHostAndInfoForWindow() can be used instead.
-base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
+// CreateServiceWorkerClientAndInfoForWindow() can be used instead.
+base::WeakPtr<ServiceWorkerClient> CreateServiceWorkerClientForWindow(
     const GlobalRenderFrameHostId& render_frame_host_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteContainerEndpoint* output_endpoint);
 
 // Creates a container host that can be used for a navigation.
-std::unique_ptr<ServiceWorkerContainerHostAndInfo>
-CreateContainerHostAndInfoForWindow(
+std::unique_ptr<ServiceWorkerClientAndInfo>
+CreateServiceWorkerClientAndInfoForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure);
 

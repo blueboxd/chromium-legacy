@@ -83,13 +83,16 @@ class ASH_EXPORT PickerController
                    std::optional<PickerCategory> category,
                    SearchResultsCallback callback) override;
   void InsertResultOnNextFocus(const PickerSearchResult& result) override;
-  void ShowEmojiPicker(ui::EmojiPickerCategory category) override;
+  void OpenResult(const PickerSearchResult& result) override;
+  void ShowEmojiPicker(ui::EmojiPickerCategory category,
+                       std::u16string_view query) override;
   void ShowEditor(std::optional<std::string> preset_query_id,
                   std::optional<std::string> freeform_text) override;
   void SetCapsLockEnabled(bool enabled) override;
   void GetSuggestedEditorResults(
       SuggestedEditorResultsCallback callback) override;
   PickerAssetFetcher* GetAssetFetcher() override;
+  PickerSessionMetrics& GetSessionMetrics() override;
 
   // views:WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;

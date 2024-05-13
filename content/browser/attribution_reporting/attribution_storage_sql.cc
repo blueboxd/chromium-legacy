@@ -827,7 +827,7 @@ StoreSourceResult AttributionStorageSql::StoreSource(StorableSource source) {
 // If all existing ones have greater priority, the new report should be dropped;
 // otherwise, the existing one with the lowest priority is deleted and the new
 // one should be stored.
-AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReportResult
+AttributionStorageSql::ReplaceReportResult
 AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
     const AttributionReport& report,
     int num_conversions,
@@ -848,7 +848,7 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
 
   // If there's already capacity for the new report, there's nothing to do.
   if (num_conversions < source.max_event_level_reports()) {
-    return MaybeReplaceLowerPriorityEventLevelReportResult::kAddNewReport;
+    return ReplaceReportResult::kAddNewReport;
   }
 
   // Prioritization is scoped within report windows.
@@ -888,7 +888,7 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
   }
 
   if (!min_priority_statement.Succeeded()) {
-    return MaybeReplaceLowerPriorityEventLevelReportResult::kError;
+    return ReplaceReportResult::kError;
   }
 
   // Deactivate the source at event-level as a new report will never be
@@ -900,9 +900,8 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
         db_.GetCachedStatement(SQL_FROM_HERE, kDeactivateSql));
     deactivate_statement.BindInt64(0, *source.source_id());
     return deactivate_statement.Run()
-               ? MaybeReplaceLowerPriorityEventLevelReportResult::
-                     kDropNewReportSourceDeactivated
-               : MaybeReplaceLowerPriorityEventLevelReportResult::kError;
+               ? ReplaceReportResult::kDropNewReportSourceDeactivated
+               : ReplaceReportResult::kError;
   }
 
   // If the new report's priority is less than all existing ones, or if its
@@ -911,13 +910,13 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
   // be relevant in the case of an ill-behaved clock, in which case the rest of
   // the attribution functionality would probably also break.
   if (conversion_priority <= min_priority) {
-    return MaybeReplaceLowerPriorityEventLevelReportResult::kDropNewReport;
+    return ReplaceReportResult::kDropNewReport;
   }
 
   std::optional<AttributionReport> replaced =
       GetReportInternal(*conversion_id_with_min_priority);
   if (!replaced.has_value()) {
-    return MaybeReplaceLowerPriorityEventLevelReportResult::kError;
+    return ReplaceReportResult::kError;
   }
 
   // Otherwise, delete the existing report with the lowest priority and the
@@ -926,11 +925,11 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
       !rate_limit_table_.DeleteAttributionRateLimit(
           &db_, RateLimitTable::Scope::kEventLevelAttribution,
           replaced->id())) {
-    return MaybeReplaceLowerPriorityEventLevelReportResult::kError;
+    return ReplaceReportResult::kError;
   }
 
   replaced_report = std::move(replaced);
-  return MaybeReplaceLowerPriorityEventLevelReportResult::kReplaceOldReport;
+  return ReplaceReportResult::kReplaceOldReport;
 }
 
 namespace {
@@ -1052,13 +1051,15 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
 
   auto generate_null_reports_and_assemble_report_result =
       [&](std::optional<EventLevelResult> new_event_level_status,
-          std::optional<AggregatableResult> new_aggregatable_status)
+          std::optional<AggregatableResult> new_aggregatable_status,
+          sql::Transaction& transaction)
           VALID_CONTEXT_REQUIRED(sequence_checker_) {
             DCHECK(!new_aggregatable_report.has_value());
 
             if (!GenerateNullAggregatableReportsAndStoreReports(
                     trigger, attribution_info, new_aggregatable_report,
-                    min_null_aggregatable_report_time)) {
+                    min_null_aggregatable_report_time) ||
+                !transaction.Commit()) {
               min_null_aggregatable_report_time.reset();
             }
 
@@ -1076,10 +1077,16 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
 
   if (event_level_status.has_value() && aggregatable_status.has_value()) {
     return assemble_report_result(/*new_event_level_status=*/std::nullopt,
-                                  /*new_aggregaable_status=*/std::nullopt);
+                                  /*new_aggregatable_status=*/std::nullopt);
   }
 
   if (!LazyInit(DbCreationPolicy::kCreateIfAbsent)) {
+    return assemble_report_result(EventLevelResult::kInternalError,
+                                  AggregatableResult::kInternalError);
+  }
+
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin()) {
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
   }
@@ -1096,7 +1103,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   if (!source_id_to_attribute.has_value()) {
     return generate_null_reports_and_assemble_report_result(
         EventLevelResult::kNoMatchingImpressions,
-        AggregatableResult::kNoMatchingImpressions);
+        AggregatableResult::kNoMatchingImpressions, transaction);
   }
 
   source_to_attribute = ReadSourceToAttribute(*source_id_to_attribute);
@@ -1105,6 +1112,10 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
   }
+
+  base::UmaHistogramBoolean(
+      "Conversions.TriggerTimeLessThanSourceTime",
+      trigger_time < source_to_attribute->source.source_time());
 
   const bool top_level_filters_match =
       source_to_attribute->source.filter_data().Matches(
@@ -1115,16 +1126,13 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   if (!top_level_filters_match) {
     return generate_null_reports_and_assemble_report_result(
         EventLevelResult::kNoMatchingSourceFilterData,
-        AggregatableResult::kNoMatchingSourceFilterData);
+        AggregatableResult::kNoMatchingSourceFilterData, transaction);
   }
 
-  // Delete all unattributed sources.
-  if (!DeleteSources(source_ids_to_delete)) {
-    return assemble_report_result(EventLevelResult::kInternalError,
-                                  AggregatableResult::kInternalError);
-  }
-  // Deactivate all attributed sources not used.
-  if (!DeactivateSources(source_ids_to_deactivate)) {
+  // Delete all unattributed sources and deactivate all attributed sources not
+  // used.
+  if (!DeleteSources(source_ids_to_delete) ||
+      !DeactivateSources(source_ids_to_deactivate)) {
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
   }
@@ -1164,7 +1172,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   if (event_level_status.has_value() && aggregatable_status.has_value()) {
     return generate_null_reports_and_assemble_report_result(
         /*new_event_level_status=*/std::nullopt,
-        /*new_aggregaable_status=*/std::nullopt);
+        /*new_aggregatable_status=*/std::nullopt, transaction);
   }
 
   switch (rate_limit_table_.AttributionAllowedForReportingOriginLimit(
@@ -1177,16 +1185,10 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
       new_aggregatable_report.reset();
       return generate_null_reports_and_assemble_report_result(
           EventLevelResult::kExcessiveReportingOrigins,
-          AggregatableResult::kExcessiveReportingOrigins);
+          AggregatableResult::kExcessiveReportingOrigins, transaction);
     case RateLimitResult::kError:
       return assemble_report_result(EventLevelResult::kInternalError,
                                     AggregatableResult::kInternalError);
-  }
-
-  sql::Transaction transaction(&db_);
-  if (!transaction.Begin()) {
-    return assemble_report_result(EventLevelResult::kInternalError,
-                                  AggregatableResult::kInternalError);
   }
 
   std::optional<EventLevelResult> store_event_level_status;
@@ -1429,8 +1431,6 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
       trigger_spec.event_report_windows(), source.source_time(),
       attribution_info.time);
 
-  // TODO(apaseltiner): Consider informing the manager if the trigger
-  // data was out of range for DevTools issue reporting.
   report = AttributionReport(
       attribution_info, AttributionReport::Id(kUnsetRecordId), report_time,
       /*initial_report_time=*/report_time, delegate_->NewReportID(),
@@ -1469,15 +1469,14 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
       MaybeReplaceLowerPriorityEventLevelReport(
           report, num_conversions, event_level_data->priority, replaced_report);
   if (maybe_replace_lower_priority_report_result ==
-      MaybeReplaceLowerPriorityEventLevelReportResult::kError) {
+      ReplaceReportResult::kError) {
     return EventLevelResult::kInternalError;
   }
 
   if (maybe_replace_lower_priority_report_result ==
-          MaybeReplaceLowerPriorityEventLevelReportResult::kDropNewReport ||
+          ReplaceReportResult::kDropNewReport ||
       maybe_replace_lower_priority_report_result ==
-          MaybeReplaceLowerPriorityEventLevelReportResult::
-              kDropNewReportSourceDeactivated) {
+          ReplaceReportResult::kDropNewReportSourceDeactivated) {
     if (!transaction.Commit()) {
       return EventLevelResult::kInternalError;
     }
@@ -1485,8 +1484,7 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
     dropped_report = std::move(report);
 
     return maybe_replace_lower_priority_report_result ==
-                   MaybeReplaceLowerPriorityEventLevelReportResult::
-                       kDropNewReport
+                   ReplaceReportResult::kDropNewReport
                ? EventLevelResult::kPriorityTooLow
                : EventLevelResult::kExcessiveReports;
   }
@@ -1515,7 +1513,7 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
   // Only increment the number of conversions associated with the source if
   // we are adding a new one, rather than replacing a dropped one.
   if (maybe_replace_lower_priority_report_result ==
-      MaybeReplaceLowerPriorityEventLevelReportResult::kAddNewReport) {
+      ReplaceReportResult::kAddNewReport) {
     static constexpr char kUpdateImpressionForConversionSql[] =
         "UPDATE sources SET num_attributions=num_attributions+1 "
         "WHERE source_id=?";
@@ -1538,8 +1536,7 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
   }
 
   return maybe_replace_lower_priority_report_result ==
-                 MaybeReplaceLowerPriorityEventLevelReportResult::
-                     kReplaceOldReport
+                 ReplaceReportResult::kReplaceOldReport
              ? EventLevelResult::kSuccessDroppedLowerPriority
              : EventLevelResult::kSuccess;
 }
@@ -1928,8 +1925,6 @@ void AttributionStorageSql::ClearData(
   // crrev.com/c/2150071/4/content/browser/conversions/conversion_storage_sql.cc#342
   //
   // TODO(crbug.com/40212333): Look into optimizing origin filter callback.
-  // TODO(apaseltiner): Consider wrapping `filter` such that it deletes
-  // opaque/untrustworthy origins.
 
   std::vector<StoredSource::Id> source_ids_to_delete;
 

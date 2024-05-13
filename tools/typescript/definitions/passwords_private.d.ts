@@ -147,6 +147,7 @@ declare global {
         note?: string;
         changePasswordUrl?: string;
         compromisedInfo?: CompromisedInfo;
+        creationTime?: number;
       }
 
       export interface CredentialGroup {
@@ -233,6 +234,8 @@ declare global {
       export function showExportedFileInShell(filePath: string): void;
       export function changePasswordManagerPin(): Promise<boolean>;
       export function isPasswordManagerPinAvailable(): Promise<boolean>;
+      export function disconnectCloudAuthenticator(): Promise<boolean>;
+      export function isConnectedToCloudAuthenticator(): Promise<boolean>;
 
       export const onSavedPasswordsListChanged:
           ChromeEvent<(entries: PasswordUiEntry[]) => void>;

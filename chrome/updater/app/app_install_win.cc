@@ -4,9 +4,9 @@
 
 #include "chrome/updater/app/app_install.h"
 
+#include <ocidl.h>
 #include <windows.h>
 
-#include <ocidl.h>
 #include <olectl.h>
 #include <shldisp.h>
 #include <shlobj.h>
@@ -60,19 +60,12 @@
 #include "chrome/updater/win/installer/exit_code.h"
 #include "chrome/updater/win/manifest_util.h"
 #include "chrome/updater/win/ui/l10n_util.h"
-#include "chrome/updater/win/ui/resources/resources.grh"
-#include "chrome/updater/win/win_constants.h"
-#include "components/update_client/update_client_errors.h"
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-braces"
-#include "chrome/updater/win/ui/l10n_util.h"
 #include "chrome/updater/win/ui/progress_wnd.h"
+#include "chrome/updater/win/ui/resources/resources.grh"
 #include "chrome/updater/win/ui/resources/updater_installer_strings.h"
-#include "chrome/updater/win/ui/splash_screen.h"
-#pragma clang diagnostic pop
-
+#include "chrome/updater/win/win_constants.h"
 #include "components/update_client/protocol_parser.h"
+#include "components/update_client/update_client_errors.h"
 #include "url/gurl.h"
 
 namespace updater {
@@ -1004,17 +997,6 @@ scoped_refptr<App> MakeAppInstall(bool is_silent_install) {
     }
   }
   return base::MakeRefCounted<AppInstall>(
-      base::BindRepeating(
-          [](bool is_silent_install,
-             const std::string& app_name) -> std::unique_ptr<SplashScreen> {
-            if (is_silent_install) {
-              return std::make_unique<ui::SilentSplashScreen>();
-            } else {
-              return std::make_unique<ui::SplashScreen>(
-                  base::UTF8ToUTF16(app_name));
-            }
-          },
-          is_silent_install),
       base::BindRepeating(
           [](bool is_silent_install,
              scoped_refptr<UpdateService> update_service)

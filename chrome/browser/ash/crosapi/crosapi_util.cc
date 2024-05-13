@@ -111,6 +111,7 @@
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/crosapi/mojom/identity_manager.mojom.h"
 #include "chromeos/crosapi/mojom/image_writer.mojom.h"
+#include "chromeos/crosapi/mojom/input_methods.mojom.h"
 #include "chromeos/crosapi/mojom/kerberos_in_browser.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/kiosk_session_service.mojom.h"
@@ -258,6 +259,12 @@ constexpr std::string_view kAshCapabilities[] = {
     // TODO(b/331715712): Remove this capability once Ash and Lacros are both
     // past M128.
     "b/331715712"
+
+    // Support unknown package types when requesting app installation in
+    // AppInstallServiceAsh.
+    // TODO(b/339548766): Remove this capability once Ash and Lacros are both
+    // past M129.
+    "b/339106891"
 
     // Entries added to this list must record the current milestone + 3 with a
     // TODO for removal.
@@ -416,7 +423,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 136,
+static_assert(crosapi::mojom::Crosapi::Version_ == 137,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -484,6 +491,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::HoldingSpaceService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::IdentityManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::IdleService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::InputMethods>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ImageWriter>(),
     MakeInterfaceVersionEntry<crosapi::mojom::InputMethodTestInterface>(),
     MakeInterfaceVersionEntry<chromeos::auth::mojom::InSessionAuth>(),
@@ -940,6 +948,9 @@ void InjectBrowserInitParams(
 
   params->is_orca_use_l10n_strings_enabled =
       chromeos::features::IsOrcaUseL10nStringsEnabled();
+
+  params->is_orca_internationalize_enabled =
+      chromeos::features::IsOrcaInternationalizeEnabled();
 
   params->is_cros_mall_enabled = chromeos::features::IsCrosMallEnabled();
 

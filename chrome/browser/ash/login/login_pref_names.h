@@ -103,6 +103,10 @@ inline constexpr char kOobeDrivePinningEnabledDeferred[] =
 inline constexpr char kOobeDisplaySizeFactorDeferred[] =
     "oobe.display_size_factor_defer";
 
+// List of categories selected from the CategoriesSelection screen.
+// This list is used to filter the apps in the new recommended apps screen.
+inline constexpr char kOobeCategoriesSelected[] = "oobe.categories_selected";
+
 // *************** OOBE LOCAL STATE PREFS ***************
 
 // A boolean pref of the OOBE complete flag (first OOBE part before login).
@@ -151,6 +155,27 @@ inline constexpr char kOobeScreenAfterConsumerUpdate[] =
 // page to autofill the username field.
 inline constexpr char kUrlParameterToAutofillSAMLUsername[] =
     "saml.UrlParameterToAutofillSAMLUsername";
+
+// A string pref containing the initial metrics client ID at the start of OOBE
+// to be later compared with the ID at the end of OOBE. This will determine
+// whether the ID was reset during OOBE or the first onboarding experience.
+// This pref is cleared before the first session starts.
+inline constexpr char kOobeMetricsClientIdAtOobeStart[] =
+    "OobeMetricsClientIdAtOobeStart";
+
+// A boolean pref that indicates if `StatsReportingController` ever reported the
+// status of metrics to be enabled during OOBE. This pref is only updated during
+// pre-login OOBE or the first onboarding experience and cleared before the
+// first session starts.
+inline constexpr char kOobeMetricsReportedAsEnabled[] =
+    "OobeMetricsReportedEnabled";
+
+// A boolean pref that indicates if `StatsReportingController` ever reported a
+// switch from enabled to disabled during OOBE. This pref is only updated during
+// pre-login OOBE or the first onboarding experience and cleared before the
+// first session start.
+inline constexpr char kOobeStatsReportingControllerReportedReset[] =
+    "OobeStatsReportingControllerReportedReset";
 
 }  // namespace ash::prefs
 

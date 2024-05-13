@@ -197,6 +197,8 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
   // If we're spawning a renderer, then override the language switch.
   std::string process_type =
       command_line->GetSwitchValueASCII(::switches::kProcessType);
+  const base::CommandLine& old_command_line =
+      CHECK_DEREF(base::CommandLine::ForCurrentProcess());
   if (process_type == ::switches::kRendererProcess) {
     // Renderer processes are initialized on the UI thread, so this is safe.
     content::RenderProcessHost* render_process_host =
@@ -222,9 +224,9 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kAllowVideoCodecs,
         switches::kDisablePDFTagging,
     };
-    const base::CommandLine& old_command_line =
-        CHECK_DEREF(base::CommandLine::ForCurrentProcess());
-
+    command_line->CopySwitchesFrom(old_command_line, kForwardSwitches);
+  } else if (process_type == ::switches::kGpuProcess) {
+    static const char* const kForwardSwitches[] = {switches::kEnableGPU};
     command_line->CopySwitchesFrom(old_command_line, kForwardSwitches);
   }
 }
@@ -285,7 +287,8 @@ bool HeadlessContentBrowserClient::IsSharedStorageAllowed(
     content::RenderFrameHost* rfh,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin,
-    std::string* out_debug_message) {
+    std::string* out_debug_message,
+    bool* out_block_is_site_setting_specific) {
   return true;
 }
 
@@ -293,7 +296,8 @@ bool HeadlessContentBrowserClient::IsSharedStorageSelectURLAllowed(
     content::BrowserContext* browser_context,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin,
-    std::string* out_debug_message) {
+    std::string* out_debug_message,
+    bool* out_block_is_site_setting_specific) {
   return true;
 }
 

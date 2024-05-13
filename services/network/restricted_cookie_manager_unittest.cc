@@ -694,7 +694,8 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlEqualsMatch_WithStorageAccess) {
       {ContentSettingPatternSource(
           ContentSettingsPattern::FromURL(kDefaultUrl),
           ContentSettingsPattern::FromURL(kOtherUrl),
-          base::Value(ContentSetting::CONTENT_SETTING_ALLOW), /*source=*/"",
+          base::Value(ContentSetting::CONTENT_SETTING_ALLOW),
+          content_settings::ProviderType::kNone,
           /*incognito=*/false)});
 
   auto options = mojom::CookieManagerGetOptions::New();
@@ -1089,7 +1090,8 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookie_WithStorageAccess) {
       {ContentSettingPatternSource(
           ContentSettingsPattern::FromURL(kDefaultUrl),
           ContentSettingsPattern::FromURL(kOtherUrl),
-          base::Value(ContentSetting::CONTENT_SETTING_ALLOW), /*source=*/"",
+          base::Value(ContentSetting::CONTENT_SETTING_ALLOW),
+          content_settings::ProviderType::kNone,
           /*incognito=*/false)});
 
   EXPECT_FALSE(sync_service_->SetCanonicalCookie(
@@ -1371,7 +1373,8 @@ TEST_P(RestrictedCookieManagerTest, CookiesEnabledFor_WithStorageAccess) {
       {ContentSettingPatternSource(
           ContentSettingsPattern::FromURL(kDefaultUrl),
           ContentSettingsPattern::FromURL(kOtherUrl),
-          base::Value(ContentSetting::CONTENT_SETTING_ALLOW), /*source=*/"",
+          base::Value(ContentSetting::CONTENT_SETTING_ALLOW),
+          content_settings::ProviderType::kNone,
           /*incognito=*/false)});
 
   bool result;
@@ -1698,7 +1701,8 @@ TEST_P(RestrictedCookieManagerTest, PartitionedCookies) {
             net::CookiePartitionKey::FromNetworkIsolationKey(
                 kIsolationInfo.network_isolation_key(),
                 kIsolationInfo.site_for_cookies(),
-                net::SchemefulSite(kCookieURL))),
+                net::SchemefulSite(kCookieURL),
+                kIsolationInfo.IsMainFrameRequest())),
         "https", false /* can_modify_httponly */));
 
     // If Partitioned cookies are enabled, the change listener should see the
@@ -1749,7 +1753,8 @@ TEST_P(RestrictedCookieManagerTest, PartitionedCookies) {
             net::CookiePartitionKey::FromNetworkIsolationKey(
                 kIsolationInfo.network_isolation_key(),
                 kIsolationInfo.site_for_cookies(),
-                net::SchemefulSite(kCookieURL))),
+                net::SchemefulSite(kCookieURL),
+                kIsolationInfo.IsMainFrameRequest())),
         "https", false /* can_modify_httponly */));
 
     // If Partitioned cookies are enabled, the listener should not see cookie
@@ -1830,7 +1835,8 @@ TEST_P(RestrictedCookieManagerTest, PartitionKeyWithNonce) {
           net::NetworkIsolationKey(net::SchemefulSite(kTopFrameURL),
                                    net::SchemefulSite(kTopFrameURL), kNonce),
           kNoncedIsolationInfo.site_for_cookies(),
-          net::SchemefulSite(kTopFrameURL));
+          net::SchemefulSite(kTopFrameURL),
+          kNoncedIsolationInfo.IsMainFrameRequest());
 
   const net::IsolationInfo kUnnoncedIsolationInfo =
       net::IsolationInfo::CreateForInternalRequest(kTopFrameOrigin);

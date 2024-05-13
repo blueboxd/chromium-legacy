@@ -146,7 +146,7 @@
 #include "chrome/browser/ash/power/power_metrics_reporter.h"
 #include "chrome/browser/ash/power/renderer_freezer.h"
 #include "chrome/browser/ash/power/smart_charging/smart_charging_manager.h"
-#include "chrome/browser/ash/printing/bulk_printers_calculator_factory.h"
+#include "chrome/browser/ash/printing/enterprise/bulk_printers_calculator_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/profiles/signin_profile_handler.h"
 #include "chrome/browser/ash/quick_pair/quick_pair_browser_delegate_impl.h"
@@ -309,7 +309,8 @@ void InitializeNetworkPortalDetector() {
     return;
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kTestType)) {
+          ::switches::kTestType) ||
+      features::IsRemoveDetectPortalFromChromeEnabled()) {
     network_portal_detector::SetNetworkPortalDetector(
         new NetworkPortalDetectorStub());
   } else {
@@ -870,7 +871,7 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   bluetooth_log_controller_ = std::make_unique<ash::BluetoothLogController>(
       user_manager::UserManager::Get());
 
-    // Enable per-user metrics support as soon as user_manager is created.
+  // Enable per-user metrics support as soon as user_manager is created.
   g_browser_process->metrics_service()->InitPerUserMetrics();
 
   ScreenLocker::InitClass();

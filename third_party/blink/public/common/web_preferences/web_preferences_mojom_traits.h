@@ -420,11 +420,6 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.spatial_navigation_enabled;
   }
 
-  static bool fake_no_alloc_direct_call_for_testing_enabled(
-      const blink::web_pref::WebPreferences& r) {
-    return r.fake_no_alloc_direct_call_for_testing_enabled;
-  }
-
   static const blink::mojom::V8CacheOptions& v8_cache_options(
       const blink::web_pref::WebPreferences& r) {
     return r.v8_cache_options;
@@ -713,9 +708,10 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.in_forced_colors;
   }
 
-  static blink::mojom::PreferredColorScheme browser_preferred_color_scheme(
+  static blink::mojom::PreferredColorScheme
+  preferred_root_scrollbar_color_scheme(
       const blink::web_pref::WebPreferences& r) {
-    return r.browser_preferred_color_scheme;
+    return r.preferred_root_scrollbar_color_scheme;
   }
 
   static blink::mojom::PreferredColorScheme preferred_color_scheme(

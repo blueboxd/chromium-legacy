@@ -205,7 +205,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.AppLaunch" enum="AppLaunch"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>tapted@chromium.org</owner>
@@ -720,33 +720,39 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.CWSInfoService.FetchSuccess" enum="BooleanSuccess"
-    expires_after="2024-05-04">
+    expires_after="never">
+<!-- expires-never: used to monitor the health of CWS metadata fetch service -->
+
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Records whether the overall extension metadata fetch from the Chrome Web
-    Store (CWS) succeeded or not. This is recorded once for a fetch (which can
-    include multiple network requests). Metadata fetches occur periodically
-    (default period is 24 hours). But they can also occur on-demand, for
-    example, when new extensions are installed.
+    Store (CWS) succeeded or not. This is recorded once for a metadata fetch
+    (which can include multiple network requests). Metadata fetches occur
+    periodically (default period is 24 hours). But they can also occur
+    on-demand, for example, when new extensions are installed.
   </summary>
 </histogram>
 
 <histogram name="Extensions.CWSInfoService.MetadataChanged"
-    enum="BooleanChanged" expires_after="2024-05-04">
+    enum="BooleanChanged" expires_after="never">
+<!-- expires-never: used to monitor the health of CWS metadata fetch service -->
+
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Records whether the extension metadata retrieved from the Chrome Web Store
-    (CWS) by the latest fetch is different from that currently saved. This
-    difference can result from store metadata changing, for example an extension
-    getting unpublished. Metadata is also changed when data for newly installed
-    extensions is retrieved for the first time.
+    (CWS) by the latest metadata fetch is different from that currently saved.
+    This difference can result from store metadata changing, for example an
+    extension getting unpublished. Metadata is also changed when data for newly
+    installed extensions is retrieved for the first time.
   </summary>
 </histogram>
 
 <histogram name="Extensions.CWSInfoService.NetworkResponseCodeOrError"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-10-06">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="never">
+<!-- expires-never: used to monitor the health of CWS metadata fetch service -->
+
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -756,19 +762,23 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.CWSInfoService.NetworkRetriesTillSuccess"
-    units="retries" expires_after="2024-10-06">
+    units="retries" expires_after="never">
+<!-- expires-never: used to monitor the health of CWS metadata fetch service -->
+
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Counts how many retries were needed to successfully complete an individual
     request within a metadata fetch. This is emitted only for a successful
-    request. Requests are made in batches at every fetch interval (default is 24
-    hours).
+    request. Requests are made in batches at every metadata fetch interval
+    (default is 24 hours).
   </summary>
 </histogram>
 
 <histogram name="Extensions.CWSInfoService.NumRequestsInFetch" units="requests"
-    expires_after="2024-09-15">
+    expires_after="never">
+<!-- expires-never: used to monitor the health of CWS metadata fetch service -->
+
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -776,8 +786,8 @@ of interesting buckets, such as "internal + external".
     for all installed extensions. Each request is limited to a small number of
     extension ids (default is 3) so multiple requests are necessary when the
     number of installed extensions is greater than the per-request limit. This
-    histogram is emitted before sending the first request in a fetch. It is
-    recorded regardless of whether the fetch succeeds or fails.
+    histogram is emitted before sending the first request in a metadata fetch.
+    It is recorded regardless of whether the metadata fetch succeeds or fails.
   </summary>
 </histogram>
 
@@ -1367,7 +1377,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.DisableReason2" enum="ExtensionDisableReason"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2520,7 +2530,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.Functions.ExtensionMV3Calls"
-    enum="ExtensionFunctions" expires_after="2024-09-01">
+    enum="ExtensionFunctions" expires_after="2024-11-03">
   <owner>tjudkins@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
@@ -3499,20 +3509,6 @@ of interesting buckets, such as "internal + external".
   </summary>
 </histogram>
 
-<histogram name="Extensions.LoadExtensionUser" units="units"
-    expires_after="2023-07-07">
-  <owner>rdevlin.cronin@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
-  <summary>
-    The number of user-installed extensions loaded at profile open.
-
-    Histogram is in the process of being removed in favor of its incremented
-    version that emits only on profile open for &quot;user&quot; profiles
-    (profiles where people can install extensions, specifically profiles that
-    can have non-component extensions installed).
-  </summary>
-</histogram>
-
 <histogram name="Extensions.LoadExtensionUser2" units="units"
     expires_after="never">
 <!-- expires-never: Monitoring extension usage. -->
@@ -3707,7 +3703,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.LoadType2" enum="ExtensionType"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3938,7 +3934,7 @@ of interesting buckets, such as "internal + external".
   </summary>
 </histogram>
 
-<histogram name="Extensions.NetworkDelay" units="ms" expires_after="2024-09-01">
+<histogram name="Extensions.NetworkDelay" units="ms" expires_after="2024-11-03">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
@@ -4234,7 +4230,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ProcessManagerStartupHostsTime2" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4636,7 +4632,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerStatus"
-    enum="Boolean" expires_after="2024-09-01">
+    enum="Boolean" expires_after="2024-11-03">
   <owner>jlulejian@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4646,7 +4642,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerTime" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>jlulejian@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4657,7 +4653,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerTime_Fail"
-    units="ms" expires_after="2024-09-01">
+    units="ms" expires_after="2024-11-03">
   <owner>jlulejian@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4809,7 +4805,7 @@ of interesting buckets, such as "internal + external".
 </histogram>
 
 <histogram name="Extensions.Toolbar.InvocationSource"
-    enum="ExtensionActionInvocationSource" expires_after="2024-09-01">
+    enum="ExtensionActionInvocationSource" expires_after="2024-11-03">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4882,7 +4878,7 @@ of interesting buckets, such as "internal + external".
 
 <histogram
     name="Extensions.WebRequest.BeforeRequestDeclarativeNetRequestEvaluationTimeInMicroseconds"
-    units="microseconds" expires_after="2024-09-01">
+    units="microseconds" expires_after="2024-11-03">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
   <summary>

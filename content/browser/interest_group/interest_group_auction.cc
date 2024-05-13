@@ -66,6 +66,7 @@
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/interest_group/interest_group_pa_report_util.h"
 #include "content/browser/interest_group/interest_group_priority_util.h"
+#include "content/browser/interest_group/interest_group_real_time_report_util.h"
 #include "content/browser/interest_group/storage_interest_group.h"
 #include "content/common/features.h"
 #include "content/public/browser/browser_context.h"
@@ -73,6 +74,7 @@
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
+#include "content/services/auction_worklet/public/mojom/real_time_reporting.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -498,6 +500,21 @@ void TakePrivateAggregationRequestsForBidState(
             std::move(converted_request_value.request));
       }
     }
+  }
+}
+
+void TakeRealTimeContributionsForBidState(
+    InterestGroupAuction::BidState& state,
+    std::map<url::Origin, InterestGroupAuction::RealTimeReportingContributions>&
+        contributions) {
+  for (auto& [origin, per_origin_contributions] :
+       state.real_time_contributions) {
+    InterestGroupAuction::RealTimeReportingContributions&
+        contributions_for_origin = contributions[origin];
+    contributions_for_origin.insert(
+        contributions_for_origin.end(),
+        std::move_iterator(per_origin_contributions.begin()),
+        std::move_iterator(per_origin_contributions.end()));
   }
 }
 
@@ -1022,9 +1039,14 @@ InterestGroupAuction::Bid::GetAdDescriptorWithReplacements() {
        auction->GetDeprecatedRenderURLReplacements()) {
     local_replacements.emplace_back(replacement.match, replacement.replacement);
   }
-  return blink::AdDescriptor(GURL(SubstituteMappedStrings(
-                                 ad_descriptor.url.spec(), local_replacements)),
-                             ad_descriptor.size);
+  GURL url_with_replacements = GURL(
+      SubstituteMappedStrings(ad_descriptor.url.spec(), local_replacements));
+
+  if (url_with_replacements.is_valid()) {
+    return blink::AdDescriptor(GURL(std::move(url_with_replacements)),
+                               ad_descriptor.size);
+  }
+  return ad_descriptor;
 }
 
 // If the auction config specified 'deprecatedRenderURLReplacements', this will
@@ -1041,10 +1063,15 @@ InterestGroupAuction::Bid::GetComponentAdDescriptorsWithReplacements() {
   }
 
   for (auto& ad_component_descriptor : ad_component_descriptors) {
-    local_component_ad_descriptors.emplace_back(
-        GURL(SubstituteMappedStrings(ad_component_descriptor.url.spec(),
-                                     local_replacements)),
-        ad_component_descriptor.size);
+    GURL url_with_replacements = GURL(SubstituteMappedStrings(
+        ad_component_descriptor.url.spec(), local_replacements));
+
+    if (url_with_replacements.is_valid()) {
+      local_component_ad_descriptors.emplace_back(
+          GURL(std::move(url_with_replacements)), ad_component_descriptor.size);
+    } else {
+      local_component_ad_descriptors.emplace_back(ad_component_descriptor);
+    }
   }
   return local_component_ad_descriptors;
 }
@@ -1226,6 +1253,7 @@ class InterestGroupAuction::BuyerHelper
           update_priority_signals_overrides,
       PrivateAggregationRequests pa_requests,
       PrivateAggregationRequests non_kanon_pa_requests,
+      RealTimeReportingContributions real_time_contributions,
       base::TimeDelta bidding_latency,
       auction_worklet::mojom::GenerateBidDependencyLatenciesPtr
           generate_bid_dependency_latencies,
@@ -1250,7 +1278,8 @@ class InterestGroupAuction::BuyerHelper
         state, std::move(mojo_bids), bidding_signals_data_version,
         debug_loss_report_url, debug_win_report_url, set_priority,
         std::move(update_priority_signals_overrides), std::move(pa_requests),
-        std::move(non_kanon_pa_requests), reject_reason, errors);
+        std::move(non_kanon_pa_requests), std::move(real_time_contributions),
+        reject_reason, errors);
   }
 
   void SetForDebuggingOnlyInCooldownOrLockout(
@@ -1362,6 +1391,17 @@ class InterestGroupAuction::BuyerHelper
           non_kanon_winner, signals, top_level_signals,
           private_aggregation_requests_reserved,
           private_aggregation_requests_non_reserved);
+    }
+  }
+
+  // Takes real time contributions and saves to `contributions`, if there are
+  // any.
+  void TakeRealTimeContributions(
+      std::map<url::Origin,
+               InterestGroupAuction::RealTimeReportingContributions>&
+          contributions) {
+    for (std::unique_ptr<BidState>& state : bid_states_) {
+      TakeRealTimeContributionsForBidState(*state, contributions);
     }
   }
 
@@ -1551,6 +1591,7 @@ class InterestGroupAuction::BuyerHelper
         /*update_priority_signals_overrides=*/{},
         /*pa_requests=*/{},
         /*non_kanon_pa_requests=*/{},
+        /*real_time_contributions=*/{},
         /*reject_reason=*/auction_worklet::mojom::RejectReason::kNotAvailable,
         /*errors=*/{});
   }
@@ -1732,6 +1773,7 @@ class InterestGroupAuction::BuyerHelper
           /*update_priority_signals_overrides=*/{},
           /*pa_requests=*/{},
           /*non_kanon_pa_requests=*/{},
+          /*real_time_contributions=*/{},
           /*reject_reason=*/auction_worklet::mojom::RejectReason::kNotAvailable,
           /*errors=*/{});
       // If this was the last bidder, and it was filtered out, there's nothing
@@ -1826,6 +1868,7 @@ class InterestGroupAuction::BuyerHelper
           update_priority_signals_overrides,
       PrivateAggregationRequests pa_requests,
       PrivateAggregationRequests non_kanon_pa_requests,
+      RealTimeReportingContributions real_time_contributions,
       auction_worklet::mojom::RejectReason reject_reason,
       const std::vector<std::string>& errors) {
     DCHECK(!state->made_bid);
@@ -1880,19 +1923,11 @@ class InterestGroupAuction::BuyerHelper
                      request_ptr) { return request_ptr.is_null(); }),
           base::NotFatalUntil::M128);
 
-    // TODO(crbug.com/330744610): Allow filtering IDs to be set.
-    if (base::ranges::any_of(
-            pa_requests,
-            [](const auction_worklet::mojom::PrivateAggregationRequestPtr&
-                   request_ptr) {
-              return request_ptr->contribution->is_histogram_contribution() &&
-                     request_ptr->contribution->get_histogram_contribution()
-                         ->filtering_id.has_value();
-            })) {
+    if (!base::ranges::all_of(pa_requests, HasValidFilteringId)) {
       mojo_bids.clear();
       pa_requests.clear();
       generate_bid_client_receiver_set_.ReportBadMessage(
-          "Filtering ID set inappropriately");
+          "Private Aggregation filtering ID invalid");
     }
     if (base::ranges::any_of(
             non_kanon_pa_requests,
@@ -1925,6 +1960,29 @@ class InterestGroupAuction::BuyerHelper
           non_kanon_pa_requests_for_bidder.end(),
           std::move_iterator(non_kanon_pa_requests.begin()),
           std::move_iterator(non_kanon_pa_requests.end()));
+    }
+
+    // Only keep real time reporting contributions when the buyer is opted-in.
+    // TODO(qingxinwu): Validate received real time reporting message, and
+    // report bad message if invalid.
+    if (base::FeatureList::IsEnabled(
+            blink::features::kFledgeRealTimeReporting) &&
+        auction_->config_->non_shared_params.per_buyer_real_time_reporting_types
+            .has_value() &&
+        auction_->config_->non_shared_params.per_buyer_real_time_reporting_types
+                .value()
+                .find(interest_group.owner) !=
+            auction_->config_->non_shared_params
+                .per_buyer_real_time_reporting_types.value()
+                .end()) {
+      RealTimeReportingContributions& real_time_contributions_for_origin =
+          state->real_time_contributions[interest_group.owner];
+      if (!real_time_contributions.empty()) {
+        real_time_contributions_for_origin.insert(
+            real_time_contributions_for_origin.end(),
+            std::move_iterator(real_time_contributions.begin()),
+            std::move_iterator(real_time_contributions.end()));
+      }
     }
 
     auction_->errors_.insert(auction_->errors_.end(), errors.begin(),
@@ -2943,7 +3001,8 @@ InterestGroupAuction::CreateReporter(
       std::move(interest_groups_that_bid), std::move(debug_win_report_urls),
       std::move(debug_loss_report_urls), GetKAnonKeysToJoin(),
       TakeReservedPrivateAggregationRequests(),
-      TakeNonReservedPrivateAggregationRequests());
+      TakeNonReservedPrivateAggregationRequests(),
+      TakeRealTimeReportingContributions());
 
   // Avoid dangling pointers for things transferred to the reporter.
   winner->bid->interest_group = nullptr;
@@ -3327,6 +3386,7 @@ bool InterestGroupAuction::ReportPaBuyersValueIfAllowed(
   // TODO(caraitto): Consider adding renderer and Mojo validation to ensure that
   // bucket sums can't be out of range, and scales can't be negative, infinite,
   // or NaN.
+  // TODO(crbug.com/330744610): Consider allowing filtering ID to be set.
   InterestGroupAuctionReporter::PrivateAggregationKey agg_key = {
       config_->seller, config_->aggregation_coordinator_origin};
   PrivateAggregationRequests& destination_vector =
@@ -3339,7 +3399,6 @@ bool InterestGroupAuction::ReportPaBuyersValueIfAllowed(
                       *bucket_base + report_buyers_config->bucket,
                       base::saturated_cast<int32_t>(
                           std::max(0.0, value * report_buyers_config->scale)),
-                      // TODO(crbug.com/330744610): Allow filtering ID to be set
                       /*filtering_id=*/std::nullopt)),
           // TODO(caraitto): Consider allowing this to be set.
           blink::mojom::AggregationServiceMode::kDefault,
@@ -3464,6 +3523,8 @@ void InterestGroupAuction::
       private_aggregation_requests_reserved;
   std::map<std::string, PrivateAggregationRequests>
       private_aggregation_requests_non_reserved;
+  std::map<url::Origin, InterestGroupAuction::RealTimeReportingContributions>
+      real_time_contributions;
 
   for (const auto& buyer_helper : buyer_helpers_) {
     ComputePostAuctionSignals(buyer_helper->owner(), signals,
@@ -3476,6 +3537,8 @@ void InterestGroupAuction::
         winner, non_kanon_winner, signals, top_level_signals,
         private_aggregation_requests_reserved,
         private_aggregation_requests_non_reserved);
+
+    buyer_helper->TakeRealTimeContributions(real_time_contributions);
   }
 
   for (std::unique_ptr<BidState>& bid_state : bid_states_for_additional_bids_) {
@@ -3491,6 +3554,7 @@ void InterestGroupAuction::
         top_level_seller, debug_report_lockout_and_cooldowns_,
         new_debug_report_lockout_and_cooldowns_, debug_win_report_urls,
         debug_loss_report_urls);
+    TakeRealTimeContributionsForBidState(*bid_state, real_time_contributions);
   }
 
   for (auto& [key, requests] : private_aggregation_requests_reserved) {
@@ -3507,6 +3571,14 @@ void InterestGroupAuction::
     destination_vector.insert(destination_vector.end(),
                               std::move_iterator(requests.begin()),
                               std::move_iterator(requests.end()));
+  }
+
+  for (auto& [origin, contributions] : real_time_contributions) {
+    InterestGroupAuction::RealTimeReportingContributions& destination_vector =
+        real_time_contributions_[origin];
+    destination_vector.insert(destination_vector.end(),
+                              std::move_iterator(contributions.begin()),
+                              std::move_iterator(contributions.end()));
   }
 
   // Retrieve data from component auctions as well.
@@ -3565,6 +3637,22 @@ InterestGroupAuction::TakeNonReservedPrivateAggregationRequests() {
     }
   }
   return std::move(private_aggregation_requests_non_reserved_);
+}
+
+std::map<url::Origin, InterestGroupAuction::RealTimeReportingContributions>
+InterestGroupAuction::TakeRealTimeReportingContributions() {
+  for (auto& component_auction_info : component_auctions_) {
+    std::map<url::Origin, RealTimeReportingContributions> contributions_map =
+        component_auction_info.second->TakeRealTimeReportingContributions();
+    for (auto& [origin, contributions] : contributions_map) {
+      RealTimeReportingContributions& destination_vector =
+          real_time_contributions_[origin];
+      destination_vector.insert(destination_vector.end(),
+                                std::move_iterator(contributions.begin()),
+                                std::move_iterator(contributions.end()));
+    }
+  }
+  return std::move(real_time_contributions_);
 }
 
 std::vector<std::string> InterestGroupAuction::TakeErrors() {
@@ -4600,18 +4688,12 @@ bool InterestGroupAuction::ValidateScoreBidCompleteResult(
     return false;
   }
 
-  // TODO(crbug.com/330744610): Allow filtering IDs to be set.
-  if (base::ranges::any_of(
-          pa_requests,
-          [](const auction_worklet::mojom::PrivateAggregationRequestPtr&
-                 request_ptr) {
-            return request_ptr->contribution->is_histogram_contribution() &&
-                   request_ptr->contribution->get_histogram_contribution()
-                       ->filtering_id.has_value();
-          })) {
-    score_ad_receivers_.ReportBadMessage("Filtering ID set inappropriately");
+  if (!base::ranges::all_of(pa_requests, HasValidFilteringId)) {
+    score_ad_receivers_.ReportBadMessage(
+        "Private Aggregation filtering ID invalid");
     return false;
   }
+
   return true;
 }
 
@@ -4625,6 +4707,7 @@ void InterestGroupAuction::OnScoreAdComplete(
     const std::optional<GURL>& debug_loss_report_url,
     const std::optional<GURL>& debug_win_report_url,
     PrivateAggregationRequests pa_requests,
+    RealTimeReportingContributions real_time_contributions,
     base::TimeDelta scoring_latency,
     auction_worklet::mojom::ScoreAdDependencyLatenciesPtr
         score_ad_dependency_latencies,
@@ -4687,6 +4770,24 @@ void InterestGroupAuction::OnScoreAdComplete(
           continue;
         }
         pa_requests_for_seller.emplace_back(std::move(request));
+      }
+    }
+
+    // Only keep real time reporting contributions when the seller is opted-in.
+    // TODO(qingxinwu): Validate received real time reporting message, and
+    // report bad message if invalid.
+    if (base::FeatureList::IsEnabled(
+            blink::features::kFledgeRealTimeReporting)) {
+      if (config_->non_shared_params.seller_real_time_reporting_type
+              .has_value()) {
+        RealTimeReportingContributions& real_time_contributions_for_origin =
+            bid->bid_state->real_time_contributions[config_->seller];
+        if (!real_time_contributions.empty()) {
+          real_time_contributions_for_origin.insert(
+              real_time_contributions_for_origin.end(),
+              std::move_iterator(real_time_contributions.begin()),
+              std::move_iterator(real_time_contributions.end()));
+        }
       }
     }
 

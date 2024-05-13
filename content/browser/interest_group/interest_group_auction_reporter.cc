@@ -184,7 +184,9 @@ InterestGroupAuctionReporter::InterestGroupAuctionReporter(
     std::map<PrivateAggregationKey, PrivateAggregationRequests>
         private_aggregation_requests_reserved,
     std::map<std::string, PrivateAggregationRequests>
-        private_aggregation_requests_non_reserved)
+        private_aggregation_requests_non_reserved,
+    std::map<url::Origin, RealTimeReportingContributions>
+        real_time_contributions)
     : interest_group_manager_(interest_group_manager),
       auction_worklet_manager_(auction_worklet_manager),
       private_aggregation_manager_(private_aggregation_manager),
@@ -211,6 +213,7 @@ InterestGroupAuctionReporter::InterestGroupAuctionReporter(
           std::move(private_aggregation_requests_reserved)),
       private_aggregation_requests_non_reserved_(
           std::move(private_aggregation_requests_non_reserved)),
+      real_time_contributions_(std::move(real_time_contributions)),
       fenced_frame_reporter_(FencedFrameReporter::CreateForFledge(
           url_loader_factory_,
           browser_context,
@@ -338,11 +341,7 @@ void InterestGroupAuctionReporter::OnFledgePrivateAggregationRequests(
   DCHECK(base::ranges::none_of(private_aggregation_requests,
                                [](auto& it) { return it.second.empty(); }));
 
-  if (private_aggregation_requests.empty()) {
-    return;
-  }
-
-  if (!private_aggregation_manager) {
+  if (private_aggregation_requests.empty() || !private_aggregation_manager) {
     return;
   }
 
@@ -597,11 +596,8 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
   timings.script_run_time = reporting_latency;
   for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
        pa_requests) {
-    // TODO(crbug.com/330744610): Allow filtering ID to be set.
-    if (request->contribution->is_histogram_contribution() &&
-        request->contribution->get_histogram_contribution()
-            ->filtering_id.has_value()) {
-      mojo::ReportBadMessage("Filtering ID set inappropriately");
+    if (!HasValidFilteringId(request)) {
+      mojo::ReportBadMessage("Private Aggregation filtering ID invalid");
     }
 
     // reportResult() only gets executed for seller when there was an auction
@@ -919,11 +915,8 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
   timings.script_run_time = reporting_latency;
   for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
        pa_requests) {
-    // TODO(crbug.com/330744610): Allow filtering ID to be set.
-    if (request->contribution->is_histogram_contribution() &&
-        request->contribution->get_histogram_contribution()
-            ->filtering_id.has_value()) {
-      mojo::ReportBadMessage("Filtering ID set inappropriately");
+    if (!HasValidFilteringId(request)) {
+      mojo::ReportBadMessage("Private Aggregation filtering ID invalid");
     }
 
     // Only winner's reportWin() gets executed, so is_winner is true, which
@@ -1050,6 +1043,13 @@ void InterestGroupAuctionReporter::OnNavigateToWinningAd(
   // Send any pending reports that are gathered as reports run.
   SendPendingReportsIfNavigated();
   MaybeSendPrivateAggregationReports();
+
+  // Send pre-populated real time reports. Note that `real_time_contributions_`
+  // will be converted to a histogram in EnqueueRealTimeReports().
+  interest_group_manager_->EnqueueRealTimeReports(
+      std::move(real_time_contributions_), frame_tree_node_id, frame_origin_,
+      *client_security_state_, url_loader_factory_);
+  real_time_contributions_.clear();
 
   // Send pre-populated reports. Send these after the main reports, since
   // reports are sent over the network in FIFO order.

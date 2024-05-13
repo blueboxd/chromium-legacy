@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ash/file_system_provider/cloud_file_info.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/ash/file_system_provider/queue.h"
+#include "net/base/io_buffer.h"
 #include "url/origin.h"
 
 namespace ash::file_system_provider {
@@ -110,7 +112,8 @@ const std::string GetVersionTag(EntryMetadata* metadata) {
 }
 
 std::optional<int64_t> GetCloudSize(EntryMetadata* metadata) {
-  if (metadata && metadata->size) {
+  // If the size doesn't exist, it may return -1, let's avoid this error case.
+  if (metadata && metadata->size && *metadata->size > -1) {
     return *metadata->size;
   }
   return std::nullopt;
@@ -144,6 +147,9 @@ void CloudFileSystem::OnContentCacheInitialized(
       << "Error initializing the content cache: " << error_or_cache.error();
   if (error_or_cache.has_value()) {
     content_cache_ = std::move(error_or_cache.value());
+    content_cache_->SetOnItemEvictedCallback(
+        base::BindRepeating(&CloudFileSystem::OnItemEvictedFromCache,
+                            weak_ptr_factory_.GetWeakPtr()));
     for (const base::FilePath& file_path :
          content_cache_->GetCachedFilePaths()) {
       // Notifications are received though Notify() so no notification_callback
@@ -156,6 +162,14 @@ void CloudFileSystem::OnContentCacheInitialized(
                  base::DoNothing());
     }
   }
+}
+
+void CloudFileSystem::OnItemEvictedFromCache(const base::FilePath& file_path) {
+  VLOG(1) << file_path << " evicted from the content cache";
+  RemoveWatcher(GetContentCacheURL(), file_path, /*recursive=*/false,
+                base::BindOnce([](base::File::Error result) {
+                  VLOG(1) << "Removed file watcher on file: " << result;
+                }));
 }
 
 AbortCallback CloudFileSystem::RequestUnmount(
@@ -234,26 +248,18 @@ AbortCallback CloudFileSystem::ReadFile(int file_handle,
   // `StartReadBytes` succeeds, an actual read of the underlying FD will be
   // kicked off, for the purposes of this method it has finished successfully.
   const OpenedCloudFile& opened_cloud_file = it->second;
-  if (content_cache_->StartReadBytes(
-          opened_cloud_file, buffer, offset, length,
-          base::BindRepeating(&CloudFileSystem::OnReadFileFromCacheCompleted,
-                              weak_ptr_factory_.GetWeakPtr(), file_handle,
-                              buffer, offset, length, callback))) {
-    return AbortCallback();
-  }
-
-  // The file doesn't exist in the cache, we need to make a cloud request
-  // first and write the result into the cache upon successful return.
-  return file_system_->ReadFile(
-      file_handle, buffer, offset, length,
-      base::BindRepeating(&CloudFileSystem::OnReadFileCompleted,
-                          weak_ptr_factory_.GetWeakPtr(), file_handle, buffer,
-                          offset, length, callback));
+  scoped_refptr<net::IOBuffer> buffer_ref = base::WrapRefCounted(buffer);
+  content_cache_->ReadBytes(
+      opened_cloud_file, buffer_ref, offset, length,
+      base::BindRepeating(&CloudFileSystem::OnReadFileFromCacheCompleted,
+                          weak_ptr_factory_.GetWeakPtr(), file_handle,
+                          buffer_ref, offset, length, callback));
+  return AbortCallback();
 }
 
 void CloudFileSystem::OnReadFileFromCacheCompleted(
     int file_handle,
-    net::IOBuffer* buffer,
+    scoped_refptr<net::IOBuffer> buffer,
     int64_t offset,
     int length,
     ReadChunkReceivedCallback callback,
@@ -267,13 +273,24 @@ void CloudFileSystem::OnReadFileFromCacheCompleted(
     return;
   }
 
+  if (result == base::File::FILE_ERROR_NOT_FOUND) {
+    // The file doesn't exist in the cache, we need to make a cloud request
+    // first and write the result into the cache upon successful return.
+    file_system_->ReadFile(
+        file_handle, buffer.get(), offset, length,
+        base::BindRepeating(&CloudFileSystem::OnReadFileCompleted,
+                            weak_ptr_factory_.GetWeakPtr(), file_handle, buffer,
+                            offset, length, callback));
+    return;
+  }
+
   LOG(ERROR) << "Couldn't read the file from cache";
-  file_system_->ReadFile(file_handle, buffer, offset, length,
+  file_system_->ReadFile(file_handle, buffer.get(), offset, length,
                          std::move(callback));
 }
 
 void CloudFileSystem::OnReadFileCompleted(int file_handle,
-                                          net::IOBuffer* buffer,
+                                          scoped_refptr<net::IOBuffer> buffer,
                                           int64_t offset,
                                           int length,
                                           ReadChunkReceivedCallback callback,
@@ -294,14 +311,11 @@ void CloudFileSystem::OnReadFileCompleted(int file_handle,
       std::move(callback), bytes_read, has_more, base::File::FILE_OK);
 
   const OpenedCloudFile& opened_cloud_file = it->second;
-  if (!content_cache_->StartWriteBytes(
-          opened_cloud_file, buffer, offset, bytes_read,
-          base::BindOnce(&CloudFileSystem::OnBytesWrittenToCache,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         opened_cloud_file.file_path,
-                         readchunk_success_callback))) {
-    readchunk_success_callback.Run();
-  }
+  content_cache_->WriteBytes(
+      opened_cloud_file, buffer, offset, bytes_read,
+      base::BindOnce(&CloudFileSystem::OnBytesWrittenToCache,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     opened_cloud_file.file_path, readchunk_success_callback));
 }
 
 void CloudFileSystem::OnBytesWrittenToCache(
@@ -554,10 +568,13 @@ void CloudFileSystem::OnOpenFileCompleted(
           << "', metadata = " << metadata.get() << "}";
 
   if (result == base::File::FILE_OK) {
-    opened_files_.try_emplace(
-        file_handle,
-        OpenedCloudFile(file_path, mode, GetVersionTag(metadata.get()),
-                        GetCloudSize(metadata.get())));
+    opened_files_.try_emplace(file_handle,
+                              OpenedCloudFile(file_path, mode, file_handle,
+                                              GetVersionTag(metadata.get()),
+                                              GetCloudSize(metadata.get())));
+  } else if (result == base::File::FILE_ERROR_NOT_FOUND) {
+    // The file doesn't exist on the FSP, evict it from the cache.
+    content_cache_->Evict(file_path);
   }
   std::move(callback).Run(file_handle, result, std::move(metadata));
 }
@@ -568,7 +585,10 @@ void CloudFileSystem::OnCloseFileCompleted(
     base::File::Error result) {
   // Closing is always final. Even if an error happened, we remove it from the
   // list of opened files.
-  opened_files_.erase(file_handle);
+  const auto& opened_file = opened_files_.extract(file_handle);
+  if (content_cache_) {
+    content_cache_->CloseFile(opened_file.mapped());
+  }
   std::move(callback).Run(result);
 }
 
@@ -580,7 +600,6 @@ void CloudFileSystem::OnGetMetadataCompleted(
   if (result == base::File::FILE_ERROR_NOT_FOUND) {
     // The file doesn't exist on the FSP, evict it from the cache.
     content_cache_->Evict(entry_path);
-    // TODO(b/328679535): Remove watcher for file.
   }
   std::move(callback).Run(std::move(entry_metadata), result);
 }

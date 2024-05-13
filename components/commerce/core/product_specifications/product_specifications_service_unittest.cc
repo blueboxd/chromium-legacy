@@ -100,10 +100,6 @@ MATCHER_P(IsSetWithUuid, uuid, "") {
   return arg.uuid() == uuid;
 }
 
-MATCHER_P(IsUuid, uuid, "") {
-  return arg.AsLowercaseString() == uuid;
-}
-
 MATCHER_P2(HasProductSpecsNameUrl, name, urls, "") {
   return arg.name() == name && arg.urls() == urls;
 }
@@ -168,12 +164,13 @@ class MockProductSpecificationsSetObserver
 
   MOCK_METHOD(void,
               OnProductSpecificationsSetUpdate,
-              (const ProductSpecificationsSet& set),
+              (const ProductSpecificationsSet& before,
+               const ProductSpecificationsSet& after),
               (override));
 
   MOCK_METHOD(void,
               OnProductSpecificationsSetRemoved,
-              (const base::Uuid& uuid),
+              (const ProductSpecificationsSet& set),
               (override));
 };
 
@@ -268,8 +265,9 @@ TEST_F(ProductSpecificationsServiceTest, TestAddProductSpecificationsSuccess) {
 
 TEST_F(ProductSpecificationsServiceTest, TestRemoveProductSpecifications) {
   AddTestSpecifics(bridge());
-  EXPECT_CALL(*observer(), OnProductSpecificationsSetRemoved(
-                               IsUuid(kCompareSpecifics[0].uuid())))
+  EXPECT_CALL(*observer(),
+              OnProductSpecificationsSetRemoved(IsSetWithUuid(
+                  base::Uuid::ParseLowercase(kCompareSpecifics[0].uuid()))))
       .Times(1);
   service()->DeleteProductSpecificationsSet(kCompareSpecifics[0].uuid());
 }
@@ -298,8 +296,9 @@ TEST_F(ProductSpecificationsServiceTest, TestSetUrls) {
 
   const base::Uuid uuid_to_modify = specifications[0].uuid();
 
-  EXPECT_CALL(*observer(),
-              OnProductSpecificationsSetUpdate(IsSetWithUuid(uuid_to_modify)))
+  EXPECT_CALL(*observer(), OnProductSpecificationsSetUpdate(
+                               HasAllProductSpecs(kCompareSpecifics[0]),
+                               IsSetWithUuid(uuid_to_modify)))
       .Times(1);
 
   const std::vector<GURL> new_urls = {GURL("http://example.com/updated")};
@@ -325,8 +324,9 @@ TEST_F(ProductSpecificationsServiceTest, TestSetName) {
 
   const base::Uuid uuid_to_modify = specifications[0].uuid();
 
-  EXPECT_CALL(*observer(),
-              OnProductSpecificationsSetUpdate(IsSetWithUuid(uuid_to_modify)))
+  EXPECT_CALL(*observer(), OnProductSpecificationsSetUpdate(
+                               HasAllProductSpecs(kCompareSpecifics[0]),
+                               IsSetWithUuid(uuid_to_modify)))
       .Times(1);
 
   const std::string new_name = "updated name";
@@ -353,7 +353,8 @@ TEST_F(ProductSpecificationsServiceTest, TestSetNameAndUrls_BadId) {
   const base::Uuid uuid_to_modify =
       base::Uuid::ParseLowercase("90000000-0000-0000-0000-000000000000");
 
-  EXPECT_CALL(*observer(), OnProductSpecificationsSetUpdate(testing::_))
+  EXPECT_CALL(*observer(),
+              OnProductSpecificationsSetUpdate(testing::_, testing::_))
       .Times(0);
 
   const std::vector<GURL> new_urls = {GURL("http://example.com/updated")};
@@ -388,9 +389,11 @@ TEST_F(ProductSpecificationsServiceTest, TestObserverUpdateSpecifics) {
       noupdate_specifics.uuid(), MakeEntityData(noupdate_specifics)));
 
   EXPECT_CALL(*observer(), OnProductSpecificationsSetUpdate(
+                               HasAllProductSpecs(kCompareSpecifics[0]),
                                HasAllProductSpecs(new_specifics)))
       .Times(1);
   EXPECT_CALL(*observer(), OnProductSpecificationsSetUpdate(
+                               HasAllProductSpecs(kCompareSpecifics[1]),
                                HasAllProductSpecs(noupdate_specifics)))
       .Times(0);
   bridge()->ApplyIncrementalSyncChanges(
@@ -404,8 +407,8 @@ TEST_F(ProductSpecificationsServiceTest, TestObserverRemoveSpecifics) {
   for (const auto& specifics : kCompareSpecifics) {
     remove_changes.push_back(
         syncer::EntityChange::CreateDelete(specifics.uuid()));
-    EXPECT_CALL(*observer(),
-                OnProductSpecificationsSetRemoved(IsUuid(specifics.uuid())))
+    EXPECT_CALL(*observer(), OnProductSpecificationsSetRemoved(IsSetWithUuid(
+                                 base::Uuid::ParseLowercase(specifics.uuid()))))
         .Times(1);
   }
   bridge()->ApplyIncrementalSyncChanges(

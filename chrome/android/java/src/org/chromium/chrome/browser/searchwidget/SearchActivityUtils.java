@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.IntentUtils;
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -31,12 +32,19 @@ import org.chromium.url.GURL;
 
 /** Class facilitating interactions with the SearchActivity and the Omnibox. */
 public class SearchActivityUtils implements SearchActivityClient {
+    private static final String TAG = "SAUtils";
+
     @VisibleForTesting
     /* package */ static final int OMNIBOX_REQUEST_CODE = 'O' << 24 | 'M' << 16 | 'N' << 8 | 'I';
 
     @VisibleForTesting /* package */ static final String EXTRA_ORIGIN = "origin";
     @VisibleForTesting /* package */ static final String EXTRA_SEARCH_TYPE = "search-type";
     @VisibleForTesting /* package */ static final String EXTRA_CURRENT_URL = "current-url";
+    @VisibleForTesting /* package */ static final String EXTRA_REFERRER = "referrer";
+    // Only alpha-numeric characters, including dots and dashes.
+    // Must be at least 2 characters long, and begin and end with an alphanumeric character.
+    private static final String REFERRER_VALIDATION_REGEX =
+            "^[a-zA-Z0-9][a-zA-Z0-9._-]*[a-zA-Z0-9]$";
 
     // Note: while we don't rely on Actions, PendingIntents do require them to be Unique.
     // Responsibility to define values for PendingIntents could be offset to Caller; meantime we
@@ -76,10 +84,20 @@ public class SearchActivityUtils implements SearchActivityClient {
      * @param activity the current activity; may be {@code null}, in which case intent will not be
      *     issued
      * @param url the URL of the page to retrieve suggestions for
+     * @param referrer the referrer package name
      */
     public static void requestOmniboxForResult(
-            @Nullable Activity activity, @NonNull GURL currentUrl) {
+            @Nullable Activity activity, @NonNull GURL currentUrl, @Nullable String referrer) {
         if (activity == null) return;
+
+        if (referrer != null && !referrer.matches(REFERRER_VALIDATION_REGEX)) {
+            Log.e(
+                    TAG,
+                    String.format(
+                            "Referrer: '%s' failed to match Re pattern '%s' and will be ignored.",
+                            referrer, REFERRER_VALIDATION_REGEX));
+            referrer = null;
+        }
 
         @SuppressLint("DefaultLocale")
         var intent =
@@ -93,6 +111,7 @@ public class SearchActivityUtils implements SearchActivityClient {
                                 EXTRA_CURRENT_URL,
                                 GURL.isEmptyOrInvalid(currentUrl) ? null : currentUrl.getSpec())
                         .putExtra(EXTRA_ORIGIN, IntentOrigin.CUSTOM_TAB)
+                        .putExtra(EXTRA_REFERRER, TextUtils.isEmpty(referrer) ? null : referrer)
                         .putExtra(EXTRA_SEARCH_TYPE, SearchType.TEXT)
                         .addFlags(
                                 Intent.FLAG_ACTIVITY_NO_HISTORY
@@ -130,6 +149,25 @@ public class SearchActivityUtils implements SearchActivityClient {
             if (!GURL.isEmptyOrInvalid(gurl)) return gurl;
         }
         return null;
+    }
+
+    /**
+     * @return the package name on behalf of which the intent was issued.
+     */
+    /* package */ static @Nullable String getReferrer(@NonNull Intent intent) {
+        String referrer = null;
+        if (IntentUtils.isTrustedIntentFromSelf(intent)) {
+            referrer = IntentUtils.safeGetStringExtra(intent, EXTRA_REFERRER);
+            if (referrer != null && !referrer.matches(REFERRER_VALIDATION_REGEX)) {
+                Log.e(
+                        TAG,
+                        String.format(
+                                "Invalid referrer: '%s' found. Referrer will be removed.",
+                                referrer));
+                referrer = null;
+            }
+        }
+        return TextUtils.isEmpty(referrer) ? null : referrer;
     }
 
     /** Returns the caller-supplied initial search query. */

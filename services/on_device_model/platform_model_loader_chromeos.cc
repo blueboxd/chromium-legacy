@@ -5,6 +5,7 @@
 #include "services/on_device_model/platform_model_loader_chromeos.h"
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -26,9 +27,7 @@
 //
 // 6c2d5dc9-32c3-4642-9ea3-3dc9cdf3854d:
 //   model.json
-//   model.pb
 //   weights.bin
-//   spm.model
 //
 // The model.json content:
 // {
@@ -45,7 +44,6 @@
 //
 // 75079ea6-c55a-44df-acce-7ac4cc861ee1:
 //   model.json
-//   model.pb
 //   weights.bin
 //
 // The model.json content:
@@ -67,9 +65,7 @@ constexpr char kBaseModelKey[] = "base_model";
 constexpr char kUuidKey[] = "uuid";
 constexpr char kMaxTokensKey[] = "max_tokens";
 constexpr char kAdaptationRanksKey[] = "adaptation_ranks";
-constexpr char kModelPathKey[] = "model_path";
 constexpr char kWeightPathKey[] = "weight_path";
-constexpr char kSpModelPathKey[] = "sp_model_path";
 constexpr char kTsDataPathKey[] = "ts_data_path";
 constexpr char kTsSpModelPathKey[] = "ts_sp_model_path";
 constexpr char kTsDimensionKey[] = "ts_dimension";
@@ -219,7 +215,7 @@ void ChromeosPlatformModelLoader::LoadModelWithUuid(
   client->Install(
       request,
       base::BindOnce(&ChromeosPlatformModelLoader::OnInstallDlcComplete,
-                     AsWeakPtr(), uuid),
+                     weak_ptr_factory_.GetWeakPtr(), uuid),
       /*ProgressCallback=*/base::DoNothing());
   return;
 }
@@ -258,11 +254,10 @@ void ChromeosPlatformModelLoader::OnInstallDlcComplete(
     return;
   }
 
-  const std::string* model_path = model_dict->FindString(kModelPathKey);
   const std::string* weight_path = model_dict->FindString(kWeightPathKey);
   const std::string* version = model_dict->FindString(kVersionKey);
 
-  if (!model_path || !weight_path || !version) {
+  if (!weight_path || !version) {
     LOG(ERROR) << "Failed to read model data from model descriptor file";
     base::UmaHistogramEnumeration(kLoadStatusHistogramName,
                                   LoadStatus::kInvalidModelDescriptor);
@@ -292,19 +287,9 @@ void ChromeosPlatformModelLoader::OnInstallDlcComplete(
         platform_model->base_model().BindNewPipeAndPassReceiver(),
         base::BindOnce(
             &ChromeosPlatformModelLoader::LoadAdaptationPlatformModel,
-            AsWeakPtr(), base_model_uuid, *base_version, uuid, dlc_root,
-            *version, *model_path, *weight_path, std::move(platform_model)));
+            weak_ptr_factory_.GetWeakPtr(), base_model_uuid, *base_version,
+            uuid, dlc_root, *version, *weight_path, std::move(platform_model)));
 
-    return;
-  }
-
-  const std::string* sp_model = model_dict->FindString(kSpModelPathKey);
-
-  if (!sp_model) {
-    LOG(ERROR) << "Failed to read sp model path from model descriptor file";
-    base::UmaHistogramEnumeration(kLoadStatusHistogramName,
-                                  LoadStatus::kInvalidModelDescriptor);
-    ReplyError(uuid, mojom::LoadModelResult::kFailedToLoadLibrary);
     return;
   }
 
@@ -326,8 +311,6 @@ void ChromeosPlatformModelLoader::OnInstallDlcComplete(
   std::optional<int> ts_dimension = model_dict->FindInt(kTsDimensionKey);
 
   on_device_model::ModelAssetPaths model_paths;
-  model_paths.sp_model = dlc_root.Append(*sp_model);
-  model_paths.model = dlc_root.Append(*model_path);
   model_paths.weights = dlc_root.Append(*weight_path);
   if (ts_data) {
     model_paths.ts_data = dlc_root.Append(*ts_data);
@@ -349,8 +332,9 @@ void ChromeosPlatformModelLoader::OnInstallDlcComplete(
   service_->LoadModel(
       std::move(params),
       platform_model->cur_model().BindNewPipeAndPassReceiver(),
-      base::BindOnce(&ChromeosPlatformModelLoader::FinishLoadModel, AsWeakPtr(),
-                     uuid, *version, std::move(platform_model)));
+      base::BindOnce(&ChromeosPlatformModelLoader::FinishLoadModel,
+                     weak_ptr_factory_.GetWeakPtr(), uuid, *version,
+                     std::move(platform_model)));
 }
 
 void ChromeosPlatformModelLoader::FinishLoadModel(
@@ -380,7 +364,6 @@ void ChromeosPlatformModelLoader::LoadAdaptationPlatformModel(
     const base::Uuid& uuid,
     const base::FilePath& dlc_root,
     const std::string& version,
-    const std::string& model_path,
     const std::string& weight_path,
     scoped_refptr<PlatformModel> model,
     mojom::LoadModelResult result) {
@@ -404,8 +387,6 @@ void ChromeosPlatformModelLoader::LoadAdaptationPlatformModel(
   }
 
   on_device_model::AdaptationAssetPaths adaptation_paths;
-
-  adaptation_paths.model = dlc_root.Append(model_path);
   adaptation_paths.weights = dlc_root.Append(weight_path);
 
   auto params = on_device_model::mojom::LoadAdaptationParams::New();
@@ -413,8 +394,9 @@ void ChromeosPlatformModelLoader::LoadAdaptationPlatformModel(
 
   base_record.platform_model->cur_model()->LoadAdaptation(
       std::move(params), model->cur_model().BindNewPipeAndPassReceiver(),
-      base::BindOnce(&ChromeosPlatformModelLoader::FinishLoadModel, AsWeakPtr(),
-                     uuid, version, std::move(model)));
+      base::BindOnce(&ChromeosPlatformModelLoader::FinishLoadModel,
+                     weak_ptr_factory_.GetWeakPtr(), uuid, version,
+                     std::move(model)));
 }
 
 }  // namespace on_device_model

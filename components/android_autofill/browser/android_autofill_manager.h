@@ -41,7 +41,7 @@ class AndroidAutofillManager : public AutofillManager,
 
   bool ShouldClearPreviewedForm() override;
 
-  void OnFocusNoLongerOnFormImpl(bool had_interacted_form) override;
+  void OnFocusOnNonFormFieldImpl(bool had_interacted_form) override;
 
   void OnDidFillAutofillFormDataImpl(const FormData& form,
                                      const base::TimeTicks timestamp) override;
@@ -79,26 +79,21 @@ class AndroidAutofillManager : public AutofillManager,
 
   void OnTextFieldDidChangeImpl(const FormData& form,
                                 const FormFieldData& field,
-                                const gfx::RectF& bounding_box,
                                 const base::TimeTicks timestamp) override;
 
   void OnTextFieldDidScrollImpl(const FormData& form,
-                                const FormFieldData& field,
-                                const gfx::RectF& bounding_box) override;
+                                const FormFieldData& field) override;
 
   void OnAskForValuesToFillImpl(
       const FormData& form,
       const FormFieldData& field,
-      const gfx::RectF& bounding_box,
       AutofillSuggestionTriggerSource trigger_source) override;
 
   void OnFocusOnFormFieldImpl(const FormData& form,
-                              const FormFieldData& field,
-                              const gfx::RectF& bounding_box) override;
+                              const FormFieldData& field) override;
 
   void OnSelectControlDidChangeImpl(const FormData& form,
-                                    const FormFieldData& field,
-                                    const gfx::RectF& bounding_box) override;
+                                    const FormFieldData& field) override;
 
   void OnJavaScriptChangedAutofilledValueImpl(const FormData& form,
                                               const FormFieldData& field,

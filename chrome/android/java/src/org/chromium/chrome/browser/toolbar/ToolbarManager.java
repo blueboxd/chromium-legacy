@@ -269,6 +269,7 @@ public class ToolbarManager
     private MenuButtonCoordinator mMenuButtonCoordinator;
     private MenuButtonCoordinator mOverviewModeMenuButtonCoordinator;
     private HomepageManager.HomepageStateListener mHomepageStateListener;
+    private final Supplier<ModalDialogManager> mModalDialogManagerSupplier;
     private StatusBarColorController mStatusBarColorController;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private final BottomSheetController mBottomSheetController;
@@ -615,6 +616,7 @@ public class ToolbarManager
         mOmniboxFocusStateSupplier = omniboxFocusStateSupplier;
         mPromoShownOneshotSupplier = promoShownOneshotSupplier;
         mAppMenuDelegate = appMenuDelegate;
+        mModalDialogManagerSupplier = modalDialogManagerSupplier;
         mStatusBarColorController = statusBarColorController;
         mUrlFocusChangedCallback = urlFocusChangedCallback;
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
@@ -1432,7 +1434,6 @@ public class ToolbarManager
                         constraintsSupplier,
                         mCompositorViewHolder.getInMotionSupplier(),
                         mControlsVisibilityDelegate,
-                        !ReturnToChromeUtil.moveDownLogo(),
                         mFullscreenManager,
                         mTabObscuringHandler,
                         mDesktopWindowStateProvider);
@@ -1669,7 +1670,8 @@ public class ToolbarManager
                                 mCompositorViewHolder::getDynamicResourceLoader,
                                 mTabCreatorManager,
                                 mLayoutStateProviderSupplier,
-                                mSnackbarManager);
+                                mSnackbarManager,
+                                mModalDialogManagerSupplier.get());
         var bottomControlsCoordinator =
                 new BottomControlsCoordinator(
                         mActivity,

@@ -11,7 +11,9 @@
 #include "ash/system/extended_updates/extended_updates_metrics.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/model/update_model.h"
+#include "base/callback_list.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -99,6 +101,16 @@ void ExtendedUpdatesController::
     RecordEntryPointEventForSettingsSetUpButtonClicked() {
   RecordExtendedUpdatesEntryPointEvent(
       ExtendedUpdatesEntryPointEvent::kSettingsSetUpButtonClicked);
+}
+
+base::CallbackListSubscription
+ExtendedUpdatesController::SubscribeToDeviceSettingsChanges(
+    base::RepeatingClosure callback) {
+  if (CrosSettings::IsInitialized()) {
+    return CrosSettings::Get()->AddSettingsObserver(
+        kDeviceExtendedAutoUpdateEnabled, std::move(callback));
+  }
+  return base::CallbackListSubscription();
 }
 
 ExtendedUpdatesController::ExtendedUpdatesController()
@@ -197,26 +209,27 @@ void ExtendedUpdatesController::OnOwnershipDetermined(
   }
 }
 
-// TODO(b/333619965): Also check if user has dismissed the notification before.
 // TODO(b/333767804): Show notification again if extended updates date changed.
 bool ExtendedUpdatesController::ShouldShowNotification(
     content::BrowserContext* context) {
-  if (!IsOptInEligible(context)) {
+  if (!IsOptInEligible(context) || !HasNoAndroidApps(context)) {
     return false;
   }
-  return HasNoAndroidApps(context);
+  Profile* profile = Profile::FromBrowserContext(context);
+  if (ExtendedUpdatesNotification::IsNotificationDismissed(profile)) {
+    return false;
+  }
+  return true;
 }
 
 void ExtendedUpdatesController::ShowNotification(
     content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  ExtendedUpdatesNotification::Create(profile)->Show();
+  ExtendedUpdatesNotification::Show(Profile::FromBrowserContext(context));
 }
 
 void ExtendedUpdatesController::SubscribeToDeviceSettingsChanges() {
-  if (!settings_change_subscription_ && CrosSettings::IsInitialized()) {
-    settings_change_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-        kDeviceExtendedAutoUpdateEnabled,
+  if (!settings_change_subscription_) {
+    settings_change_subscription_ = SubscribeToDeviceSettingsChanges(
         base::BindRepeating(&ExtendedUpdatesController::OnDeviceSettingsChanged,
                             weak_factory_.GetWeakPtr()));
   }

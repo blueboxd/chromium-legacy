@@ -468,7 +468,7 @@ source_set("analytics_event_logger") {
 }
 
 # src/internal/crypto
-# NOTE: This does not include any of the classes found in //cyrpto.
+# NOTE: This does not include any of the classes found in //crypto.
 # //third_party/nearby/internal/crypto_cros is a subset of //crypto whereas
 # //third_party/nearby/internal/crypto contains completely different classes.
 source_set("nearby_crypto") {
@@ -480,6 +480,7 @@ source_set("nearby_crypto") {
   public = [ "src/internal/crypto/ed25519.h" ]
   public_deps = [
     ":platform_base_logging",
+    ":platform_public_types",
     "//third_party/abseil-cpp:absl",
     "//third_party/boringssl:boringssl",
   ]
@@ -617,6 +618,7 @@ source_set("platform_api_types") {
     "//crypto:crypto",
     "//third_party/abseil-cpp:absl",
   ]
+  deps = [ ":platform_impl_crypto" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
@@ -1303,4 +1305,12 @@ if (is_chromeos_device) {
   tast_test("nearby_share_tast_tests") {
     tast_attr_expr = "\"group:nearby-share-remote\""
   }
+}
+
+###############################################################################
+# Chromium platform implementations. These are not third-party code.
+###############################################################################
+source_set("platform_impl_crypto") {
+  sources = [ "platform_impl/crypto.cc" ]
+  deps = [ "//base" ]
 }

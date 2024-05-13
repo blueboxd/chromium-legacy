@@ -4,21 +4,20 @@
 
 package org.chromium.chrome.test.transit;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.transit.ConditionStatus;
 import org.chromium.base.test.transit.UiThreadCondition;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
 
 /** Fulfilled when a page is loaded. */
-class PageLoadedCondition extends UiThreadCondition {
-    private final ChromeTabbedActivityTestRule mChromeTabbedActivityTestRule;
+public class PageLoadedCondition extends UiThreadCondition implements Supplier<Tab> {
+    private final Supplier<Tab> mActivityTabSupplier;
     private final boolean mIncognito;
-    private Tab mMatchedTab;
+    private Tab mLoadedTab;
 
-    PageLoadedCondition(
-            ChromeTabbedActivityTestRule chromeTabbedActivityTestRule, boolean incognito) {
-        mChromeTabbedActivityTestRule = chromeTabbedActivityTestRule;
+    PageLoadedCondition(Supplier<Tab> activityTabSupplier, boolean incognito) {
+        mActivityTabSupplier = dependOnSupplier(activityTabSupplier, "ActivityTab");
         mIncognito = incognito;
     }
 
@@ -28,11 +27,8 @@ class PageLoadedCondition extends UiThreadCondition {
     }
 
     @Override
-    public ConditionStatus check() {
-        Tab tab = mChromeTabbedActivityTestRule.getActivity().getActivityTab();
-        if (tab == null) {
-            return notFulfilled("null ActivityTab");
-        }
+    protected ConditionStatus checkWithSuppliers() {
+        Tab tab = mActivityTabSupplier.get();
 
         boolean isIncognito = tab.isIncognito();
         boolean isLoading = tab.isLoading();
@@ -46,14 +42,20 @@ class PageLoadedCondition extends UiThreadCondition {
                 && !isLoading
                 && webContents != null
                 && !shouldShowLoadingUi) {
-            mMatchedTab = tab;
+            mLoadedTab = tab;
             return fulfilled(message);
         } else {
             return notFulfilled(message);
         }
     }
 
-    public Tab getMatchedTab() {
-        return mMatchedTab;
+    @Override
+    public Tab get() {
+        return mLoadedTab;
+    }
+
+    @Override
+    public boolean hasValue() {
+        return mLoadedTab != null;
     }
 }

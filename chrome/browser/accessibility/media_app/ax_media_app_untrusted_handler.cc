@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/notimplemented.h"
 #include "base/notreached.h"
+#include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/types/to_address.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
@@ -27,15 +28,20 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/render_frame_host.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_action_handler_registry.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/transform.h"
 
 #if defined(USE_AURA)
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
@@ -49,9 +55,11 @@ namespace ash {
 // The ID used for the AX document root.
 constexpr ui::AXNodeID kDocumentRootNodeId = 1;
 
-// The first ID at which pages start. 0 is a special ID number reserved only for
-// invalid nodes, and 1 is for the AX document root. So all pages begin at ID 2.
-constexpr ui::AXNodeID kStartPageAXNodeId = 2;
+// The first ID at which pages start. Zero is a special ID number reserved only
+// for invalid nodes, one is for the AX document root. Status nodes start at
+// `kMaxPages` (see `CreateStatusNodesWithLandmark`), so that they will have no
+// chance of conflicting with page IDs. All pages begin at ID three.
+constexpr ui::AXNodeID kStartPageAXNodeId = kDocumentRootNodeId + 1;
 
 // The maximum number of pages supported by the OCR service. This maximum is
 // used both to validate the number of pages (untrusted data) coming from the
@@ -77,7 +85,12 @@ AXMediaAppUntrustedHandler::AXMediaAppUntrustedHandler(
   ax_mode_observation_.Observe(&ui::AXPlatform::GetInstance());
 }
 
-AXMediaAppUntrustedHandler::~AXMediaAppUntrustedHandler() = default;
+AXMediaAppUntrustedHandler::~AXMediaAppUntrustedHandler() {
+  for (auto& page : pages_) {
+    ui::AXActionHandlerRegistry::GetInstance()->RemoveAXTreeID(
+        page.second->GetTreeID());
+  }
+}
 
 bool AXMediaAppUntrustedHandler::IsOcrServiceEnabled() const {
   return ocr_->is_ready();
@@ -188,11 +201,11 @@ void AXMediaAppUntrustedHandler::PerformAction(
         CHECK_IS_TEST();
       }
       CHECK_NE(action_data.target_node_id, ui::kInvalidAXNodeID);
-      CHECK_EQ(pages_.size(), document_.GetRoot()->GetUnignoredChildCount());
+      CHECK_EQ(pages_.size(), document_.GetRoot()->GetUnignoredChildCount() -
+                                  (has_landmark_node_ ? 1u : 0u));
       for (int32_t page_index = 0; const auto& page : pages_) {
         const std::unique_ptr<ui::AXTreeManager>& page_manager = page.second;
         if (page_manager->GetTreeID() != action_data.target_tree_id) {
-          ++page_index;
           continue;
         }
         ui::AXNode* target_node =
@@ -207,7 +220,8 @@ void AXMediaAppUntrustedHandler::PerformAction(
             page_manager->ax_tree()->RelativeToTreeBounds(
                 target_node, /*node_bounds=*/gfx::RectF());
         global_bounds.Offset(document_.GetRoot()
-                                 ->GetUnignoredChildAtIndex(page_index)
+                                 ->GetUnignoredChildAtIndex(
+                                     page_index + (has_landmark_node_ ? 1 : 0))
                                  ->data()
                                  .relative_bounds.bounds.OffsetFromOrigin());
         if (global_bounds.x() < viewport_box_.x()) {
@@ -313,6 +327,7 @@ void AXMediaAppUntrustedHandler::PageMetadataUpdated(
     }
     // Only one page goes through OCR at a time, so start the process here.
     OcrNextDirtyPageIfAny();
+    UpdateDocumentTree();
   }
 
   // Update all page numbers and rects.
@@ -405,6 +420,113 @@ size_t AXMediaAppUntrustedHandler::ComputePagesPerBatch() const {
                             kMaxPagesPerBatch);
 }
 
+std::vector<ui::AXNodeData>
+AXMediaAppUntrustedHandler::CreateStatusNodesWithLandmark() const {
+  std::vector<ui::AXNodeData> status_nodes;
+
+  ui::AXNodeData banner;
+  banner.role = ax::mojom::Role::kBanner;
+  banner.id = kMaxPages;
+  banner.relative_bounds.bounds = gfx::RectF(-1, -1, 1, 1);
+  banner.relative_bounds.offset_container_id = kDocumentRootNodeId;
+  banner.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "div");
+  banner.AddIntAttribute(ax::mojom::IntAttribute::kTextAlign,
+                         static_cast<int32_t>(ax::mojom::TextAlign::kLeft));
+  banner.AddBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject,
+                          true);
+  banner.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                          true);
+  banner.AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
+
+  ui::AXNodeData status;
+  status.role = ax::mojom::Role::kStatus;
+  status.id = banner.id + 1;
+  status.relative_bounds.bounds = gfx::RectF(0, 0, 1, 1);
+  status.relative_bounds.offset_container_id = banner.id;
+  status.AddStringAttribute(ax::mojom::StringAttribute::kContainerLiveRelevant,
+                            "additions text");
+  status.AddStringAttribute(ax::mojom::StringAttribute::kContainerLiveStatus,
+                            "polite");
+  status.AddStringAttribute(ax::mojom::StringAttribute::kLiveRelevant,
+                            "additions text");
+  status.AddStringAttribute(ax::mojom::StringAttribute::kLiveStatus, "polite");
+  status.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "div");
+  status.AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveAtomic, true);
+  status.AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveBusy, false);
+  status.AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic, true);
+  status.AddIntAttribute(ax::mojom::IntAttribute::kTextAlign,
+                         static_cast<int>(ax::mojom::TextAlign::kLeft));
+  status.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                          true);
+  status.AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
+  banner.child_ids = {status.id};
+
+  ui::AXNodeData static_text;
+  static_text.role = ax::mojom::Role::kStaticText;
+  static_text.id = status.id + 1;
+  static_text.relative_bounds.bounds = gfx::RectF(0, 0, 1, 1);
+  static_text.relative_bounds.offset_container_id = status.id;
+  static_text.AddStringAttribute(
+      ax::mojom::StringAttribute::kContainerLiveRelevant, "additions text");
+  static_text.AddStringAttribute(
+      ax::mojom::StringAttribute::kContainerLiveStatus, "polite");
+  static_text.AddStringAttribute(ax::mojom::StringAttribute::kLiveRelevant,
+                                 "additions text");
+  static_text.AddStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
+                                 "polite");
+  static_text.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "div");
+  static_text.AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveAtomic,
+                               true);
+  static_text.AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveBusy,
+                               false);
+  static_text.AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic, true);
+  static_text.AddIntAttribute(
+      ax::mojom::IntAttribute::kTextAlign,
+      static_cast<int32_t>(ax::mojom::TextAlign::kLeft));
+  static_text.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                               true);
+  status.child_ids = {static_text.id};
+
+  ui::AXNodeData inline_text_box;
+  inline_text_box.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_box.id = static_text.id + 1;
+  inline_text_box.relative_bounds.bounds = gfx::RectF(0, 0, 1, 1);
+  inline_text_box.relative_bounds.offset_container_id = static_text.id;
+  inline_text_box.AddIntAttribute(
+      ax::mojom::IntAttribute::kTextAlign,
+      static_cast<int32_t>(ax::mojom::TextAlign::kLeft));
+  inline_text_box.AddIntAttribute(
+      ax::mojom::IntAttribute::kNameFrom,
+      static_cast<int32_t>(ax::mojom::NameFrom::kContents));
+  static_text.child_ids = {inline_text_box.id};
+
+  if (pages_.size() == page_metadata_.size()) {
+    if (text_extracted_) {
+      static_text.SetNameChecked(
+          l10n_util::GetStringUTF8(IDS_PDF_OCR_COMPLETED));
+      inline_text_box.SetNameChecked(
+          l10n_util::GetStringUTF8(IDS_PDF_OCR_COMPLETED));
+    } else {
+      static_text.SetNameChecked(
+          l10n_util::GetStringUTF8(IDS_PDF_OCR_NO_RESULT));
+      inline_text_box.SetNameChecked(
+          l10n_util::GetStringUTF8(IDS_PDF_OCR_NO_RESULT));
+    }
+  } else {
+    static_text.SetNameChecked(
+        l10n_util::GetStringUTF8(IDS_PDF_OCR_IN_PROGRESS));
+    inline_text_box.SetNameChecked(
+        l10n_util::GetStringUTF8(IDS_PDF_OCR_IN_PROGRESS));
+  }
+
+  status_nodes.push_back(banner);
+  status_nodes.push_back(status);
+  status_nodes.push_back(static_text);
+  status_nodes.push_back(inline_text_box);
+
+  return status_nodes;
+}
+
 void AXMediaAppUntrustedHandler::SendAXTreeToAccessibilityService(
     const ui::AXTreeManager& manager,
     TreeSerializer& serializer) {
@@ -427,43 +549,40 @@ void AXMediaAppUntrustedHandler::SendAXTreeToAccessibilityService(
   CHECK(event_router);
   const gfx::Point& mouse_location =
       aura::Env::GetInstance()->last_mouse_location();
-  event_router->DispatchAccessibilityEvents(update.tree_data.tree_id, {update},
+  event_router->DispatchAccessibilityEvents(manager.GetTreeID(), {update},
                                             mouse_location, {});
 #endif  // defined(USE_AURA)
 }
 
 void AXMediaAppUntrustedHandler::ViewportUpdated(const gfx::RectF& viewport_box,
                                                  float scale_factor) {
-  // TODO(nektar): Use scale factor to convert to device independent
-  // pixels.
   viewport_box_ = viewport_box;
+  scale_factor_ = scale_factor;
   if (!document_.GetRoot()) {
     return;
   }
   CHECK(document_.ax_tree());
   ui::AXNodeData document_root_data = document_.GetRoot()->data();
   document_root_data.AddIntAttribute(
-      ax::mojom::IntAttribute::kScrollX,
-      base::checked_cast<int32_t>(viewport_box_.x()));
-  document_root_data.AddIntAttribute(
       ax::mojom::IntAttribute::kScrollXMax,
       base::checked_cast<int32_t>(
           document_root_data.relative_bounds.bounds.width() -
           viewport_box_.width()));
   document_root_data.AddIntAttribute(
-      ax::mojom::IntAttribute::kScrollY,
-      base::checked_cast<int32_t>(viewport_box_.y()));
-  document_root_data.AddIntAttribute(
       ax::mojom::IntAttribute::kScrollYMax,
       base::checked_cast<int32_t>(
           document_root_data.relative_bounds.bounds.height() -
           viewport_box_.height()));
+  document_root_data.relative_bounds.transform =
+      MakeTransformFromOffsetAndScale();
+
   ui::AXTreeUpdate document_update;
   document_update.root_id = document_root_data.id;
   document_update.nodes = {document_root_data};
   if (!document_.ax_tree()->Unserialize(document_update)) {
     mojo::ReportBadMessage(document_.ax_tree()->error());
   }
+  SendAXTreeToAccessibilityService(document_, *document_serializer_);
 }
 
 void AXMediaAppUntrustedHandler::UpdatePageLocation(
@@ -523,8 +642,16 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
   // retrieving it from the Media App.
   document_root_data.SetNameChecked(base::StringPrintf(
       "PDF document containing %zu pages", pages_in_order.size()));
-  std::vector<int32_t> child_ids(pages_in_order.size());
-  std::iota(std::begin(child_ids), std::end(child_ids), kStartPageAXNodeId);
+  std::vector<int32_t> child_ids((has_landmark_node_ ? 1u : 0u) +
+                                 pages_in_order.size());
+  std::vector<ui::AXNodeData> status_nodes;
+  if (has_landmark_node_) {
+    status_nodes = CreateStatusNodesWithLandmark();
+    CHECK_GE(status_nodes.size(), 1u);
+    child_ids.at(0) = status_nodes.at(0).id;
+  }
+  std::iota(std::begin(child_ids) + (has_landmark_node_ ? 1u : 0u),
+            std::end(child_ids), kStartPageAXNodeId);
   document_root_data.child_ids = child_ids;
 
   gfx::RectF document_location;
@@ -532,6 +659,10 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
     document_location.Union(page.rect);
   }
   document_root_data.relative_bounds.bounds = document_location;
+  if (!viewport_box_.IsEmpty() && scale_factor_ > 0.0f) {
+    document_root_data.relative_bounds.transform =
+        MakeTransformFromOffsetAndScale();
+  }
   document_root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin,
                                      document_location.x());
   document_root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollYMin,
@@ -539,8 +670,12 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
 
   ui::AXTreeUpdate document_update;
   document_update.root_id = document_root_data.id;
-  std::vector<ui::AXNodeData> document_pages;
-  document_pages.push_back(document_root_data);
+  document_update.nodes.push_back(document_root_data);
+  if (has_landmark_node_) {
+    document_update.nodes.insert(std::end(document_update.nodes),
+                                 std::begin(status_nodes),
+                                 std::end(status_nodes));
+  }
   for (size_t page_index = 0;
        const auto& [page_num, page_metadata] : pages_in_order) {
     ui::AXNodeData page_data;
@@ -564,14 +699,14 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
       page_data.relative_bounds.bounds =
           pages_.at(page_id)->GetRoot()->data().relative_bounds.bounds;
     }
-    document_pages.push_back(page_data);
+    document_update.nodes.push_back(page_data);
     ++page_index;
   }
-  if (document_root_data.child_ids.size() + 1u != document_pages.size()) {
-    mojo::ReportBadMessage("Bad pages size from renderer.");
+
+  // It wouldn't make sense to send an update with only a root node in it.
+  if (document_update.nodes.size() <= 1u) {
     return;
   }
-  document_update.nodes.swap(document_pages);
 
   if (document_.ax_tree()) {
     if (!document_.ax_tree()->Unserialize(document_update)) {
@@ -608,7 +743,7 @@ void AXMediaAppUntrustedHandler::StitchDocumentTree() {
   action_data.action = ax::mojom::Action::kStitchChildTree;
   CHECK(document_.ax_tree());
   action_data.target_tree_id = document_.GetParentTreeID();
-  action_data.target_role = ax::mojom::Role::kCanvas;
+  action_data.target_role = ax::mojom::Role::kGraphicsDocument;
   action_data.child_tree_id = document_.GetTreeID();
   render_frame_host->AccessibilityPerformAction(action_data);
 }
@@ -688,15 +823,26 @@ void AXMediaAppUntrustedHandler::OnPageOcred(
     const std::string& dirty_page_id,
     const ui::AXTreeUpdate& tree_update) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (
-      // TODO(b/319536234): Validate tree ID.
-      // !tree_update.has_tree_data ||
-      // ui::AXTreeIDUnknown() == tree_update.tree_data.tree_id ||
-      ui::kInvalidAXNodeID == tree_update.root_id) {
+  if (!tree_update.nodes.empty() &&
+      (
+          // TODO(b/319536234): Validate tree ID.
+          // !tree_update.has_tree_data ||
+          // ui::AXTreeIDUnknown() == tree_update.tree_data.tree_id ||
+          ui::kInvalidAXNodeID == tree_update.root_id)) {
     mojo::ReportBadMessage("OnPageOcred() bad tree update from Screen AI.");
     return;
   }
   ui::AXTreeUpdate complete_tree_update = tree_update;
+  if (!tree_update.nodes.empty()) {
+    text_extracted_ = true;
+  } else {
+    // We can't pass an empty update to `AXTree`s constructor, so we add an
+    // empty root node instead.
+    complete_tree_update.root_id = 1;
+    ui::AXNodeData dummy_root;
+    dummy_root.id = 1;
+    complete_tree_update.nodes.push_back(dummy_root);
+  }
   complete_tree_update.has_tree_data = true;
   complete_tree_update.tree_data.parent_tree_id = document_tree_id_;
   if (HasRendererTerminatedDueToBadPageId("OnPageOcred", dirty_page_id)) {
@@ -714,6 +860,8 @@ void AXMediaAppUntrustedHandler::OnPageOcred(
         page_sources_[dirty_page_id].get(), /* crash_on_error */ true);
     pages_[dirty_page_id] =
         std::make_unique<ui::AXTreeManager>(std::move(page_tree));
+    ui::AXActionHandlerRegistry::GetInstance()->SetAXTreeID(
+        complete_tree_update.tree_data.tree_id, this);
   } else {
     complete_tree_update.tree_data.tree_id =
         pages_.at(dirty_page_id)->GetTreeID();
@@ -754,6 +902,18 @@ bool AXMediaAppUntrustedHandler::HasRendererTerminatedDueToBadPageId(
     return true;
   }
   return false;
+}
+
+std::unique_ptr<gfx::Transform>
+AXMediaAppUntrustedHandler::MakeTransformFromOffsetAndScale() const {
+  auto transform = std::make_unique<gfx::Transform>();
+  // `viewport_box_.origin()` represents the offset from which the viewport
+  // starts, based on the origin of PDF content; e.g. if it's (-100, -10), it
+  // indicates that PDF content starts at (100, 10) from the viewport's origin.
+  transform->Translate(-viewport_box_.origin().x(),
+                       -viewport_box_.origin().y());
+  transform->Scale(scale_factor_, scale_factor_);
+  return transform;
 }
 
 }  // namespace ash

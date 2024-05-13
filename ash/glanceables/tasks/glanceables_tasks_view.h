@@ -10,9 +10,9 @@
 #include "ash/api/tasks/tasks_client.h"
 #include "ash/api/tasks/tasks_types.h"
 #include "ash/ash_export.h"
+#include "ash/glanceables/common/glanceables_time_management_bubble_view.h"
 #include "ash/glanceables/glanceables_metrics.h"
 #include "ash/glanceables/tasks/glanceables_tasks_error_type.h"
-#include "ash/system/unified/glanceable_tray_child_bubble.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -31,24 +31,23 @@ class LabelButton;
 namespace ash {
 
 class Combobox;
+class CounterExpandButton;
 class GlanceablesListFooterView;
 class GlanceablesProgressBarView;
 class GlanceablesTasksComboboxModel;
 class GlanceablesTaskView;
 
 // Glanceables view responsible for interacting with Google Tasks.
-class ASH_EXPORT GlanceablesTasksView : public GlanceableTrayChildBubble,
-                                        public views::ViewObserver {
-  METADATA_HEADER(GlanceablesTasksView, GlanceableTrayChildBubble)
+class ASH_EXPORT GlanceablesTasksView
+    : public GlanceablesTimeManagementBubbleView,
+      public views::ViewObserver {
+  METADATA_HEADER(GlanceablesTasksView, GlanceablesTimeManagementBubbleView)
 
  public:
   explicit GlanceablesTasksView(const ui::ListModel<api::TaskList>* task_lists);
   GlanceablesTasksView(const GlanceablesTasksView&) = delete;
   GlanceablesTasksView& operator=(const GlanceablesTasksView&) = delete;
   ~GlanceablesTasksView() override;
-
-  // views::View:
-  void ChildPreferredSizeChanged(View* child) override;
 
   // views::ViewObserver:
   void OnViewFocused(views::View* view) override;
@@ -60,6 +59,12 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceableTrayChildBubble,
   // Updates the cached task lists to `task_lists` and the tasks that are
   // supposed to show.
   void UpdateTaskLists(const ui::ListModel<api::TaskList>* task_lists);
+
+  // Creates `this` view's own background and updates layout accordingly.
+  void CreateElevatedBackground();
+
+  void SetExpandState(bool is_expanded);
+  bool is_expanded() const { return is_expanded_; }
 
  private:
   // The context of why the current task list is shown.
@@ -73,6 +78,9 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceableTrayChildBubble,
     // `task_list_combo_box_view_`.
     kUserSelectedList
   };
+
+  // Toggles `is_expanded_` and updates the layout.
+  void ToggleExpandState();
 
   // Handles press behavior for `add_new_task_button_`.
   void AddNewTaskButtonPressed();
@@ -161,12 +169,21 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceableTrayChildBubble,
 
   // Owned by views hierarchy.
   raw_ptr<views::FlexLayoutView> tasks_header_view_ = nullptr;
+  // This is a simple label that copies the label style on
+  // `task_list_combo_box_view_` so that it can visually replace it when
+  // `task_list_combo_box_view_` is hidden.
+  raw_ptr<views::Label> combobox_replacement_label_ = nullptr;
   raw_ptr<Combobox> task_list_combo_box_view_ = nullptr;
-  raw_ptr<views::FlexLayoutView> button_container_ = nullptr;
+  raw_ptr<views::ScrollView> content_scroll_view_ = nullptr;
   raw_ptr<views::View> task_items_container_view_ = nullptr;
   raw_ptr<views::LabelButton> add_new_task_button_ = nullptr;
   raw_ptr<GlanceablesListFooterView> list_footer_view_ = nullptr;
   raw_ptr<GlanceablesProgressBarView> progress_bar_ = nullptr;
+  raw_ptr<CounterExpandButton> expand_button_ = nullptr;
+
+  // Whether the view is expanded and showing the contents in
+  // `content_scroll_view_`.
+  bool is_expanded_ = true;
 
   // Records the time when the bubble was about to request a task list. Used for
   // metrics.

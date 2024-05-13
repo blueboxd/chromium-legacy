@@ -351,18 +351,18 @@ V4L2StatelessVideoDecoder::CreateSurface() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(5);
 
-  if (input_queue_) {
-    if (input_queue_->FreeBufferCount() == 0) {
-      DVLOGF(2) << "No free |input_queue_| buffers.";
-      return nullptr;
-    }
-  } else {
+  if (!input_queue_) {
     VLOGF(2) << "|input_queue_| has not been created yet. The queue should "
                 "have been setup as part of the resolution change.";
     return nullptr;
   }
 
-  if (output_queue_ && output_queue_->FreeBufferCount() == 0) {
+  if (!input_queue_->BuffersAvailable()) {
+    DVLOGF(2) << "No free |input_queue_| buffers.";
+    return nullptr;
+  }
+
+  if (output_queue_ && !output_queue_->BuffersAvailable()) {
     DVLOGF(2) << "No free |output_queue_| buffers.";
     return nullptr;
   }
@@ -603,13 +603,6 @@ bool V4L2StatelessVideoDecoder::CreateDecoder(VideoCodecProfile profile,
   return true;
 }
 
-void V4L2StatelessVideoDecoder::PrepareChangeResolution() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
-
-  client_->PrepareChangeResolution();
-}
-
 bool V4L2StatelessVideoDecoder::SetupOutputFormatForPipeline() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
@@ -764,11 +757,9 @@ void V4L2StatelessVideoDecoder::ServiceDecodeRequestQueue() {
       case AcceleratedVideoDecoder::kConfigChange:
         DVLOGF(3) << "AcceleratedVideoDecoder::kConfigChange";
         resolution_changing_ = true;
-
-        queue_task_runner_->PostTask(
-            FROM_HERE, base::BindPostTaskToCurrentDefault(base::BindOnce(
-                           &V4L2StatelessVideoDecoder::PrepareChangeResolution,
-                           weak_ptr_factory_for_events_.GetWeakPtr())));
+        if (client_) {
+          client_->PrepareChangeResolution();
+        }
 
         // Return immediately because |current_decode_request_| is not
         // done being processed.

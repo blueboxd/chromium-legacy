@@ -130,6 +130,12 @@ class FakeWebNNGraph : public blink_mojom::WebNNGraph {
         blink_mojom::ComputeResult::NewNamedOutputs(std::move(mojo_outputs)));
   }
 
+  // Just return for testing the validation of inputs and outputs.
+  void Dispatch(
+      const HashMap<WTF::String, base::UnguessableToken>& named_inputs,
+      const HashMap<WTF::String, base::UnguessableToken>& named_outputs)
+      override {}
+
   const raw_ref<MLGraphTestMojo, DanglingUntriaged> helper_;
 };
 
@@ -355,6 +361,39 @@ bool DownloadMLBufferAndCheck(V8TestingScope& scope,
   return IsBufferDataEqual(array_buffer, expected_data);
 }
 
+MLBuffer* CreateMLBufferForOperand(V8TestingScope& scope,
+                                   MLContext* ml_context,
+                                   const MLOperand* operand) {
+  auto array_buffer_view = CreateArrayBufferViewForOperand(operand);
+  auto* desc = MLBufferDescriptor::Create();
+  desc->setSize(array_buffer_view->byteLength());
+
+  MLBuffer* ml_buffer = ml_context->createBuffer(scope.GetScriptState(), desc,
+                                                 scope.GetExceptionState());
+  ml_context->writeBuffer(
+      scope.GetScriptState(), ml_buffer,
+      MaybeShared<DOMArrayBufferView>(array_buffer_view.Get()),
+      /*src_element_offset=*/0, scope.GetExceptionState());
+  return ml_buffer;
+}
+
+Vector<uint8_t> GetMLBufferValues(V8TestingScope& scope,
+                                  MLContext* ml_context,
+                                  MLBuffer* ml_buffer) {
+  ScriptPromiseTester tester(
+      scope.GetScriptState(),
+      ml_context->readBuffer(scope.GetScriptState(), ml_buffer,
+                             scope.GetExceptionState()));
+  tester.WaitUntilSettled();
+  if (tester.IsRejected()) {
+    return {};
+  }
+  auto* array_buffer = V8ToObject<DOMArrayBuffer>(&scope, tester.Value());
+  return GetArrayBufferViewValues<uint8_t>(
+      NotShared<DOMArrayBufferView>(blink::DOMUint8Array::Create(
+          array_buffer, /*byte_offset=*/0, ml_buffer->size())));
+}
+
 TEST_P(MLGraphTestMojo, CreateWebNNBufferTest) {
   V8TestingScope scope;
   // Bind fake WebNN Context in the service for testing.
@@ -554,6 +593,76 @@ TEST_P(MLGraphTestMojo, ReadWebNNBufferThenDestroyTest) {
                                            scope.GetExceptionState()));
   buffer_tester.WaitUntilSettled();
   EXPECT_TRUE(buffer_tester.IsRejected());
+}
+
+TEST_P(MLGraphTestMojo, WebNNGraphDispatchTest) {
+  V8TestingScope scope;
+  // Bind fake WebNN Context in the service for testing.
+  ScopedWebNNServiceBinder scoped_setup_binder(*this, scope);
+
+  auto* options = MLContextOptions::Create();
+  // Create WebNN Context with GPU device type.
+  options->setDeviceType(V8MLDeviceType::Enum::kGpu);
+  auto* builder = CreateGraphBuilder(scope, options);
+  ASSERT_THAT(builder, testing::NotNull());
+  const Vector<uint32_t> dimensions = {3, 5};
+  const wtf_size_t number_of_elements = base::checked_cast<wtf_size_t>(
+      webnn::ValidateAndCalculateElementsNumber(dimensions).value());
+
+  // Build the graph.
+  auto* lhs_operand =
+      BuildInput(builder, "lhs", dimensions, V8MLOperandDataType::Enum::kUint8,
+                 scope.GetExceptionState());
+  auto* rhs_operand =
+      BuildInput(builder, "rhs", dimensions, V8MLOperandDataType::Enum::kUint8,
+                 scope.GetExceptionState());
+  auto* output_operand = BuildElementWiseBinary(
+      scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
+      lhs_operand, rhs_operand);
+  auto [graph, error_message, build_exception] =
+      BuildGraph(scope, builder, {{"output", output_operand}});
+  ASSERT_THAT(graph, testing::NotNull());
+
+  MLContext* ml_context = builder->GetContext();
+
+  // Check if MLBuffer is supported.
+  auto* desc = MLBufferDescriptor::Create();
+  desc->setSize(4ull);
+
+  MLBuffer* ml_buffer = ml_context->createBuffer(scope.GetScriptState(), desc,
+                                                 scope.GetExceptionState());
+
+  if (scope.GetExceptionState().Code() ==
+      ToExceptionCode(DOMExceptionCode::kNotSupportedError)) {
+    GTEST_SKIP() << "MLBuffer has not been implemented on this platform.";
+  }
+
+  ASSERT_THAT(ml_buffer, testing::NotNull());
+
+  MLNamedBuffers inputs(
+      {{"lhs", CreateMLBufferForOperand(scope, ml_context, lhs_operand)},
+       {"rhs", CreateMLBufferForOperand(scope, ml_context, rhs_operand)}});
+  MLNamedBuffers outputs({{"output", CreateMLBufferForOperand(
+                                         scope, ml_context, output_operand)}});
+
+  {
+    // Dispatch successfully.
+    ml_context->dispatch(scope.GetScriptState(), graph, inputs, outputs,
+                         scope.GetExceptionState());
+    EXPECT_EQ(scope.GetExceptionState().Code(),
+              ToExceptionCode(DOMExceptionCode::kNoError));
+    Vector<uint8_t> results =
+        GetMLBufferValues(scope, ml_context, outputs[0].second);
+    EXPECT_EQ(results, Vector<uint8_t>(number_of_elements, 0));
+
+    // Dispatch again successfully.
+    ml_context->dispatch(scope.GetScriptState(), graph, inputs, outputs,
+                         scope.GetExceptionState());
+    EXPECT_EQ(scope.GetExceptionState().Code(),
+              ToExceptionCode(DOMExceptionCode::kNoError));
+    results = GetMLBufferValues(scope, ml_context, outputs[0].second);
+    EXPECT_EQ(results, Vector<uint8_t>(number_of_elements, 0));
+  }
 }
 
 struct OperandInfoMojo {
@@ -1578,120 +1687,6 @@ TEST_P(MLGraphTestMojo, ElementWiseBinaryTest) {
   }
 }
 
-struct PreluTester {
-  OperandInfoBlink input;
-  OperandInfoBlink slope;
-  OperandInfoMojo expected;
-
-  void Test(MLGraphTestMojo& helper,
-            V8TestingScope& scope,
-            MLGraphBuilder* builder) {
-    // Build the graph.
-    auto* input_operand =
-        BuildInput(builder, "input", input.dimensions, input.data_type,
-                   scope.GetExceptionState());
-    auto* slope_operand =
-        BuildInput(builder, "slope", slope.dimensions, slope.data_type,
-                   scope.GetExceptionState());
-    auto* output_operand =
-        builder->prelu(input_operand, slope_operand, scope.GetExceptionState());
-    auto [graph, error_name, error_message] =
-        helper.BuildGraph(scope, builder, {{"output", output_operand}});
-    ASSERT_THAT(graph, testing::NotNull());
-
-    auto graph_info = helper.GetGraphInfo();
-    // Verify the graph information of mojo are as expected.
-    ASSERT_EQ(graph_info->operations.size(), 1u);
-    auto& operation = graph_info->operations[0];
-    ASSERT_TRUE(operation->is_prelu());
-    auto& prelu = operation->get_prelu();
-
-    // Verify the input operand.
-    ASSERT_EQ(graph_info->input_operands.size(), 2u);
-    auto input_operand_id = graph_info->input_operands[0];
-    auto input_operand_iter =
-        graph_info->id_to_operand_map.find(input_operand_id);
-    ASSERT_TRUE(input_operand_iter != graph_info->id_to_operand_map.end());
-    EXPECT_EQ(input_operand_iter->value->kind,
-              blink_mojom::Operand::Kind::kInput);
-    EXPECT_EQ(input_operand_iter->value->data_type, expected.data_type);
-    EXPECT_EQ(input_operand_iter->value->dimensions, input.dimensions);
-    EXPECT_EQ(input_operand_iter->value->name, "input");
-    EXPECT_EQ(prelu->input_operand_id, input_operand_id);
-
-    // Verify the slope operand.
-    auto slope_operand_id = graph_info->input_operands[1];
-    auto slope_operand_iter =
-        graph_info->id_to_operand_map.find(slope_operand_id);
-    ASSERT_TRUE(slope_operand_iter != graph_info->id_to_operand_map.end());
-    EXPECT_EQ(slope_operand_iter->value->kind,
-              blink_mojom::Operand::Kind::kInput);
-    EXPECT_EQ(slope_operand_iter->value->data_type, expected.data_type);
-    EXPECT_EQ(slope_operand_iter->value->dimensions, slope.dimensions);
-    EXPECT_EQ(slope_operand_iter->value->name, "slope");
-    EXPECT_EQ(prelu->slope_operand_id, slope_operand_id);
-
-    // Verify the output operand.
-    ASSERT_EQ(graph_info->output_operands.size(), 1u);
-    auto output_operand_id = graph_info->output_operands[0];
-    auto output_operand_iter =
-        graph_info->id_to_operand_map.find(output_operand_id);
-    ASSERT_TRUE(output_operand_iter != graph_info->id_to_operand_map.end());
-    EXPECT_EQ(output_operand_iter->value->kind,
-              blink_mojom::Operand::Kind::kOutput);
-    EXPECT_EQ(output_operand_iter->value->data_type, expected.data_type);
-    EXPECT_EQ(output_operand_iter->value->dimensions, expected.dimensions);
-    EXPECT_EQ(output_operand_iter->value->name, "output");
-    EXPECT_EQ(prelu->output_operand_id, output_operand_id);
-  }
-};
-
-TEST_P(MLGraphTestMojo, PreluTest) {
-  V8TestingScope scope;
-  // Bind fake WebNN Context in the service for testing.
-  ScopedWebNNServiceBinder scoped_setup_binder(*this, scope);
-
-  auto* options = MLContextOptions::Create();
-  // Create WebNN Context with GPU device type.
-  options->setDeviceType(V8MLDeviceType::Enum::kGpu);
-  auto* builder = CreateGraphBuilder(scope, options);
-  ASSERT_THAT(builder, testing::NotNull());
-  {
-    // Test prelu operator when input shape is the same as slope shape.
-    PreluTester{
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {2, 3, 5}},
-        .slope = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {2, 3, 5}},
-        .expected = {.data_type = blink_mojom::Operand::DataType::kFloat32,
-                     .dimensions = {2, 3, 5}}}
-        .Test(*this, scope, builder);
-  }
-  {
-    // Test prelu operator with input shape as {2, 3, 5} and slope shape as {3,
-    // 5}.
-    PreluTester{
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat16,
-                  .dimensions = {2, 3, 5}},
-        .slope = {.data_type = V8MLOperandDataType::Enum::kFloat16,
-                  .dimensions = {3, 5}},
-        .expected = {.data_type = blink_mojom::Operand::DataType::kFloat16,
-                     .dimensions = {2, 3, 5}}}
-        .Test(*this, scope, builder);
-  }
-  {
-    // Test prelu operator with input shape as {2, 3, 5} and slope shape as {5}.
-    PreluTester{
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat16,
-                  .dimensions = {2, 3, 5}},
-        .slope = {.data_type = V8MLOperandDataType::Enum::kFloat16,
-                  .dimensions = {5}},
-        .expected = {.data_type = blink_mojom::Operand::DataType::kFloat16,
-                     .dimensions = {2, 3, 5}}}
-        .Test(*this, scope, builder);
-  }
-}
-
 struct SoftmaxTester {
   OperandInfoBlink input;
   OperandInfoMojo expected;
@@ -1754,157 +1749,6 @@ TEST_P(MLGraphTestMojo, SoftmaxTest) {
   }
 }
 
-struct ReduceTester {
-  OperandInfoBlink input;
-  std::optional<Vector<uint32_t>> axes;
-  std::optional<bool> keep_dimensions;
-  OperandInfoMojo expected_operand;
-  Vector<uint32_t> expected_axes;
-  bool expected_keep_dimensions;
-
-  void Test(MLGraphTestMojo& helper,
-            V8TestingScope& scope,
-            MLGraphBuilder* builder) {
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kL1);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kL2);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kLogSum);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kLogSumExp);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kMax);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kMean);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kMin);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kProduct);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kSum);
-    Test(helper, scope, builder, webnn::mojom::blink::Reduce::Kind::kSumSquare);
-  }
-
-  void Test(MLGraphTestMojo& helper,
-            V8TestingScope& scope,
-            MLGraphBuilder* builder,
-            webnn::mojom::blink::Reduce::Kind kind) {
-    // Build the graph.
-    auto* input_operand =
-        BuildInput(builder, "input", input.dimensions, input.data_type,
-                   scope.GetExceptionState());
-    MLReduceOptions* options = MLReduceOptions::Create();
-    if (axes.has_value()) {
-      options->setAxes(axes.value());
-    }
-    if (keep_dimensions.has_value()) {
-      options->setKeepDimensions(keep_dimensions.value());
-    }
-    auto* output_operand =
-        BuildReduce(scope, builder, kind, input_operand, options);
-    auto [graph, error_name, error_message] =
-        helper.BuildGraph(scope, builder, {{"output", output_operand}});
-    ASSERT_THAT(graph, testing::NotNull());
-
-    auto graph_info = helper.GetGraphInfo();
-    // Verify the graph information of mojo are as expected.
-    ASSERT_EQ(graph_info->operations.size(), 1u);
-    auto& operation = graph_info->operations[0];
-    ASSERT_TRUE(operation->is_reduce());
-    auto& reduce = operation->get_reduce();
-
-    blink_mojom::Reduce::Kind reduce_kind;
-    switch (kind) {
-      case webnn::mojom::blink::Reduce::Kind::kL1:
-        reduce_kind = blink_mojom::Reduce::Kind::kL1;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kL2:
-        reduce_kind = blink_mojom::Reduce::Kind::kL2;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kLogSum:
-        reduce_kind = blink_mojom::Reduce::Kind::kLogSum;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kLogSumExp:
-        reduce_kind = blink_mojom::Reduce::Kind::kLogSumExp;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kMax:
-        reduce_kind = blink_mojom::Reduce::Kind::kMax;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kMean:
-        reduce_kind = blink_mojom::Reduce::Kind::kMean;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kMin:
-        reduce_kind = blink_mojom::Reduce::Kind::kMin;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kProduct:
-        reduce_kind = blink_mojom::Reduce::Kind::kProduct;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kSum:
-        reduce_kind = blink_mojom::Reduce::Kind::kSum;
-        break;
-      case webnn::mojom::blink::Reduce::Kind::kSumSquare:
-        reduce_kind = blink_mojom::Reduce::Kind::kSumSquare;
-        break;
-    }
-    EXPECT_EQ(reduce->kind, reduce_kind);
-    // Validate the axes of reduce operation.
-    EXPECT_EQ(reduce->axes, expected_axes);
-    // Validate the keep_dimensions of reduce operation.
-    EXPECT_EQ(reduce->keep_dimensions, expected_keep_dimensions);
-
-    // Validate the input operand.
-    EXPECT_EQ(graph_info->input_operands.size(), 1u);
-    auto input_operand_id = graph_info->input_operands[0];
-    EXPECT_EQ(reduce->input_operand_id, input_operand_id);
-    auto input_operand_iter =
-        graph_info->id_to_operand_map.find(input_operand_id);
-    ASSERT_TRUE(input_operand_iter != graph_info->id_to_operand_map.end());
-    EXPECT_EQ(input_operand_iter->value->data_type, expected_operand.data_type);
-    EXPECT_EQ(input_operand_iter->value->dimensions, input.dimensions);
-
-    // Validate the output operand.
-    EXPECT_EQ(graph_info->output_operands.size(), 1u);
-    auto output_operand_id = graph_info->output_operands[0];
-    EXPECT_EQ(reduce->output_operand_id, output_operand_id);
-    auto output_operand_iter =
-        graph_info->id_to_operand_map.find(output_operand_id);
-    ASSERT_TRUE(output_operand_iter != graph_info->id_to_operand_map.end());
-    EXPECT_EQ(output_operand_iter->value->data_type,
-              expected_operand.data_type);
-    EXPECT_EQ(output_operand_iter->value->dimensions,
-              expected_operand.dimensions);
-  }
-};
-
-TEST_P(MLGraphTestMojo, ReduceTest) {
-  V8TestingScope scope;
-  // Bind fake WebNN Context in the service for testing.
-  ScopedWebNNServiceBinder scoped_setup_binder(*this, scope);
-
-  auto* options = MLContextOptions::Create();
-  // Create WebNN Context with GPU device type.
-  options->setDeviceType(V8MLDeviceType::Enum::kGpu);
-  auto* builder = CreateGraphBuilder(scope, options);
-  ASSERT_THAT(builder, testing::NotNull());
-  {
-    // Test reduce operator with default options.
-    ReduceTester{
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {1, 2, 3, 4}},
-        .expected_operand = {.data_type =
-                                 blink_mojom::Operand::DataType::kFloat32,
-                             .dimensions = {}},
-        .expected_axes = {0, 1, 2, 3},
-        .expected_keep_dimensions = false}
-        .Test(*this, scope, builder);
-  }
-  {
-    // Test reduce operator with a given axes and keep_dimensions.
-    ReduceTester{
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat16,
-                  .dimensions = {1, 2, 3, 4}},
-        .axes = Vector<uint32_t>{1},
-        .keep_dimensions = true,
-        .expected_operand = {.data_type =
-                                 blink_mojom::Operand::DataType::kFloat16,
-                             .dimensions = {1, 1, 3, 4}},
-        .expected_axes = {1},
-        .expected_keep_dimensions = true}
-        .Test(*this, scope, builder);
-  }
-}
 template <typename T>
 struct ConstantTester {
   OperandInfo<T> constant;
@@ -2005,34 +1849,12 @@ TEST_P(MLGraphTestMojo, ConstantTest) {
         .Test(*this, scope, builder);
   }
   {
-    // Test Constant operand for UInt32 data type.
-    ConstantTester<uint32_t>{
-        .constant = {.data_type = V8MLOperandDataType::Enum::kUint32,
-                     .dimensions = {2, 3},
-                     .values = {1, 2, 3, 4, 5, 6}},
-        .expected = {.data_type = blink_mojom::Operand::DataType::kUint32,
-                     .dimensions = {2, 3}},
-        .expected_constant_data = {1, 2, 3, 4, 5, 6}}
-        .Test(*this, scope, builder);
-  }
-  {
     // Test Constant operand for Int8 data type.
     ConstantTester<int8_t>{
         .constant = {.data_type = V8MLOperandDataType::Enum::kInt8,
                      .dimensions = {2, 3},
                      .values = {1, 2, 3, 4, 5, 6}},
         .expected = {.data_type = blink_mojom::Operand::DataType::kInt8,
-                     .dimensions = {2, 3}},
-        .expected_constant_data = {1, 2, 3, 4, 5, 6}}
-        .Test(*this, scope, builder);
-  }
-  {
-    // Test Constant operand for UInt8 data type.
-    ConstantTester<uint8_t>{
-        .constant = {.data_type = V8MLOperandDataType::Enum::kUint8,
-                     .dimensions = {2, 3},
-                     .values = {1, 2, 3, 4, 5, 6}},
-        .expected = {.data_type = blink_mojom::Operand::DataType::kUint8,
                      .dimensions = {2, 3}},
         .expected_constant_data = {1, 2, 3, 4, 5, 6}}
         .Test(*this, scope, builder);

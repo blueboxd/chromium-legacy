@@ -7,6 +7,7 @@
 #include "base/check_deref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
+#include "chrome/browser/ui/autofill/payments/iban_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/view_factory.h"
 #include "chrome/browser/ui/autofill/risk_util.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
@@ -22,6 +23,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/payments/autofill_error_dialog_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/autofill_progress_dialog_controller_impl.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_authentication_selection_dialog_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_otp_input_dialog_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
@@ -132,7 +134,11 @@ void ChromePaymentsAutofillClient::VirtualCardEnrollCompleted(
 #endif  // BUILDFLAG(IS_ANDROID)
 
 void ChromePaymentsAutofillClient::CreditCardUploadCompleted(bool card_saved) {
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+  if (auto* bridge = GetOrCreateAutofillSaveCardBottomSheetBridge()) {
+    bridge->Hide();
+  }
+#else  // !BUILDFLAG(IS_ANDROID)
   if (SaveCardBubbleControllerImpl* controller =
           SaveCardBubbleControllerImpl::FromWebContents(web_contents())) {
     controller->ShowConfirmationBubbleView(card_saved);
@@ -157,6 +163,32 @@ void ChromePaymentsAutofillClient::HideSaveCardPromptPrompt() {
   if (controller) {
     controller->HideSaveCardBubble();
   }
+#endif
+}
+
+void ChromePaymentsAutofillClient::ConfirmSaveIbanLocally(
+    const Iban& iban,
+    bool should_show_prompt,
+    SaveIbanPromptCallback callback) {
+#if !BUILDFLAG(IS_ANDROID)
+  // Do lazy initialization of IbanBubbleControllerImpl.
+  IbanBubbleControllerImpl::CreateForWebContents(web_contents());
+  IbanBubbleControllerImpl::FromWebContents(web_contents())
+      ->OfferLocalSave(iban, should_show_prompt, std::move(callback));
+#endif
+}
+
+void ChromePaymentsAutofillClient::ConfirmUploadIbanToCloud(
+    const Iban& iban,
+    LegalMessageLines legal_message_lines,
+    bool should_show_prompt,
+    SaveIbanPromptCallback callback) {
+#if !BUILDFLAG(IS_ANDROID)
+  // Do lazy initialization of IbanBubbleControllerImpl.
+  IbanBubbleControllerImpl::CreateForWebContents(web_contents());
+  IbanBubbleControllerImpl::FromWebContents(web_contents())
+      ->OfferUploadSave(iban, std::move(legal_message_lines),
+                        should_show_prompt, std::move(callback));
 #endif
 }
 
@@ -248,6 +280,32 @@ void ChromePaymentsAutofillClient::ShowUnmaskPrompt(
   unmask_controller_->ShowPrompt(base::BindOnce(
       &CreateCardUnmaskPromptView, base::Unretained(unmask_controller_.get()),
       base::Unretained(web_contents())));
+}
+
+void ChromePaymentsAutofillClient::ShowUnmaskAuthenticatorSelectionDialog(
+    const std::vector<CardUnmaskChallengeOption>& challenge_options,
+    base::OnceCallback<void(const std::string&)>
+        confirm_unmask_challenge_option_callback,
+    base::OnceClosure cancel_unmasking_closure) {
+  CHECK(!card_unmask_authentication_selection_controller_);
+  card_unmask_authentication_selection_controller_ =
+      std::make_unique<CardUnmaskAuthenticationSelectionDialogControllerImpl>(
+          challenge_options,
+          std::move(confirm_unmask_challenge_option_callback),
+          std::move(cancel_unmasking_closure));
+  card_unmask_authentication_selection_controller_->ShowDialog(
+      base::BindOnce(&CreateAndShowCardUnmaskAuthenticationSelectionDialog,
+                     base::Unretained(web_contents())));
+}
+
+void ChromePaymentsAutofillClient::DismissUnmaskAuthenticatorSelectionDialog(
+    bool server_success) {
+  if (card_unmask_authentication_selection_controller_) {
+    card_unmask_authentication_selection_controller_
+        ->DismissDialogUponServerProcessedAuthenticationMethodRequest(
+            server_success);
+    card_unmask_authentication_selection_controller_.reset();
+  }
 }
 
 // TODO(crbug.com/40186650): Refactor this for both CVC and Biometrics flows.

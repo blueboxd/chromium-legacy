@@ -716,9 +716,7 @@ MLOperand* BuildReduce(MLGraphBuilder* builder,
       MojoReduceKindToComponent(kind), ConvertToComponentOperand(input), axes,
       options->keepDimensions());
   if (!validated_output.has_value()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        String::FromUTF8(validated_output.error()));
+    exception_state.ThrowTypeError(String::FromUTF8(validated_output.error()));
     return nullptr;
   }
 
@@ -732,8 +730,7 @@ MLOperand* BuildReduce(MLGraphBuilder* builder,
       builder, ComponentOperandTypeToBlink(validated_output->data_type),
       Vector<uint32_t>(validated_output->dimensions), reduce);
   if (!output.has_value()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      output.error());
+    exception_state.ThrowTypeError(output.error());
     return nullptr;
   }
   reduce->Connect({input}, {output.value()});
@@ -1066,8 +1063,7 @@ BUILD_ELEMENTWISE_BINARY_OP(lesserOrEqual, kLesserOrEqual)
 
 BUILD_ELEMENTWISE_UNARY_OP(abs,
                            kAbs,
-                           Union(webnn::DataTypeConstraint::kFloat,
-                                 webnn::DataTypeConstraint::kSignedInteger))
+                           webnn::DataTypeConstraint::kFloat16To32Int8To32)
 BUILD_ELEMENTWISE_UNARY_OP(ceil, kCeil, webnn::DataTypeConstraint::kFloat)
 BUILD_ELEMENTWISE_UNARY_OP(cos, kCos, webnn::DataTypeConstraint::kFloat)
 BUILD_ELEMENTWISE_UNARY_OP(exp, kExp, webnn::DataTypeConstraint::kFloat)
@@ -1075,8 +1071,7 @@ BUILD_ELEMENTWISE_UNARY_OP(floor, kFloor, webnn::DataTypeConstraint::kFloat)
 BUILD_ELEMENTWISE_UNARY_OP(log, kLog, webnn::DataTypeConstraint::kFloat)
 BUILD_ELEMENTWISE_UNARY_OP(neg,
                            kNeg,
-                           Union(webnn::DataTypeConstraint::kFloat,
-                                 webnn::DataTypeConstraint::kSignedInteger))
+                           webnn::DataTypeConstraint::kFloat16To32Int8To32)
 BUILD_ELEMENTWISE_UNARY_OP(sin, kSin, webnn::DataTypeConstraint::kFloat)
 BUILD_ELEMENTWISE_UNARY_OP(tan, kTan, webnn::DataTypeConstraint::kFloat)
 BUILD_ELEMENTWISE_UNARY_OP(erf, kErf, webnn::DataTypeConstraint::kFloat)
@@ -1773,6 +1768,13 @@ MLOperand* MLGraphBuilder::averagePool2d(const MLOperand* input,
                                          ExceptionState& exception_state) {
   THROW_AND_RETURN_TYPE_IF_ERROR(ValidateInput(input), nullptr);
 
+  if (!(input->DataType() == V8MLOperandDataType::Enum::kFloat32 ||
+        input->DataType() == V8MLOperandDataType::Enum::kFloat16)) {
+    exception_state.ThrowTypeError(
+        "The input data type must be a floating point type.");
+    return nullptr;
+  }
+
   return BuildPool2d(this, webnn::mojom::blink::Pool2d::Kind::kAveragePool2d,
                      input, options, exception_state);
 }
@@ -1781,6 +1783,13 @@ MLOperand* MLGraphBuilder::l2Pool2d(const MLOperand* input,
                                     const MLPool2dOptions* options,
                                     ExceptionState& exception_state) {
   THROW_AND_RETURN_TYPE_IF_ERROR(ValidateInput(input), nullptr);
+
+  if (!(input->DataType() == V8MLOperandDataType::Enum::kFloat32 ||
+        input->DataType() == V8MLOperandDataType::Enum::kFloat16)) {
+    exception_state.ThrowTypeError(
+        "The input data type must be a floating point type.");
+    return nullptr;
+  }
 
   return BuildPool2d(this, webnn::mojom::blink::Pool2d::Kind::kL2Pool2d, input,
                      options, exception_state);
@@ -1804,9 +1813,7 @@ MLOperand* MLGraphBuilder::prelu(const MLOperand* input,
   auto validated_output = webnn::ValidatePreluAndInferOutput(
       ConvertToComponentOperand(input), ConvertToComponentOperand(slope));
   if (!validated_output.has_value()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        String::FromUTF8(validated_output.error()));
+    exception_state.ThrowTypeError(String::FromUTF8(validated_output.error()));
     return nullptr;
   }
 
@@ -1817,8 +1824,7 @@ MLOperand* MLGraphBuilder::prelu(const MLOperand* input,
       this, ComponentOperandTypeToBlink(validated_output->data_type),
       Vector<uint32_t>(validated_output->dimensions), prelu);
   if (!output.has_value()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      output.error());
+    exception_state.ThrowTypeError(output.error());
     return nullptr;
   }
   prelu->Connect(std::move(inputs), {output.value()});
@@ -1832,9 +1838,9 @@ MLOperand* MLGraphBuilder::relu(const MLOperand* input,
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-relu, the output tensor of
   // relu has the same data type and dimensions as its input.
-  return BuildUnaryOperator(this, exception_state,
-                            webnn::mojom::blink::Operation::Tag::kRelu,
-                            webnn::DataTypeConstraintSet::All(), input);
+  return BuildUnaryOperator(
+      this, exception_state, webnn::mojom::blink::Operation::Tag::kRelu,
+      webnn::DataTypeConstraint::kFloat16To32Int8To32, input);
 }
 
 MLActivation* MLGraphBuilder::relu(ExceptionState& exception_state) {

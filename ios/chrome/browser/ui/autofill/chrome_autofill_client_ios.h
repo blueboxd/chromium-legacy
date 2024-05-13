@@ -43,8 +43,6 @@ class WebState;
 
 namespace autofill {
 
-class CardUnmaskAuthenticationSelectionDialogControllerImpl;
-
 // Chrome iOS implementation of AutofillClient.
 class ChromeAutofillClientIOS : public AutofillClient {
  public:
@@ -93,12 +91,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   translate::TranslateDriver* GetTranslateDriver() override;
   GeoIpCountryCode GetVariationConfigCountryCode() const override;
   void ShowAutofillSettings(FillingProduct main_filling_product) override;
-  void ShowUnmaskAuthenticatorSelectionDialog(
-      const std::vector<CardUnmaskChallengeOption>& challenge_options,
-      base::OnceCallback<void(const std::string&)>
-          confirm_unmask_challenge_option_callback,
-      base::OnceClosure cancel_unmasking_closure) override;
-  void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
   payments::MandatoryReauthManager* GetOrCreatePaymentsMandatoryReauthManager()
       override;
   void ConfirmAccountNameFixFlow(
@@ -137,7 +129,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void HideTouchToFillCreditCard() override;
   void ShowAutofillSuggestions(
       const PopupOpenArgs& open_args,
-      base::WeakPtr<AutofillPopupDelegate> delegate) override;
+      base::WeakPtr<AutofillSuggestionDelegate> delegate) override;
   void UpdateAutofillDataListValues(
       base::span<const autofill::SelectOption> datalist) override;
   void PinAutofillSuggestions() override;
@@ -193,8 +185,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
       card_expiration_date_fix_flow_controller_;
   std::unique_ptr<payments::MandatoryReauthManager> payments_reauth_manager_;
   std::unique_ptr<CreditCardRiskBasedAuthenticator> risk_based_authenticator_;
-  base::WeakPtr<autofill::CardUnmaskAuthenticationSelectionDialogControllerImpl>
-      card_unmask_authentication_selection_controller_;
 
   // A weak reference to the view controller used to present UI.
   __weak UIViewController* base_view_controller_;

@@ -710,6 +710,10 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, SettingsSliderV2) {
   RunSettingsTest("controls/v2/settings_slider_v2_test.js");
 }
 
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, SettingsToggleV2) {
+  RunSettingsTest("controls/v2/settings_toggle_v2_test.js");
+}
+
 IN_PROC_BROWSER_TEST_P(OSSettingsCrostiniTestRevamp,
                        CrostiniPageBruschettaSubpage) {
   RunSettingsTest("crostini_page/bruschetta_subpage_test.js");
@@ -1219,9 +1223,14 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampOsA11yTestPdfOcrEnabled, OsA11yPage) {
   RunSettingsTest("os_a11y_page/os_a11y_page_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampOsA11yTestPdfOcrEnabled,
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
                        OsA11yPageLiveCaptionSection) {
   RunSettingsTest("os_a11y_page/live_caption_section_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
+                       OsA11yPageLiveTranslateSection) {
+  RunSettingsTest("os_a11y_page/live_translate_section_test.js");
 }
 
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
@@ -1439,9 +1448,8 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
       "os_apps_page/app_management_page/supported_links_item_test.js");
 }
 
-// // TODO: crbug.com/336956194 - Flaky for OsSettingsRevampWayfindingEnabled.
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
-                       DISABLED_OsAppsPageAppManagementPagePermissionItem) {
+                       OsAppsPageAppManagementPagePermissionItem) {
   RunSettingsTest("os_apps_page/app_management_page/permission_item_test.js");
 }
 

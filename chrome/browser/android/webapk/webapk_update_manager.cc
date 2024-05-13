@@ -49,6 +49,24 @@ void OnUpdated(const JavaRef<jobject>& java_callback,
       env, java_callback, static_cast<int>(result), relax_updates);
 }
 
+std::unique_ptr<webapps::WebappIcon> MakeWebAppIcon(
+    const GURL& icon_url,
+    bool is_maskable,
+    webapk::Image::Usage icon_usage,
+    std::string&& icon_data,
+    const std::map<GURL, std::unique_ptr<webapps::WebappIcon>>&
+        icon_with_hashes) {
+  auto icon =
+      std::make_unique<webapps::WebappIcon>(icon_url, is_maskable, icon_usage);
+  icon->SetData(std::move(icon_data));
+
+  auto it = icon_with_hashes.find(icon_url);
+  if (it != icon_with_hashes.end()) {
+    icon->set_hash(it->second->hash());
+  }
+  return icon;
+}
+
 }  // anonymous namespace
 
 // static JNI method.
@@ -157,19 +175,26 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
 
   info.icon_urls = java_icon_urls;
 
-  std::map<std::string, webapps::WebApkIconHasher::Icon>
-      icon_url_to_murmur2_hash;
+  std::map<GURL, std::unique_ptr<webapps::WebappIcon>> webapk_icons;
   for (size_t i = 0; i < info.icon_urls.size(); ++i) {
-    icon_url_to_murmur2_hash[info.icon_urls[i]] =
-        webapps::WebApkIconHasher::Icon{/* data= */ "", java_icon_hashes[i]};
+    auto webapk_icon =
+        std::make_unique<webapps::WebappIcon>(GURL(info.icon_urls[i]));
+    webapk_icon->set_hash(java_icon_hashes[i]);
+    webapk_icons.emplace(webapk_icon->url(), std::move(webapk_icon));
   }
 
   std::string primary_icon_data;
   base::android::JavaByteArrayToString(env, java_primary_icon_data,
                                        &primary_icon_data);
+  auto primary_icon = MakeWebAppIcon(
+      info.best_primary_icon_url, info.is_primary_icon_maskable,
+      webapk::Image::PRIMARY_ICON, std::move(primary_icon_data), webapk_icons);
   std::string splash_icon_data;
   base::android::JavaByteArrayToString(env, java_splash_icon_data,
                                        &splash_icon_data);
+  auto splash_icon = MakeWebAppIcon(
+      info.splash_image_url, info.is_splash_image_maskable,
+      webapk::Image::SPLASH_ICON, std::move(splash_icon_data), webapk_icons);
 
   std::vector<std::vector<std::u16string>> shortcuts;
   std::vector<std::string> shortcut_icon_data;
@@ -196,10 +221,11 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     shortcut_item.icons.push_back(std::move(icon));
 
     if (icon_src.is_valid()) {
-      icon_url_to_murmur2_hash[icon_src.spec()] =
-          webapps::WebApkIconHasher::Icon{
-              /* data= */ std::move(shortcut_icon_data[i]),
-              /* hash= */ base::UTF16ToUTF8(shortcut_data[4])};
+      auto webapk_icon = std::make_unique<webapps::WebappIcon>(icon_src);
+      webapk_icon->SetData(std::move(shortcut_icon_data[i]));
+      webapk_icon->set_hash(base::UTF16ToUTF8(shortcut_data[4]));
+      webapk_icon->AddUsage(webapk::Image::SHORTCUT_ICON);
+      webapk_icons.emplace(webapk_icon->url(), std::move(webapk_icon));
     }
     info.best_shortcut_icon_urls.push_back(std::move(icon_src));
     info.shortcut_items.push_back(std::move(shortcut_item));
@@ -214,11 +240,11 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
         static_cast<webapps::WebApkUpdateReason>(update_reason));
 
   WebApkInstaller::StoreUpdateRequestToFile(
-      base::FilePath(update_request_path), info, app_key, primary_icon_data,
-      splash_icon_data, webapk_package,
-      base::NumberToString(java_webapk_version),
-      std::move(icon_url_to_murmur2_hash), java_is_manifest_stale,
-      java_is_app_identity_update_supported, std::move(update_reasons),
+      base::FilePath(update_request_path), info, app_key,
+      std::move(primary_icon), std::move(splash_icon), webapk_package,
+      base::NumberToString(java_webapk_version), std::move(webapk_icons),
+      java_is_manifest_stale, java_is_app_identity_update_supported,
+      std::move(update_reasons),
       base::BindOnce(&base::android::RunBooleanCallbackAndroid,
                      ScopedJavaGlobalRef<jobject>(java_callback)));
 }

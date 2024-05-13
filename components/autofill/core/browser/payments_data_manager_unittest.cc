@@ -240,6 +240,9 @@ class PaymentsDataManagerHelper : public PersonalDataManagerTestBase {
   }
 
   void AddLocalIban(Iban& iban) {
+    // AddAsLocalIban() expects only newly extracted IBANs in Iban::kUnknown
+    // state to be saved.
+    iban.set_record_type(Iban::kUnknown);
     iban.set_identifier(
         Iban::Guid(payments_data_manager().AddAsLocalIban(iban)));
     WaitForOnPaymentsDataChanged();
@@ -330,40 +333,60 @@ TEST_F(PaymentsDataManagerTest, GetIbans) {
   ExpectSameElements(all_ibans, payments_data_manager().GetIbans());
 }
 
-// Test that deduplication works correctly when a local IBAN has a matching
-// prefix and suffix (either equal or starting with) and the same length as the
-// server IBANs.
-TEST_F(PaymentsDataManagerTest, GetIbansToSuggest) {
+// Test that a local IBAN is removed from suggestions when it has a matching
+// prefix and suffix (either equal or starting with) and the same length as a
+// server IBAN.
+TEST_F(PaymentsDataManagerTest,
+       GetIbansToSuggestRemovesLocalIbanThatMatchesServerIban) {
   payments_data_manager().SetSyncingForTest(true);
 
-  // Create two IBANs, and two server IBANs.
-  // `local_iban1` and `server_iban1` have the same prefix, suffix and length.
-  Iban local_iban1;
-  local_iban1.set_value(u"FR76 3000 6000 0112 3456 7890 189");
-  local_iban1.set_use_date(AutofillClock::Now() - base::Days(4));
-  Iban local_iban2;
-  local_iban2.set_value(u"CH56 0483 5012 3456 7800 9");
-  local_iban2.set_use_date(AutofillClock::Now() - base::Days(3));
+  // `local_iban` and `server_iban` have the same prefix, suffix and length.
+  Iban local_iban;
+  local_iban.set_value(u"FR76 3000 6000 0112 3456 7890 189");
+  local_iban.set_use_date(AutofillClock::Now() - base::Days(4));
 
-  Iban server_iban1(Iban::InstrumentId(1234567));
-  server_iban1.set_prefix(u"FR76");
-  server_iban1.set_suffix(u"0189");
-  server_iban1.set_length(27);
-  server_iban1.set_use_date(AutofillClock::Now() - base::Days(2));
+  Iban server_iban(Iban::InstrumentId(1234567));
+  server_iban.set_prefix(u"FR76");
+  server_iban.set_suffix(u"0189");
+  server_iban.set_length(27);
+  server_iban.set_use_date(AutofillClock::Now() - base::Days(2));
 
-  Iban server_iban2 = test::GetServerIban2();
-  server_iban2.set_length(34);
-  server_iban2.set_use_date(AutofillClock::Now() - base::Days(1));
+  AddLocalIban(local_iban);
 
-  AddLocalIban(local_iban1);
-  AddLocalIban(local_iban2);
-
-  GetServerDataTable()->SetServerIbansForTesting({server_iban1, server_iban2});
+  GetServerDataTable()->SetServerIbansForTesting({server_iban});
   payments_data_manager().Refresh();
   WaitForOnPaymentsDataChanged();
 
   EXPECT_THAT(payments_data_manager().GetOrderedIbansToSuggest(),
-              testing::ElementsAre(server_iban2, server_iban1, local_iban2));
+              testing::ElementsAre(server_iban));
+}
+
+// Test that IBANs are ordered according to the frecency rating. All of the
+// IBANs in this test case have the use count = 1.
+TEST_F(PaymentsDataManagerTest, GetIbansToSuggestOrdersByFrecency) {
+  payments_data_manager().SetSyncingForTest(true);
+
+  Iban local_iban1 = test::GetLocalIban();
+  local_iban1.set_use_date(AutofillClock::Now() - base::Days(4));
+  AddLocalIban(local_iban1);
+
+  Iban local_iban2 = test::GetLocalIban2();
+  local_iban2.set_use_date(AutofillClock::Now() - base::Days(3));
+  AddLocalIban(local_iban2);
+
+  Iban server_iban2 = test::GetServerIban2();
+  server_iban2.set_use_date(AutofillClock::Now() - base::Days(2));
+
+  Iban server_iban3 = test::GetServerIban3();
+  server_iban3.set_use_date(AutofillClock::Now() - base::Days(1));
+
+  GetServerDataTable()->SetServerIbansForTesting({server_iban2, server_iban3});
+  payments_data_manager().Refresh();
+  WaitForOnPaymentsDataChanged();
+
+  EXPECT_THAT(payments_data_manager().GetOrderedIbansToSuggest(),
+              testing::ElementsAre(server_iban3, server_iban2, local_iban2,
+                                   local_iban1));
 }
 
 TEST_F(PaymentsDataManagerTest, AddLocalIbans) {
@@ -2842,10 +2865,6 @@ TEST_F(PaymentsDataManagerTest,
     GTEST_SKIP() << "This test should only run on automotive.";
   }
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
   EXPECT_TRUE(payments_data_manager().IsPaymentMethodsMandatoryReauthEnabled());
 
   EXPECT_CHECK_DEATH_WITH(
@@ -2869,33 +2888,11 @@ TEST_F(PaymentsDataManagerTest, AutofillPaymentMethodsMandatoryReauthEnabled) {
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
   EXPECT_FALSE(
       payments_data_manager().IsPaymentMethodsMandatoryReauthEnabled());
   payments_data_manager().SetPaymentMethodsMandatoryReauthEnabled(true);
   EXPECT_TRUE(payments_data_manager().IsPaymentMethodsMandatoryReauthEnabled());
   payments_data_manager().SetPaymentMethodsMandatoryReauthEnabled(false);
-  EXPECT_FALSE(
-      payments_data_manager().IsPaymentMethodsMandatoryReauthEnabled());
-}
-
-// Test that setting the `kAutofillEnablePaymentsMandatoryReauth` does not
-// enable the feature when the flag is off.
-TEST_F(PaymentsDataManagerTest,
-       AutofillPaymentMethodsMandatoryReauthEnabled_FlagOff) {
-#if BUILDFLAG(IS_ANDROID)
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    GTEST_SKIP() << "This test should not run on automotive.";
-  }
-#endif  // BUILDFLAG(IS_ANDROID)
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-  EXPECT_FALSE(
-      payments_data_manager().IsPaymentMethodsMandatoryReauthEnabled());
-  payments_data_manager().SetPaymentMethodsMandatoryReauthEnabled(true);
   EXPECT_FALSE(
       payments_data_manager().IsPaymentMethodsMandatoryReauthEnabled());
 }
@@ -2913,9 +2910,6 @@ TEST_F(
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
   base::HistogramTester histogram_tester;
   for (int i = 0; i < prefs::kMaxValueForMandatoryReauthPromoShownCounter;
        i++) {
@@ -2950,9 +2944,6 @@ TEST_F(PaymentsDataManagerTest,
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
   base::HistogramTester histogram_tester;
   // Simulate user is already opted in.
   payments_data_manager().SetPaymentMethodsMandatoryReauthEnabled(true);
@@ -2976,9 +2967,6 @@ TEST_F(PaymentsDataManagerTest,
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
   base::HistogramTester histogram_tester;
   // Simulate user is already opted out.
   payments_data_manager().SetPaymentMethodsMandatoryReauthEnabled(false);
@@ -2991,17 +2979,6 @@ TEST_F(PaymentsDataManagerTest,
       autofill_metrics::MandatoryReauthOfferOptInDecision::kAlreadyOptedOut, 1);
 }
 
-// Test that
-// `PaymentsDataManager::ShouldShowPaymentMethodsMandatoryReauthPromo()`
-// returns that we should not show the promo if the flag is off.
-TEST_F(PaymentsDataManagerTest,
-       ShouldShowPaymentMethodsMandatoryReauthPromo_FlagOff) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-  EXPECT_FALSE(
-      payments_data_manager().ShouldShowPaymentMethodsMandatoryReauthPromo());
-}
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
 TEST_F(PaymentsDataManagerTest, SaveCardLocallyIfNewWithNewCard) {

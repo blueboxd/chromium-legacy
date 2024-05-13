@@ -14,6 +14,7 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/typography.h"
 #include "ash/system/tray/tray_constants.h"
+#include "base/auto_reset.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/paint/paint_flags.h"
 #include "components/vector_icons/vector_icons.h"
@@ -32,6 +33,7 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -198,6 +200,14 @@ FeatureTile::~FeatureTile() {
   title_container_->RemoveObserver(this);
 }
 
+void FeatureTile::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FeatureTile::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void FeatureTile::CreateChildViews() {
   const bool is_compact = type_ == TileType::kCompact;
 
@@ -340,15 +350,23 @@ void FeatureTile::CreateDecorativeDrillInArrow() {
 
 void FeatureTile::UpdateColors() {
   ui::ColorId background_color;
-  ui::ColorId foreground_color;
-  ui::ColorId foreground_optional_color;
-
   if (GetEnabled()) {
     background_color =
         toggled_
             ? background_toggled_color_.value_or(
                   cros_tokens::kCrosSysSystemPrimaryContainer)
             : background_color_.value_or(cros_tokens::kCrosSysSystemOnBase);
+  } else {
+    background_color = background_disabled_color_.value_or(
+        cros_tokens::kCrosSysDisabledContainer);
+  }
+
+  ui::ColorId foreground_color;
+  ui::ColorId foreground_optional_color;
+  // The `DownloadState::kPending` state should have the same colors on the
+  // labels and images as an enabled button, per the spec. The labels and images
+  // will only look disabled if the button was disabled for other reasons.
+  if (GetEnabled() || download_state_ == DownloadState::kPending) {
     foreground_color =
         toggled_ ? foreground_toggled_color_.value_or(
                        cros_tokens::kCrosSysSystemOnPrimaryContainer)
@@ -359,8 +377,6 @@ void FeatureTile::UpdateColors() {
                  : foreground_optional_color_.value_or(
                        cros_tokens::kCrosSysOnSurfaceVariant);
   } else {
-    background_color = background_disabled_color_.value_or(
-        cros_tokens::kCrosSysDisabledContainer);
     foreground_color =
         foreground_disabled_color_.value_or(cros_tokens::kCrosSysDisabled);
     foreground_optional_color =
@@ -552,9 +568,6 @@ void FeatureTile::SetLabel(const std::u16string& label) {
   }
 
   label_->SetText(label);
-  if (GetTooltipText().empty()) {
-    SetTooltipText(label);
-  }
 }
 
 int FeatureTile::GetSubLabelMaxWidth() const {
@@ -604,20 +617,40 @@ void FeatureTile::SetDownloadState(DownloadState state, int progress) {
       return;
     }
   }
-
-  // Set the new download state and update the tile to reflect it.
-  if (state == DownloadState::kDownloading) {
-    CHECK_GE(progress, 0)
-        << "Expected download progress to be in the range [0, 100], actual: "
-        << progress;
-    CHECK_LE(progress, 100)
-        << "Expected download progress to be in the range [0, 100], actual: "
-        << progress;
-    download_progress_percent_ = progress;
-  }
   download_state_ = state;
+
+  switch (download_state_) {
+    case DownloadState::kDownloading:
+      CHECK_GE(progress, 0)
+          << "Expected download progress to be in the range [0, 100], actual: "
+          << progress;
+      CHECK_LE(progress, 100)
+          << "Expected download progress to be in the range [0, 100], actual: "
+          << progress;
+      SetEnabled(true);
+      download_progress_percent_ = progress;
+      break;
+    case DownloadState::kError:
+    case DownloadState::kPending:
+      SetEnabled(false);
+      download_progress_percent_ = 0;
+      break;
+    case DownloadState::kDownloaded:
+      SetEnabled(true);
+      download_progress_percent_ = 0;
+      break;
+    case DownloadState::kNone:
+      SetEnabled(true);
+      download_progress_percent_ = 0;
+      break;
+  }
+
   UpdateColors();
   UpdateLabelForDownloadState();
+
+  // Once the tile's UI has been updated, notify any observers of the download
+  // state change.
+  NotifyDownloadStateChanged();
 }
 
 void FeatureTile::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -650,6 +683,25 @@ void FeatureTile::RemoveLayerFromRegions(ui::Layer* layer) {
 void FeatureTile::OnViewBoundsChanged(views::View* observed_view) {
   if (observed_view == title_container_ && on_title_container_bounds_changed_) {
     on_title_container_bounds_changed_.Run();
+  }
+}
+
+void FeatureTile::OnSetTooltipText(const std::u16string& tooltip_text) {
+  if (!features::IsVcDlcUiEnabled() || updating_download_state_labels_) {
+    return;
+  }
+
+  // Keep track of the client set tooltip, so it can be restored if a
+  // `DownloadState` tooltip has been temporarily set.
+  client_specified_tooltip_text_ = tooltip_text;
+
+  // If the tooltip was set while a temporary downloading tooltip text was set,
+  // restore it. This will be reset to the `client_specified_tooltip_text_` once
+  // the download state changes back to the final state (if it's not
+  // `DownloadState::kError`).
+  if (download_state_ != DownloadState::kDownloaded &&
+      download_state_ != DownloadState::kNone) {
+    UpdateLabelForDownloadState();
   }
 }
 
@@ -716,22 +768,37 @@ void FeatureTile::SetCompactTileLabelPreferences(bool has_sub_label) {
   label_->SetMaxLines(has_sub_label ? 1 : 2);
 }
 
-void FeatureTile::SetDownloadLabel(const std::u16string& download_label) {
+void FeatureTile::SetDownloadLabel(const std::u16string& download_label,
+                                   std::optional<std::u16string> tooltip) {
   // Download state is only supported when `VcDlcUi` is enabled.
   CHECK(features::IsVcDlcUiEnabled())
       << "Download states are not supported when `VcDlcUi` is disabled";
   label_->SetText(download_label);
+  SetTooltipText(tooltip.value_or(download_label));
 }
 
 void FeatureTile::UpdateLabelForDownloadState() {
   // Download state is only supported when `VcDlcUi` is enabled.
   CHECK(features::IsVcDlcUiEnabled())
       << "Download states are not supported when `VcDlcUi` is disabled";
+
+  base::AutoReset<bool> reset(&updating_download_state_labels_, true);
+
   switch (download_state_) {
+    case DownloadState::kError:
+      SetDownloadLabel(client_specified_label_text_,
+                       /*tooltip=*/l10n_util::GetStringFUTF16(
+                           IDS_ASH_FEATURE_TILE_DOWNLOAD_ERROR,
+                           client_specified_label_text_));
+      break;
     case DownloadState::kNone:
     case DownloadState::kDownloaded:
-    case DownloadState::kError:
+      // If a download happened, `SetLabel()` saved the previous label
+      // in `client_specified_label_text_`, so re-set those here.
       label_->SetText(client_specified_label_text_);
+      SetTooltipText(client_specified_tooltip_text_.empty()
+                         ? client_specified_label_text_
+                         : client_specified_tooltip_text_);
       break;
     case DownloadState::kPending:
       SetDownloadLabel(l10n_util::GetStringUTF16(
@@ -742,6 +809,13 @@ void FeatureTile::UpdateLabelForDownloadState() {
           IDS_ASH_FEATURE_TILE_DOWNLOAD_IN_PROGRESS_TITLE,
           base::NumberToString16(download_progress_percent_)));
       break;
+  }
+}
+
+void FeatureTile::NotifyDownloadStateChanged() {
+  for (Observer& observer : observers_) {
+    observer.OnDownloadStateChanged(download_state_,
+                                    download_progress_percent_);
   }
 }
 

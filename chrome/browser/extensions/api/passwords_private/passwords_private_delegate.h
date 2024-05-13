@@ -265,6 +265,15 @@ class PasswordsPrivateDelegate
   virtual bool IsPasswordManagerPinAvailable(
       content::WebContents* web_contents) = 0;
 
+  // Starts the flow for disconnecting a Desktop Chrome client from the cloud
+  // authenticator.
+  virtual void DisconnectCloudAuthenticator(
+      content::WebContents* web_contents,
+      base::OnceCallback<void(bool)> success_callback) = 0;
+
+  virtual bool IsConnectedToCloudAuthenticator(
+      content::WebContents* web_contents) = 0;
+
   virtual base::WeakPtr<PasswordsPrivateDelegate> AsWeakPtr() = 0;
 
  protected:

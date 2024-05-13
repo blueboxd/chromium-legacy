@@ -218,8 +218,8 @@ CHAR_LIMIT guidelines:
       </message>
 
       <!-- TODO(b/326574743): Revisit string and mark it as translateable.-->
-      <message name="IDS_PREFS_CONTROL_YOUR_DATA" desc='Title of "Control your data and accounts" section of preferences. [CHAR_LIMIT=32]' translateable="false">
-        Control your data &amp; accounts
+      <message name="IDS_ACCOUNT_ADVANCED_HEADER" desc="Heading of a section with settings related to the user's Google Account and data. [CHAR_LIMIT=32]" translateable="false">
+        Control your data &amp; account
       </message>
 
       <!-- Notification channels -->
@@ -1270,7 +1270,10 @@ Your Google account may have other forms of browsing history like searches and a
         Autofill form data
       </message>
       <message name="IDS_CLEAR_TABS_TITLE" desc="Title for Clear Tabs in Clear Browsing Data preference">
-        Tabs on this device
+        Tabs
+      </message>
+      <message name="IDS_CLEAR_TABS_DISABLED_SUMMARY" desc="A descriptive line that appears as a secondary text for Clear Tabs in Clear Browsing Data preference. The text explains why 'Tabs' checkbox is disabled.">
+        Can’t be closed across multiple windows
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_PROGRESS_TITLE" desc='Title for the progress dialog used when waiting for "delete browsing data" to complete.'>
         Deleting browsing data
@@ -1327,10 +1330,10 @@ Your Google account may have other forms of browsing history like searches and a
         Basic
       </message>
       <message name="IDS_ANDROID_APP_HISTORY_OPEN_FULL" desc="The informational message at the top of the history page letting users know that app-specific history may be missing some entries.">
-        Some of your web history might not show up here. To see a full web history, tap Open full Chrome history.
+        Some of your history might not show up here. To see all your Chrome history, open full Chrome history.
       </message>
       <message name="IDS_ANDROID_APP_HISTORY_OPEN_FULL_OTHER_FORMS" desc="The informational message at the top of the history page letting users know that app-specific history may be missing some entries, followed by the info on the other forms of browing history.">
-        Some of your web history might not show up here. If needed, tap Open full Chrome history. Also, Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
+        Some of your history might not show up here. To see all your Chrome history, open full Chrome history. Also, Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_ANDROID_HISTORY_OTHER_FORMS_OF_HISTORY" desc="The notification at the top of the history page indicating that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
         Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
@@ -2268,8 +2271,8 @@ Your Google account may have other forms of browsing history like searches and a
         Apps
       </message>
       <!-- TODO(b/326574743): Revisit string and mark it as translatable.-->
-      <message name="IDS_DATA_TYPES_SWITCHES_SUMMARY" desc="Message of Google activity controls preference in signed in accounts settings screen" translateable="false">
-        When on, data is saved in your Google Account. When off, data is saved only to this device.
+      <message name="IDS_ACCOUNT_SECTION_FOOTER" desc="Footer below a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device)." translateable="false">
+        When on, use and save data in your Google Account. When off, data is saved only to this device.
       </message>
       <message name="IDS_SYNC_PAYMENTS_INTEGRATION" desc="Title for preference which enables import of Google Pay data for Autofill. 'Google Pay' should not be translated as it is the product name.">
         Payment methods, offers, and addresses using Google Pay
@@ -3120,17 +3123,25 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       <message name="IDS_HISTORY_MANAGER_NO_RESULTS_NO_DSE" desc="Text explaining that no browsing history items match a search query when the default search engine is not set.">
         Can’t find that page. Check your spelling or try a web search.
       </message>
+
+      <message name="IDS_HISTORY_MANAGER_APP_SPECIFIC_EMPTY_STATE_TITLE" desc="Title text in app-specific history zero state that indicates that there are no history items.">
+        Nothing to show yet
+      </message>
+      <message name="IDS_HISTORY_MANAGER_APP_SPECIFIC_EMPTY_STATE_DESCRIPTION" desc="Description text in app-specific history zero state that states history for a specific-app will be displayed here.">
+        The pages you've opened in Chrome while using <ph name="APP_LABEL">%1$s<ex>YouTube</ex></ph> will show up here.
+      </message>
+
       <message name="IDS_HISTORY_MANAGER_APP_SPECIFIC_HISTORY_NO_RESULTS" desc="Text explaining that no browsing history items match a search query in app-specific history.">
         No search results found
       </message>
       <message name="IDS_HISTORY_MANAGER_EMPTY_STATE_VIEW_OR_OPEN_MORE_HISTORY" desc="Indicates that users can search something else or open more history">
-        Try searching for something else or open more history in Chrome to see more web history from other apps.
+        Try searching for something else or open full Chrome history to see more results.
       </message>
       <message name="IDS_HISTORY_MANAGER_SEARCH" desc="Placeholder text for the input field that allows users to search browsing history.">
         Search your history
       </message>
       <message name="IDS_HISTORY_APP_ATTRIBUTION" desc="Text showing that a history entry was generated by a certain app via a Custom Tab">
-        from <ph name="APP_LABEL">%1$s<ex>YouTube</ex></ph>
+        From <ph name="APP_LABEL">%1$s<ex>YouTube</ex></ph>
       </message>
       <message name="IDS_INCOGNITO_HISTORY_PLACEHOLDER_TITLE" desc="Title that states sites the users visit are not saved in Incognito mode.">
         Sites you visit aren’t saved in Incognito
@@ -3450,6 +3461,12 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       <message name="IDS_SIGNIN_PROMO_TURN_ON" translateable="false">
         Turn on
       </message>
+      <message name="IDS_SIGNIN_SETTINGS_TITLE" desc="Title of the sign-in row in the settings page that offers the user to sign-in to Chrome.">
+        Sign in
+      </message>
+      <message name="IDS_SIGNIN_SETTINGS_SUBTITLE" desc="Subtitle of the sign-in row in the settings page that offers the user to sign-in to Chrome. It explains the overarching user benefit of signing in (access to bookmarks, passwords, history, settings, etc.).">
+        Get your bookmarks, passwords and more on all your devices
+      </message>
 
       <message name="IDS_EXTERNAL_APP_RESTRICTED_ACCESS_ERROR" desc="A message shown to the user if Chrome receives a file view request to something Chrome does not have access to view.">
         Chrome does not have access to the requested resource.
@@ -3727,7 +3744,7 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
         Collapse to side view
       </message>
       <message name="IDS_CUSTOM_TAB_HISTORY_IPH_BUBBLE_TEXT" desc="The message on the text bubble shown to educate the user about history in CCTs.">
-        View your web history here
+        View your Chrome history here
       </message>
       <message name="IDS_CUSTOM_TAB_MINIMIZE" desc="The accessibility text for minimize button for custom tabs.">
         Minimize tab
@@ -3848,8 +3865,8 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       <message name="IDS_MENU_RECENT_TABS" desc="Menu item for opening the 'Recent tabs' page that shows recently closed tabs and pages the user has opened on his/her other devices. [CHAR_LIMIT=27]">
         Recent tabs
       </message>
-      <message name="IDS_MENU_WEB_HISTORY" desc="Menu item for opening the CCT history page. [CHAR_LIMIT=27]">
-        Web history
+      <message name="IDS_CHROME_HISTORY" desc="Menu item for opening the CCT history page. [CHAR_LIMIT=27]">
+        Chrome history
       </message>
       <message name="IDS_MENU_HISTORY" desc="Menu item for opening the history page. [CHAR_LIMIT=27]">
         History
@@ -4531,6 +4548,12 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       </message>
       <message name="IDS_UNDO_BAR_CLOSE_ALL_MESSAGE" desc="Message shown when you can undo a close all tabs action.">
         <ph name="TAB_COUNT">%1$s<ex>3</ex></ph> tabs closed
+      </message>
+      <message name="IDS_UNDO_BAR_DELETE_TAB_GROUP_MESSAGE" desc="Message shown when you can undo a tab group deletion action.">
+        <ph name="TAB_COUNT">%1$s<ex>3</ex></ph> tabs deleted
+      </message>
+      <message name="IDS_UNDO_BAR_DELETE_SINGLE_TAB_GROUP_MESSAGE" desc="Message shown when you can undo a tab group containing a single tab.">
+        <ph name="TAB_COUNT">%1$s<ex>1</ex></ph> tab deleted
       </message>
       <message name="IDS_CONFIRM_DELETE_MESSAGE" desc="Message shown or announced to get confirmation on whether a file should be deleted.">
         Do you want to delete <ph name="ITEM_TITLE">%1$s<ex>example.pdf</ex></ph>?
@@ -5909,6 +5932,9 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
       </message>
       <message name="IDS_QUICK_DELETE_DIALOG_TABS_CLOSED_TEXT" desc="Text indicating that the tabs which a user recently used to visit a website within the specified time range would be closed.">
         {NUM_TABS, plural, =1 {1 tab on this device} other {# tabs on this device}}
+      </message>
+      <message name="IDS_QUICK_DELETE_TABS_TITLE" desc="Title for the tabs row in the Quick Delete dialog.">
+        Tabs on this device
       </message>
       <message name="IDS_QUICK_DELETE_DIALOG_ZERO_TABS_CLOSED_ALL_TIME_TEXT" desc="Text indicating that no tabs would be closed.">
         No tabs on this device

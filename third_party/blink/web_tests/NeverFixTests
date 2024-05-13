@@ -2087,7 +2087,6 @@ crbug.com/1517744 external/wpt/dpub-aam/role/roles.html [ Skip ]
 crbug.com/1517744 external/wpt/graphics-aria/graphics-roles.html [ Skip ]
 crbug.com/1517744 external/wpt/html-aam/fragile/area-role.html [ Skip ]
 crbug.com/1517744 external/wpt/html-aam/names.html [ Skip ]
-crbug.com/1517744 external/wpt/html-aam/fragile/optgroup-role.html [ Skip ]
 crbug.com/1517744 external/wpt/html-aam/roles-contextual.html [ Skip ]
 crbug.com/1517744 external/wpt/html-aam/roles-dynamic-switch.tentative.window.html [ Skip ]
 crbug.com/1517744 external/wpt/html-aam/roles-generic.html [ Skip ]
@@ -2703,6 +2702,8 @@ crbug.com/1500120 [ Win11-arm64 ] external/wpt/webnn/* [ Skip ]
 # WebNN feature work in-progress.
 crbug.com/1472888 [ Mac ] virtual/webnn-service-with-gpu/external/wpt/webnn/conformance_tests/buffer.https.any.html?gpu [ Skip ]
 crbug.com/1472888 [ Mac ] virtual/webnn-service-with-gpu/external/wpt/webnn/conformance_tests/buffer.https.any.worker.html?gpu [ Skip ]
+crbug.com/1472888 [ Linux ] virtual/webnn-service-without-gpu/external/wpt/webnn/conformance_tests/buffer.https.any.html?gpu [ Skip ]
+crbug.com/1472888 [ Linux ] virtual/webnn-service-without-gpu/external/wpt/webnn/conformance_tests/buffer.https.any.worker.html?gpu [ Skip ]
 
 ######## Unload Deprecation
 # This is for tests in the "unload-allowed" virtual suite that
@@ -2740,3 +2741,10 @@ crbug.com/40778657 virtual/raster-inducing-scroll/scrollbars/auto-scrollbar-fade
 crbug.com/40778657 virtual/raster-inducing-scroll/scrollbars/hidden-scrollbars-invisible.html [ Skip ]
 
 ######## End Unload Deprecation
+
+# View transitions sub-directory tests under different configs
+# These run as virtual/view-transition-on-navigation/
+crbug.com/40241779 virtual/view-transition-mpa-serialization/external/wpt/css/css-view-transitions/navigation/* [ Skip ]
+crbug.com/40241779 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/navigation/* [ Skip ]
+crbug.com/40241779 virtual/view-transition/external/wpt/css/css-view-transitions/navigation/* [ Skip ]
+

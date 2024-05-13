@@ -234,6 +234,7 @@
 #include "third_party/blink/renderer/platform/restriction_target_id.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -660,6 +661,12 @@ bool Element::IsFocusableStyle(UpdateBehavior update_behavior) const {
 
   if (HasDisplayContentsStyle() &&
       RuntimeEnabledFeatures::DisplayContentsFocusableEnabled()) {
+    // TODO(crbug.com/338162121): Currently, it is not possible for display
+    // contents elements to be focusable in reading order.
+    if (ContainerNode* parent = LayoutTreeBuilderTraversal::LayoutParent(*this);
+        parent && parent->IsReadingOrderContainer()) {
+      return false;
+    }
     if (const ComputedStyle* style =
             ComputedStyle::NullifyEnsured(GetComputedStyle())) {
       return style->IsFocusable();
@@ -3252,6 +3259,10 @@ void Element::AttachLayoutTree(AttachContext& context) {
     return;
   }
 
+  if (!IsPseudoElement()) {
+    context.counters_context.EnterElement(*this);
+  }
+
   AttachPrecedingPseudoElements(children_context);
 
   if (ShadowRoot* shadow_root = GetShadowRoot()) {
@@ -3269,6 +3280,10 @@ void Element::AttachLayoutTree(AttachContext& context) {
   }
 
   AttachSucceedingPseudoElements(children_context);
+
+  if (!IsPseudoElement()) {
+    context.counters_context.LeaveElement(*this);
+  }
 
   if (layout_object) {
     if (layout_object->AffectsWhitespaceSiblings()) {
@@ -3376,6 +3391,10 @@ void Element::ReattachLayoutTreeChildren(base::PassKey<StyleEngine>) {
   context.use_previous_in_flow = true;
   context.next_sibling_valid = true;
 
+  if (!IsPseudoElement()) {
+    context.counters_context.EnterElement(*this);
+  }
+
   AttachPrecedingPseudoElements(context);
 
   if (shadow_root) {
@@ -3389,6 +3408,10 @@ void Element::ReattachLayoutTreeChildren(base::PassKey<StyleEngine>) {
   }
 
   AttachSucceedingPseudoElements(context);
+
+  if (!IsPseudoElement()) {
+    context.counters_context.LeaveElement(*this);
+  }
 
   ClearChildNeedsReattachLayoutTree();
   ClearNeedsReattachLayoutTree();
@@ -3973,6 +3996,19 @@ StyleRecalcChange Element::RecalcOwnStyle(
   }
   SetComputedStyle(new_style);
 
+  if ((!old_style && new_style && new_style->GetCounterDirectives()) ||
+      (old_style && new_style &&
+       !old_style->CounterDirectivesEqual(*new_style)) ||
+      (old_style && old_style->GetCounterDirectives() && !new_style)) {
+    GetDocument().GetStyleEngine().MarkCountersDirty();
+  }
+
+  if ((!new_style && old_style && old_style->ContainsStyle()) ||
+      (old_style && new_style &&
+       old_style->ContainsStyle() != new_style->ContainsStyle())) {
+    GetDocument().GetStyleEngine().MarkCountersDirty();
+  }
+
   // Update style containment tree if the style containment of the element
   // has changed.
   // Don't update if the style containment tree has not been initialized.
@@ -4187,9 +4223,15 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
+    if (IsDocumentElement()) {
+      reattach_context.counters_context.SetAttachmentRootIsDocumentElement();
+    }
     reattach_context.parent =
         LayoutTreeBuilderTraversal::ParentLayoutObject(*this);
     ReattachLayoutTree(reattach_context);
+    if (IsDocumentElement()) {
+      GetDocument().GetStyleEngine().MarkCountersClean();
+    }
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
   } else if (NeedsRebuildChildLayoutTrees(whitespace_attacher) &&
@@ -6377,7 +6419,7 @@ bool Element::SupportsSpatialNavigationFocus() const {
 
 bool Element::CanBeKeyboardFocusableScroller(
     UpdateBehavior update_behavior) const {
-  if (!RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled()) {
+  if (!GetDocument().KeyboardFocusableScrollersEnabled()) {
     return false;
   }
   // A node is scrollable depending on its layout size. As such, it is important
@@ -8607,24 +8649,31 @@ void Element::DidMoveToNewDocument(Document& old_document) {
 
   // If the documents differ by quirks mode then they differ by case sensitivity
   // for class and id names so we need to go through the attribute change logic
-  // to pick up the new casing in the ElementData.
+  // to pick up the new casing in the ElementData. If the id/class is already
+  // lower-case, then it's not impacted by quirks mode and no change is
+  // necessary.
   if (old_document.InQuirksMode() != GetDocument().InQuirksMode()) {
     // TODO(tkent): If new owner Document has a ShareableElementData matching to
     // this element's attributes, we shouldn't make UniqueElementData, and this
     // element should point to the shareable one.
-    EnsureUniqueElementData();
 
-    if (const AtomicString& idAttr = GetIdAttribute()) {
-      SetIdAttribute(idAttr);
+    if (const AtomicString& id_attr = GetIdAttribute()) {
+      if (!id_attr.IsLowerASCII()) {
+        EnsureUniqueElementData();
+        SetIdAttribute(id_attr);
+      }
     }
-    if (const AtomicString& classAttr = GetClassAttribute()) {
-      // Going through setAttribute() to synchronize the attribute is only
-      // required when setting the "style" attribute (this sets the "class"
-      // attribute) or for an SVG element (in which case `GetClassAttribute`
-      // above would already have synchronized).
-      SetAttributeInternal(FindAttributeIndex(html_names::kClassAttr),
-                           html_names::kClassAttr, classAttr,
-                           AttributeModificationReason::kByMoveToNewDocument);
+    if (const AtomicString& class_attr = GetClassAttribute()) {
+      if (!class_attr.IsLowerASCII()) {
+        EnsureUniqueElementData();
+        // Going through setAttribute() to synchronize the attribute is only
+        // required when setting the "style" attribute (this sets the "class"
+        // attribute) or for an SVG element (in which case `GetClassAttribute`
+        // above would already have synchronized).
+        SetAttributeInternal(FindAttributeIndex(html_names::kClassAttr),
+                             html_names::kClassAttr, class_attr,
+                             AttributeModificationReason::kByMoveToNewDocument);
+      }
     }
   }
   // TODO(tkent): Even if Documents' modes are same, keeping
@@ -8978,7 +9027,7 @@ void Element::StyleAttributeChanged(
 
   SetNeedsStyleRecalc(kLocalStyleChange,
                       StyleChangeReasonForTracing::Create(
-                          style_change_reason::kStyleSheetChange));
+                          style_change_reason::kStyleAttributeChange));
   probe::DidInvalidateStyleAttr(this);
 }
 

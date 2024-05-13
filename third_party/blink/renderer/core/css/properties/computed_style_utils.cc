@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/fonts/font_optical_sizing.h"
 #include "third_party/blink/renderer/platform/fonts/font_palette.h"
+#include "third_party/blink/renderer/platform/fonts/font_variant_emoji.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_transform_operation.h"
@@ -1535,8 +1536,7 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   FontDescription::Kerning kerning = style.GetFontDescription().GetKerning();
   FontDescription::FontVariantPosition variant_position =
       style.GetFontDescription().VariantPosition();
-  FontDescription::FontVariantEmoji variant_emoji =
-      style.GetFontDescription().VariantEmoji();
+  FontVariantEmoji variant_emoji = style.GetFontDescription().VariantEmoji();
   OpticalSizing optical_sizing = style.GetFontDescription().FontOpticalSizing();
 
   if (kerning != FontDescription::kAutoKerning ||
@@ -1545,7 +1545,7 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
        style.GetFontDescription().HasSizeAdjust()) ||
       variant_position != FontDescription::kNormalVariantPosition ||
       (RuntimeEnabledFeatures::FontVariantEmojiEnabled() &&
-       variant_emoji != FontDescription::kNormalVariantEmoji)) {
+       variant_emoji != kNormalVariantEmoji)) {
     return nullptr;
   }
 
@@ -2363,8 +2363,8 @@ CSSValue* ComputedStyleUtils::ValueForWillChange(
 
 namespace {
 
-template <typename T, typename Func, typename... Args>
-CSSValue* CreateAnimationValueList(const Vector<T>& values,
+template <typename T, wtf_size_t C, typename Func, typename... Args>
+CSSValue* CreateAnimationValueList(const Vector<T, C>& values,
                                    Func item_func,
                                    Args&&... args) {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
@@ -2385,8 +2385,9 @@ CSSValue* ComputedStyleUtils::ValueForAnimationDelay(
 CSSValue* ComputedStyleUtils::ValueForAnimationDelayList(
     const CSSTimingData* timing_data) {
   return CreateAnimationValueList(
-      timing_data ? timing_data->DelayStartList()
-                  : Vector<Timing::Delay>{CSSTimingData::InitialDelayStart()},
+      timing_data
+          ? timing_data->DelayStartList()
+          : Vector<Timing::Delay, 1>{CSSTimingData::InitialDelayStart()},
       &ValueForAnimationDelay);
 }
 
@@ -2441,18 +2442,18 @@ CSSValue* ComputedStyleUtils::ValueForAnimationDurationList(
       (phase == CSSValuePhase::kResolvedValue) &&
       (!animation_data || animation_data->HasSingleInitialTimeline());
   return CreateAnimationValueList(
-      animation_data
-          ? animation_data->DurationList()
-          : Vector<std::optional<double>>{CSSAnimationData::InitialDuration()},
+      animation_data ? animation_data->DurationList()
+                     : Vector<std::optional<double>,
+                              1>{CSSAnimationData::InitialDuration()},
       ValueForAnimationDuration, resolve_auto_to_zero);
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationDurationList(
     const CSSTransitionData* transition_data) {
   return CreateAnimationValueList(
-      transition_data
-          ? transition_data->DurationList()
-          : Vector<std::optional<double>>{CSSTransitionData::InitialDuration()},
+      transition_data ? transition_data->DurationList()
+                      : Vector<std::optional<double>,
+                               1>{CSSTransitionData::InitialDuration()},
       ValueForAnimationDuration,
       /* resolve_auto_to_zero */ false);
 }
@@ -2634,10 +2635,9 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimingFunction(
 CSSValue* ComputedStyleUtils::ValueForAnimationTimingFunctionList(
     const CSSTimingData* timing_data) {
   return CreateAnimationValueList(
-      timing_data
-          ? timing_data->TimingFunctionList()
-          : Vector<scoped_refptr<TimingFunction>>{CSSAnimationData::
-                                                      InitialTimingFunction()},
+      timing_data ? timing_data->TimingFunctionList()
+                  : Vector<scoped_refptr<TimingFunction>,
+                           1>{CSSAnimationData::InitialTimingFunction()},
       &ValueForAnimationTimingFunction);
 }
 
@@ -3182,7 +3182,7 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style,
 
 CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
     const ComputedStyle& style,
-    CounterNode::Type type) {
+    CountersAttachmentContext::Type type) {
   const CounterDirectiveMap* map = style.GetCounterDirectives();
   if (!map) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -3192,13 +3192,13 @@ CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
   for (const auto& item : *map) {
     bool is_valid_counter_value = false;
     switch (type) {
-      case CounterNode::kIncrementType:
+      case CountersAttachmentContext::Type::kIncrementType:
         is_valid_counter_value = item.value.IsIncrement();
         break;
-      case CounterNode::kResetType:
+      case CountersAttachmentContext::Type::kResetType:
         is_valid_counter_value = item.value.IsReset();
         break;
-      case CounterNode::kSetType:
+      case CountersAttachmentContext::Type::kSetType:
         is_valid_counter_value = item.value.IsSet();
         break;
     }
@@ -3209,13 +3209,13 @@ CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
 
     int32_t number = 0;
     switch (type) {
-      case CounterNode::kIncrementType:
+      case CountersAttachmentContext::Type::kIncrementType:
         number = item.value.IncrementValue();
         break;
-      case CounterNode::kResetType:
+      case CountersAttachmentContext::Type::kResetType:
         number = item.value.ResetValue();
         break;
-      case CounterNode::kSetType:
+      case CountersAttachmentContext::Type::kSetType:
         number = item.value.SetValue();
         break;
     }

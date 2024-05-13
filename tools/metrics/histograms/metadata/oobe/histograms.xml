@@ -269,10 +269,14 @@ chromium-metrics-reviews@google.com.
   <variant name="Cryptohome-recovery.FallbackLocal"/>
   <variant name="Cryptohome-recovery.FallbackOnline"/>
   <variant name="Cryptohome-recovery.GaiaLogin"/>
-  <variant name="Cryptohome-recovery.ManualRecovery"/>
-  <variant name="Cryptohome-recovery.NoRecoveryFactor"/>
-  <variant name="Cryptohome-recovery.Retry"/>
-  <variant name="Cryptohome-recovery.Succeeded"/>
+  <variant name="Cryptohome-recovery.ManualRecovery"
+      summary="(obsolete) Not used since M-122"/>
+  <variant name="Cryptohome-recovery.NoRecoveryFactor"
+      summary="(obsolete) Not used since M-122"/>
+  <variant name="Cryptohome-recovery.Retry"
+      summary="(obsolete) Not used since M-122"/>
+  <variant name="Cryptohome-recovery.Succeeded"
+      summary="(obsolete) Not used since M-122"/>
   <variant name="Debugging.Next"/>
   <variant name="Demo-preferences.Canceled"/>
   <variant name="Demo-preferences.Completed"/>
@@ -555,7 +559,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.ConsumerUpdateScreen.UpdateTime.{ConsumerUpdateType}"
-    units="ms" expires_after="2024-05-12">
+    units="ms" expires_after="2024-11-12">
   <owner>osamafathy@google.com</owner>
   <owner>cros-oobe@google.com</owner>
   <summary>
@@ -588,7 +592,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OOBE.ErrorScreensTime.{OOBEScreenShownBeforeNetworkError}.{OOBENetworkError}"
-    units="ms" expires_after="2024-09-01">
+    units="ms" expires_after="2024-11-03">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oobe@google.com</owner>
   <summary>
@@ -673,7 +677,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OOBE.GestureNavigationScreen.PageShownTime.{OOBEGestureNavigationPage}"
-    units="ms" expires_after="2024-09-01">
+    units="ms" expires_after="2024-11-03">
   <owner>mmourgos@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -808,8 +812,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="OOBE.MetricsClientIdReset" enum="Boolean"
+    expires_after="2024-11-08">
+  <owner>osamafathy@google.com</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Whether the metrics client ID was reset during OOBE. Recorded at the end of
+    OOBE flow before the first session starts.
+
+    If the device is unmanaged, this metric should only be reported as false. If
+    the device is managed, this should report true in very rare occasions (e.g.
+    the admin switched the metrics policy from false to true at the time the
+    user was going through OOBE).
+  </summary>
+</histogram>
+
 <histogram name="OOBE.NetworkErrorShown.{OOBEScreenShownBeforeNetworkError}"
-    enum="NetworkErrorType" expires_after="2024-09-01">
+    enum="NetworkErrorType" expires_after="2024-11-03">
   <owner>achuith@google.com</owner>
   <owner>cros-oobe@google.com</owner>
   <summary>
@@ -915,7 +934,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.RecommendApps.Fetcher.ResponseCode"
-    enum="HttpResponseCode" expires_after="2024-09-01">
+    enum="HttpResponseCode" expires_after="2024-11-03">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <owner>chromesky-eng@google.com</owner>
@@ -952,6 +971,22 @@ chromium-metrics-reviews@google.com.
   <owner>cros-oac@google.com</owner>
   <owner>chromesky-eng@google.com</owner>
   <summary>Whether the reocmmend apps screen is shown.</summary>
+</histogram>
+
+<histogram name="OOBE.StatsReportingControllerReportedReset" enum="Boolean"
+    expires_after="2024-11-08">
+  <owner>osamafathy@google.com</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Whether `StatsReportingController::IsEnabled()` returned true then later
+    returned false during OOBE. Recorded at the end of OOBE flow before the
+    first session starts.
+
+    If the device is unmanaged, this metric should only be reported as false. If
+    the device is managed, this should report true in very rare occasions (e.g.
+    the admin switched the metrics policy from false to true at the time the
+    user was going through OOBE).
+  </summary>
 </histogram>
 
 <histogram name="OOBE.StepCompletionTime.{OOBELegacyScreenName}" units="ms"
@@ -991,7 +1026,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OOBE.StepCompletionTimeByExitReason.{OOBEScreenName_ExitReason}"
-    units="ms" expires_after="2024-09-01">
+    units="ms" expires_after="2024-11-03">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>Time spent on specific OOBE screen grouped by exit reason.</summary>
@@ -1067,7 +1102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.IsCapabilityKnown" enum="BooleanKnown"
-    expires_after="2024-09-03">
+    expires_after="2024-11-03">
   <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1124,7 +1159,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.ReviewFollowingSetup"
-    enum="BooleanChecked" expires_after="2024-05-05">
+    enum="BooleanChecked" expires_after="2024-11-05">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1134,7 +1169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.SyncEnabled" enum="BooleanEnabled"
-    expires_after="2024-05-05">
+    expires_after="2024-11-05">
   <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1172,7 +1207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.{UpdateStage}" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1239,7 +1274,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WebViewLoader.FirstLoadResult.{WebViewID}"
-    enum="OobeWebViewLoadResult" expires_after="2024-09-01">
+    enum="OobeWebViewLoadResult" expires_after="2024-11-03">
   <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>

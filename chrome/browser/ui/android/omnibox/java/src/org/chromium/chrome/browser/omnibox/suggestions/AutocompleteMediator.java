@@ -215,8 +215,7 @@ class AutocompleteMediator
                 .setDialerAvailable(!pm.queryIntentActivities(dialIntent, 0).isEmpty());
         mListPropertyModel.set(
                 SuggestionListProperties.DRAW_OVER_ANCHOR,
-                OmniboxFeatures.shouldShowModernizeVisualUpdate(mContext)
-                        && DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
+                DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
         int addedVerticalOffset =
                 context.getResources()
                         .getDimensionPixelOffset(
@@ -342,7 +341,7 @@ class AutocompleteMediator
                         && pageClass != PageClassification.ANDROID_SHORTCUTS_WIDGET_VALUE)) {
             return;
         }
-        onSuggestionsReceived(CachedZeroSuggestionsManager.readFromCache(), "", true);
+        onSuggestionsReceived(CachedZeroSuggestionsManager.readFromCache(), true);
     }
 
     /** Notify the mediator that a item selection is pending and should be accepted. */
@@ -832,12 +831,13 @@ class AutocompleteMediator
 
     @Override
     public void onSuggestionsReceived(
-            @NonNull AutocompleteResult autocompleteResult,
-            @NonNull String inlineAutocompleteText,
-            boolean isFinal) {
+            @NonNull AutocompleteResult autocompleteResult, boolean isFinal) {
         maybeCacheResult(autocompleteResult);
 
-        final List<AutocompleteMatch> newSuggestions = autocompleteResult.getSuggestionsList();
+        @Nullable AutocompleteMatch defaultMatch = autocompleteResult.getDefaultMatch();
+        String inlineAutocompleteText =
+                defaultMatch != null ? defaultMatch.getInlineAutocompletion() : "";
+
         String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
@@ -846,13 +846,8 @@ class AutocompleteMediator
             var viewInfoList =
                     mDropdownViewInfoListBuilder.buildDropdownViewInfoList(autocompleteResult);
             mDropdownViewInfoListManager.setSourceViewInfoList(viewInfoList);
-            boolean defaultMatchIsSearch = true;
-            if (!TextUtils.isEmpty(mUrlBarEditingTextProvider.getTextWithoutAutocomplete())
-                    && !newSuggestions.isEmpty()) {
-                defaultMatchIsSearch = newSuggestions.get(0).isSearchSuggestion();
-            }
             if (mIsActive) {
-                mDelegate.onSuggestionsChanged(inlineAutocompleteText, defaultMatchIsSearch);
+                mDelegate.onSuggestionsChanged(defaultMatch);
             }
         }
 

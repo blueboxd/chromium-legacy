@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
@@ -122,9 +123,6 @@
 #endif
 #include "third_party/blink/renderer/modules/accessibility/ax_image_map_link.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_inline_text_box.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_menu_list_option.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
@@ -734,21 +732,11 @@ void AXObject::Init(AXObject* parent) {
   DCHECK(IsValidRole(role_)) << "Illegal " << role_ << " for\n"
                              << GetNode() << '\n'
                              << GetLayoutObject();
-
-  HTMLOptGroupElement* optgroup = DynamicTo<HTMLOptGroupElement>(GetNode());
-  if (optgroup && optgroup->OwnerSelectElement()) {
-    // We do not currently create accessible objects for an <optgroup> inside of
-    // a <select size=1>.
-    // TODO(accessibility) Remove this once we refactor HTML <select> to use
-    // the shadow DOM and AXNodeObject instead of AXMenuList* classes.
-    DCHECK(!optgroup->OwnerSelectElement()->UsesMenuList());
-  }
-#endif  // DCHECK_IS_ON()
-
   // The parent cannot have children. This object must be destroyed.
   DCHECK(!parent_ || parent_->CanHaveChildren())
       << "Tried to set a parent that cannot have children:" << "\n* Parent = "
       << parent_ << "\n* Child = " << this;
+#endif
 
   children_dirty_ = true;
 
@@ -765,18 +753,11 @@ void AXObject::Detach() {
 #if DCHECK_IS_ON()
   DCHECK(!is_updating_cached_values_)
       << "Don't detach in the middle of updating cached values: " << this;
+  DCHECK(!IsDetached());
 #endif
   // Prevents LastKnown*() methods from returning the wrong values.
   cached_is_ignored_ = true;
   cached_is_ignored_but_included_in_tree_ = false;
-
-  if (IsDetached()) {
-    // Only mock objects can end up being detached twice, because their owner
-    // may have needed to detach them when they were detached, but couldn't
-    // remove them from the object cache yet.
-    DCHECK(IsMockObject()) << "Object detached twice: " << RoleValue();
-    return;
-  }
 
 #if defined(AX_FAIL_FAST_BUILD)
   SANITIZER_CHECK(ax_object_cache_);
@@ -929,11 +910,6 @@ AXObject* AXObject::ComputeParent() const {
 AXObject* AXObject::ComputeParentOrNull() const {
   CHECK(!IsDetached());
 
-  if (IsMockObject()) {
-    const AXMenuListPopup* popup = To<AXMenuListPopup>(this);
-    return popup->owner();
-  }
-
   CHECK(GetNode() || GetLayoutObject() || IsVirtualObject())
       << "Can't compute parent on AXObjects without a backing Node "
          "LayoutObject, "
@@ -972,16 +948,7 @@ Node* AXObject::GetParentNodeForComputeParent(AXObjectCacheImpl& cache,
   if (auto* document = DynamicTo<Document>(node)) {
     LocalFrame* frame = document->GetFrame();
     DCHECK(frame);
-    Node* popup_owner = frame->PagePopupOwner();
-    if (!popup_owner) {
-      return nullptr;
-    }
-    // TODO(accessibility) Remove this rule once we stop using AXMenuList*.
-    if (IsA<HTMLSelectElement>(popup_owner) &&
-        AXObjectCacheImpl::ShouldCreateAXMenuListFor(popup_owner)) {
-      return nullptr;
-    }
-    return popup_owner;
+    return frame->PagePopupOwner();
   }
 
   // Avoid a CHECK that disallows calling LayoutTreeBuilderTraversal::Parent() with a shadow root node.
@@ -1038,14 +1005,6 @@ bool AXObject::CanComputeAsNaturalParent(Node* node) {
   }
 
   DCHECK(IsA<Element>(node)) << "Expected element: " << node;
-
-  // When the flag to use AXMenuList in on, a menu list is only allowed to
-  // parent an AXMenuListPopup, which is added as a child on creation. No other
-  // children are allowed, and false is returned for anything else where the
-  // parent would be AXMenuList.
-  if (AXObjectCacheImpl::ShouldCreateAXMenuListFor(node)) {
-    return false;
-  }
 
   // An image cannot be the natural DOM parent of another AXObject, it can only
   // have <area> children, which are from another part of the DOM tree.
@@ -1163,16 +1122,6 @@ AXObject* AXObject::ComputeNonARIAParent(AXObjectCacheImpl& cache,
                                          Node* current_node) {
   if (!current_node) {
     return nullptr;
-  }
-
-  // For <option> in <select size=1>, return the popup.
-  if (AXObjectCacheImpl::UseAXMenuList()) {
-    if (auto* option = DynamicTo<HTMLOptionElement>(current_node)) {
-      if (AXObject* ax_select =
-              AXMenuListOption::ComputeParentAXMenuPopupFor(cache, option)) {
-        return ax_select;
-      }
-    }
   }
 
   Node* parent_node = GetParentNodeForComputeParent(cache, current_node);
@@ -1764,6 +1713,7 @@ void AXObject::SerializeNameAndDescriptionAttributes(
         IsOnlyChild()) {
       // The text of an only-child inline text box can be inferred directly
       // from the parent. No need to serialize redundant data.
+      node_data->SetNameFrom(ax::mojom::blink::NameFrom::kContents);
       return;
     }
   }
@@ -2638,30 +2588,6 @@ bool AXObject::IsList() const {
   return ui::IsList(RoleValue());
 }
 
-bool AXObject::IsAXListBox() const {
-  return false;
-}
-
-bool AXObject::IsAXListBoxOption() const {
-  return false;
-}
-
-bool AXObject::IsMenuList() const {
-  return false;
-}
-
-bool AXObject::IsMenuListOption() const {
-  return false;
-}
-
-bool AXObject::IsMenuListPopup() const {
-  return false;
-}
-
-bool AXObject::IsMockObject() const {
-  return false;
-}
-
 bool AXObject::IsProgressIndicator() const {
   return false;
 }
@@ -2838,10 +2764,6 @@ bool AXObject::IsCheckable() const {
   }
 }
 
-// Why this is here instead of AXNodeObject:
-// Because an AXMenuListOption (<option>) can
-// have an ARIA role of menuitemcheckbox/menuitemradio
-// yet does not inherit from AXNodeObject
 ax::mojom::blink::CheckedState AXObject::CheckedState() const {
   const Node* node = GetNode();
   if (!IsCheckable() || !node) {
@@ -3120,10 +3042,6 @@ bool AXObject::IsIgnored() {
         << "\nThe Detach() method sets cached_is_ignored_ to true, but "
            "something has recomputed it.";
   }
-  if (!cached_is_ignored_ && IsA<Document>(GetNode()) && ParentObject() &&
-      ParentObject()->IsMenuList()) {
-    NOTREACHED() << "The menulist popup's document must be ignored.";
-  }
 #endif
   return cached_is_ignored_;
 }
@@ -3206,30 +3124,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
       << GetDocument()->Lifecycle().ToString();
 #endif  // DCHECK_IS_ON()
 
-  if (IsMissingParent()) {
-    // TODO(accessibility) Address this more proactively and cleanly
-    // pruning the a11y tree for layout changes.
-    DUMP_WILL_BE_CHECK(!IsMissingParent()) << "Missing parent: " << this;
-  }
-
-  // Mock objects are created by, owned and dependent on their parents.
-  // If the mock object's values change, recompute the parent's as well.
-  // Note: The only remaining use of mock objects is AXMenuListPopup.
-  // TODO(accessibility) Remove this when we remove AXMenuList* and create the
-  // AX hierarchy for <select> from the shadow dom instead.
-  // TODO(accessibility) Can this be fixed by instead invalidating the parent
-  // when invalidating the child?
-  if (IsMockObject()) {
-    CHECK(parent_) << "Mock object missing parent: " << this;
-    parent_->UpdateCachedAttributeValuesIfNeeded();
-    if (IsDetached()) {
-      // This object can become detached when parents update their values.
-      cached_is_ignored_ = true;
-      cached_is_ignored_but_included_in_tree_ = false;
-      return;
-    }
-    CHECK(!IsMissingParent());
-  }
+  DUMP_WILL_BE_CHECK(!IsMissingParent()) << "Missing parent: " << this;
 
   const ComputedStyle* style = GetComputedStyle();
 
@@ -3490,7 +3385,8 @@ bool AXObject::ShouldIgnoreForHiddenOrInert(
   // Hide nodes that are whitespace or are occluded by CSS alt text.
   if (!GetLayoutObject() && GetNode() && !IsA<HTMLAreaElement>(GetNode()) &&
       !DisplayLockUtilities::IsDisplayLockedPreventingPaint(GetNode()) &&
-      (!GetElement() || !GetElement()->HasDisplayContentsStyle())) {
+      (!GetElement() || !GetElement()->HasDisplayContentsStyle()) &&
+      !IsA<HTMLOptionElement>(GetNode())) {
     if (ignored_reasons) {
       ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
     }
@@ -3927,14 +3823,6 @@ bool AXObject::ComputeIsIgnoredButIncludedInTree() {
     return true;
   }
 
-  // Ensure clean teardown of AXMenuList and AXMenuListPopup.
-  // TODO(accessibility) Remove this exception once AXMenuList* is removed.
-  if (RoleValue() == ax::mojom::blink::Role::kMenuListPopup ||
-      RoleValue() == ax::mojom::blink::Role::kMenuListOption ||
-      RoleValue() == ax::mojom::blink::Role::kComboBoxSelect) {
-    return true;
-  }
-
   const Node* node = GetNode();
 
   if (!node) {
@@ -3949,8 +3837,8 @@ bool AXObject::ComputeIsIgnoredButIncludedInTree() {
           << "Object has layout object but no node and is not anonymous: "
           << GetLayoutObject();
     } else {
-      // Include ignored mock objects, virtual objects and inline text boxes.
-      DCHECK(IsMockObject() || IsVirtualObject())
+      // Include virtual objects.
+      DCHECK(IsVirtualObject())
           << "Nodeless, layout-less object found with role " << RoleValue();
     }
     // By including all of these objects in the tree, it is ensured that
@@ -4158,7 +4046,8 @@ bool AXObject::ComputeIsIgnoredButIncludedInTree() {
   // Keep table-related elements in the tree, because it's too easy for them
   // to in and out of being ignored based on their ancestry, as their role
   // can depend on several levels up in the hierarchy.
-  if (IsA<HTMLTableElement>(element) || IsA<HTMLTableSectionElement>(element) ||
+  if (IsA<HTMLTableElement>(element) ||
+      element->HasTagName(html_names::kTbodyTag) ||
       IsA<HTMLTableRowElement>(element) || IsA<HTMLTableCellElement>(element)) {
     return true;
   }
@@ -4473,8 +4362,9 @@ String AXObject::GetName(ax::mojom::blink::NameFrom& name_from,
   // Initialize |name_from|, as TextAlternative() might never set it in some
   // cases.
   name_from = ax::mojom::blink::NameFrom::kNone;
-  String text = TextAlternative(false, nullptr, visited, name_from,
-                                &related_objects, nullptr);
+  String text = TextAlternative(
+      /*recursive=*/false, /*aria_label_or_description_root=*/nullptr, visited,
+      name_from, &related_objects, /*name_sources=*/nullptr);
 
   if (name_objects) {
     name_objects->clear();
@@ -4735,10 +4625,7 @@ bool AXObject::ComputeIsUsedForLabelOrDescription() {
       // node as also part of the label/description, because label and
       // descriptions computed from relations include hidden nodes.
       while (parent && parent->IsUsedForLabelOrDescription()) {
-        // It's possible for parent->GetElement() to be null in the case of an
-        // AXMenuListPopup. In that case, continue and check its ancestors.
-        if (parent->GetElement() &&
-            AXObjectCache().IsLabelOrDescription(*parent->GetElement())) {
+        if (AXObjectCache().IsLabelOrDescription(*parent->GetElement())) {
           return true;
         }
         parent = parent->ParentObject();
@@ -5369,7 +5256,7 @@ ax::mojom::blink::Role AXObject::DetermineRawAriaRole() const {
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
   if (aria_role.IsNull() || aria_role.empty())
     return ax::mojom::blink::Role::kUnknown;
-  return AriaRoleStringToRoleEnum(aria_role);
+  return FirstValidRoleInRoleString(aria_role);
 }
 
 ax::mojom::blink::Role AXObject::DetermineAriaRole() const {
@@ -5379,13 +5266,19 @@ ax::mojom::blink::Role AXObject::DetermineAriaRole() const {
        role == ax::mojom::blink::Role::kRegion) &&
       !IsNameFromAuthorAttribute() &&
       !HasAttribute(html_names::kAriaRoledescriptionAttr)) {
-    // Nameless ARIA form and region fall back on the native element's role.
-    // We only check aria-label/aria-labelledby because those are the only
-    // allowed ways to name an ARIA role.
+    // If form or region is nameless, use a valid fallback role (if present
+    // in the role attribute) or the native element's role (by returning
+    // kUnknown). We only check aria-label/aria-labelledby because those are the
+    // only allowed ways to name an ARIA role.
     // TODO(accessibility) The aria-roledescription logic is required, otherwise
     // ChromeVox will ignore the aria-roledescription. It only speaks the role
     // description on certain roles, and ignores it on the generic role.
     // See also https://github.com/w3c/aria/issues/1463.
+    if (const AtomicString& role_str =
+            GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole)) {
+      return FirstValidRoleInRoleString(role_str,
+                                        /*ignore_form_and_region*/ true);
+    }
     return ax::mojom::blink::Role::kUnknown;
   }
 
@@ -5541,10 +5434,10 @@ bool AXObject::ContainerLiveRegionBusy() const {
 }
 
 AXObject* AXObject::ElementAccessibilityHitTest(const gfx::Point& point) const {
-  // Check if there are any mock elements that need to be handled.
+  // Check if the validation message contains the point.
   PhysicalOffset physical_point(point);
   for (const auto& child : ChildrenIncludingIgnored()) {
-    if (child->IsMockObject() &&
+    if (child->IsValidationMessage() &&
         child->GetBoundsInFrameCoordinates().Contains(physical_point)) {
       return child->ElementAccessibilityHitTest(point);
     }
@@ -6059,10 +5952,13 @@ void AXObject::UpdateChildrenIfNecessary() {
     return;
   }
 
-  CHECK(!AXObjectCache().IsFrozen())
-      << "Object should have already had its children updated in "
-         "AXObjectCacheImpl::UpdateTreeIfNeeded(): "
-      << this;
+  if (AXObjectCache().IsFrozen()) {
+    DUMP_WILL_BE_CHECK(!AXObjectCache().IsFrozen())
+        << "Object should have already had its children updated in "
+           "AXObjectCacheImpl::UpdateTreeIfNeeded(): "
+        << this;
+    return;
+  }
 
   if (!CanHaveChildren()) {
     // Clear any children in case the node previously allowed children.
@@ -6158,13 +6054,6 @@ bool AXObject::ShouldDestroyWhenDetachingFromParent() const {
   // Do not interfere with the destruction loop in AXObjectCacheImpl::Dispose().
   if (IsDetached() || AXObjectCache().HasBeenDisposed()) {
     return false;
-  }
-  // Nodeless objects's children do not have a node, and a node is required for
-  // parent repair. Return true so that the nodeless child is not
-  // orphaned/leaked. Menulist popups are an exception as they are a single
-  // child managed by the parent AXMenuList.
-  if (!GetNode() && !IsMenuListPopup()) {
-    return true;
   }
 
   // Destroy all pseudo-elements that can't compute their parents, because we
@@ -7485,7 +7374,9 @@ bool AXObject::HasARIAOwns(Element* element) {
 }
 
 // static
-ax::mojom::blink::Role AXObject::AriaRoleStringToRoleEnum(const String& value) {
+ax::mojom::blink::Role AXObject::FirstValidRoleInRoleString(
+    const String& value,
+    bool ignore_form_and_region) {
   DCHECK(!value.empty());
 
   static const ARIARoleMap* role_map = CreateARIARoleMap();
@@ -7495,8 +7386,13 @@ ax::mojom::blink::Role AXObject::AriaRoleStringToRoleEnum(const String& value) {
   ax::mojom::blink::Role role = ax::mojom::blink::Role::kUnknown;
   for (const auto& child : role_vector) {
     auto it = role_map->find(child);
-    if (it != role_map->end())
-      return it->value;
+    if (it == role_map->end() ||
+        (ignore_form_and_region &&
+         (it->value == ax::mojom::blink::Role::kForm ||
+          it->value == ax::mojom::blink::Role::kRegion))) {
+      continue;
+    }
+    return it->value;
   }
 
   return role;
@@ -7528,7 +7424,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kMenuItem:
     case ax::mojom::blink::Role::kMenuItemCheckBox:
     case ax::mojom::blink::Role::kMenuItemRadio:
-    case ax::mojom::blink::Role::kMenuListOption:
     case ax::mojom::blink::Role::kPopUpButton:
     case ax::mojom::blink::Role::kPortal:
     case ax::mojom::blink::Role::kRadioButton:
@@ -7641,6 +7536,7 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kMathMLText:
     case ax::mojom::blink::Role::kMathMLUnder:
     case ax::mojom::blink::Role::kMathMLUnderOver:
+    case ax::mojom::blink::Role::kMenuListOption:
     case ax::mojom::blink::Role::kMenuListPopup:
     case ax::mojom::blink::Role::kMenu:
     case ax::mojom::blink::Role::kMenuBar:
@@ -7772,17 +7668,18 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
         result = false;
         if (!IsEditable() && !GetAOMPropertyOrARIAAttribute(
                                  AOMRelationProperty::kActiveDescendant)) {
+          if (!GetElement() || !GetDocument()) {
+            return false;
+          }
           // TODO(accessibility) Scrollables are currently allowed here in order
           // to keep the current behavior. In the future, this can be removed
           // because this code will be handled in IsFocusable(), once
           // KeyboardFocusableScrollersEnabled is permanently enabled.
           // Note: this uses the same scrollable check that element.cc uses.
-          if (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+          if (GetDocument()->KeyboardFocusableScrollersEnabled() &&
               IsUserScrollable()) {
             return true;
           }
-          if (!GetElement() || !GetDocument())
-            return false;
           int tab_index = GetElement()->tabIndex();
           bool is_focused = GetElement() == GetDocument()->FocusedElement();
           bool is_in_tab_order_or_focused = tab_index >= 0 || is_focused;
@@ -8176,8 +8073,9 @@ String AXObject::ToString(bool verbose) const {
       string_builder = string_builder + " inLabelOrDesc";
     }
 
-    if (!cached_values_only)
+    if (!cached_values_only) {
       string_builder = string_builder + " name=";
+    }
   } else {
     string_builder = string_builder + ": ";
   }

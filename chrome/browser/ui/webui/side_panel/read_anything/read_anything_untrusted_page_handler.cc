@@ -13,6 +13,8 @@
 #include "base/containers/flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/values.h"
+#include "chrome/browser/accessibility/pdf_ocr_controller.h"
+#include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/screen_ai/screen_ai_service_router.h"
@@ -46,6 +48,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/public/cpp/session/session_controller.h"
 #include "chromeos/ash/components/language_packs/language_pack_manager.h"
 using ash::language_packs::LanguagePackManager;
 using ash::language_packs::PackResult;
@@ -264,6 +267,19 @@ ReadAnythingUntrustedPageHandler::ReadAnythingUntrustedPageHandler(
                   prefs->GetDouble(
                       prefs::kAccessibilityReadAnythingHighlightGranularity))
             : read_anything::mojom::HighlightGranularity::kDefaultValue;
+    base::Value::Dict voices = base::Value::Dict();
+    if (features::IsReadAnythingReadAloudEnabled()) {
+      if (features::IsReadAloudAutoVoiceSwitchingEnabled()) {
+        voices =
+            prefs->GetDict(prefs::kAccessibilityReadAnythingVoiceName).Clone();
+      } else {
+        std::string voice_name =
+            prefs->GetString(prefs::kAccessibilityReadAnythingVoiceName);
+        if (!voice_name.empty()) {
+          voices.Set("", voice_name);
+        }
+      }
+    }
     page_->OnSettingsRestoredFromPrefs(
         static_cast<read_anything::mojom::LineSpacing>(
             prefs->GetInteger(prefs::kAccessibilityReadAnythingLineSpacing)),
@@ -274,10 +290,7 @@ ReadAnythingUntrustedPageHandler::ReadAnythingUntrustedPageHandler(
         prefs->GetBoolean(prefs::kAccessibilityReadAnythingLinksEnabled),
         static_cast<read_anything::mojom::Colors>(
             prefs->GetInteger(prefs::kAccessibilityReadAnythingColorInfo)),
-        speechRate,
-        features::IsReadAnythingReadAloudEnabled()
-            ? prefs->GetDict(prefs::kAccessibilityReadAnythingVoiceName).Clone()
-            : base::Value::Dict(),
+        speechRate, std::move(voices),
         features::IsReadAnythingReadAloudEnabled()
             ? prefs->GetList(prefs::kAccessibilityReadAnythingLanguagesEnabled)
                   .Clone()
@@ -294,8 +307,21 @@ ReadAnythingUntrustedPageHandler::ReadAnythingUntrustedPageHandler(
                 &ReadAnythingUntrustedPageHandler::OnScreenAIServiceInitialized,
                 weak_factory_.GetWeakPtr()));
   }
+  if (features::IsPdfOcrEnabled()) {
+    screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(
+        browser_->profile())
+        ->GetServiceStateAsync(screen_ai::ScreenAIServiceRouter::Service::kOCR,
+                               base::DoNothing());
+  }
 
   OnActiveWebContentsChanged();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* session_controller = ash::SessionController::Get();
+  if (session_controller) {
+    session_controller->AddObserver(this);
+  }
+#endif
 }
 
 ReadAnythingUntrustedPageHandler::~ReadAnythingUntrustedPageHandler() {
@@ -318,6 +344,13 @@ ReadAnythingUntrustedPageHandler::~ReadAnythingUntrustedPageHandler() {
     coordinator_->RemoveObserver(this);
     coordinator_->RemoveModelObserver(this);
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* session_controller = ash::SessionController::Get();
+  if (session_controller) {
+    session_controller->RemoveObserver(this);
+  }
+#endif
 }
 
 void ReadAnythingUntrustedPageHandler::PrimaryPageChanged() {
@@ -448,9 +481,13 @@ void ReadAnythingUntrustedPageHandler::OnVoiceChange(const std::string& voice,
                                                      const std::string& lang) {
   if (browser_) {
     PrefService* prefs = browser_->profile()->GetPrefs();
-    ScopedDictPrefUpdate update(prefs,
-                                prefs::kAccessibilityReadAnythingVoiceName);
-    update->Set(lang, voice);
+    if (features::IsReadAloudAutoVoiceSwitchingEnabled()) {
+      ScopedDictPrefUpdate update(prefs,
+                                  prefs::kAccessibilityReadAnythingVoiceName);
+      update->Set(lang, voice);
+    } else {
+      prefs->SetString(prefs::kAccessibilityReadAnythingVoiceName, voice);
+    }
   }
 }
 
@@ -677,18 +714,10 @@ void ReadAnythingUntrustedPageHandler::SetUpPdfObserver() {
   if (inner_contents.size() == 1 &&
       IsPdfExtensionOrigin(
           inner_contents[0]->GetPrimaryMainFrame()->GetLastCommittedOrigin())) {
-    // TODO(crbug.com/41485800): Improve PDF OCR support for Reading Mode. Maybe
-    // it would make it easy to read and maintain the code if setting the AXMode
-    // for PDF OCR (i.e. `ui::AXMode::kPDFOcr`) is handled by
-    // `PdfOcrController`. Enable accessibility to receive events (data) from
-    // PDF. Set kPDFOcr only when the PDF OCR feature flag is enabled to support
-    // inaccessible PDFs. Reset accessibility to get the new updated trees.
-    ui::AXMode ax_mode = kReadAnythingAXMode;
-    if (features::IsPdfOcrEnabled()) {
-      ax_mode |= ui::AXMode::kPDFOcr;
-    }
     pdf_observer_ = std::make_unique<ReadAnythingWebContentsObserver>(
-        weak_factory_.GetSafeRef(), inner_contents[0], ax_mode);
+        weak_factory_.GetSafeRef(), inner_contents[0], kReadAnythingAXMode);
+    screen_ai::PdfOcrControllerFactory::GetForProfile(browser_->profile())
+        ->Activate();
   }
 }
 
@@ -822,3 +851,12 @@ void ReadAnythingUntrustedPageHandler::ObserveWebContentsSidePanelController(
     tab_helper_->AddPageHandlerAsObserver(weak_factory_.GetWeakPtr());
   }
 }
+
+// ash::SessionObserver
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void ReadAnythingUntrustedPageHandler::OnLockStateChanged(bool locked) {
+  if (locked) {
+    page_->OnDeviceLocked();
+  }
+}
+#endif

@@ -533,7 +533,9 @@ void GroupOrUngroupWindowsInSnapGroup() {
 
   // TODO(michelefan): Trigger a11y alert if there are no eligible windows.
   if (!snap_group_controller->AreWindowsInSnapGroup(window1, window2)) {
-    snap_group_controller->AddSnapGroup(window1, window2);
+    snap_group_controller->AddSnapGroup(
+        window1, window2, /*replace=*/false,
+        /*carry_over_creation_time=*/std::nullopt);
     CHECK(snap_group_controller->AreWindowsInSnapGroup(window1, window2));
   } else {
     snap_group_controller->RemoveSnapGroupContainingWindow(window1);
@@ -667,6 +669,10 @@ bool CanWindowSnap() {
   }
   WindowState* window_state = WindowState::Get(window);
   return window_state && window_state->IsUserPositionable();
+}
+
+void AccessibilityAction() {
+  Shell::Get()->accessibility_controller()->PerformAccessibilityAction();
 }
 
 void ActivateDesk(bool activate_left) {

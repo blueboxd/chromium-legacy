@@ -483,11 +483,13 @@ BASE_FEATURE(kCacheStorageCodeCacheHintHeader,
 const base::FeatureParam<std::string> kCacheStorageCodeCacheHintHeaderName{
     &kCacheStorageCodeCacheHintHeader, "name", "x-CacheStorageCodeCacheHint"};
 
-// Enabled 03/2024 on macOS (and much earlier elsewhere).
-// Keeping the feature to perform a holdback experiment.
+// Temporarily disabled due to issues:
+// - PDF blank previews
+// - Canvas corruption on ARM64 macOS
+// See https://g-issues.chromium.org/issues/328755781
 BASE_FEATURE(kCanvas2DHibernation,
              "Canvas2DHibernation",
-             base::FeatureState::FEATURE_ENABLED_BY_DEFAULT);
+             base::FeatureState::FEATURE_DISABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
 // Enables camera preview in permission bubble and site settings.
@@ -1011,7 +1013,7 @@ const base::FeatureParam<base::TimeDelta>
 
 BASE_FEATURE(kFledgeSplitTrustedSignalsFetchingURL,
              "FledgeSplitTrustedSignalsFetchingURL",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kFledgeCustomMaxAuctionAdComponentsValue{
     &kFledgeCustomMaxAuctionAdComponents, "FledgeAdComponentLimit",
@@ -1036,6 +1038,11 @@ BASE_FEATURE(kFledgeAlwaysReuseBidderContext,
 BASE_FEATURE(kFledgeAlwaysReuseSellerContext,
              "FledgeAlwaysReuseSellerContext",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kFledgeRealTimeReportingNumBuckets{
+    &kFledgeRealTimeReporting, "FledgeRealTimeReportingNumBuckets", 1024};
+const base::FeatureParam<double> kFledgeRealTimeReportingEpsilon{
+    &kFledgeRealTimeReporting, "FledgeRealTimeReportingEpsilon", 1};
 
 BASE_FEATURE(kForceDeferScriptIntervention,
              "ForceDeferScriptIntervention",
@@ -1836,6 +1843,10 @@ const char kPrerender2MemoryThresholdParamName[] = "memory_threshold_in_mb";
 const char kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[] =
     "acceptable_percent_of_system_memory";
 
+BASE_FEATURE(kPrerender2EarlyDocumentLifecycleUpdate,
+             "Prerender2EarlyDocumentLifecycleUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable limiting previews loading hints to specific resource types.
 BASE_FEATURE(kPreviewsResourceLoadingHintsSpecificResourceTypes,
              "PreviewsResourceLoadingHintsSpecificResourceTypes",
@@ -2284,6 +2295,11 @@ BASE_FEATURE(kStopInBackground,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+// Reduces the work done during renderer initialization.
+BASE_FEATURE(kStreamlineRendererInit,
+             "StreamlineRendererInit",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStylusPointerAdjustment,
              "StylusPointerAdjustment",

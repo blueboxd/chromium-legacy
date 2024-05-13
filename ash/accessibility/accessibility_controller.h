@@ -497,9 +497,7 @@ class ASH_EXPORT AccessibilityController : public SessionObserver,
   void ToggleDictationFromSource(DictationToggleSource source);
 
   // Enables Dictation if the feature is currently disabled. Toggles (starts or
-  // stops) Dictation if the feature is currently enabled. Note: this behavior
-  // is currently behind a feature flag - if the feature flag is off, then this
-  // method behaves like ToggleDictationFromSource.
+  // stops) Dictation if the feature is currently enabled.
   void EnableOrToggleDictationFromSource(DictationToggleSource source);
 
   // Shows a nudge explaining that a user's dictation language was upgraded to
@@ -516,6 +514,9 @@ class ASH_EXPORT AccessibilityController : public SessionObserver,
 
   // Shows or hides the virtual keyboard.
   void SetVirtualKeyboardVisible(bool is_visible);
+
+  // Perform the action assigned to the accessibility key.
+  void PerformAccessibilityAction();
 
   // Performs the given accelerator action.
   void PerformAcceleratorAction(AcceleratorAction accelerator_action);

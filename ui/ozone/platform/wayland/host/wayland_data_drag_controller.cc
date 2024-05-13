@@ -202,6 +202,11 @@ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
 }
 
 void WaylandDataDragController::CancelSession() {
+  // Inform the compositor that we're no longer interested in the data offer.
+  if (data_offer_) {
+    data_offer_->SetDndActions(0);
+  }
+
   // If this is an outgoing drag session, Reset() will reset the wl_data_source
   // we created for the drag, which as per the spec for
   // wl_data_device.start_drag() will cancel the DnD session.
@@ -495,11 +500,15 @@ void WaylandDataDragController::OnDragDrop(base::TimeTicks timestamp) {
 
   window_->OnDragDrop();
 
-  // Offer must be finished and destroyed here as some compositors may delay to
-  // send wl_data_source::finished|cancelled until owning client destroys the
-  // drag offer. e.g: Exosphere.
-  data_offer_->FinishOffer();
-  data_offer_.reset();
+  // Might have already been reset if the drag was cancelled in response to the
+  // drop event.
+  if (data_offer_) {
+    // Offer must be finished and destroyed here as some compositors may delay
+    // to send wl_data_source::finished|cancelled until owning client destroys
+    // the drag offer. e.g: Exosphere.
+    data_offer_->FinishOffer();
+    data_offer_.reset();
+  }
 }
 
 void WaylandDataDragController::OnDataSourceFinish(WaylandDataSource* source,
@@ -769,7 +778,8 @@ void WaylandDataDragController::DispatchPointerRelease(
   pointer_delegate_->OnPointerButtonEvent(
       ET_MOUSE_RELEASED, EF_LEFT_MOUSE_BUTTON, timestamp,
       pointer_grabber_for_window_drag_, wl::EventDispatchPolicy::kImmediate,
-      /*allow_release_of_unpressed_button=*/true);
+      /*allow_release_of_unpressed_button=*/true,
+      /*is_synthesized=*/true);
   pointer_grabber_for_window_drag_ = nullptr;
 }
 

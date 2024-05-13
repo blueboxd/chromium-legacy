@@ -182,9 +182,8 @@ class LockscreenWebUiTest : public MixinBasedInProcessBrowserTest {
   }
 
   void LoginWithoutUpdatingPolicies() {
-    logged_in_user_mixin_.LogInUser(/*issue_any_scope_token=*/false,
-                                    /*wait_for_active_session=*/true,
-                                    /*request_policy_update=*/false);
+    logged_in_user_mixin_.LogInUser(
+        {ash::LoggedInUserMixin::LoginDetails::kNoPolicyForUser});
     PerformPostLoginSetup();
   }
 
@@ -213,15 +212,8 @@ class LockscreenWebUiTest : public MixinBasedInProcessBrowserTest {
  private:
   CryptohomeMixin cryptohome_mixin_{&mixin_host_};
   LoggedInUserMixin logged_in_user_mixin_{
-      &mixin_host_,
-      LoggedInUserMixin::LogInType::kRegular,
-      embedded_test_server(),
-      /*test_base=*/this,
-      true /*should_launch_browser*/,
-      AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kEnterpriseUser1,
-                                     FakeGaiaMixin::kEnterpriseUser1GaiaId),
-      /*auth_config=*/std::nullopt,
-      true /*include_initial_user*/};
+      &mixin_host_, /*test_base=*/this, embedded_test_server(),
+      LoggedInUserMixin::LogInType::kManaged};
 
   FakeSamlIdpMixin fake_saml_idp_{&mixin_host_, fake_gaia_mixin()};
 };

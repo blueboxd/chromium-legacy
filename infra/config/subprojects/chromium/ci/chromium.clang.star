@@ -7,7 +7,7 @@ load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
 load("//lib/builder_url.star", "linkify_builder")
-load("//lib/builders.star", "builders", "os", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "builders", "cpu", "os", "reclient", "sheriff_rotations")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
@@ -1402,7 +1402,12 @@ clang_mac_builder(
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = ["clang_tot"],
+            apply_configs = [
+                "clang_tot",
+                # This is necessary due to this builder running the
+                # telemetry_perf_unittests suite.
+                "chromium_with_telemetry_dependencies",
+            ],
         ),
         chromium_config = builder_config.chromium_config(
             config = "clang_tot_mac",
@@ -1419,8 +1424,11 @@ clang_mac_builder(
             "minimal_symbols",
             "shared",
             "release",
+            "x64",
         ],
     ),
+    cores = None,
+    cpu = cpu.ARM64,
     console_view_entry = consoles.console_view_entry(
         category = "ToT Mac",
         short_name = "rel",
@@ -1449,8 +1457,11 @@ clang_mac_builder(
             "clang_tot",
             "shared",
             "debug",
+            "x64",
         ],
     ),
+    cores = None,
+    cpu = cpu.ARM64,
     console_view_entry = consoles.console_view_entry(
         category = "ToT Mac",
         short_name = "dbg",
@@ -1548,8 +1559,11 @@ clang_mac_builder(
             "use_clang_coverage",
             "minimal_symbols",
             "release",
+            "x64",
         ],
     ),
+    cores = None,
+    cpu = cpu.ARM64,
     console_view_entry = consoles.console_view_entry(
         category = "ToT Code Coverage",
         short_name = "mac",

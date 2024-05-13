@@ -11,7 +11,7 @@ import {DEFAULT_PARTIAL_PRINT_TICKET} from 'chrome://os-print/js/data/ticket_con
 import {FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, FakePrintPreviewPageHandler} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
 import {createCustomEvent} from 'chrome://os-print/js/utils/event_utils.js';
 import {setPrintPreviewPageHandlerForTesting} from 'chrome://os-print/js/utils/mojo_data_providers.js';
-import {PrintTicket} from 'chrome://os-print/js/utils/print_preview_cros_app_types.js';
+import {PrinterStatusReason, PrintTicket} from 'chrome://os-print/js/utils/print_preview_cros_app_types.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from 'chrome://webui-test/chromeos/mock_controller.m.js';
 import {MockTimer} from 'chrome://webui-test/mock_timer.js';
@@ -263,7 +263,7 @@ suite('PrintTicketManager', () => {
             'Print request can be sent');
       });
 
-  // Verify PrintTicket destination set to active destination ID from
+  // Verify PrintTicket destination values set based on active destination from
   // destination manager.
   test(
       'PrintTicket destination set to DestinationManager active' +
@@ -282,7 +282,18 @@ suite('PrintTicketManager', () => {
         assertNotEquals(null, ticket, 'Ticket configured');
         assertEquals(
             PDF_DESTINATION.id, ticket!.destination,
-            'destination set from DestinationManager');
+            'destination set from DestinationManager active destination');
+        assertEquals(
+            PDF_DESTINATION.printerType, ticket!.printerType,
+            'printerType set from DestinationManager active destination');
+        assertEquals(
+            PDF_DESTINATION.printerManuallySelected,
+            ticket!.printerManuallySelected,
+            'printerManuallySelected set from DestinationManager active' +
+                ' destination');
+        assertEquals(
+            PrinterStatusReason.UNKNOWN_REASON, ticket!.printerStatusReason,
+            'printerStatusReason fallback to UNKNOWN_REASON if null');
       });
 
   // Verify PrintTicket destination set to empty string if no active
@@ -356,12 +367,12 @@ suite('PrintTicketManager', () => {
             'shouldPrintSelectionOnly should default to match session context');
       });
 
-  // Verify PrintTicket destination updates to active destination on first
-  // event if currently empty string and stops listening to active destination
-  // events after change.
+  // Verify PrintTicket destination values update on first active destination
+  // change event if currently empty string and stops listening to active
+  // destination events after change.
   test(
       'PrintTicket listens to active destination change until ' +
-          'print ticket destination set to non-empty value',
+          'print ticket destination set and updates ticket',
       async () => {
         const ticketManager = PrintTicketManager.getInstance();
         const destinationManager = DestinationManager.getInstance();
@@ -384,6 +395,17 @@ suite('PrintTicketManager', () => {
         assertEquals(
             PDF_DESTINATION.id, ticket!.destination,
             `destination should be ${PDF_DESTINATION.id}`);
+        assertEquals(
+            PDF_DESTINATION.printerType, ticket!.printerType,
+            `printerType should be ${PDF_DESTINATION.printerType}`);
+        assertEquals(
+            PDF_DESTINATION.printerManuallySelected,
+            ticket!.printerManuallySelected,
+            `printerManuallySelected should be ${
+                PDF_DESTINATION.printerManuallySelected}`);
+        assertEquals(
+            PrinterStatusReason.UNKNOWN_REASON, ticket!.printerStatusReason,
+            `printerStatusReason should fall back to UNKNOWN_REASON when null`);
         getActiveDestinationFn.returnValue = {
           id: 'fake_id',
           displayName: 'Fake Destination',
@@ -418,6 +440,12 @@ suite('PrintTicketManager', () => {
         } as PrintTicket;
         const ticket = instance.getPrintTicketForTesting() as PrintTicket;
         assertEquals(
+            undefined, ticket.advancedSettings,
+            'Ticket advancedSettings optional property should not be set');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.borderless, ticket.borderless,
+            'Ticket borderless should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
             DEFAULT_PARTIAL_PRINT_TICKET.collate, ticket.collate,
             'Ticket collate should match DEFAULT_PARTIAL_PRINT_TICKET');
         assertEquals(
@@ -438,6 +466,10 @@ suite('PrintTicketManager', () => {
         assertEquals(
             DEFAULT_PARTIAL_PRINT_TICKET.duplex, ticket.duplex,
             'Ticket duplex should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.headerFooterEnabled,
+            ticket.headerFooterEnabled,
+            'Ticket landscape should match DEFAULT_PARTIAL_PRINT_TICKET');
         assertEquals(
             DEFAULT_PARTIAL_PRINT_TICKET.landscape, ticket.landscape,
             'Ticket landscape should match DEFAULT_PARTIAL_PRINT_TICKET');
@@ -462,5 +494,47 @@ suite('PrintTicketManager', () => {
         assertEquals(
             DEFAULT_PARTIAL_PRINT_TICKET.pagesPerSheet, ticket.pagesPerSheet,
             'Ticket pagesPerSheet should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.pageHeight, ticket.pageHeight,
+            'Ticket pageHeight should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.pageWidth, ticket.pageWidth,
+            'Ticket pageWidth should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.pinValue, ticket.pinValue,
+            'Ticket pinValue should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            undefined, ticket.pinValue,
+            'Ticket pinValue optional property should not be set');
+        assertEquals(
+            PrinterStatusReason.UNKNOWN_REASON, ticket.printerStatusReason,
+            'Ticket printerStatusReason should match ' +
+                'DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            PrinterStatusReason.UNKNOWN_REASON, ticket.printerStatusReason,
+            'Ticket printerStatusReason should be ' +
+                'PrinterStatusReason.UNKNOWN_REASON');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.printerType, ticket.printerType,
+            'Ticket printerType should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.printerManuallySelected,
+            ticket.printerManuallySelected,
+            'Ticket printerManuallySelected should match ' +
+                'DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.rasterizePDF, ticket.rasterizePDF,
+            'Ticket rasterizePDF should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.scaleFactor, ticket.scaleFactor,
+            'Ticket scaleFactor should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.scalingType, ticket.scalingType,
+            'Ticket scalingType should match DEFAULT_PARTIAL_PRINT_TICKET');
+        assertEquals(
+            DEFAULT_PARTIAL_PRINT_TICKET.shouldPrintBackgrounds,
+            ticket.shouldPrintBackgrounds,
+            'Ticket shouldPrintBackgrounds should match ' +
+                'DEFAULT_PARTIAL_PRINT_TICKET');
       });
 });

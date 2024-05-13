@@ -678,4 +678,33 @@ ResponseAction PasswordsPrivateIsPasswordManagerPinAvailableFunction::Run() {
   return RespondNow(Error(kNoDelegateError));
 }
 
+// PasswordsPrivateDisconnectCloudAuthenticatorFunction
+ResponseAction PasswordsPrivateDisconnectCloudAuthenticatorFunction::Run() {
+  if (auto delegate = GetDelegate(browser_context())) {
+    delegate->DisconnectCloudAuthenticator(
+        GetSenderWebContents(),
+        base::BindOnce(&PasswordsPrivateDisconnectCloudAuthenticatorFunction::
+                           OnDisconnectCloudAuthenticatorCompleted,
+                       this));
+    return did_respond() ? AlreadyResponded() : RespondLater();
+  }
+
+  return RespondNow(Error(kNoDelegateError));
+}
+
+void PasswordsPrivateDisconnectCloudAuthenticatorFunction::
+    OnDisconnectCloudAuthenticatorCompleted(bool success) {
+  Respond(WithArguments(success));
+}
+
+// PasswordsPrivateIsConnectedToCloudAuthenticatorFunction
+ResponseAction PasswordsPrivateIsConnectedToCloudAuthenticatorFunction::Run() {
+  if (auto delegate = GetDelegate(browser_context())) {
+    return RespondNow(WithArguments(
+        delegate->IsConnectedToCloudAuthenticator(GetSenderWebContents())));
+  }
+
+  return RespondNow(Error(kNoDelegateError));
+}
+
 }  // namespace extensions

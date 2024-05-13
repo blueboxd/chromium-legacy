@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_MAHI_MAHI_UI_CONTROLLER_H_
 #define ASH_SYSTEM_MAHI_MAHI_UI_CONTROLLER_H_
 
+#include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -16,12 +18,15 @@
 #include "base/scoped_observation.h"
 #include "base/scoped_observation_traits.h"
 #include "chromeos/components/mahi/public/cpp/mahi_manager.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace views {
 class View;
 }  // namespace views
 
 namespace ash {
+
+class MahiPanelDragController;
 
 // Communicates with `chromeos::MahiManager` and notifies delegates of updates.
 class ASH_EXPORT MahiUiController {
@@ -71,6 +76,12 @@ class ASH_EXPORT MahiUiController {
   void AddDelegate(Delegate* delegate);
   void RemoveDelegate(Delegate* delegate);
 
+  // Opens/closes the mahi panel on the display associated with `display_id`.
+  void OpenMahiPanel(int64_t display_id);
+  void CloseMahiPanel();
+
+  bool IsMahiPanelOpen();
+
   // Navigates to the Q&A view and notifies delegates.
   void NavigateToQuestionAnswerView();
 
@@ -104,6 +115,10 @@ class ASH_EXPORT MahiUiController {
   // requests are fulfilled.
   void UpdateSummaryAndOutlines();
 
+  MahiPanelDragController* drag_controller() { return drag_controller_.get(); }
+
+  views::Widget* mahi_panel_widget() { return mahi_panel_widget_.get(); }
+
  private:
   void HandleError(const MahiUiError& error);
 
@@ -128,7 +143,11 @@ class ASH_EXPORT MahiUiController {
   // The current state. Use `VisibilityState::kSummaryAndOutlines` by default.
   VisibilityState visibility_state_ = VisibilityState::kSummaryAndOutlines;
 
+  std::unique_ptr<MahiPanelDragController> drag_controller_;
+
   base::ObserverList<Delegate> delegates_;
+
+  views::UniqueWidgetPtr mahi_panel_widget_;
 
   // Indicates the params of the most recent question.
   // Set when the controller receives a request to send a question.

@@ -7704,14 +7704,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- NTP -->
-      <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, and Google is the default search engine.">
-        Search Google or type URL
-      </message>
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, Google is the default search engine, and the Material Design UI is enabled.">
         Search Google or type a URL
       </message>
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_SHORT" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, Google is the default search engine, and short hint text is enabled.">
         Search Google
+      </message>
+      <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MULTIMODAL" desc="The text displayed in the multimodal searchbox when it is empty. It is meant to invite the user to add a text query to the existing image query in order to issue a 'multimodal' (image + text) query.">
+        Add to your search
       </message>
       <message name="IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TOOLTIP" desc="The tooltip for adding a custom link shortcut. (On the New Tab Page)">
         Add shortcut
@@ -8065,7 +8065,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Device
       </message>
       <message name="IDS_NTP_CUSTOMIZE_CHROME_WEBSTORE_LABEL" desc="The message that prompts user to customize Chrome with Chrome webstore.">
-        Customize your browser even more with extensions from the <ph name="BEGIN_LINK1">&lt;a href="#" id="chromeWebstoreLink" on-click="onChromeWebStoreLinkClick_"&gt;</ph>Chrome Web Store<ph name="END_LINK1">&lt;/a&gt;</ph>
+        Customize your browser even more with extensions from the <ph name="BEGIN_LINK1">&lt;a href="#" id="chromeWebstoreLink"&gt;</ph>Chrome Web Store<ph name="END_LINK1">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_NTP_WEBSTORE_SHOPPING_CATEOGRY_LABEL" desc="The message displayed on the button that redirects users to the 'shopping' category page of the Chrome webstore.">
         Find coupons
@@ -8386,6 +8386,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NTP_MODULES_TODAY_CALENDAR_HEADER" desc="Header of the Calendar module when showing today's calendar on the NTP." meaning="Header of the calendar module to indicate that the events shown are for today." translateable="false">
         Today's Calendar
+      </message>
+      <message name="IDS_NTP_MODULES_TODAY_CALENDAR_DISABLE_BUTTON_TEXT" desc="Text shown on the disable button of a NTP Calendar card." translateable="false">
+        Don't show Today's Calendar
       </message>
       <message name="IDS_NTP_MODULES_GOOGLE_CALENDAR_TITLE" desc="Title of the Google Calendar module shown in various UIs for Customize Chrome and the NTP." meaning="Title of feature for showing a glimpse of a user's Google Calendar.">
         Google Calendar
@@ -8850,6 +8853,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SIDE_PANEL_GENERIC_PINNABLE_IPH_SCREENREADER" desc="The screen reader text of the IPH describing a side panel is pinnable. The phrase 'top right' should read as 'top left' in rtl languages.">
         To easily get back to the side panel, click Pin at the top right
+      </message>
+      <message name="IDS_SIDE_PANEL_LENS_OVERLAY_PINNABLE_IPH" desc="The body text of the IPH describing that the Lens Overlay panel is pinnable.">
+        You can pin this feature for easy access
+      </message>
+      <message name="IDS_SIDE_PANEL_LENS_OVERLAY_PINNABLE_IPH_SCREENREADER"
+          desc="The screen reader text of the IPH describing that the Lens Overlay panel is pinnable."
+          is_accessibility_with_no_ui="true">
+        You can pin this feature for easy access; click the Pin button at the top of the side panel
+      </message>
+      <message name="IDS_SIDE_PANEL_LENS_OVERLAY_PINNABLE_FOLLOWUP_IPH" desc="The body text of the IPH describing that the Lens Overlay panel has been pinned.">
+        Pinned! Use this feature again from the toolbar
+      </message>
+      <message name="IDS_SIDE_PANEL_LENS_OVERLAY_PINNABLE_FOLLOWUP_IPH_SCREENREADER"
+          desc="The screen reader text of the IPH describing that the Lens Overlay panel has been pinned."
+          is_accessibility_with_no_ui="true">
+        Pinned! You can access this feature again from the new button on the toolbar
       </message>
 
       <!-- Bookmarks strings -->
@@ -9551,6 +9570,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!--TODO(crbug.com/339262105): Clean up the old password promo methods after the generic promo launch.-->
       <!--iOS password promo strings-->
       <if expr="_google_chrome">
         <if expr="not is_android">
@@ -9590,6 +9610,40 @@ Keep your key file in a safe place. You will need it to create new versions of y
           </message>
           <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_FOOTER_DESCRIPTION_QR" desc="The description for the iOS promo bubble footer which lets the user know how to use their saved passwords on their phone: follow the QR code, download Chrome for iOS and sign in to their account.">
             To use your saved passwords on your phone, follow the QR code, download Chrome for iOS and sign in to your Google Account.
+          </message>
+        </if>
+      </if>
+
+      <!--IOS Desktop password promo strings-->
+      <if expr="_google_chrome">
+        <if expr="not is_android">
+          <if expr="use_titlecase">
+            <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_TITLE" desc="In Title Case: The title for the iOS desktop password promo bubble letting users know their password is saved.">
+              Your Password Is Saved
+            </message>
+            <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_FOOTER_TITLE" desc="In Title Case: The title for the footer of the iOS desktop password promo bubble suggesting to users that they can use their passwords on their iOS devices.">
+              Use This Password On Your iPhone
+            </message>
+            <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_BUTTON_DECLINE" desc="In Title Case: The text inside the button allowing the user to decline.">
+              No Thanks
+            </message>
+          </if>
+          <if expr="not use_titlecase">
+            <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_TITLE" desc="The title for the iOS desktop password promo bubble letting users know their password is saved.">
+              Your password is saved
+            </message>
+            <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_FOOTER_TITLE" desc="The title for the footer of the iOS desktop password promo bubble suggesting to users that they can use their passwords on their iOS devices.">
+              Use this password on your iPhone
+            </message>
+            <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_BUTTON_DECLINE" desc="The text inside the button allowing the user to decline.">
+              No thanks
+            </message>
+          </if>
+          <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_SUBTITLE" desc="The subtitle for the iOS desktop password promo bubble which lets the user know they can access their saved password on the Google Password Manager.">
+            You can access it on Google Password Manager.
+          </message>
+          <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_FOOTER_DESCRIPTION_QR" desc="The description for the iOS desktop password promo bubble footer which lets the user know how to use their saved passwords on their phone: follow the QR code, download Chrome for iOS and sign in to their account.">
+            Download Chrome with this QR code, and sign in to your Google Account.
           </message>
         </if>
       </if>
@@ -12801,9 +12855,38 @@ This can include information about installed software, files, your browser, and 
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_NEW_PROFILE_BUTTON_LABEL" desc="Label of the confirmation button in the web signin interception bubble">
           Ok
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_NEW_PROFILE_BUTTON_LABEL_V2" desc="Label of the confirmation button in the web signin interception bubble. This action will create a new Chrome profile for the intercepted account.">
-          Let's go
-        </message>
+
+        <if expr="use_titlecase">
+          <then>
+            <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_AVATAR_BUTTON_SEPARATE_BROWSING_TEXT" desc="Text to be displayed on the extended avatar pill while the bubble for separating accounts into different browsers is displayed.">
+              Separate Browsing?
+            </message>
+            <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_AVATAR_BUTTON_SWITCH_PROFILE_TEXT" desc="Text to be displayed on the extended avatar pill while the bubble for switching to a profile that has the account intercepted already signed into is displayed.">
+              Switch Profile?
+            </message>
+            <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CREATE_PROFILE_BUTTON_LABEL" desc="In Title Case: Label of the confirmation button in the web signin interception bubble. This action will create a new Chrome profile for the intercepted account.">
+              Create Profile
+            </message>
+            <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_STAY_HERE_BUTTON_LABEL" desc="Label of the cancel button in the web signin interception bubble">
+              Stay Here
+            </message>
+         </then>
+         <else>
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_AVATAR_BUTTON_SEPARATE_BROWSING_TEXT" desc="Text to be displayed on the extended avatar pill while the bubble for separating accounts into different browsers is displayed.">
+            Separate browsing?
+          </message>
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_AVATAR_BUTTON_SWITCH_PROFILE_TEXT" desc="Text to be displayed on the extended avatar pill while the bubble for switching to a profile that has the account intercepted already signed into is displayed.">
+            Switch profile?
+          </message>
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CREATE_PROFILE_BUTTON_LABEL" desc="Label of the confirmation button in the web signin interception bubble. This action will create a new Chrome profile for the intercepted account.">
+            Create profile
+          </message>
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_STAY_HERE_BUTTON_LABEL" desc="Label of the cancel button in the web signin interception bubble">
+            Stay here
+          </message>
+         </else>
+        </if>
+
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CANCEL_BUTTON_LABEL" desc="Label of the cancel button in the web signin interception bubble">
           No thanks
         </message>
@@ -12828,30 +12911,18 @@ This can include information about installed software, files, your browser, and 
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_SWITCH_BUBBLE_DESC_V2" desc="Description for the profile switch interception bubble">
           <ph name="NAME">$2<ex>Bob</ex></ph>'s profile is linked to <ph name="EMAIL">$1<ex>bob@gmail.com</ex></ph>
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE_V2" desc="Title of the web signin interception bubble. 'Separate' is an action verb. The prompt is shown to let the user choose to keep the browsing activity for a new account in the same profile as an existing one or to move it to a new profile.">
-          Separate your browsing?
-        </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_MANAGED_DISCLAIMER" desc="Enterprise disclaimer for a managed account in the signin interception bubble.">
           This new profile will be managed by your organization. <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>https://help.google.com/articleLink</ex></ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
         </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_MANAGED_BY_DISCLAIMER" desc="Enterprise disclaimer for a managed account in the signin interception bubble, with the manager domain name.">
           This new profile will be managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>. <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>https://help.google.com/articleLink</ex></ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_AVATAR_BUTTON_SEPARATE_BROWSING_TEXT" desc="Text to be displayed on the extended avatar pill while the bubble for separating accounts into different browsers is displayed.">
-          Separate Browsing?
-        </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_AVATAR_BUTTON_SWITCH_PROFILE_TEXT" desc="Text to be displayed on the extended avatar pill while the bubble for switching to a profile that has the account intercepted already signed into is displayed.">
-          Switch Profile?
-        </message>
 
         <!-- Chrome Signout Confirmation Prompt -->
-        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_TITLE" translateable="false"  desc="This is the title of an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This title is before the 'Chrome needs to verify it’s you before some data can be saved in your Google Account and used on all your devices. If you sign out, this data will stay on this device.' string. The tone should be cautionary.">
-          Some data isn’t saved yet
+        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_TITLE"  desc="This is the title of an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This title is before the 'Chrome needs to verify it’s you before some data can be saved in your Google Account and used on all your devices. If you sign out, this data will stay on this device.' string. The tone should be cautionary.">
+          Some data isn’t saved in your account yet
         </message>
-        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_VERIFY_BUTTON" translateable="false"  desc="Text displayed the default button of the Chrome signout confirmation prompt. The user will then be asked to reauthenticate.">
-          Verify it’s you
-        </message>
-        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_SIGNOUT_BUTTON" translateable="false"  desc="This string is found on a button that lets the user sign out of Chrome when the user taps it. It is on an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This text is a verb and is short for the longer phrase 'Sign out of Chrome anyway.'">
+        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_SIGNOUT_BUTTON" desc="This string is found on a button that lets the user sign out of Chrome when the user taps it. It is on an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This text is a verb and is short for the longer phrase 'Sign out of Chrome anyway.'">
           Sign out anyway
         </message>
 
@@ -13209,7 +13280,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON" desc="Button in the header of desktop user menu prompting users to confirm their sync settings.">
         Open settings
       </message>
-      <message name="IDS_SIGNIN_PAUSED_USER_MENU_VERIFY_MESSAGE" translateable="false" desc="This is the text of a card that means the user needs to sign back in to Chrome in order to continue saving and using data (like passwords or payment methods) in their Google Account. This is an error message that appears when the user's sign-in credential has expired; to fix the issue, the user needs to sign back in. The tone should be straightforward and motivating.">
+      <message name="IDS_SIGNIN_PAUSED_USER_MENU_VERIFY_MESSAGE" desc="This is the text of a card that means the user needs to sign back in to Chrome in order to continue saving and using data (like passwords or payment methods) in their Google Account. This is an error message that appears when the user's sign-in credential has expired; to fix the issue, the user needs to sign back in. The tone should be straightforward and motivating.">
         To keep using the passwords and more in your Google Account, verify it's you
       </message>
 
@@ -16101,6 +16172,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_GPM_ERROR_DESC" desc="The description of a dialog that is shown when an error occurs with Google Password Manager. Since this involves communication with a server, the most likely cause of the error is a connectivity problem thus 'reach' refers to this external communication.">
         Can’t reach Google Password Manager. Try again in a few minutes
       </message>
+      <message name="IDS_WEBAUTHN_SIGN_IN_AGAIN_TITLE" desc="The first line in a button that is shown when Sync is 'paused' and the user is trying to sign in with or create a passkey. Sync 'paused' is a state where the user has opted in to Sync, but their sign-in status has expired and they need to sign in again to restore it. Tapping this button closes the passkey window and opens a new tab where the user can sign in to Google.">
+        Sign in again
+      </message>
+      <message name="IDS_WEBAUTHN_SIGN_IN_AGAIN_DESCRIPTION" desc="The second line in a button that is shown when Sync is 'paused' and the user is trying to sign in with or create a passkey. Sync 'paused' is a state where the user has opted in to Sync, but their sign-in status has expired and they need to sign in again to restore it. Tapping this button closes the passkey window and opens a new tab where the user can sign in to Google.">
+        To sync and use passkeys from Google
+      </message>
+      <message name="IDS_WEBAUTHN_GPM_INCOGNITO_CREATE_TITLE" desc="The title of a dialog that is shown when a user is creating a Google Password Manager passkey while browsing in Incognito mode. The title is asking the user to confirm that they want to perform the action, while suggesting that the new passkey will exist outside of Incognito mode.">
+        Save this passkey outside Incognito?
+      </message>
+      <message name="IDS_WEBAUTHN_GPM_INCOGNITO_CREATE_DESC" desc="The description of a dialog that is shown when a user is creating a Google Password Manager passkey while browsing in Incognito mode. It is explaining to the user that the passkey will continue to exist in the password manager outside of Incognito mode.">
+        This passkey will be saved to your password manager. Anyone with access to it will be able to use this passkey.
+      </message>
 
       <!-- Side Search -->
       <message name="IDS_ACCNAME_SIDE_SEARCH_TOOL" desc="The accessible name for the side search tool.">
@@ -16427,18 +16510,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Enhanced Safe Browsing is on
     </message>
     <message name="IDS_TAILORED_SECURITY_CONSENTED_ENABLE_MESSAGE_DESCRIPTION" desc="Description shown in the Android message when the account tailored security setting changes for a consented primary account">
-      You&#x2019;re on Chrome&#x2019;s strongest security
-    </message>
-    <message name="IDS_TAILORED_SECURITY_CONSENTED_ENABLE_MESSAGE_DESCRIPTION_UPDATED" desc="Description shown in the Android message when the account tailored security setting changes for a consented primary account">
       You have Chrome&#x2019;s strongest security against harmful websites
     </message>
     <message name="IDS_TAILORED_SECURITY_CONSENTED_DISABLE_MESSAGE_TITLE" desc="Title shown in the Android message when the account tailored security setting changes for a consented primary account">
       Enhanced Safe Browsing is off
     </message>
     <message name="IDS_TAILORED_SECURITY_CONSENTED_DISABLE_MESSAGE_DESCRIPTION" desc="Description shown in the Android message when the account tailored security setting changes for a consented primary account">
-      You&#x2019;re getting standard protection
-    </message>
-    <message name="IDS_TAILORED_SECURITY_CONSENTED_DISABLE_MESSAGE_DESCRIPTION_UPDATED" desc="Description shown in the Android message when the account tailored security setting changes for a consented primary account">
       You&#x2019;re getting standard security protection on this device
     </message>
     <message name="IDS_TAILORED_SECURITY_CONSENTED_MESSAGE_OK_BUTTON" desc="The text on the ok button in the Android message when the account tailored security setting changes for a consented primary account">
@@ -16702,9 +16779,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </if>
 
     <message name="IDS_TAILORED_SECURITY_UNCONSENTED_PROMOTION_NOTIFICATION_DESCRIPTION" desc="Description of notification prompting the user to enable Enhanced Safe Browsing after they have enabled account-level protections.">
-      Enhanced protection does more to block phishing and malware
-    </message>
-    <message name="IDS_TAILORED_SECURITY_UNCONSENTED_PROMOTION_NOTIFICATION_DESCRIPTION_UPDATED" desc="Description of notification prompting the user to enable Enhanced Safe Browsing after they have enabled account-level protections.">
       Enhanced Safe Browsing does more to protect you against dangerous websites, downloads, and extensions
     </message>
     <if expr="use_titlecase">

@@ -35,7 +35,7 @@
     <message name="IDS_NATIVE_NTP_CART_DISCOUNT_CONSENT_TITLE" translateable="false" desc="The title shown on the native consent dialog for getting discount.">
       Let Google help you find&#13;discounts for your carts
     </message>
-    
+
     <message name="IDS_NATIVE_NTP_CART_DISCOUNT_CONSENT_BODY" desc="The actual consent descrition that shows in the native consent dialog.">
       Let Google use your carts to search for personalized discounts. When available, discounts will automatically show up on your carts.
     </message>
@@ -504,11 +504,29 @@
   <message name="IDS_PRODUCT_SPECIFICATIONS_OPEN_TABS_SECTION" translateable="false" desc="The title of the section in the product selection drop-down in the product specifications UI that shows a list of open tabs.">
     Open Tabs
   </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_RECENTLY_VIEWED_TABS_SECTION" translateable="false" desc="The title of the section in the product selection drop-down in the product specifications UI that shows a list of recently viewed tabs.">
+    Recently Viewed
+  </message>
   <message name="IDS_TOOLTIP_PRODUCT_SPECIFICATIONS_ENTRY_POINT_CLOSE" translateable="false" desc="The tooltip text for the close button within the Product Specifications entry point button.">
     Dismiss suggestion
   </message>
   <message name="IDS_PRODUCT_SPECIFICATIONS_EMPTY_PRODUCT_SELECTOR" translateable="false" desc="The text displayed in the product selector when there is no currently selected product.">
     Add a tab
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_EMPTY_SELECTION_MENU" translateable="false" desc="The text that shows when the product selection menu has nothing to show.">
+    First, read this then add tabs.
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_PAGE_ACTION_ADD_DEFAULT" translateable="false" desc="The default text for the Product Specifications page action chip before adding the current page.">
+    Add to analysis?
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_PAGE_ACTION_ADDED_DEFAULT" translateable="false" desc="The default text for the Product Specifications page action chip after adding the current page.">
+    Added to analysis
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_PAGE_ACTION_ADD" translateable="false" desc="The text for the Product Specifications page action chip with a placeholder for what the specifications are for, before adding the current page.">
+    Add to <ph name="SPECIFICATION">$1<ex>analysis</ex></ph>?
+  </message>
+  <message name="IDS_PRODUCT_SPECIFICATIONS_PAGE_ACTION_ADDED" translateable="false" desc="The text for the Product Specifications page action chip with a placeholder for what the specifications are for, after adding the current page.">
+    Added to <ph name="SPECIFICATION">$1<ex>analysis</ex></ph>
   </message>
 
 </grit-part>

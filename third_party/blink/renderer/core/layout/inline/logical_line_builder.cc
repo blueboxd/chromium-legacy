@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/inline/inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_node.h"
 #include "third_party/blink/renderer/core/layout/inline/justification_utils.h"
+#include "third_party/blink/renderer/core/layout/inline/line_breaker.h"
 #include "third_party/blink/renderer/core/layout/inline/line_info.h"
 #include "third_party/blink/renderer/core/layout/inline/logical_line_item.h"
 #include "third_party/blink/renderer/core/layout/inline/ruby_utils.h"
@@ -25,10 +26,12 @@ namespace blink {
 
 LogicalLineBuilder::LogicalLineBuilder(InlineNode node,
                                        const ConstraintSpace& constraint_space,
+                                       const InlineBreakToken* break_token,
                                        InlineLayoutStateStack* state_stack,
                                        InlineChildLayoutContext* context)
     : node_(node),
       constraint_space_(constraint_space),
+      break_token_(break_token),
       box_states_(state_stack),
       context_(context),
       baseline_type_(node.Style().GetFontBaseline()),
@@ -155,7 +158,7 @@ InlineBoxState* LogicalLineBuilder::HandleItemResults(
       PlaceControlItem(item, line_info.ItemsData().text_content, &item_result,
                        line_box, box);
     } else if (item.Type() == InlineItem::kOpenTag) {
-      box = HandleOpenTag(item, item_result, line_box, box_states_);
+      box = HandleOpenTag(item, item_result, line_box);
     } else if (item.Type() == InlineItem::kCloseTag) {
       box = HandleCloseTag(item, item_result, line_box, box);
     } else if (item.Type() == InlineItem::kAtomicInline) {
@@ -239,9 +242,8 @@ InlineBoxState* LogicalLineBuilder::HandleItemResults(
 InlineBoxState* LogicalLineBuilder::HandleOpenTag(
     const InlineItem& item,
     const InlineItemResult& item_result,
-    LogicalLineItems* line_box,
-    InlineLayoutStateStack* box_states) const {
-  InlineBoxState* box = box_states->OnOpenTag(
+    LogicalLineItems* line_box) {
+  InlineBoxState* box = box_states_->OnOpenTag(
       constraint_space_, item, item_result, baseline_type_, line_box);
   // Compute text metrics for all inline boxes since even empty inlines
   // influence the line height, except when quirks mode and the box is empty
@@ -480,8 +482,16 @@ void LogicalLineBuilder::PlaceRubyAnnotation(
       ApplyRubyAlign(item_result.inline_size, annotation_line);
 
   auto* line_items = MakeGarbageCollected<LogicalLineItems>();
-  LogicalLineBuilder annotation_builder(node_, constraint_space_,
+  LogicalLineBuilder annotation_builder(node_, constraint_space_, nullptr,
                                         &logical_column.state_stack, context_);
+  if (item_result.ruby_column->is_continuation &&
+      !annotation_line.Results().empty()) {
+    CHECK(break_token_->RubyData());
+    annotation_builder.RebuildBoxStates(
+        annotation_line,
+        break_token_->RubyData()->annotation_data[index].start_item_index,
+        annotation_line.Results()[0].item_index);
+  }
   annotation_builder.CreateLine(&annotation_line, line_items,
                                 /* main_line_helper */ nullptr);
   ApplyLeftAndRightExpansion(insets.first, insets.second, line_items->begin(),
@@ -491,8 +501,6 @@ void LogicalLineBuilder::PlaceRubyAnnotation(
       line_items, LayoutUnit(), /* ignore_box_margin_border_padding */ false);
 
   logical_column.annotation_items = line_items;
-  logical_column.ruby_column_list =
-      logical_column.state_stack.TakeRubyColumnList();
 }
 
 // Place a list marker.
@@ -603,6 +611,27 @@ void LogicalLineBuilder::BidiReorder(
           return diff != 0 ? (diff > 0) : (column1->size > column2->size);
         });
   }
+}
+
+void LogicalLineBuilder::RebuildBoxStates(const LineInfo& line_info,
+                                          wtf_size_t start_item_index,
+                                          wtf_size_t end_item_index) {
+  // Compute which tags are not closed at the beginning of this line.
+  InlineItemsData::OpenTagItems open_items;
+  line_info.ItemsData().GetOpenTagItems(
+      start_item_index, end_item_index - start_item_index, &open_items);
+
+  // Create box states for tags that are not closed yet.
+  LogicalLineItems& line_box = context_->AcquireTempLogicalLineItems();
+  box_states_->OnBeginPlaceItems(node_, line_info.LineStyle(), baseline_type_,
+                                 quirks_mode_, &line_box);
+  for (const InlineItem* item : open_items) {
+    InlineItemResult item_result;
+    LineBreaker::ComputeOpenTagResult(*item, constraint_space_,
+                                      node_.IsSvgText(), &item_result);
+    HandleOpenTag(*item, item_result, &line_box);
+  }
+  context_->ReleaseTempLogicalLineItems(line_box);
 }
 
 }  // namespace blink

@@ -138,6 +138,12 @@ BASE_FEATURE(kIPHSidePanelGenericMenuFeature,
 BASE_FEATURE(kIPHSidePanelGenericPinnableFeature,
              "IPH_SidePanelGenericPinnableFeature",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHSidePanelLensOverlayPinnableFeature,
+             "IPH_SidePanelLensOverlayPinnableFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHSidePanelLensOverlayPinnableFollowupFeature,
+             "IPH_SidePanelLensOverlayPinnableFollowupFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHSideSearchAutoTriggeringFeature,
              "IPH_SideSearchAutoTriggering",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -516,7 +522,7 @@ BASE_FEATURE(kIPHiOSTabGridToolbarItemFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHiOSHistoryOnOverflowMenuFeature,
              "IPH_iOSHistoryOnOverflowMenuFeature",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHiOSShareToolbarItemFeature,
              "IPH_iOSShareToolbarItemFeature",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -578,7 +584,7 @@ BASE_FEATURE(kIPHiOSInlineEnhancedSafeBrowsingPromoFeature,
 // Non-FET feature.
 BASE_FEATURE(kDefaultBrowserEligibilitySlidingWindow,
              "DefaultBrowserEligibilitySlidingWindow",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr base::FeatureParam<int> kDefaultBrowserEligibilitySlidingWindowParam{
     &kDefaultBrowserEligibilitySlidingWindow,

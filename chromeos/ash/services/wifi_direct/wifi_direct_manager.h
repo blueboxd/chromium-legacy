@@ -12,7 +12,11 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
-namespace ash::wifi_direct {
+namespace ash {
+
+class WifiP2PGroup;
+
+namespace wifi_direct {
 
 class WifiDirectConnection;
 
@@ -39,12 +43,10 @@ class WifiDirectManager : public mojom::WifiDirectManager {
       mojo::PendingReceiver<mojom::WifiDirectManager> pending_receiver);
 
   // mojom::WifiDirectManager
-  void CreateWifiDirectGroup(const std::string& ssid,
-                             const std::string& passphrase,
+  void CreateWifiDirectGroup(wifi_direct::mojom::WifiCredentialsPtr credentials,
                              CreateWifiDirectGroupCallback callback) override;
   void ConnectToWifiDirectGroup(
-      const std::string& ssid,
-      const std::string& passphrase,
+      wifi_direct::mojom::WifiCredentialsPtr credentials,
       std::optional<uint32_t> frequency,
       ConnectToWifiDirectGroupCallback callback) override;
 
@@ -57,7 +59,9 @@ class WifiDirectManager : public mojom::WifiDirectManager {
   void OnCreateOrConnectWifiDirectGroup(
       CreateWifiDirectGroupCallback callback,
       WifiP2PController::OperationResult result,
-      std::optional<WifiP2PController::WifiDirectConnectionMetadata> metadata);
+      std::optional<WifiP2PGroup> group_metadata);
+  void OnDestroyOrDisconnectWifiDirectGroup(
+      WifiP2PController::OperationResult result);
   void OnClientRequestedDisconnection(int shill_id);
 
   mojo::ReceiverSet<mojom::WifiDirectManager> receivers_;
@@ -67,6 +71,8 @@ class WifiDirectManager : public mojom::WifiDirectManager {
   base::WeakPtrFactory<WifiDirectManager> weak_ptr_factory_{this};
 };
 
-}  // namespace ash::wifi_direct
+}  // namespace wifi_direct
+
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_SERVICES_WIFI_DIRECT_WIFI_DIRECT_MANAGER_H_

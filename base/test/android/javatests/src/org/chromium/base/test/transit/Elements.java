@@ -4,6 +4,7 @@
 
 package org.chromium.base.test.transit;
 
+import android.app.Activity;
 import android.view.View;
 
 import org.hamcrest.Matcher;
@@ -64,6 +65,13 @@ public class Elements {
             mElements = elements;
         }
 
+        /** Declare as an element an Android Activity of type |activityClass|. */
+        public <T extends Activity> ActivityElement<T> declareActivity(Class<T> activityClass) {
+            ActivityElement<T> element = new ActivityElement<>(activityClass);
+            mElements.mElementsInState.add(element);
+            return element;
+        }
+
         /** Declare as an element a View that matches |viewMatcher|. */
         public ViewElementInState declareView(ViewElement viewElement) {
             ViewElementInState inState = new ViewElementInState(viewElement, /* gate= */ null);
@@ -110,7 +118,7 @@ public class Elements {
          * <p>Further, no promises are made that the Condition is false after exiting the State. Use
          * a scoped {@link LogicalElement} in this case.
          */
-        public Condition declareEnterCondition(Condition condition) {
+        public <T extends Condition> T declareEnterCondition(T condition) {
             mElements.mOtherEnterConditions.add(condition);
             return condition;
         }
@@ -122,7 +130,7 @@ public class Elements {
          * <p>No promises are made that the Condition is false as long as the ConditionalState is
          * ACTIVE. For these cases, use a scoped {@link LogicalElement}.
          */
-        public Condition declareExitCondition(Condition condition) {
+        public <T extends Condition> T declareExitCondition(T condition) {
             mElements.mOtherExitConditions.add(condition);
             return condition;
         }

@@ -97,7 +97,8 @@ class AppListClientImpl
   void ActivateItem(int profile_id,
                     const std::string& id,
                     int event_flags,
-                    ash::AppListLaunchedFrom launched_from) override;
+                    ash::AppListLaunchedFrom launched_from,
+                    bool is_above_the_fold) override;
   void GetContextMenuModel(int profile_id,
                            const std::string& id,
                            ash::AppListItemContext item_context,
@@ -116,6 +117,10 @@ class AppListClientImpl
   void LoadIcon(int profile_id, const std::string& app_id) override;
   ash::AppListSortOrder GetPermanentSortingOrder() const override;
   std::optional<bool> IsNewUser(const AccountId& account_id) const override;
+  void RecordAppsDefaultVisibility(
+      const std::vector<std::string>& apps_above_the_fold,
+      const std::vector<std::string>& apps_below_the_fold,
+      bool is_apps_collections_page) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(user_manager::User* active_user) override;
@@ -208,6 +213,14 @@ class AppListClientImpl
   // app and opening a search result from either a suggestion chip or the search
   // box. `launched_from` indicates where the launcher action comes from.
   void MaybeRecordLauncherAction(ash::AppListLaunchedFrom launched_from);
+
+  // Maybe record an activated item's visibility. An app item visibility refers
+  // to above or below the fold of the launcher (i.e. is it is visible without
+  // scrolling or switching the page).
+  void MaybeRecordActivatedItemVisibility(
+      const std::string& id,
+      ash::AppListLaunchedFrom launched_from,
+      bool is_app_above_the_fold);
 
   // Unowned pointer to the associated profile. May change if SetProfile is
   // called.

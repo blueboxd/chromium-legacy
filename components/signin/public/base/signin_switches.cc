@@ -5,7 +5,6 @@
 #include "components/signin/public/base/signin_switches.h"
 
 #include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 
@@ -24,9 +23,27 @@ BASE_FEATURE(kEnterprisePolicyOnSignin,
              "EnterprisePolicyOnSignin",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Feature to bypass double-checking that signin callers have correctly gotten
+// the user to accept account management. This check is slow and not strictly
+// necessary, so disable it while we work on adding caching.
+// TODO(https://crbug.com/339457762): Restore the check when we implement
+// caching.
+BASE_FEATURE(kSkipCheckForAccountManagementOnSignin,
+             "SkipCheckForAccountManagementOnSignin",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kHideSettingsSignInPromo,
              "HideSettingsSignInPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUseConsentLevelSigninForLegacyAccountEmailPref,
+             "UseConsentLevelSigninForLegacyAccountEmailPref",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+// Force enable the default browser step in the first run experience on Desktop.
+const char kForceFreDefaultBrowserStep[] = "force-fre-default-browser-step";
 #endif
 
 // Clears the token service before using it. This allows simulating the
@@ -105,18 +122,6 @@ BASE_FEATURE(kRestoreSignedInAccountAndSettingsFromBackup,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-#if BUILDFLAG(IS_ANDROID)
-// Enables the search engine choice feature for existing users.
-// TODO(b/316859558): Not used for shipping purposes, remove this feature.
-BASE_FEATURE(kSearchEngineChoice,
-             "SearchEngineChoice",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-// Rewrites DefaultSearchEnginePromoDialog into MVC pattern.
-BASE_FEATURE(kSearchEnginePromoDialogRewrite,
-             "SearchEnginePromoDialogRewrite",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 BASE_FEATURE(kExplicitBrowserSigninUIOnDesktop,
              "ExplicitBrowserSigninUIOnDesktop",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -176,54 +181,16 @@ BASE_FEATURE(kPreconnectAccountCapabilitiesPostSignin,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-}  // namespace switches
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-// Enables the new style, "For You" First Run Experience
-BASE_FEATURE(kForYouFre, "ForYouFre", base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-constexpr base::FeatureParam<WithDefaultBrowserStep>::Option
-    kWithDefaultBrowserStepOptions[] = {
-        {WithDefaultBrowserStep::kYes, "yes"},
-        {WithDefaultBrowserStep::kNo, "no"},
-        {WithDefaultBrowserStep::kForced, "forced"},
-};
-
-const base::FeatureParam<WithDefaultBrowserStep>
-    kForYouFreWithDefaultBrowserStep{
-        &kForYouFre, /*name=*/"with_default_browser_step",
-        /*default_value=*/WithDefaultBrowserStep::kYes,
-        /*options=*/&kWithDefaultBrowserStepOptions};
-
-constexpr base::FeatureParam<DefaultBrowserVariant>::Option
-    kDefaultBrowserVariantOptions[] = {
-        {DefaultBrowserVariant::kCurrent, "current"},
-        {DefaultBrowserVariant::kNew, "new"},
-};
-
-const base::FeatureParam<DefaultBrowserVariant> kForYouFreDefaultBrowserVariant{
-    &kForYouFre, /*name=*/"default_browser_variant",
-    /*default_value=*/DefaultBrowserVariant::kNew,
-    /*options=*/&kDefaultBrowserVariantOptions};
-
-// Feature that indicates that we should put the client in a study group
-// (provided through `kForYouFreStudyGroup`) to be able to look at metrics in
-// the long term. Does not affect the client's behavior by itself, instead this
-// is done through the `kForYouFre` feature.
-BASE_FEATURE(kForYouFreSyntheticTrialRegistration,
-             "ForYouFreSyntheticTrialRegistration",
+#if BUILDFLAG(IS_ANDROID)
+// Flag guarding the refresh of the metrics services states after the related
+// prefs are restored during the device restoration, to enable metrics upload
+// if it's allowed by those restored prefs.
+BASE_FEATURE(kUpdateMetricsServicesStateInRestore,
+             "UpdateMetricsServicesStateInRestore",
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
-// String that refers to the study group in which this install was enrolled.
-// Used to implement the sticky experiment tracking. If the value is an empty
-// string, we don't register the client.
-const base::FeatureParam<std::string> kForYouFreStudyGroup{
-    &kForYouFreSyntheticTrialRegistration, /*name=*/"group_name",
-    /*default_value=*/""};
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID) &&
-        // !BUILDFLAG(IS_IOS)
+}  // namespace switches
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables the generation of pseudo-stable per-user per-device device

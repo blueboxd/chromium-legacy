@@ -15,8 +15,6 @@ namespace {
 // Number for threads to use for TFLite execution. -1 lets TFLite use the
 // default number of threads.
 constexpr int kNumThreads = -1;
-// TODO(b/337924566): switch to model metadata instead of relying on constant.
-constexpr size_t kEmbeddingsInputWindowSize = 256;
 }  // namespace
 
 namespace passage_embeddings {
@@ -27,12 +25,15 @@ PassageEmbedder::PassageEmbedder(
 
 PassageEmbedder::~PassageEmbedder() = default;
 
-bool PassageEmbedder::LoadModels(base::File* embeddings_model_file,
-                                 base::File* sp_file) {
+bool PassageEmbedder::LoadModels(
+    base::File* embeddings_model_file,
+    base::File* sp_file,
+    std::unique_ptr<tflite::task::core::TfLiteEngine> tflite_engine) {
   UnloadModelFiles();
 
   base::ElapsedTimer embeddings_timer;
-  bool embeddings_load_success = LoadEmbeddingsModelFile(embeddings_model_file);
+  bool embeddings_load_success =
+      LoadEmbeddingsModelFile(embeddings_model_file, std::move(tflite_engine));
   base::UmaHistogramBoolean(
       "History.Embeddings.Embedder.EmbeddingsModelLoadSucceeded",
       embeddings_load_success);
@@ -58,6 +59,10 @@ bool PassageEmbedder::LoadModels(base::File* embeddings_model_file,
   return true;
 }
 
+void PassageEmbedder::SetEmbeddingsModelInputWindowSize(uint32_t size) {
+  embeddings_input_window_size_ = size;
+}
+
 bool PassageEmbedder::LoadSentencePieceModelFile(base::File* sp_file) {
   auto sp_file_contents =
       base::HeapArray<uint8_t>::Uninit(sp_file->GetLength());
@@ -76,7 +81,9 @@ bool PassageEmbedder::LoadSentencePieceModelFile(base::File* sp_file) {
   return true;
 }
 
-bool PassageEmbedder::LoadEmbeddingsModelFile(base::File* embeddings_file) {
+bool PassageEmbedder::LoadEmbeddingsModelFile(
+    base::File* embeddings_file,
+    std::unique_ptr<tflite::task::core::TfLiteEngine> tflite_engine) {
   embeddings_model_buffer_ =
       base::HeapArray<uint8_t>::Uninit(embeddings_file->GetLength());
   std::optional<size_t> bytes_read =
@@ -85,9 +92,11 @@ bool PassageEmbedder::LoadEmbeddingsModelFile(base::File* embeddings_file) {
     return false;
   }
 
-  std::unique_ptr<tflite::task::core::TfLiteEngine> tflite_engine =
-      std::make_unique<tflite::task::core::TfLiteEngine>(
-          std::make_unique<optimization_guide::TFLiteOpResolver>());
+  if (!tflite_engine) {
+    // Use default TFLite engine if not already passed in.
+    tflite_engine = std::make_unique<tflite::task::core::TfLiteEngine>(
+        std::make_unique<optimization_guide::TFLiteOpResolver>());
+  }
   absl::Status model_load_status = tflite_engine->BuildModelFromFlatBuffer(
       reinterpret_cast<const char*>(embeddings_model_buffer_.data()),
       embeddings_model_buffer_.size());
@@ -95,12 +104,7 @@ bool PassageEmbedder::LoadEmbeddingsModelFile(base::File* embeddings_file) {
     return false;
   }
 
-  auto compute_settings = tflite::proto::ComputeSettings();
-  compute_settings.mutable_tflite_settings()
-      ->mutable_cpu_settings()
-      ->set_num_threads(kNumThreads);
-  absl::Status interpreter_status =
-      tflite_engine->InitInterpreter(compute_settings);
+  absl::Status interpreter_status = tflite_engine->InitInterpreter(kNumThreads);
   if (!interpreter_status.ok()) {
     return false;
   }
@@ -142,7 +146,14 @@ void PassageEmbedder::GenerateEmbeddings(
       std::move(callback).Run({});
       return;
     }
-    tokenized.resize(kEmbeddingsInputWindowSize);
+    base::UmaHistogramCounts1000(
+        "History.Embeddings.Embedder.PassageTokenCount", tokenized.size());
+    if (tokenized.size() < embeddings_input_window_size_) {
+      tokenized.push_back(sp_processor_->eos_id());
+    }
+    base::UmaHistogramBoolean("History.Embeddings.Embedder.InputTruncated",
+                              tokenized.size() > embeddings_input_window_size_);
+    tokenized.resize(embeddings_input_window_size_);
     base::UmaHistogramMediumTimes(
         "History.Embeddings.Embedder.TokenizationDuration",
         tokenize_timer.Elapsed());

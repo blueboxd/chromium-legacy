@@ -7,17 +7,20 @@
 #include <optional>
 #include <vector>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/system_notification_builder.h"
 #include "ash/system/extended_updates/extended_updates_metrics.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/extended_updates/extended_updates_controller.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/ui/webui/ash/extended_updates/extended_updates_dialog.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -40,23 +43,23 @@ void AddButton(message_center::RichNotificationData& data,
 
 }  // namespace
 
-ExtendedUpdatesNotification::ExtendedUpdatesNotification(Profile* profile) {
-  CHECK(profile);
-  profile_observation_.Observe(profile);
-}
+ExtendedUpdatesNotification::ExtendedUpdatesNotification(Profile* profile)
+    : profile_(profile->GetWeakPtr()) {}
 
 ExtendedUpdatesNotification::~ExtendedUpdatesNotification() = default;
 
-base::WeakPtr<ExtendedUpdatesNotification> ExtendedUpdatesNotification::Create(
-    Profile* profile) {
-  return (new ExtendedUpdatesNotification(profile))->GetWeakPtr();
+void ExtendedUpdatesNotification::Show(Profile* profile) {
+  Show(base::MakeRefCounted<ExtendedUpdatesNotification>(profile));
 }
 
-void ExtendedUpdatesNotification::Show() {
-  Profile* profile = profile_observation_.GetSource();
-  if (!profile) {
+void ExtendedUpdatesNotification::Show(
+    scoped_refptr<ExtendedUpdatesNotification> delegate) {
+  if (!delegate || !delegate->profile()) {
     return;
   }
+  Profile* profile = delegate->profile();
+
+  delegate->SubscribeToDeviceSettingsChanges();
 
   message_center::RichNotificationData data;
   // Keep same order as |IndexedButton| enum.
@@ -71,18 +74,24 @@ void ExtendedUpdatesNotification::Show() {
       .SetTitleId(IDS_EXTENDED_UPDATES_NOTIFICATION_TITLE)
       .SetMessageId(IDS_EXTENDED_UPDATES_NOTIFICATION_MESSAGE)
       .SetOptionalFields(data)
-      .SetDelegate(
-          base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
-              weak_factory_.GetWeakPtr()));
+      .SetDelegate(std::move(delegate));
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT,
-      builder.Build(/*keep_timestamp=*/false), /*metadata=*/nullptr);
+      kNotificationType, builder.Build(/*keep_timestamp=*/false),
+      /*metadata=*/nullptr);
   RecordExtendedUpdatesEntryPointEvent(
       ExtendedUpdatesEntryPointEvent::kNoArcNotificationShown);
 }
 
+bool ExtendedUpdatesNotification::IsNotificationDismissed(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kExtendedUpdatesNotificationDismissed);
+}
+
 void ExtendedUpdatesNotification::Close(bool by_user) {
-  delete this;
+  if (by_user && profile_) {
+    profile_->GetPrefs()->SetBoolean(
+        prefs::kExtendedUpdatesNotificationDismissed, true);
+  }
 }
 
 void ExtendedUpdatesNotification::Click(
@@ -102,15 +111,11 @@ void ExtendedUpdatesNotification::Click(
       OpenLearnMoreUrl();
       break;
   }
-}
 
-void ExtendedUpdatesNotification::OnProfileWillBeDestroyed(Profile* profile) {
-  delete this;
-}
-
-base::WeakPtr<ExtendedUpdatesNotification>
-ExtendedUpdatesNotification::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
+  if (profile_) {
+    NotificationDisplayService::GetForProfile(profile_.get())
+        ->Close(kNotificationType, std::string(kNotificationId));
+  }
 }
 
 void ExtendedUpdatesNotification::ShowExtendedUpdatesDialog() {
@@ -122,6 +127,21 @@ void ExtendedUpdatesNotification::OpenLearnMoreUrl() {
       GURL(chrome::kDeviceExtendedUpdatesLearnMoreURL),
       NewWindowDelegate::OpenUrlFrom::kUserInteraction,
       NewWindowDelegate::Disposition::kNewForegroundTab);
+}
+
+void ExtendedUpdatesNotification::SubscribeToDeviceSettingsChanges() {
+  settings_change_subscription_ =
+      ExtendedUpdatesController::SubscribeToDeviceSettingsChanges(
+          base::BindRepeating(
+              &ExtendedUpdatesNotification::OnDeviceSettingsChanged,
+              weak_factory_.GetWeakPtr()));
+}
+
+void ExtendedUpdatesNotification::OnDeviceSettingsChanged() {
+  if (profile_ && ExtendedUpdatesController::Get()->IsOptedIn()) {
+    NotificationDisplayService::GetForProfile(profile_.get())
+        ->Close(kNotificationType, std::string(kNotificationId));
+  }
 }
 
 }  // namespace ash

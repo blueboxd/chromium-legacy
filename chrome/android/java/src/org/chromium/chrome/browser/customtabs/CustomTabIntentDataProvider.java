@@ -794,8 +794,9 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         boolean isGoogleBottomBarEnabled = isGoogleBottomBarEnabled(this);
         for (CustomButtonParams params : mCustomButtonParams) {
             if (isGoogleBottomBarEnabled
-                    && GoogleBottomBarCoordinator.shouldUseCustomButtonParams(params.getId())) {
+                    && GoogleBottomBarCoordinator.isSupported(params.getId())) {
                 mGoogleBottomBarButtons.add(params);
+                params.updateShowOnToolbar(false);
             } else if (!params.showOnToolbar()) {
                 mBottombarButtons.add(params);
             } else if (mToolbarButtons.size() < getMaxCustomToolbarItems()) {
@@ -1492,6 +1493,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     public boolean isInteractiveOmniboxAllowed() {
         if (!ChromeFeatureList.sSearchInCCT.isEnabled()) return false;
         if (isIncognito()) return false;
+        if (isPartialCustomTab()) return false;
+        if (BuildInfo.getInstance().isAutomotive) return false;
 
         return isPackageNameInList(
                 getClientPackageName(), OMNIBOX_ALLOWED_PACKAGE_NAMES.getValue());

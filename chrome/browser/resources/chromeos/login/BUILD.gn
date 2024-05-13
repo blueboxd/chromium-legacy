@@ -58,7 +58,6 @@ build_webui("build") {
   mojo_files = [
     "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_common.mojom-webui.ts",
     "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_factory.mojom-webui.ts",
-    "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_login.mojom-webui.ts",
     "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_oobe.mojom-webui.ts",
     "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_osauth.mojom-webui.ts",
   ]
@@ -113,6 +112,7 @@ build_webui("build") {
     "screens/common/os_trial.ts",
     "screens/common/parental_handoff.ts",
     "screens/common/quick_start.ts",
+    "screens/common/personalized_recommend_apps.ts",
     "screens/common/remote_activity_notification.ts",
 
     # Template used by the `tools/oobe/generate_screen_template.py` script.
@@ -172,6 +172,8 @@ build_webui("build") {
     "components/oobe_a11y_option.ts",
     "components/oobe_apps_list.ts",
     "components/oobe_carousel.ts",
+    "components/oobe_personalized_apps_list.ts",
+    "components/oobe_categories_list.ts",
     "components/oobe_cr_lottie.ts",
     "components/oobe_display_size_selector.ts",
     "components/oobe_i18n_dropdown.ts",

@@ -23,6 +23,7 @@
 #include "chrome/browser/speech/tts_crosapi_util.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -94,6 +95,10 @@ void OnIsolatedWebAppUrlInfoCreated(
         std::move(callback).Run(
             crosapi::mojom::InstallWebAppResult::NewErrorMessage(error));
       });
+
+  if (!install_source.source().dev_mode()) {
+    web_app::AddTrustedWebBundleIdForTesting(iwa_url_info.web_bundle_id());
+  }
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
@@ -298,8 +303,9 @@ void StandaloneBrowserTestController::InstallSubApp(
       base::StrCat({chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
                     parent_app_id}));
 
-  auto info = std::make_unique<web_app::WebAppInstallInfo>();
-  info->start_url = parent_app_url.Resolve(sub_app_path);
+  GURL start_url = parent_app_url.Resolve(sub_app_path);
+  auto info =
+      web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(start_url);
   info->parent_app_id = parent_app_id;
   info->parent_app_manifest_id = parent_app_url;
   info->title = u"Sub App";

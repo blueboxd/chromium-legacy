@@ -75,10 +75,14 @@ public class LocalTabGroupMutationHelper {
 
         // Create a new tab group and add the tabs just created. Group ID is the ID of the first new
         // tab.
-        int rootId = tabs.get(0).getId();
+        Tab rootTab = tabs.get(0);
+        int rootId = rootTab.getId();
         updateTabGroupVisuals(tabGroup, rootId);
-        mTabGroupModelFilter.mergeListOfTabsToGroup(
-                tabs, tabs.get(0), /* isSameGroup= */ true, /* notify= */ false);
+        if (tabs.size() == 1) {
+            mTabGroupModelFilter.createSingleTabGroup(rootTab, /* notify= */ false);
+        } else {
+            mTabGroupModelFilter.mergeListOfTabsToGroup(tabs, rootTab, /* notify= */ false);
+        }
 
         // Notify sync backend about IDs of the newly created group and tabs.
         LocalTabGroupId localTabGroupId =
@@ -148,6 +152,8 @@ public class LocalTabGroupMutationHelper {
 
         // Update the remaining tabs. If the tab is already there, ensure its URL is up-to-date.
         // If the tab doesn't exist yet, create a new one.
+        // Note, root ID might have changed due to the close operations. Query it again.
+        rootId = TabGroupSyncUtils.getRootId(mTabGroupModelFilter, tabGroup.localId);
         tabs = mTabGroupModelFilter.getRelatedTabListForRootId(rootId);
         int groupStartIndex = TabModelUtils.getTabIndexById(getTabModel(), tabs.get(0).getId());
         Tab parent = tabs.get(0);
@@ -159,7 +165,7 @@ public class LocalTabGroupMutationHelper {
             if (isOnStartup) {
                 localTab = i < tabs.size() ? tabs.get(i) : null;
             } else {
-                localTab = getLocalTab(savedTab.localId);
+                localTab = getLocalTabInGroup(savedTab.localId, rootId);
             }
 
             // If the tab exists, navigate to the desired URL. Otherwise, create a new tab.
@@ -190,10 +196,7 @@ public class LocalTabGroupMutationHelper {
         List<Tab> tabsToMerge = new ArrayList<>();
         tabsToMerge.add(newTab);
         mTabGroupModelFilter.mergeListOfTabsToGroup(
-                tabsToMerge,
-                TabModelUtils.getTabById(getTabModel(), rootId),
-                /* isSameGroup= */ false,
-                /* notify= */ false);
+                tabsToMerge, TabModelUtils.getTabById(getTabModel(), rootId), /* notify= */ false);
         return newTab;
     }
 
@@ -248,8 +251,11 @@ public class LocalTabGroupMutationHelper {
         mTabCreationDelegate.navigateToUrl(tab, url, title, isCurrentTab);
     }
 
-    private Tab getLocalTab(Integer tabId) {
-        return tabId == null ? null : TabModelUtils.getTabById(getTabModel(), tabId);
+    private Tab getLocalTabInGroup(Integer tabId, int rootId) {
+        Tab tab = tabId == null ? null : TabModelUtils.getTabById(getTabModel(), tabId);
+        // Check if the tab is still attached to the same root ID. If not, it belongs to another
+        // group. Don't touch it and rather create a new one in subsequent step.
+        return tab != null && tab.getRootId() == rootId ? tab : null;
     }
 
     private void updateTabGroupVisuals(SavedTabGroup tabGroup, int rootId) {

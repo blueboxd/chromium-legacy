@@ -50,12 +50,13 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/lens/lens_overlay_controller.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/profiles/profile_view_utils.h"
 #include "chrome/browser/ui/safety_hub/menu_notification_service_factory.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_constants.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
-#include "chrome/browser/ui/startup/default_browser_prompt_manager.h"
+#include "chrome/browser/ui/startup/default_browser_prompt/default_browser_prompt_manager.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_utils.h"
 #include "chrome/browser/ui/tabs/recent_tabs_sub_menu_model.h"
@@ -87,7 +88,6 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/feature_engagement/public/event_constants.h"
-#include "components/lens/lens_features.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -128,6 +128,10 @@
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/feature_list.h"
+#endif
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "components/lens/lens_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -1761,15 +1765,17 @@ void AppMenuModel::Build() {
   AddItemWithStringIdAndVectorIcon(this, IDC_PRINT, IDS_PRINT, kPrintMenuIcon);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (lens::features::IsLensOverlayEnabled()) {
-    AddItemWithStringIdAndVectorIcon(this, IDC_CONTENT_CONTEXT_LENS_OVERLAY,
-                                     IDS_SHOW_LENS_OVERLAY,
-                                     vector_icons::kGoogleGLogoMonochromeIcon);
-    SetElementIdentifierAt(
-        GetIndexOfCommandId(IDC_CONTENT_CONTEXT_LENS_OVERLAY).value(),
-        kShowLensOverlay);
-  } else if (companion::IsCompanionFeatureEnabled() &&
-             !browser()->profile()->IsIncognitoProfile()) {
+  if (LensOverlayController::IsEnabled(browser()->profile())) {
+    AddItemWithStringIdAndVectorIcon(
+        this, IDC_CONTENT_CONTEXT_LENS_OVERLAY, IDS_SHOW_LENS_OVERLAY,
+        vector_icons::kGoogleLensMonochromeLogoIcon);
+    const int lens_command_index =
+        GetIndexOfCommandId(IDC_CONTENT_CONTEXT_LENS_OVERLAY).value();
+    SetElementIdentifierAt(lens_command_index, kShowLensOverlay);
+    SetIsNewFeatureAt(lens_command_index,
+                      browser()->window()->MaybeShowNewBadgeFor(
+                          lens::features::kLensOverlay));
+  } else if (companion::IsSearchInCompanionSidePanelSupported(browser())) {
     AddItemWithStringIdAndVectorIcon(this, IDC_SHOW_SEARCH_COMPANION,
                                      IDS_SHOW_SEARCH_COMPANION,
                                      vector_icons::kGoogleGLogoMonochromeIcon);

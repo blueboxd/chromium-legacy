@@ -256,7 +256,7 @@ public class SearchActivityTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () ->
                         mOnSuggestionsReceivedListener.onSuggestionsReceived(
-                                buildDummyAutocompleteResult(), "inline text", true));
+                                buildDummyAutocompleteResult(), true));
         mOmnibox.checkSuggestionsShown();
     }
 
@@ -323,7 +323,7 @@ public class SearchActivityTest {
 
         // Start loading native, then let the activity finish initialization.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> searchActivity.startDelayedNativeInitialization());
+                () -> searchActivity.startDelayedNativeInitializationForTests());
 
         Assert.assertEquals(
                 1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
@@ -352,7 +352,7 @@ public class SearchActivityTest {
 
         // Start loading native, then let the activity finish initialization.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> searchActivity.startDelayedNativeInitialization());
+                () -> searchActivity.startDelayedNativeInitializationForTests());
 
         verifyNoMoreInteractions(mAutocompleteController);
 
@@ -396,7 +396,7 @@ public class SearchActivityTest {
                     // browser.
                     TestThreadUtils.runOnUiThreadBlocking(
                             () -> {
-                                searchActivity.startDelayedNativeInitialization();
+                                searchActivity.startDelayedNativeInitializationForTests();
                             });
 
                     Assert.assertEquals(
@@ -537,7 +537,7 @@ public class SearchActivityTest {
     @SmallTest
     public void testupdateAnchorViewLayout() {
         SearchActivity searchActivity = startSearchActivity();
-        View anchorView = searchActivity.getAnchorViewForTesting();
+        View anchorView = searchActivity.findViewById(R.id.toolbar);
         var layoutParams = anchorView.getLayoutParams();
 
         int focusedHeight =

@@ -25,7 +25,6 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.data_sharing.DataSharingServiceFactory;
-import org.chromium.chrome.browser.data_sharing.DataSharingUIDelegate;
 import org.chromium.chrome.browser.data_sharing.MemberPickerListenerImpl;
 import org.chromium.chrome.browser.data_sharing.SharedImageTilesCoordinator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -44,6 +43,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.data_sharing.DataSharingUIDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.widget.AnchoredPopupWindow;
@@ -94,7 +94,8 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
             TabGridDialogMediator.AnimationSourceViewProvider animationSourceViewProvider,
             ScrimCoordinator scrimCoordinator,
             TabGroupTitleEditor tabGroupTitleEditor,
-            ViewGroup rootView) {
+            ViewGroup rootView,
+            @Nullable ActionConfirmationManager actionConfirmationManager) {
         try (TraceEvent e = TraceEvent.scoped("TabGridDialogCoordinator.constructor")) {
             mActivity = activity;
             mComponentName =
@@ -182,7 +183,8 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                             showShareBottomSheetRunnable,
                             mComponentName,
                             showColorPickerPopupRunnable,
-                            getInviteFlowUIRunnable(bottomSheetController));
+                            getInviteFlowUIRunnable(bottomSheetController),
+                            actionConfirmationManager);
 
             // TODO(crbug.com/40662311) : Remove the inline mode logic here, make the constructor to
             // take in a mode parameter instead.
@@ -208,7 +210,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                             false,
                             gridCardOnClickListenerProvider,
                             mMediator.getTabGridDialogHandler(),
-                            TabProperties.UiType.CLOSABLE,
+                            TabProperties.TabActionState.CLOSABLE,
                             null,
                             null,
                             containerView,
@@ -308,7 +310,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                             mRootView,
                             /* displayGroups= */ false,
                             mSnackbarManager,
-                            TabProperties.UiType.SELECTABLE);
+                            TabProperties.TabActionState.SELECTABLE);
         }
 
         return mTabListEditorCoordinator.getController();

@@ -62,9 +62,10 @@ class GroupingFormatter(mozlog.formatters.GroupingFormatter):
         offset = datetime.now() - self._start
         minutes, seconds = divmod(max(0, offset.total_seconds()), 60)
         hours, minutes = divmod(minutes, 60)
+        milliseconds, _ = divmod(offset.microseconds, 1000)
         # A relative timestamp is more useful for comparing event timings than
         # an absolute one.
-        timestamp = f'{int(hours):02}:{int(minutes):02}:{int(seconds):02}'
+        timestamp = f'{int(hours):02}:{int(minutes):02}:{int(seconds):02}.{int(milliseconds):03}'
         # Place mandatory fields first so that logs are vertically aligned as
         # much as possible.
         message = f'{timestamp} {data["level"]}: {data["message"]}'
@@ -328,8 +329,13 @@ class WPTAdapter:
             *self.port.additional_driver_flags(),
         ])
         if self.options.product == 'headless_shell':
-            runner_options.binary_args.append('--headless=old')
-            runner_options.binary_args.append('--enable-bfcache')
+            runner_options.binary_args.extend([
+                '--headless=old',
+                '--enable-bfcache',
+                # `headless_shell` doesn't send the `Accept-Language` header by
+                # default, so set an arbitrary one that some tests expect.
+                '--accept-lang=en-US,en',
+            ])
 
         # Implicitly pass `--enable-blink-features=MojoJS,MojoJSTest` to Chrome.
         runner_options.mojojs_path = self.port.generated_sources_directory()

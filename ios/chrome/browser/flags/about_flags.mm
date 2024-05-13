@@ -139,7 +139,6 @@ const FeatureEntry::Choice kDefaultBrowserPromoForceShowPromoChoices[] = {
      "default-browser-promo-force-show-promo", "2"},
     {"Show tailored all tabs promo", "default-browser-promo-force-show-promo",
      "3"},
-    {"Show video promo", "default-browser-promo-force-show-promo", "4"},
 };
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
@@ -252,6 +251,15 @@ const FeatureEntry::FeatureParam kContentPushNotificationsEnabledProvisional[] =
 const FeatureEntry::FeatureParam
     kContentPushNotificationsEnabledProvisionalBypass[] = {
         {kContentPushNotificationsExperimentType, "4"}};
+const FeatureEntry::FeatureParam
+    kContentPushNotificationsPromoRegistrationOnly[] = {
+        {kContentPushNotificationsExperimentType, "5"}};
+const FeatureEntry::FeatureParam
+    kContentPushNotificationsProvisionalRegistrationOnly[] = {
+        {kContentPushNotificationsExperimentType, "6"}};
+const FeatureEntry::FeatureParam
+    kContentPushNotificationsSetUpListRegistrationOnly[] = {
+        {kContentPushNotificationsExperimentType, "7"}};
 
 const FeatureEntry::FeatureVariation kContentPushNotificationsVariations[] = {
     {"Promo", kContentPushNotificationsEnabledPromo,
@@ -262,7 +270,15 @@ const FeatureEntry::FeatureVariation kContentPushNotificationsVariations[] = {
      std::size(kContentPushNotificationsEnabledProvisional), nullptr},
     {"Provisional Ignore Conditions",
      kContentPushNotificationsEnabledProvisionalBypass,
-     std::size(kContentPushNotificationsEnabledProvisionalBypass), nullptr}};
+     std::size(kContentPushNotificationsEnabledProvisionalBypass), nullptr},
+    {"Promo Registeration Only", kContentPushNotificationsPromoRegistrationOnly,
+     std::size(kContentPushNotificationsPromoRegistrationOnly), nullptr},
+    {"Provisional Notification Registeration Only",
+     kContentPushNotificationsProvisionalRegistrationOnly,
+     std::size(kContentPushNotificationsProvisionalRegistrationOnly), nullptr},
+    {"Set up list Registeration Only",
+     kContentPushNotificationsSetUpListRegistrationOnly,
+     std::size(kContentPushNotificationsSetUpListRegistrationOnly), nullptr}};
 
 const FeatureEntry::FeatureParam kFeedHeaderSettingDisabledStickyHeader[] = {
     {kDisableStickyHeaderForFollowingFeed, "true"}};
@@ -602,16 +618,6 @@ const FeatureEntry::FeatureVariation kOneTapForMapsWithVariations[] = {
      std::size(kOneTapForMapsConsentModeIPHForced), nullptr},
     {"Consent Disabled", kOneTapForMapsConsentModeDisabled,
      std::size(kOneTapForMapsConsentModeDisabled), nullptr},
-};
-
-const FeatureEntry::Choice kEnablePasswordSharingChoices[] = {
-    {"Default", "", ""},
-    {"Bootstraping Only", switches::kEnableFeatures,
-     "SharingOfferKeyPairBootstrap"},
-    {"Enabled", switches::kEnableFeatures,
-     "SharingOfferKeyPairBootstrap,SendPasswords,"
-     "PasswordManagerEnableSenderService,"
-     "PasswordManagerEnableReceiverService,SharedPasswordNotificationUI"},
 };
 
 const flags_ui::FeatureEntry::FeatureParam kParcelTrackingTestDataDelivered[] =
@@ -969,6 +975,19 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          segmentation_platform::features::kSegmentationPlatformIosModuleRanker,
          kSegmentationPlatformIosModuleRankerVariations,
          flag_descriptions::kSegmentationPlatformIosModuleRankerName)},
+    {"ios-magic-stack-segmentation-ranking-caching",
+     flag_descriptions::kSegmentationPlatformIosModuleRankerCachingName,
+     flag_descriptions::kSegmentationPlatformIosModuleRankerCachingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSegmentationPlatformIosModuleRankerCaching)},
+    {"ios-magic-stack-segmentation-ranking-split-by-surface",
+     flag_descriptions::kSegmentationPlatformIosModuleRankerSplitBySurfaceName,
+     flag_descriptions::
+         kSegmentationPlatformIosModuleRankerSplitBySurfaceDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         segmentation_platform::features::
+             kSegmentationPlatformIosModuleRankerSplitBySurface)},
     {"default-browser-intents-show-settings",
      flag_descriptions::kDefaultBrowserIntentsShowSettingsName,
      flag_descriptions::kDefaultBrowserIntentsShowSettingsDescription,
@@ -1327,7 +1346,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kIOSSaveToDrive)},
     {"password-sharing", flag_descriptions::kPasswordSharingName,
      flag_descriptions::kPasswordSharingDescription, flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kEnablePasswordSharingChoices)},
+     FEATURE_VALUE_TYPE(password_manager::features::kSendPasswords)},
     {"omnibox-company-entity-icon-adjustment",
      flag_descriptions::kOmniboxCompanyEntityIconAdjustmentName,
      flag_descriptions::kOmniboxCompanyEntityIconAdjustmentDescription,
@@ -1344,12 +1363,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tab-groups-on-ipad", flag_descriptions::kTabGroupsIPadName,
      flag_descriptions::kTabGroupsIPadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabGroupsIPad)},
-    {"autofill-enable-payments-mandatory-reauth",
-     flag_descriptions::kAutofillEnablePaymentsMandatoryReauthName,
-     flag_descriptions::kAutofillEnablePaymentsMandatoryReauthDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnablePaymentsMandatoryReauth)},
     {"autofill-enable-dynamically-loading-fields-on-input",
      flag_descriptions::
          kAutofillEnableDynamicallyLoadingFieldsForAddressInputName,

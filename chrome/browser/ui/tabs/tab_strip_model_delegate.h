@@ -131,6 +131,10 @@ class TabStripModelDelegate {
   // |group|.
   virtual void CreateHistoricalGroup(const tab_groups::TabGroupId& group) = 0;
 
+  // Called on group creation after the group has been added to the tabstrip and
+  // all tabs have been added.
+  virtual void GroupAdded(const tab_groups::TabGroupId& group) = 0;
+
   // Notifies the delegate that a group is about to be closed, and allows it
   // to perform any preparation neccessary.
   virtual void WillCloseGroup(const tab_groups::TabGroupId& group) = 0;
@@ -182,14 +186,18 @@ class TabStripModelDelegate {
   // Returns the BrowserWindow that owns the TabStripModel. Never changes.
   virtual BrowserWindowInterface* GetBrowserWindowInterface() = 0;
 
-  // When closing groups, some features may need to show interstitials before
-  // allowing deletion. |groups| is a list of all of the groups that would be
-  // Closed by the |callback| which may be called by the implementation. A
-  // return value of true means that deletion can continue synchronously. A
-  // return value of false means that an asynchronous action is taking place,
-  // and whatever process of destroying groups should be stopped. The callback
-  // will not be called if the process returns true.
+  // When performing actions to groups, some features may need to show
+  // interstitials before allowing deletion. |groups| is a list of all of the
+  // groups that would be Closed by the |callback| which may be called by the
+  // implementation. A return value of true means that deletion can continue
+  // synchronously. A return value of false means that an asynchronous action is
+  // taking place, and whatever process of destroying groups should be stopped.
+  // The callback will not be called if the process returns true.
   virtual bool ConfirmDestroyingGroups(
+      const std::vector<tab_groups::TabGroupId>& group_ids,
+      base::OnceCallback<void()> callback) = 0;
+
+  virtual bool ConfirmRemovingAllTabsFromGroups(
       const std::vector<tab_groups::TabGroupId>& group_ids,
       base::OnceCallback<void()> callback) = 0;
 };

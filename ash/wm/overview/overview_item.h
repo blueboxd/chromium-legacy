@@ -93,6 +93,12 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   OverviewAnimationType GetExitTransformAnimationType() const;
 
   // OverviewItemBase:
+  void SetOpacity(float opacity) override;
+  aura::Window::Windows GetWindowsForHomeGesture() override;
+  void HideForSavedDeskLibrary(bool animate) override;
+  void RevertHideForSavedDeskLibrary(bool animate) override;
+  void UpdateMirrorsForDragging(bool is_touch_dragging) override;
+  void DestroyMirrorsForDragging() override;
   aura::Window* GetWindow() override;
   std::vector<raw_ptr<aura::Window, VectorExperimental>> GetWindows() override;
   bool HasVisibleOnAllDesksWindow() override;
@@ -113,13 +119,10 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   views::View* GetBackDropView() const override;
   bool ShouldHaveShadow() const override;
   void UpdateRoundedCornersAndShadow() override;
-  void SetOpacity(float opacity) override;
   float GetOpacity() const override;
   void PrepareForOverview() override;
   void SetShouldUseSpawnAnimation(bool value) override;
   void OnStartingAnimationComplete() override;
-  void HideForSavedDeskLibrary(bool animate) override;
-  void RevertHideForSavedDeskLibrary(bool animate) override;
   void CloseWindows() override;
   void Restack() override;
   void StartDrag() override;
@@ -127,12 +130,9 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   void OnOverviewItemDragEnded(bool snap) override;
   void OnOverviewItemContinuousScroll(const gfx::Transform& target_transform,
                                       float scroll_ratio) override;
-  void SetVisibleDuringItemDragging(bool visible, bool animate) override;
   void UpdateCannotSnapWarningVisibility(bool animate) override;
   void HideCannotSnapWarning(bool animate) override;
   void OnMovingItemToAnotherDesk() override;
-  void UpdateMirrorsForDragging(bool is_touch_dragging) override;
-  void DestroyMirrorsForDragging() override;
   void Shutdown() override;
   void AnimateAndCloseItem(bool up) override;
   void StopWidgetAnimation() override;
@@ -158,6 +158,10 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
                                   chromeos::WindowStateType old_type) override;
   void OnPostWindowStateTypeChange(WindowState* window_state,
                                    chromeos::WindowStateType old_type) override;
+
+  DragWindowController* window_mirror_for_dragging_for_testing() {
+    return window_mirror_for_dragging_.get();
+  }
 
  private:
   friend class OverviewTestBase;
@@ -209,13 +213,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
 
   void CloseButtonPressed();
 
-  void HideWindowInOverview();
-  void ShowWindowInOverview();
-
-  // Returns the list of windows that we want to slide up or down when swiping
-  // on the shelf in tablet mode.
-  aura::Window::Windows GetWindowsForHomeGesture();
-
   // The root window this item is being displayed on.
   raw_ptr<aura::Window> root_window_;
 
@@ -225,11 +222,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   // The delegate to handle window destruction which is `OverviewGrid` for
   // single item or `OverviewGroupItem` for group item.
   const raw_ptr<WindowDestructionDelegate> window_destruction_delegate_;
-
-  // Used to block events from reaching the item widget when the overview item
-  // has been hidden.
-  std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>
-      item_widget_event_blocker_;
 
   // True if running SetItemBounds. This prevents recursive calls resulting from
   // the bounds update when calling ::wm::RecreateWindowLayers to copy
@@ -253,7 +245,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   // TODO(sammiequon): We need two, one for the `item_widget_` and one for the
   // source window (if not minimized). If DragWindowController supports multiple
   // windows in the future, combine these.
-  std::unique_ptr<DragWindowController> item_mirror_for_dragging_;
   std::unique_ptr<DragWindowController> window_mirror_for_dragging_;
 
   // Disable animations on the contained window while it is being managed by the
@@ -266,10 +257,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   // if those item's windows won't have snapshots.
   std::optional<aura::WindowOcclusionTracker::ScopedForceVisible>
       scoped_force_visible_;
-
-  // Cancellable callback to ensure that we are not going to hide the window
-  // after reverting the hide.
-  base::CancelableOnceClosure hide_window_in_overview_callback_;
 
   base::WeakPtrFactory<OverviewItem> weak_ptr_factory_{this};
 };

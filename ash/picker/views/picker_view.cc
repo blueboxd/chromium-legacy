@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/ash_element_identifiers.h"
+#include "ash/picker/metrics/picker_session_metrics.h"
 #include "ash/picker/model/picker_search_results_section.h"
 #include "ash/picker/views/picker_category_view.h"
 #include "ash/picker/views/picker_contents_view.h"
@@ -166,18 +167,8 @@ PickerView::PickerView(PickerViewDelegate* delegate,
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
 
-  switch (layout_type) {
-    case PickerLayoutType::kResultsBelowSearchField:
-      AddSearchFieldView();
-      AddChildView(CreateSeparator());
-      AddContentsView(layout_type);
-      break;
-    case PickerLayoutType::kResultsAboveSearchField:
-      AddContentsView(layout_type);
-      AddChildView(CreateSeparator());
-      AddSearchFieldView();
-      break;
-  }
+  AddSearchFieldView();
+  AddContentsViewWithSeparator(layout_type);
 
   // Automatically focus on the search field.
   SetInitiallyFocusedView(search_field_view_);
@@ -243,6 +234,8 @@ void PickerView::SelectSearchResult(const PickerSearchResult& result) {
     delegate_->ShowEditor(editor_data->preset_query_id,
                           editor_data->freeform_text);
   } else {
+    delegate_->GetSessionMetrics().SetInsertedResult(
+        result, search_results_view_->GetIndex(result));
     delegate_->InsertResultOnNextFocus(result);
     GetWidget()->Close();
   }
@@ -260,6 +253,7 @@ gfx::Rect PickerView::GetTargetBounds(const gfx::Rect& anchor_bounds,
 }
 
 void PickerView::StartSearch(const std::u16string& query) {
+  delegate_->GetSessionMetrics().UpdateSearchQuery(query);
   if (!query.empty()) {
     SetActivePage(search_results_view_);
     published_first_results_ = false;
@@ -303,6 +297,8 @@ void PickerView::SelectCategory(PickerCategory category) {
 
 void PickerView::SelectCategoryWithQuery(PickerCategory category,
                                          std::u16string_view query) {
+  PickerSessionMetrics& session_metrics = delegate_->GetSessionMetrics();
+  session_metrics.SetAction(category);
   selected_category_ = category;
 
   if (category == PickerCategory::kExpressions) {
@@ -312,7 +308,9 @@ void PickerView::SelectCategoryWithQuery(PickerCategory category,
       // open emoji picker in the correct location in some other way.
       widget->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
     }
-    delegate_->ShowEmojiPicker(ui::EmojiPickerCategory::kEmojis);
+    session_metrics.SetOutcome(
+        PickerSessionMetrics::SessionOutcome::kRedirected);
+    delegate_->ShowEmojiPicker(ui::EmojiPickerCategory::kEmojis, query);
     return;
   }
 
@@ -325,6 +323,8 @@ void PickerView::SelectCategoryWithQuery(PickerCategory category,
       widget->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
     }
     CHECK(query.empty());
+    session_metrics.SetOutcome(
+        PickerSessionMetrics::SessionOutcome::kRedirected);
     delegate_->ShowEditor(/*preset_query_id*/ std::nullopt,
                           /*freeform_text=*/std::nullopt);
     return;
@@ -332,6 +332,7 @@ void PickerView::SelectCategoryWithQuery(PickerCategory category,
 
   if (GetPickerCategoryType(category) ==
       PickerCategoryType::kCaseTransformations) {
+    session_metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
     delegate_->TransformSelectedText(category);
     GetWidget()->Close();
     return;
@@ -339,8 +340,9 @@ void PickerView::SelectCategoryWithQuery(PickerCategory category,
 
   if (category == PickerCategory::kCapsOn ||
       category == PickerCategory::kCapsOff) {
-    GetWidget()->Close();
+    session_metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
     delegate_->SetCapsLockEnabled(category == PickerCategory::kCapsOn);
+    GetWidget()->Close();
     return;
   }
 
@@ -374,9 +376,20 @@ void PickerView::AddSearchFieldView() {
       &key_event_handler_, &performance_metrics_));
 }
 
-void PickerView::AddContentsView(PickerLayoutType layout_type) {
-  contents_view_ =
-      AddChildView(std::make_unique<PickerContentsView>(layout_type));
+void PickerView::AddContentsViewWithSeparator(PickerLayoutType layout_type) {
+  switch (layout_type) {
+    case PickerLayoutType::kResultsBelowSearchField:
+      AddChildView(CreateSeparator());
+      contents_view_ =
+          AddChildView(std::make_unique<PickerContentsView>(layout_type));
+      break;
+    case PickerLayoutType::kResultsAboveSearchField:
+      contents_view_ =
+          AddChildViewAt(std::make_unique<PickerContentsView>(layout_type), 0);
+      AddChildViewAt(CreateSeparator(), 1);
+      break;
+  }
+
   contents_view_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,

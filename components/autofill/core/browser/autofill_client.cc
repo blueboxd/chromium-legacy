@@ -116,18 +116,6 @@ profile_metrics::BrowserProfileType AutofillClient::GetProfileType() const {
 FastCheckoutClient* AutofillClient::GetFastCheckoutClient() {
   return nullptr;
 }
-
-void AutofillClient::ShowUnmaskAuthenticatorSelectionDialog(
-    const std::vector<CardUnmaskChallengeOption>& challenge_options,
-    base::OnceCallback<void(const std::string&)>
-        confirm_unmask_challenge_option_callback,
-    base::OnceClosure cancel_unmasking_closure) {
-}
-
-void AutofillClient::DismissUnmaskAuthenticatorSelectionDialog(
-    bool server_success) {
-}
-
 void AutofillClient::ShowVirtualCardEnrollDialog(
     const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
     base::OnceClosure accept_virtual_card_callback,
@@ -165,9 +153,6 @@ bool AutofillClient::CloseWebauthnDialog() {
   return false;
 }
 
-void AutofillClient::OfferVirtualCardOptions(
-    const std::vector<raw_ptr<CreditCard, VectorExperimental>>& candidates,
-    base::OnceCallback<void(const std::string&)> callback) {}
 #else
 void AutofillClient::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const std::u16string&)> callback) {
@@ -200,15 +185,11 @@ void AutofillClient::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
 }
 
-void AutofillClient::ConfirmSaveIbanLocally(const Iban& iban,
-                                            bool should_show_prompt,
-                                            SaveIbanPromptCallback callback) {}
-
-void AutofillClient::ConfirmUploadIbanToCloud(
-    const Iban& iban,
-    LegalMessageLines legal_message_lines,
-    bool should_show_prompt,
-    SaveIbanPromptCallback callback) {}
+bool AutofillClient::ShowTouchToFillIban(
+    base::WeakPtr<TouchToFillDelegate> delegate,
+    base::span<const autofill::Iban> ibans_to_suggest) {
+  return false;
+}
 
 void AutofillClient::UpdateOfferNotification(
     const AutofillOfferData* offer,

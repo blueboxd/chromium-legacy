@@ -112,6 +112,7 @@
 #include "net/cookies/cookie_setting_override.h"
 #include "net/net_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
@@ -288,7 +289,7 @@ class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
-class ServiceWorkerContainerHost;
+class ServiceWorkerClient;
 class SiteInfo;
 class SpeechSynthesisImpl;
 class TimeoutMonitor;
@@ -317,6 +318,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public blink::mojom::NonAssociatedLocalFrameHost,
       public blink::mojom::LocalMainFrameHost,
       public ui::AXActionHandlerBase,
+      public device::mojom::VibrationManagerListener,
       public network::mojom::CookieAccessObserver,
       public network::mojom::TrustTokenAccessObserver,
       public network::mojom::SharedDictionaryAccessObserver,
@@ -331,6 +333,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Data used with IsClipboardPasteAllowedByPolicy() method.
   using ClipboardPasteData = content::ClipboardPasteData;
+
+  static RenderFrameHostImpl* From(RenderFrameHost* render_frame_host) {
+    // It is assumed that all RenderFrameHosts are RenderFrameHostImpls.
+    return static_cast<RenderFrameHostImpl*>(render_frame_host);
+  }
 
   static RenderFrameHostImpl* FromID(GlobalRenderFrameHostId id);
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
@@ -632,6 +639,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<ui::AXEvent>& events);
 
   void SendAccessibilityEventsToManager(const ui::AXUpdatesAndEvents& details);
+  void ExerciseAccessibilityForTest();
 
   // Evict the RenderFrameHostImpl with |reason| that causes the eviction. This
   // constructs a flattened list of NotRestoredReasons and calls
@@ -1784,12 +1792,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return has_test_disabled_proactive_browsing_instance_swap_;
   }
 
-  void AddServiceWorkerContainerHost(
+  void AddServiceWorkerClient(
       const std::string& uuid,
-      base::WeakPtr<ServiceWorkerContainerHost> host);
-  void RemoveServiceWorkerContainerHost(const std::string& uuid);
-  // Returns the last committed ServiceWorkerContainerHost of this frame.
-  base::WeakPtr<ServiceWorkerContainerHost> GetLastCommittedServiceWorkerHost();
+      base::WeakPtr<ServiceWorkerClient> service_worker_client);
+  void RemoveServiceWorkerClient(const std::string& uuid);
+  // Returns the last committed ServiceWorkerClient of this frame.
+  base::WeakPtr<ServiceWorkerClient> GetLastCommittedServiceWorkerClient();
 
   // Called to taint |this| so the pages which have requested MediaStream
   // (audio/video/etc capture stream) access would not enter BackForwardCache.
@@ -1835,13 +1843,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |interceptor| remains live as long as it is set as the interceptor.
   void SetCommitCallbackInterceptorForTesting(
       CommitCallbackInterceptor* interceptor);
-
-  using CreateNewPopupWidgetCallbackForTesting =
-      base::RepeatingCallback<void(RenderWidgetHostImpl*)>;
-
-  // Set a callback to listen to the |CreateNewPopupWidget| for testing.
-  void SetCreateNewPopupCallbackForTesting(
-      const CreateNewPopupWidgetCallbackForTesting& callback);
 
   using UnloadACKCallbackForTesting = base::RepeatingCallback<bool()>;
 
@@ -2386,10 +2387,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void TextSelectionChanged(const std::u16string& text,
                             uint32_t offset,
                             const gfx::Range& range) override;
-  void set_show_popup_menu_callback_for_testing(
-      base::OnceCallback<void(const gfx::Rect&)> callback) {
-    show_popup_menu_callback_for_testing_ = std::move(callback);
-  }
   void ShowPopupMenu(
       mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
       const gfx::Rect& bounds,
@@ -2632,6 +2629,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
   CreateSharedDictionaryAccessObserver();
 
+  mojo::PendingRemote<device::mojom::VibrationManagerListener>
+  CreateVibrationManagerListener();
+
   // network::mojom::CookieAccessObserver:
   void OnCookiesAccessed(std::vector<network::mojom::CookieAccessDetailsPtr>
                              details_vector) override;
@@ -2643,6 +2643,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // network::mojom::SharedDictionaryAccessObserver:
   void OnSharedDictionaryAccessed(
       network::mojom::SharedDictionaryAccessDetailsPtr details) override;
+
+  // device::mojom::VibrationManagerListener:
+  void OnVibrate() override;
 
   void GetSavableResourceLinksFromRenderer();
 
@@ -4818,9 +4821,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Whether the last interception to DidCommit* causes us to ignore the commit.
   bool did_ignore_last_commit_callback_ = false;
 
-  // Used to hear about CreateNewPopupWidget calls in tests.
-  CreateNewPopupWidgetCallbackForTesting create_new_popup_widget_callback_;
-
   // Used to hear about UnloadACK calls in tests.
   UnloadACKCallbackForTesting unload_ack_callback_;
 
@@ -4872,16 +4872,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Salt for generating frame-specific media device IDs.
   std::string media_device_id_salt_base_;
 
-  // Keep the list of ServiceWorkerContainerHosts so that they can observe when
+  // Keep the list of ServiceWorkerClients so that they can observe when
   // the frame goes in/out of BackForwardCache.
   // TODO(yuzus): Make this a single pointer. A frame should only have a single
-  // container host, but probably during a navigation the old container host is
-  // still alive when the new container host is created and added to this
-  // vector, and the old container host is destroyed shortly after navigation.
-  std::map<std::string, base::WeakPtr<ServiceWorkerContainerHost>>
-      service_worker_container_hosts_;
-  // Keeps the track of the latest ServiceWorkerContainerHost.
-  base::WeakPtr<ServiceWorkerContainerHost> last_committed_service_worker_host_;
+  // service worker client, but probably during a navigation the old service
+  // worker client is still alive when the new service worker client is created
+  // and added to this vector, and the old service worker client is destroyed
+  // shortly after navigation.
+  std::map<std::string, base::WeakPtr<ServiceWorkerClient>>
+      service_worker_clients_;
+  // Keeps the track of the latest ServiceWorkerClient.
+  base::WeakPtr<ServiceWorkerClient> last_committed_service_worker_client_;
 
   // The fenced frames owned by this document, ordered with newer fenced frames
   // being appended to the end.
@@ -4986,6 +4987,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(crbug.com/40615943): Remove this warning after the RDH ships.
   mojo::ReceiverSet<network::mojom::SharedDictionaryAccessObserver>
       shared_dictionary_observers_;
+
+  mojo::ReceiverSet<device::mojom::VibrationManagerListener>
+      vibration_manager_listeners_;
 
   // Indicates whether this frame is an outer delegate frame for some other
   // RenderFrameHost. This will be a valid ID if so, and
@@ -5202,9 +5206,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in the renderer process with a sequential value to guarantee that each
   // nonce returned is unique.
   base::Uuid base_auction_nonce_;
-
-  base::OnceCallback<void(const gfx::Rect&)>
-      show_popup_menu_callback_for_testing_;
 
   // WeakPtrFactories are the last members, to ensure they are destroyed before
   // all other fields of `this`.

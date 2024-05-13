@@ -210,6 +210,9 @@ ci.builder(
             config = "chromium",
             apply_configs = [
                 "use_clang_coverage",
+                # This is necessary due to child builders running the
+                # telemetry_perf_unittests suite.
+                "chromium_with_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -341,6 +344,9 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "tst",
@@ -377,6 +383,9 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-linux-archive",
+    ),
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
     ),
     targets = targets.bundle(
         targets = [
@@ -636,6 +645,7 @@ ci.builder(
 
 ci.builder(
     name = "linux-gcc-rel",
+    description_html = "This builder builds only empty_main target to ensure GN config works with is_clang=false.",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -667,7 +677,6 @@ ci.builder(
         short_name = "gcc",
     ),
     contact_team_email = "build@chromium.org",
-    reclient_instance = None,
 )
 
 ci.builder(

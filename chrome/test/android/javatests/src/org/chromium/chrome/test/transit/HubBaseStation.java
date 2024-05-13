@@ -14,20 +14,23 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.CoreMatchers.allOf;
 
-import static org.chromium.base.test.transit.LogicalElement.sharedUiThreadLogicalElement;
-import static org.chromium.base.test.transit.LogicalElement.unscopedUiThreadLogicalElement;
+import static org.chromium.base.test.transit.LogicalElement.uiThreadLogicalElement;
 import static org.chromium.base.test.transit.ViewElement.sharedViewElement;
 
 import androidx.annotation.StringRes;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.NoMatchingViewException;
 
+import org.chromium.base.test.transit.ActivityElement;
 import org.chromium.base.test.transit.Condition;
+import org.chromium.base.test.transit.ConditionStatus;
 import org.chromium.base.test.transit.Elements;
 import org.chromium.base.test.transit.Station;
 import org.chromium.base.test.transit.TravelException;
 import org.chromium.base.test.transit.Trip;
+import org.chromium.base.test.transit.UiThreadCondition;
 import org.chromium.base.test.transit.ViewElement;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.hub.PaneId;
 import org.chromium.chrome.browser.hub.R;
@@ -61,12 +64,15 @@ public abstract class HubBaseStation extends Station {
                                     R.string.accessibility_tab_switcher_incognito_stack)));
 
     protected final ChromeTabbedActivityTestRule mChromeTabbedActivityTestRule;
+    protected ActivityElement<ChromeTabbedActivity> mActivityElement;
+    protected TabModelSelectorCondition mTabModelSelectorCondition;
 
     /**
      * @param chromeTabbedActivityTestRule The {@link ChromeTabbedActivityTestRule} of the test.
      */
     public HubBaseStation(ChromeTabbedActivityTestRule chromeTabbedActivityTestRule) {
         super();
+        assert HubFieldTrial.isHubEnabled();
         mChromeTabbedActivityTestRule = chromeTabbedActivityTestRule;
     }
 
@@ -75,25 +81,23 @@ public abstract class HubBaseStation extends Station {
 
     @Override
     public void declareElements(Elements.Builder elements) {
+        mActivityElement = elements.declareActivity(ChromeTabbedActivity.class);
+        mTabModelSelectorCondition =
+                elements.declareEnterCondition(new TabModelSelectorCondition(mActivityElement));
+
         elements.declareView(HUB_TOOLBAR);
         elements.declareView(HUB_PANE_HOST);
         elements.declareView(HUB_MENU_BUTTON);
 
         Condition incognitoTabsExist =
-                TabModelConditions.anyIncognitoTabsExist(mChromeTabbedActivityTestRule);
+                TabModelConditions.anyIncognitoTabsExist(mTabModelSelectorCondition);
         elements.declareViewIf(REGULAR_TOGGLE_TAB_BUTTON, incognitoTabsExist);
         elements.declareViewIf(INCOGNITO_TOGGLE_TAB_BUTTON, incognitoTabsExist);
 
         elements.declareLogicalElement(
-                unscopedUiThreadLogicalElement(
-                        "HubFieldTrial Hub is enabled", HubFieldTrial::isHubEnabled));
-        elements.declareLogicalElement(
-                sharedUiThreadLogicalElement(
+                uiThreadLogicalElement(
                         "LayoutManager is showing TAB_SWITCHER (Hub)", this::isHubLayoutShowing));
-        elements.declareLogicalElement(
-                unscopedUiThreadLogicalElement(
-                        "LayoutManager is not in transition to or from TAB_SWITCHER (Hub)",
-                        this::isHubLayoutNotInTransition));
+        elements.declareEnterCondition(new HubLayoutNotInTransition());
     }
 
     /**
@@ -108,8 +112,8 @@ public abstract class HubBaseStation extends Station {
         PageStation destination =
                 PageStation.newPageStationBuilder()
                         .withActivityTestRule(mChromeTabbedActivityTestRule)
-                        .withIsOpeningTab(false)
-                        .withIsSelectingTab(true)
+                        .withIsOpeningTabs(0)
+                        .withIsSelectingTabs(1)
                         .build();
         return Trip.travelSync(this, destination, () -> Espresso.pressBack());
     }
@@ -163,24 +167,39 @@ public abstract class HubBaseStation extends Station {
         return layoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
     }
 
-    private boolean isHubLayoutNotInTransition() {
-        LayoutManager layoutManager =
-                mChromeTabbedActivityTestRule.getActivity().getLayoutManager();
-        return !layoutManager.isLayoutStartingToShow(LayoutType.TAB_SWITCHER)
-                && !layoutManager.isLayoutStartingToHide(LayoutType.TAB_SWITCHER);
-    }
-
     private void clickPaneSwitcherForPaneWithContentDescription(
             @StringRes int contentDescriptionRes) {
         // TODO(crbug.com/40287437): Content description seems reasonable for now, this might get
         // harder
         // once we use a recycler view with text based buttons.
-        String contentDescription =
-                mChromeTabbedActivityTestRule.getActivity().getString(contentDescriptionRes);
+        String contentDescription = mActivityElement.get().getString(contentDescriptionRes);
         onView(
                         allOf(
                                 isDescendantOfA(HUB_PANE_SWITCHER.getViewMatcher()),
                                 withContentDescription(contentDescription)))
                 .perform(click());
+    }
+
+    private class HubLayoutNotInTransition extends UiThreadCondition {
+        private HubLayoutNotInTransition() {
+            dependOnSupplier(mActivityElement, "ChromeTabbedActivity");
+        }
+
+        @Override
+        protected ConditionStatus checkWithSuppliers() {
+            LayoutManager layoutManager = mActivityElement.get().getLayoutManager();
+            boolean startingToShow = layoutManager.isLayoutStartingToShow(LayoutType.TAB_SWITCHER);
+            boolean startingToHide = layoutManager.isLayoutStartingToHide(LayoutType.TAB_SWITCHER);
+            return whether(
+                    !startingToShow && !startingToHide,
+                    "startingToShow=%b, startingToHide=%b",
+                    startingToShow,
+                    startingToHide);
+        }
+
+        @Override
+        public String buildDescription() {
+            return "LayoutManager is not in transition to or from TAB_SWITCHER (Hub)";
+        }
     }
 }

@@ -127,6 +127,7 @@
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/compositor/compositor.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/display_util.h"
 #include "ui/display/screen.h"
@@ -350,6 +351,7 @@ std::unique_ptr<RenderWidgetHostIteratorImpl> GetEmbeddedRenderWidgetHosts(
 
 // static
 std::unique_ptr<RenderWidgetHostImpl> RenderWidgetHostImpl::Create(
+    base::PassKey<RenderWidgetHostFactory>,
     FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
     viz::FrameSinkId frame_sink_id,
@@ -359,28 +361,27 @@ std::unique_ptr<RenderWidgetHostImpl> RenderWidgetHostImpl::Create(
     bool renderer_initiated_creation,
     std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue) {
   return base::WrapUnique(new RenderWidgetHostImpl(
-      frame_tree,
-      /*self_owned=*/false, frame_sink_id, delegate,
+      frame_tree, /*self_owned=*/false, frame_sink_id, delegate,
       std::move(site_instance_group), routing_id, hidden,
       renderer_initiated_creation, std::move(frame_token_message_queue)));
 }
 
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::CreateSelfOwned(
+    base::PassKey<RenderWidgetHostFactory>,
     FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
     base::SafeRef<SiteInstanceGroup> site_instance_group,
     int32_t routing_id,
     bool hidden,
     std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue) {
-  auto* host = new RenderWidgetHostImpl(
-      frame_tree, /*self_owned=*/true,
-      DefaultFrameSinkId(*site_instance_group, routing_id), delegate,
-      site_instance_group, routing_id, hidden,
-      /*renderer_initiated_creation=*/true,
-      std::move(frame_token_message_queue));
-  host->SetViewIsFrameSinkIdOwner(true);
-  return host;
+  viz::FrameSinkId frame_sink_id =
+      DefaultFrameSinkId(*site_instance_group, routing_id);
+  return new RenderWidgetHostImpl(frame_tree, /*self_owned=*/true,
+                                  frame_sink_id, delegate,
+                                  std::move(site_instance_group), routing_id,
+                                  hidden, /*renderer_initiated_creation=*/true,
+                                  std::move(frame_token_message_queue));
 }
 
 RenderWidgetHostImpl::RenderWidgetHostImpl(
@@ -441,6 +442,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
   // is gone.
   if (self_owned_) {
     agent_scheduling_group_->GetProcess()->AddObserver(this);
+    SetViewIsFrameSinkIdOwner(true);
   }
 
   render_process_blocked_state_changed_subscription_ =
@@ -2532,6 +2534,51 @@ void RenderWidgetHostImpl::SetPopupBounds(const gfx::Rect& bounds,
 
 RenderWidgetHostViewInput* RenderWidgetHostImpl::GetPointerLockView() {
   return delegate()->GetPointerLockWidget()->GetView();
+}
+
+void RenderWidgetHostImpl::ForwardDelegatedInkPoint(
+    gfx::DelegatedInkPoint& delegated_ink_point,
+    bool& ended_delegated_ink_trail) {
+  if (!view_) {
+    return;
+  }
+
+  auto* delegated_ink_point_renderer =
+      delegate_->GetDelegatedInkRenderer(view_->GetCompositor());
+  if (!delegated_ink_point_renderer) {
+    return;
+  }
+
+  TRACE_EVENT_WITH_FLOW1("delegated_ink_trails",
+                         "Forwarding delegated ink point from browser.",
+                         TRACE_ID_GLOBAL(delegated_ink_point.trace_id()),
+                         TRACE_EVENT_FLAG_FLOW_OUT, "delegated point",
+                         delegated_ink_point.ToString());
+
+  // Calling this will result in IPC calls to get |delegated_ink_point| to
+  // viz. The decision to do this here was made with the understanding that
+  // the IPC overhead will result in a minor increase in latency for getting
+  // this event to the renderer. However, by sending it here, the event is
+  // given the greatest possible chance to make it to viz before
+  // DrawAndSwap() is called, allowing more points to be drawn as part of
+  // the delegated ink trail, and thus reducing user perceived latency.
+  delegated_ink_point_renderer->StoreDelegatedInkPoint(delegated_ink_point);
+  ended_delegated_ink_trail = false;
+}
+
+void RenderWidgetHostImpl::ResetDelegatedInkPointPrediction(
+    bool& ended_delegated_ink_trail) {
+  auto* delegated_ink_point_renderer =
+      delegate_->GetDelegatedInkRenderer(nullptr);
+  if (delegated_ink_point_renderer && !ended_delegated_ink_trail) {
+    // Let viz know that the most recent point it received from us is probably
+    // the last point the user is inking, so it shouldn't predict anything
+    // beyond it.
+    TRACE_EVENT_INSTANT0("delegated_ink_trails", "Delegated ink trail ended",
+                         TRACE_EVENT_SCOPE_THREAD);
+    delegated_ink_point_renderer->ResetPrediction();
+    ended_delegated_ink_trail = true;
+  }
 }
 
 const cc::RenderFrameMetadata&

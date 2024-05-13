@@ -4,6 +4,7 @@
 
 #include "chrome/browser/shortcuts/icon_badging.h"
 
+#include <iterator>
 #include <string>
 
 #include "base/base_paths.h"
@@ -16,6 +17,7 @@
 #include "base/strings/to_string.h"
 #include "base/test/gmock_expected_support.h"
 #include "build/branding_buildflags.h"
+#include "build/buildflag.h"
 #include "chrome/browser/shortcuts/image_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -48,6 +50,9 @@ base::FilePath GetCompileTimeTestFolders() {
   base::FilePath compile_time_folder;
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   compile_time_folder = base::FilePath(FILE_PATH_LITERAL("chrome_branded"));
+#elif BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
+  compile_time_folder =
+      base::FilePath(FILE_PATH_LITERAL("chrome_for_testing_branded"));
 #else
   compile_time_folder = base::FilePath(FILE_PATH_LITERAL("chromium"));
 #endif
@@ -103,6 +108,17 @@ void WriteTestIconsToDiskOrDie(const gfx::ImageFamily& family) {
   }
 }
 
+// This is hardcoded based on the sizes of kSizesNeededForShortcutCreation.
+int GetOsSpecificSizes() {
+#if BUILDFLAG(IS_MAC)
+  return 5;
+#elif BUILDFLAG(IS_LINUX)
+  return 2;
+#elif BUILDFLAG(IS_WIN)
+  return 4;
+#endif
+}
+
 }  // namespace
 
 // Verifies that badging logic works as intended by comparing with icons stored
@@ -129,6 +145,8 @@ TEST(IconBadgingTest, VerifyFromDisk) {
   if (ShouldRebaselineTestImages()) {
     WriteTestIconsToDiskOrDie(family);
   }
+
+  EXPECT_EQ(std::distance(family.begin(), family.end()), GetOsSpecificSizes());
 
   for (const gfx::Image& image_icon : family) {
     std::string width = base::ToString(image_icon.Width());

@@ -743,11 +743,11 @@ MessagePumpUIApplication::MessagePumpUIApplication()
 MessagePumpUIApplication::~MessagePumpUIApplication() = default;
 
 void MessagePumpUIApplication::DoRun(Delegate* delegate) {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
 }
 
 bool MessagePumpUIApplication::DoQuit() {
-  NOTREACHED();
+  NOTREACHED_IN_MIGRATION();
   return false;
 }
 

@@ -24,7 +24,6 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace content {
-struct NativeWebKeyboardEvent;
 class WebContents;
 }  // namespace content
 
@@ -38,7 +37,7 @@ class AXPlatformNode;
 
 namespace autofill {
 
-class AutofillPopupDelegate;
+class AutofillSuggestionDelegate;
 class AutofillPopupView;
 
 // Sub-popups and their parent popups are connected by providing children
@@ -71,11 +70,6 @@ class AutofillPopupControllerImpl
   AutofillPopupControllerImpl(const AutofillPopupControllerImpl&) = delete;
   AutofillPopupControllerImpl& operator=(const AutofillPopupControllerImpl&) =
       delete;
-
-  // Handles a key press event and returns whether the event should be swallowed
-  // (meaning that no other handler, in not particular the default handler, can
-  // process it).
-  bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event);
 
   // AutofillSuggestionController:
   void OnSuggestionsChanged() override;
@@ -112,12 +106,15 @@ class AutofillPopupControllerImpl
   const std::vector<SuggestionFilterMatch>& GetSuggestionFilterMatches()
       const override;
   void SetFilter(std::optional<SuggestionFilter> filter) override;
+  bool HandleKeyPressEvent(
+      const content::NativeWebKeyboardEvent& event) override;
+  bool HasFilteredOutSuggestions() const override;
   base::WeakPtr<AutofillPopupController> GetWeakPtr() override;
   void SetViewForTesting(base::WeakPtr<AutofillPopupView> view) override;
 
  protected:
   AutofillPopupControllerImpl(
-      base::WeakPtr<AutofillPopupDelegate> delegate,
+      base::WeakPtr<AutofillSuggestionDelegate> delegate,
       content::WebContents* web_contents,
       PopupControllerCommon controller_common,
       int32_t form_control_ax_id,
@@ -169,7 +166,7 @@ class AutofillPopupControllerImpl
   base::WeakPtr<content::WebContents> web_contents_;
   PopupControllerCommon controller_common_;
   base::WeakPtr<AutofillPopupView> view_;
-  base::WeakPtr<AutofillPopupDelegate> delegate_;
+  base::WeakPtr<AutofillSuggestionDelegate> delegate_;
 
   // A helper class for capturing key press events associated with a
   // `content::RenderFrameHost`.

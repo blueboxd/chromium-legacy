@@ -56,7 +56,7 @@ bool CreatePairImpl(ScopedHandle* socket_a,
 
   do {
     unsigned long rnd_name;
-    RandBytes(&rnd_name, sizeof(rnd_name));
+    RandBytes(byte_span_from_ref(rnd_name));
 
     swprintf(name, kPipePathMax,
              kPipeNameFormat,
@@ -76,7 +76,7 @@ bool CreatePairImpl(ScopedHandle* socket_a,
   } while (!handle_a.is_valid() && (GetLastError() == ERROR_PIPE_BUSY));
 
   if (!handle_a.is_valid()) {
-    NOTREACHED();
+    NOTREACHED_IN_MIGRATION();
     return false;
   }
 

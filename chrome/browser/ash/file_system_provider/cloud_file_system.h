@@ -141,6 +141,7 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
   void OnTimer();
   void OnContentCacheInitialized(
       base::FileErrorOr<std::unique_ptr<ContentCache>> error_or_cache);
+  void OnItemEvictedFromCache(const base::FilePath& file_path);
   // Called when opening a file is completed with either a success or an error.
   void OnOpenFileCompleted(const base::FilePath& file_path,
                            OpenFileMode mode,
@@ -163,7 +164,7 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
   // When an attempt to read the file from disk completes, in the event it fails
   // ensure it gets delegated to the underlying FSP.
   void OnReadFileFromCacheCompleted(int file_handle,
-                                    net::IOBuffer* buffer,
+                                    scoped_refptr<net::IOBuffer> buffer,
                                     int64_t offset,
                                     int length,
                                     ReadChunkReceivedCallback callback,
@@ -173,7 +174,7 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
 
   // When a `ReadFile` completes, attempt to cache the bytes on disk.
   void OnReadFileCompleted(int file_handle,
-                           net::IOBuffer* buffer,
+                           scoped_refptr<net::IOBuffer> buffer,
                            int64_t offset,
                            int length,
                            ReadChunkReceivedCallback callback,

@@ -13,12 +13,37 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/android/autofill/autofill_save_card_bottom_sheet_bridge.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_test_helper.h"
 #include "ui/android/window_android.h"
+#else  // !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 namespace autofill {
+
+#if BUILDFLAG(IS_ANDROID)
+class MockAutofillSaveCardBottomSheetBridge
+    : public AutofillSaveCardBottomSheetBridge {
+ public:
+  MockAutofillSaveCardBottomSheetBridge()
+      : AutofillSaveCardBottomSheetBridge(
+            base::android::ScopedJavaGlobalRef<jobject>(nullptr)) {}
+
+  MOCK_METHOD(void, Hide, (), (override));
+};
+#else  //! BUILDFLAG(IS_ANDROID)
+class MockSaveCardBubbleController : public SaveCardBubbleControllerImpl {
+ public:
+  explicit MockSaveCardBubbleController(content::WebContents* web_contents)
+      : SaveCardBubbleControllerImpl(web_contents) {}
+  ~MockSaveCardBubbleController() override = default;
+
+  MOCK_METHOD(void, ShowConfirmationBubbleView, (bool), (override));
+};
+#endif
+
 class MockVirtualCardEnrollBubbleController
     : public VirtualCardEnrollBubbleControllerImpl {
  public:
@@ -50,6 +75,16 @@ class ChromePaymentsAutofillClientTest
     web_contents()->SetUserData(
         mock_virtual_card_bubble_controller->UserDataKey(),
         std::move(mock_virtual_card_bubble_controller));
+#if !BUILDFLAG(IS_ANDROID)
+    auto mock_save_card_bubble_controller =
+        std::make_unique<MockSaveCardBubbleController>(web_contents());
+    web_contents()->SetUserData(mock_save_card_bubble_controller->UserDataKey(),
+                                std::move(mock_save_card_bubble_controller));
+#endif
+  }
+
+  ChromeAutofillClient* client() {
+    return ChromeAutofillClient::FromWebContentsForTesting(web_contents());
   }
 
   payments::ChromePaymentsAutofillClient* chrome_payments_client() {
@@ -61,10 +96,24 @@ class ChromePaymentsAutofillClientTest
     return static_cast<MockVirtualCardEnrollBubbleController&>(
         *VirtualCardEnrollBubbleController::GetOrCreate(web_contents()));
   }
-
-  ChromeAutofillClient* client() {
-    return ChromeAutofillClient::FromWebContentsForTesting(web_contents());
+#if BUILDFLAG(IS_ANDROID)
+  // Injects a new MockAutofillSaveCardBottomSheetBridge and returns a pointer
+  // to the mock.
+  MockAutofillSaveCardBottomSheetBridge*
+  InjectMockAutofillSaveCardBottomSheetBridge() {
+    std::unique_ptr<MockAutofillSaveCardBottomSheetBridge> mock =
+        std::make_unique<MockAutofillSaveCardBottomSheetBridge>();
+    MockAutofillSaveCardBottomSheetBridge* pointer = mock.get();
+    chrome_payments_client()->SetAutofillSaveCardBottomSheetBridgeForTesting(
+        std::move(mock));
+    return pointer;
   }
+#else  // !BUILDFLAG(IS_ANDROID)
+  MockSaveCardBubbleController& save_card_bubble_controller() {
+    return static_cast<MockSaveCardBubbleController&>(
+        *SaveCardBubbleController::GetOrCreate(web_contents()));
+  }
+#endif
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -84,6 +133,14 @@ TEST_F(ChromePaymentsAutofillClientTest,
       chrome_payments_client()->GetOrCreateAutofillSaveCardBottomSheetBridge(),
       nullptr);
 }
+
+TEST_F(ChromePaymentsAutofillClientTest,
+       CreditCardUploadCompleted_CallsAutofillSaveCardBottomSheetBridge) {
+  MockAutofillSaveCardBottomSheetBridge* save_card_bridge =
+      InjectMockAutofillSaveCardBottomSheetBridge();
+  EXPECT_CALL(*save_card_bridge, Hide());
+  chrome_payments_client()->CreditCardUploadCompleted(true);
+}
 #else   // !BUILDFLAG(IS_ANDROID)
 // Verify that confirmation bubble view is shown after virtual card enrollment
 // is completed.
@@ -94,6 +151,14 @@ TEST_F(ChromePaymentsAutofillClientTest,
   EXPECT_CALL(virtual_card_bubble_controller(),
               ShowConfirmationBubbleView(true));
   chrome_payments_client()->VirtualCardEnrollCompleted(true);
+}
+
+// Test that calling CreditCardUploadCompleted calls
+// SaveCardBubbleControllerImpl::ShowConfirmationBubbleView.
+TEST_F(ChromePaymentsAutofillClientTest,
+       CreditCardUploadCompleted_CallsShowConfirmationBubbleView) {
+  EXPECT_CALL(save_card_bubble_controller(), ShowConfirmationBubbleView(true));
+  chrome_payments_client()->CreditCardUploadCompleted(true);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

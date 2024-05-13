@@ -453,6 +453,9 @@
         'test_suites': {
           'isolated_scripts': 'cast_junit_tests',
         },
+        'mixins': [
+            'has_native_resultdb_integration',
+        ],
       },
       'android-10-arm64-rel': {
         'swarming': {
@@ -2366,10 +2369,8 @@
         'os_type': 'android',
         'browser_config': 'android-chromium',
         'mixins': [
-          'android_r',
           'has_native_resultdb_integration',
-          'flame',
-          'gpu-swarming-pool',
+          'gpu_pixel_4_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_android_telemetry_tests',
@@ -2393,10 +2394,8 @@
         'os_type': 'android',
         'browser_config': 'android-chromium',
         'mixins': [
-          'android_r',
           'has_native_resultdb_integration',
-          'flame',
-          'gpu-swarming-pool',
+          'gpu_pixel_4_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_android_telemetry_tests',
@@ -2408,10 +2407,8 @@
         'os_type': 'android',
         'browser_config': 'android-chromium',
         'mixins': [
-          'android_t',
           'has_native_resultdb_integration',
-          'oriole',
-          'gpu-swarming-pool',
+          'gpu_pixel_6_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_android_telemetry_tests',
@@ -2423,10 +2420,8 @@
         'os_type': 'android',
         'browser_config': 'android-chromium',
         'mixins': [
-          'android_u',
           'has_native_resultdb_integration',
-          'oriole',
-          'gpu-swarming-pool',
+          'gpu_pixel_6_experimental',
           'limited_capacity_bot',
         ],
         # When the experimental OS version is identical to the stable version,
@@ -2442,10 +2437,8 @@
         'os_type': 'android',
         'browser_config': 'android-chromium',
         'mixins': [
-          'android_t',
           'has_native_resultdb_integration',
-          'oriole',
-          'gpu-swarming-pool',
+          'gpu_pixel_6_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_android_telemetry_tests',
@@ -2459,7 +2452,7 @@
         'skip_merge_script': True,
         'mixins': [
           'has_native_resultdb_integration',
-          'samsung_s24',
+          'gpu_samsung_s24_stable',
           'limited_capacity_bot',
         ],
         'test_suites': {
@@ -3757,6 +3750,16 @@
         },
         'use_swarming': False,
       },
+      'mac13-wpt-chromium-rel': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'isolate_profile_data',
+          'mac_13_x64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'headless_shell_wpt_tests_isolated_scripts',
+        },
+      },
       'win-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
@@ -3821,6 +3824,18 @@
           'gtest_tests': 'chromium_win10_gtests',
           'isolated_scripts': 'chromium_win_rel_isolated_scripts',
         },
+      },
+      'win10-wpt-chromium-rel': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'x86-64',
+          'win10',
+          'isolate_profile_data',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'headless_shell_wpt_tests_isolated_scripts',
+        },
+        'os_type': 'win',
       },
     },
   },
@@ -3963,10 +3978,8 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'android_u',
           'has_native_resultdb_integration',
-          'oriole',
-          'gpu-swarming-pool',
+          'gpu_pixel_6_experimental',
           'limited_capacity_bot',
         ],
         # If the experimental configuration is the same as stable, this should
@@ -3996,9 +4009,7 @@
         'skip_merge_script': True,
         'mixins': [
           'has_native_resultdb_integration',
-          'mdarcy',
-          'gpu-swarming-pool',
-          'pie_generic',
+          'gpu_nvidia_shield_tv_stable',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_shieldtv_gtests',
@@ -4041,10 +4052,8 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'android_r',
           'has_native_resultdb_integration',
-          'flame',
-          'gpu-swarming-pool',
+          'gpu_pixel_4_stable',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_gtests',
@@ -4057,10 +4066,8 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'android_t',
           'has_native_resultdb_integration',
-          'oriole',
-          'gpu-swarming-pool',
+          'gpu_pixel_6_stable',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_gtests',
@@ -4072,11 +4079,8 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'android_user',
           'has_native_resultdb_integration',
-          'gpu-swarming-pool',
-          'samsung_a13',
-          's_generic',
+          'gpu_samsung_a13_stable',
           'limited_capacity_bot',
         ],
         'test_suites': {
@@ -4089,11 +4093,8 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'android_user',
           'has_native_resultdb_integration',
-          'gpu-swarming-pool',
-          'samsung_a23',
-          's_generic',
+          'gpu_samsung_a23_stable',
           'limited_capacity_bot',
         ],
         'test_suites': {
@@ -4107,7 +4108,7 @@
         'skip_merge_script': True,
         'mixins': [
           'has_native_resultdb_integration',
-          'samsung_s23',
+          'gpu_samsung_s23_stable',
           'limited_capacity_bot',
         ],
         'test_suites': {
@@ -6565,21 +6566,6 @@
         },
         'os_type': 'chromeos',
       },
-      'optimization_guide-linux': {
-        'additional_compile_targets': [
-          'ondevice_model_benchmark',
-          'ondevice_model_example',
-        ],
-        'mixins': [
-          'chrome-intelligence-swarming-pool',
-          'linux-jammy',
-        ],
-        'test_suites': {
-           'gtest_tests': 'optimization_guide_linux_gtests',
-           'isolated_scripts': 'optimization_guide_linux_script_tests',
-        },
-        'os_type': 'linux',
-      },
       'optimization_guide-mac-arm64': {
         'additional_compile_targets': [
           'ondevice_model_benchmark',
@@ -6640,7 +6626,22 @@
         },
         'os_type': 'win',
       },
-      'optimization_guide-win64': {
+      'optimization_guide_official-linux': {
+        'additional_compile_targets': [
+          'ondevice_model_benchmark',
+          'ondevice_model_example',
+        ],
+        'mixins': [
+          'chrome-intelligence-swarming-pool',
+          'linux-jammy',
+        ],
+        'test_suites': {
+           'gtest_tests': 'optimization_guide_linux_gtests',
+           'isolated_scripts': 'optimization_guide_linux_script_tests',
+        },
+        'os_type': 'linux',
+      },
+      'optimization_guide_official-win64': {
         'additional_compile_targets': [
           'ondevice_model_benchmark',
           'ondevice_model_example',
@@ -6819,10 +6820,8 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'android_r',
           'has_native_resultdb_integration',
-          'flame',
-          'gpu-swarming-pool',
+          'gpu_pixel_4_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_pixel_4_telemetry_tests',

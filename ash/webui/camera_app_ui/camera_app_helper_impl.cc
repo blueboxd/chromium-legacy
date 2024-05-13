@@ -565,8 +565,8 @@ void CameraAppHelperImpl::OnDisplayAdded(const display::Display& new_display) {
   CheckExternalScreenState();
 }
 
-void CameraAppHelperImpl::OnDisplayRemoved(
-    const display::Display& old_display) {
+void CameraAppHelperImpl::OnDisplaysRemoved(
+    const display::Displays& removed_displays) {
   CheckExternalScreenState();
 }
 
@@ -638,6 +638,11 @@ void CameraAppHelperImpl::ScreenLockedStateUpdated() {
 void CameraAppHelperImpl::RenderPdfAsJpeg(const std::vector<uint8_t>& pdf_data,
                                           RenderPdfAsJpegCallback callback) {
   camera_app_ui_->delegate()->RenderPdfAsJpeg(pdf_data, std::move(callback));
+}
+
+void CameraAppHelperImpl::PerformOcr(const std::vector<uint8_t>& jpeg_data,
+                                     PerformOcrCallback callback) {
+  camera_app_ui_->delegate()->PerformOcr(jpeg_data, std::move(callback));
 }
 
 }  // namespace ash

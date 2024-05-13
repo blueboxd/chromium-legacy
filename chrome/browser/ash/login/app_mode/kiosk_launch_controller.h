@@ -7,13 +7,21 @@
 
 #include <memory>
 #include <optional>
+#include <string>
 
 #include "ash/public/cpp/login_accelerators.h"
+#include "base/auto_reset.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "chrome/browser/ash/app_mode/cancellable_job.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/kiosk_profile_loader.h"
@@ -111,7 +119,9 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   using LaunchCompleteCallback =
       base::OnceCallback<void(std::optional<KioskAppLaunchError::Error> error)>;
 
-  explicit KioskLaunchController(OobeUI* oobe_ui);
+  KioskLaunchController(LoginDisplayHost* host,
+                        OobeUI* oobe_ui,
+                        LaunchCompleteCallback done_callback);
   KioskLaunchController(
       LoginDisplayHost* host,
       AppLaunchSplashScreenView* splash_screen,
@@ -208,8 +218,8 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   void CleanUp();
   void LaunchApp();
 
-  void ReportSuccess();
-  void ReportError(KioskAppLaunchError::Error error);
+  void FinishLaunchWithSuccess();
+  void FinishLaunchWithError(KioskAppLaunchError::Error error);
 
   bool auto_launch_ = false;  // Whether current app is being auto-launched.
 
@@ -217,7 +227,7 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   AppState app_state_ = AppState::kCreatingProfile;
 
   // Not owned, destructed upon shutdown.
-  raw_ptr<LoginDisplayHost> const host_;
+  raw_ptr<LoginDisplayHost> host_ = nullptr;
   // Owned by OobeUI.
   raw_ptr<AppLaunchSplashScreenView> splash_screen_view_ = nullptr;
   // Current app.

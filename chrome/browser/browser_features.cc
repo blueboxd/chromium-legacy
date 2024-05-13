@@ -58,14 +58,17 @@ BASE_FEATURE(kClosedTabCache,
 
 // When enabled, a new spare renderer is created at a later time if the previous
 // spare renderer was taken by top chrome WebUI.
+// TODO(crbug.com/41490050): clean up the feature.
 BASE_FEATURE(kDeferredSpareRendererForTopChromeWebUI,
              "DeferredSpareRendererForTopChromeWebUI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // The delay time to create a new spare renderer since the previous spare
 // renderer is taken. This is not effective when
 // `delay_until_page_stopped_loading` is true.
+// Experiments have shown that delaying 2s brings the most significant
+// improvements to Top Chrome WebUIs.
 const base::FeatureParam<base::TimeDelta> kSpareRendererWarmupDelay{
-    &kDeferredSpareRendererForTopChromeWebUI, "delay", base::Seconds(1)};
+    &kDeferredSpareRendererForTopChromeWebUI, "delay", base::Seconds(2)};
 // If true, a new spare renderer is not created until the last page stops
 // loading.
 const base::FeatureParam<bool> kSpareRendererWarmupDelayUntilPageStopsLoading{
@@ -258,15 +261,6 @@ BASE_FEATURE(kNotificationOneTapUnsubscribe,
              "NotificationOneTapUnsubscribe",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-
-// Enables omnibox trigger no state prefetch. Only one of
-// kOmniboxTriggerForPrerender2 or kOmniboxTriggerForNoStatePrefetch can be
-// enabled in the experiment. If both are enabled, only
-// kOmniboxTriggerForPrerender2 takes effect.
-// TODO(crbug.com/1267731): Remove this flag once the experiments are completed.
-BASE_FEATURE(kOmniboxTriggerForNoStatePrefetch,
-             "OmniboxTriggerForNoStatePrefetch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // This flag is used for enabling Omnibox triggered prerendering. See
 // crbug.com/1166085 for more details of Omnibox triggered prerendering.

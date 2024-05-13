@@ -23,10 +23,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/autofill_suggestion_controller_utils.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
+#include "chrome/browser/ui/views/autofill/popup/popup_no_suggestions_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_factory_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_search_bar_view.h"
@@ -49,6 +51,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/feature_promo_controller.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -56,6 +59,8 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
+#include "ui/events/blink/web_input_event.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
@@ -101,21 +106,6 @@ int GetContentsVerticalPadding() {
       DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
 }
 
-// Returns true if the item at `line_number` is a footer item.
-bool IsFooterItem(const std::vector<Suggestion>& suggestions,
-                  size_t line_number) {
-  if (line_number >= suggestions.size()) {
-    return false;
-  }
-
-  // Separators are a special case: They belong into the footer iff the next
-  // item exists and is a footer item.
-  SuggestionType type = suggestions[line_number].type;
-  return type == SuggestionType::kSeparator
-             ? IsFooterItem(suggestions, line_number + 1)
-             : IsFooterSuggestionType(type);
-}
-
 bool CanShowRootPopup(AutofillSuggestionController& controller) {
 #if BUILDFLAG(IS_MAC)
   // It's possible for the container_view to not be in a window. In that case,
@@ -153,8 +143,9 @@ PopupViewViews::PopupViewViews(
                                         : kDefaultSubPopupSides,
                     /*show_arrow_pointer=*/false),
       controller_(controller),
-      parent_(parent) {
-  InitViews({});
+      parent_(parent),
+      search_bar_config_({}) {
+  InitViews();
 }
 
 PopupViewViews::PopupViewViews(
@@ -166,8 +157,9 @@ PopupViewViews::PopupViewViews(
                     search_bar_config.enabled
                         ? views::Widget::InitParams::Activatable::kYes
                         : views::Widget::InitParams::Activatable::kDefault),
-      controller_(controller) {
-  InitViews(search_bar_config);
+      controller_(controller),
+      search_bar_config_(std::move(search_bar_config)) {
+  InitViews();
 }
 
 PopupViewViews::~PopupViewViews() = default;
@@ -204,6 +196,14 @@ bool PopupViewViews::Show(
 
   has_keyboard_focus_ = !parent_;
 
+  if (search_bar_) {
+    // Make sure the search bar is focused before possible first suggestion
+    // selection, because `SetSelectedCell()` eventually leads to calling
+    // `SetPopupFocusOverride()` and focusing the input while having a view
+    // overriding focus makes `ViewAXPlatformNodeDelegate` unhappy.
+    search_bar_->Focus();
+  }
+
   if (autoselect_first_suggestion) {
     SetSelectedCell(CellIndex{0u, PopupRowView::CellType::kContent},
                     PopupCellSelectionSource::kNonUserInput);
@@ -222,10 +222,6 @@ bool PopupViewViews::Show(
   if (controller_->GetMainFillingProduct() == FillingProduct::kCompose) {
     AxAnnounce(
         l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_AX_MESSAGE_ON_SHOW));
-  }
-
-  if (search_bar_) {
-    search_bar_->Focus();
   }
 
   return !CanActivate() || (GetWidget() && GetWidget()->IsActive());
@@ -301,25 +297,6 @@ bool PopupViewViews::HandleKeyPressEvent(
       (event.GetModifiers() & blink::WebInputEvent::kKeyModifiers &
        ~blink::WebInputEvent::kShiftKey);
 
-  // Selects the content cell of the row with currently open sup-popup if any,
-  // which closes the sub-popup and looks like going one menu level back.
-  auto select_sub_popup_content_cell = [&]() {
-    if (!row_with_open_sub_popup_) {
-      return false;
-    }
-
-    size_t row_index = *row_with_open_sub_popup_;
-    // Closing the sub-popup by setting `std::nullopt` is required as
-    // `suppress_popup=true` is not enough: the sub-popup closing will be
-    // prevented by the "same value" check.
-    SetRowWithOpenSubPopup(std::nullopt);
-    SetSelectedCell(CellIndex{row_index, PopupRowView::CellType::kContent},
-                    PopupCellSelectionSource::kKeyboard,
-                    AutoselectFirstSuggestion(false),
-                    /*suppress_popup=*/true);
-    return true;
-  };
-
   switch (event.windows_key_code) {
     case ui::VKEY_UP:
       SelectPreviousRow();
@@ -335,14 +312,14 @@ bool PopupViewViews::HandleKeyPressEvent(
       if (base::i18n::IsRTL()) {
         return SelectNextHorizontalCell();
       } else {
-        if (select_sub_popup_content_cell()) {
+        if (SelectParentPopupContentCell()) {
           return true;
         }
         return SelectPreviousHorizontalCell();
       }
     case ui::VKEY_RIGHT:
       if (base::i18n::IsRTL()) {
-        if (select_sub_popup_content_cell()) {
+        if (SelectParentPopupContentCell()) {
           return true;
         }
         return SelectPreviousHorizontalCell();
@@ -362,7 +339,7 @@ bool PopupViewViews::HandleKeyPressEvent(
     case ui::VKEY_DELETE:
       return kHasShiftModifier && RemoveSelectedCell();
     case ui::VKEY_ESCAPE:
-      if (select_sub_popup_content_cell()) {
+      if (SelectParentPopupContentCell()) {
         return true;
       }
       // If this is the root popup view and there was no sub-popup open (find
@@ -396,28 +373,99 @@ bool PopupViewViews::HandleKeyPressEventForCompose(
     case ui::VKEY_ESCAPE:
       controller_->Hide(SuggestionHidingReason::kUserAborted);
       return true;
-    case ui::VKEY_TAB:
+    case ui::VKEY_UP:
       if (GetSelectedCell()) {
-        if (kHasShiftModifier) {
-          // Shift+TAB should remove the selection, but keep the popup open.
-          SetSelectedCell(std::nullopt, PopupCellSelectionSource::kKeyboard);
+        SelectPreviousRow();
+        return true;
+      }
+      return false;
+    case ui::VKEY_DOWN:
+      if (GetSelectedCell()) {
+        SelectNextRow();
+        return true;
+      }
+      return false;
+    case ui::VKEY_LEFT:
+      // `base::i18n::IsRTL` is used here instead of the controller's method
+      // because the controller's `IsRTL` depends on the language of the focused
+      // field and not the overall UI language. However, the layout of the popup
+      // is determined by the overall UI language.
+      if (base::i18n::IsRTL()) {
+        return SelectNextHorizontalCell();
+      } else {
+        if (SelectParentPopupContentCell()) {
           return true;
         }
+        return SelectPreviousHorizontalCell();
+      }
+    case ui::VKEY_RIGHT:
+      if (base::i18n::IsRTL()) {
+        if (SelectParentPopupContentCell()) {
+          return true;
+        }
+        return SelectPreviousHorizontalCell();
+      } else {
+        return SelectNextHorizontalCell();
+      }
+    case ui::VKEY_TAB: {
+      const bool is_root_popup = !parent_;
+      // TAB should only be handled by the root popup. The subpopup only deals
+      // with selection (ENTER) and arrow navigation.
+      if (!is_root_popup) {
+        return false;
+      }
+      std::optional<CellIndex> selected_cell = GetSelectedCell();
+      // The `!row_with_open_sub_popup_` check is to make sure that we only
+      // select the content cell if there is no subpopup open. This is because
+      // if one presses TAB from the subpopup, we also want to close the root
+      // popup (and navigate to the next HTML element).
+      const bool tab_pressed_popup_unselected =
+          !selected_cell && !kHasShiftModifier && !row_with_open_sub_popup_;
+      if (tab_pressed_popup_unselected) {
+        // If there is no selected cell in the compose popup, TAB should select
+        // the single compose nudge entry.
+        SetSelectedCell(CellIndex(0, PopupRowView::CellType::kContent),
+                        PopupCellSelectionSource::kKeyboard);
+        return true;
+      }
+
+      const bool tab_pressed_popup_selected =
+          selected_cell && !kHasShiftModifier;
+      if (tab_pressed_popup_selected) {
         // TAB should close the popup and focus the next HTML element if the
         // Compose entry is selected.
         controller_->Hide(SuggestionHidingReason::kUserAborted);
         return false;
       }
 
-      // If the Compose suggestion is not selected, Shift+TAB should not be
-      // handled, but TAB should select the suggestion.
-      if (kHasShiftModifier) {
+      const bool shift_tab_pressed_popup_unselected_no_subpopup =
+          !selected_cell && kHasShiftModifier && !row_with_open_sub_popup_;
+      if (shift_tab_pressed_popup_unselected_no_subpopup) {
+        // If the Compose suggestion is not selected, Shift+TAB should not be
+        // handled.
         return false;
       }
-      // Compose nudges have a single entry - select it.
-      SetSelectedCell(CellIndex(0, PopupRowView::CellType::kContent),
-                      PopupCellSelectionSource::kKeyboard);
-      return true;
+
+      const bool shift_tab_pressed_has_subpopup =
+          kHasShiftModifier && row_with_open_sub_popup_;
+      if (shift_tab_pressed_has_subpopup) {
+        // In this case, focus on the root/parent popup content area. This
+        // closes the sub-popup.
+        SetSelectedCell(CellIndex(0, PopupRowView::CellType::kContent),
+                        PopupCellSelectionSource::kKeyboard);
+        return true;
+      }
+
+      const bool shift_tab_pressed_root_popup_selected =
+          selected_cell && kHasShiftModifier && is_root_popup;
+      if (shift_tab_pressed_root_popup_selected) {
+        // Shift+TAB should remove the selection when the root popup is
+        // selected, but keep the popup open.
+        SetSelectedCell(std::nullopt, PopupCellSelectionSource::kKeyboard);
+        return true;
+      }
+      return false;
+    }
     default:
       return false;
   }
@@ -491,13 +539,13 @@ bool PopupViewViews::SelectNextHorizontalCell() {
 
 bool PopupViewViews::SelectPreviousHorizontalCell() {
   std::optional<CellIndex> selected_cell = GetSelectedCell();
-  if (selected_cell && HasPopupRowViewAt(selected_cell->first)) {
-    if (selected_cell->second == PopupRowView::CellType::kControl) {
-      SetSelectedCell(
-          CellIndex{selected_cell->first, PopupRowView::CellType::kContent},
-          PopupCellSelectionSource::kKeyboard);
-      return true;
-    }
+  if (selected_cell &&
+      selected_cell->second == PopupRowView::CellType::kControl &&
+      HasPopupRowViewAt(selected_cell->first)) {
+    SetSelectedCell(
+        CellIndex{selected_cell->first, PopupRowView::CellType::kContent},
+        PopupCellSelectionSource::kKeyboard);
+    return true;
   }
   return false;
 }
@@ -655,6 +703,44 @@ void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
       feature_engagement::kIPHAutofillCreditCardBenefitFeature);
 }
 
+void PopupViewViews::SearchBarOnInputChanged(const std::u16string& query) {
+  if (controller_) {
+    controller_->SetFilter(
+        query.empty()
+            ? std::nullopt
+            : std::optional(AutofillPopupController::SuggestionFilter(query)));
+  }
+}
+
+void PopupViewViews::SearchBarOnFocusLost() {
+  if (controller_) {
+    controller_->Hide(SuggestionHidingReason::kSearchBarFocusLost);
+  }
+}
+
+bool PopupViewViews::SearchBarHandleKeyPressed(const ui::KeyEvent& event) {
+  if (!controller_) {
+    return false;
+  }
+
+// TODO(b/339187209): On MaOS, conversion of a character key event to
+// `NativeWebKeyboardEvent` hits `NOTREACHED` in `ui::DomKeyFromNSEvent`. This
+// doesn't affect our use case as we handle only non-character events
+// (Arrows/Esc/etc) for navigation. But it needs to be investigated and ideally
+// removed.
+#if BUILDFLAG(IS_MAC)
+  if (event.is_char()) {
+    return false;
+  }
+#endif  // BUILDFLAG(IS_MAC)
+
+  // Handling events in the controller (the delegate's handler is prioritized by
+  // the search bar) enables keyboard navigation when the search bar input
+  // field is focused.
+  return controller_->HandleKeyPressEvent(
+      content::NativeWebKeyboardEvent(event));
+}
+
 void PopupViewViews::SetSelectedCell(
     std::optional<CellIndex> cell_index,
     PopupCellSelectionSource source,
@@ -722,18 +808,14 @@ bool PopupViewViews::HasPopupRowViewAt(size_t index) const {
          absl::holds_alternative<PopupRowView*>(rows_[index]);
 }
 
-void PopupViewViews::InitViews(PopupViewSearchBarConfig search_bar_config) {
+void PopupViewViews::InitViews() {
   SetNotifyEnterExitOnChild(true);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  if (search_bar_config.enabled) {
+  if (search_bar_config_.enabled) {
     search_bar_ = AddChildView(std::make_unique<PopupSearchBarView>(
-        search_bar_config.placeholder,
-        base::BindRepeating(&PopupViewViews::OnSearchBarInputChanged,
-                            base::Unretained(this)),
-        base::BindRepeating(&PopupViewViews::OnSearchBarFocusLost,
-                            base::Unretained(this))));
+        search_bar_config_.placeholder, *this));
     search_bar_->SetProperty(views::kMarginsKey,
                              gfx::Insets::VH(GetContentsVerticalPadding(), 0));
     AddChildView(std::make_unique<PopupSeparatorView>(/*vertical_padding=*/0));
@@ -766,6 +848,17 @@ void PopupViewViews::CreateSuggestionViews() {
 
   rows_.reserve(kSuggestions.size());
   size_t current_line_number = 0u;
+
+  // No suggestions (or only footer ones, which are not filterable) with
+  // a non-empty filter query means that there are no results matching
+  // the query. Show a corresponding message.
+  if ((kSuggestions.empty() || IsFooterItem(kSuggestions, 0u)) && search_bar_ &&
+      controller_->HasFilteredOutSuggestions()) {
+    suggestions_container_->AddChildView(
+        std::make_unique<PopupNoSuggestionsView>(
+            search_bar_config_.no_results_message));
+  }
+
   // Add the body rows, if there are any.
   if (!kSuggestions.empty() && !IsFooterItem(kSuggestions, 0u)) {
     // Create a container to wrap the "regular" (non-footer) rows.
@@ -800,10 +893,17 @@ void PopupViewViews::CreateSuggestionViews() {
         // The default section contains all selectable rows and includes
         // autocomplete, address, credit cards and passwords.
         default:
+          std::optional<AutofillPopupController::SuggestionFilterMatch>
+              filter_match =
+                  controller_->GetSuggestionFilterMatches().empty()
+                      ? std::nullopt
+                      : std::optional(controller_->GetSuggestionFilterMatches()
+                                          [current_line_number]);
           PopupRowView* row_view =
               body_container->AddChildView(CreatePopupRowView(
                   controller(), /*a11y_selection_delegate=*/*this,
-                  /*selection_delegate=*/*this, current_line_number));
+                  /*selection_delegate=*/*this, current_line_number,
+                  std::move(filter_match)));
           rows_.push_back(row_view);
 
           const base::Feature* const feature_for_iph =
@@ -845,6 +945,16 @@ void PopupViewViews::CreateSuggestionViews() {
             .Build();
     body_container_ = scroll_view->SetContents(std::move(body_container));
     scroll_view_ = suggestions_container_->AddChildView(std::move(scroll_view));
+    // If `kUiCompositorScrollWithLayers` is enabled, then a ScrollView performs
+    // scrolling by using layers. These layers are not affected by the clip path
+    // of the widget and their corners remain unrounded, thus going beyond
+    // the popup's rounded corners. To avoid these, set a corner radius for
+    // the ScrollView's ViewPort if layer scrolling is enabled.
+    if (scroll_view_ && base::FeatureList::IsEnabled(
+                            ::features::kUiCompositorScrollWithLayers)) {
+      scroll_view_->SetViewportRoundedCornerRadius(
+          gfx::RoundedCornersF(GetCornerRadius()));
+    }
     suggestions_container_->SetFlexForView(scroll_view_.get(), 1);
   }
 
@@ -1009,17 +1119,6 @@ bool PopupViewViews::DoUpdateBoundsAndRedrawPopup() {
   GetWidget()->SetBounds(popup_bounds);
   UpdateClipPath();
 
-  // If `kUiCompositorScrollWithLayers` is enabled, then a ScrollView performs
-  // scrolling by using layers. These layers are not affected by the clip path
-  // of the widget and their corners remain unrounded, thus going beyond
-  // the popup's rounded corners. To avoid these, set a corner radius for
-  // the ScrollView's ViewPort if layer scrolling is enabled.
-  if (scroll_view_ &&
-      base::FeatureList::IsEnabled(::features::kUiCompositorScrollWithLayers)) {
-    scroll_view_->SetViewportRoundedCornerRadius(
-        gfx::RoundedCornersF(GetCornerRadius()));
-  }
-
   SchedulePaint();
   return true;
 }
@@ -1125,23 +1224,20 @@ bool PopupViewViews::CanOpenSubPopupSuggestion(const Suggestion& suggestion) {
   return !suggestion.is_acceptable && !suggestion.apply_deactivated_style;
 }
 
-void PopupViewViews::OnSearchBarInputChanged(const std::u16string& query) {
-  if (controller_) {
-    controller_->SetFilter(
-        query.empty()
-            ? std::nullopt
-            : std::optional(AutofillPopupController::SuggestionFilter(query)));
+bool PopupViewViews::SelectParentPopupContentCell() {
+  if (!row_with_open_sub_popup_) {
+    return false;
   }
-}
-
-void PopupViewViews::OnSearchBarFocusLost() {
-  // Deactivate to ensure `HasFocus()` won't return `true`.
-  if (GetWidget()) {
-    GetWidget()->Deactivate();
-  }
-  if (controller_) {
-    controller_->Hide(SuggestionHidingReason::kFocusChanged);
-  }
+  size_t row_index = *row_with_open_sub_popup_;
+  // Closing the sub-popup by setting `std::nullopt` is required as
+  // `suppress_popup=true` is not enough: the sub-popup closing will be
+  // prevented by the "same value" check.
+  SetRowWithOpenSubPopup(std::nullopt);
+  SetSelectedCell(CellIndex{row_index, PopupRowView::CellType::kContent},
+                  PopupCellSelectionSource::kKeyboard,
+                  AutoselectFirstSuggestion(false),
+                  /*suppress_popup=*/true);
+  return true;
 }
 
 base::WeakPtr<AutofillPopupView> PopupViewViews::GetWeakPtr() {

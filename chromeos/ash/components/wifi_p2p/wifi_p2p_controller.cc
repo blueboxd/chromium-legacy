@@ -10,6 +10,7 @@
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/wifi_p2p/wifi_p2p_group.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace ash {
@@ -182,10 +183,13 @@ bool WifiP2PController::IsInitialized() {
   return g_wifi_p2p_controller;
 }
 
-void WifiP2PController::CreateWifiP2PGroup(const std::string& ssid,
-                                           const std::string& passphrase,
-                                           WifiP2PGroupCallback callback) {
-  if (!ValidateWifiDirectCredentails(ssid, passphrase)) {
+void WifiP2PController::CreateWifiP2PGroup(
+    std::optional<std::string> ssid,
+    std::optional<std::string> passphrase,
+    WifiP2PGroupCallback callback) {
+  CHECK(ssid.has_value() == passphrase.has_value());
+  if (ssid && passphrase &&
+      !ValidateWifiDirectCredentails(*ssid, *passphrase)) {
     std::move(callback).Run(OperationResult::kInvalidArguments,
                             /*metadata=*/std::nullopt);
     return;
@@ -269,6 +273,16 @@ void WifiP2PController::GetP2PGroupMetadata(
     std::optional<int> entry_network_id =
         entry_dict.FindInt(is_owner ? shill::kP2PGroupInfoNetworkIDProperty
                                     : shill::kP2PClientInfoNetworkIDProperty);
+    const std::string* entry_ipv4_address = entry_dict.FindString(
+        is_owner ? shill::kP2PGroupInfoIPv4AddressProperty
+                 : shill::kP2PClientInfoIPv4AddressProperty);
+    const std::string* entry_ssid =
+        entry_dict.FindString(is_owner ? shill::kP2PGroupInfoSSIDProperty
+                                       : shill::kP2PClientInfoSSIDProperty);
+    const std::string* entry_passphrase = entry_dict.FindString(
+        is_owner ? shill::kP2PGroupInfoPassphraseProperty
+                 : shill::kP2PClientInfoPassphraseProperty);
+
     if (!entry_shill_id) {
       NET_LOG(ERROR) << "Missing shill id in Wifi Direct group";
       continue;
@@ -290,12 +304,28 @@ void WifiP2PController::GetP2PGroupMetadata(
                               /*metadata=*/std::nullopt);
       return;
     }
+    if (!entry_ssid) {
+      NET_LOG(ERROR) << "Missing ssid property in Wifi Direct group";
+      std::move(callback).Run(OperationResult::kInvalidGroupProperties,
+                              /*metadata=*/std::nullopt);
+      return;
+    }
+    if (!entry_passphrase) {
+      NET_LOG(ERROR) << "Missing network id property in Wifi Direct group";
+      std::move(callback).Run(OperationResult::kInvalidGroupProperties,
+                              /*metadata=*/std::nullopt);
+      return;
+    }
+    if (!entry_ipv4_address) {
+      NET_LOG(ERROR) << "Missing ipv4 address property in Wifi Direct group";
+    }
 
     std::move(callback).Run(
         OperationResult::kSuccess,
-        WifiDirectConnectionMetadata{shill_id,
-                                     static_cast<uint32_t>(*entry_frequency),
-                                     *entry_network_id});
+        WifiP2PGroup{shill_id, static_cast<uint32_t>(*entry_frequency),
+                     *entry_network_id,
+                     entry_ipv4_address ? *entry_ipv4_address : std::string(),
+                     *entry_ssid, *entry_passphrase, is_owner});
     return;
   }
 

@@ -15,9 +15,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
+#include "components/viz/common/hit_test/hit_test_query.h"
+#include "components/viz/common/hit_test/hit_test_region_observer.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "components/viz/host/hit_test/hit_test_query.h"
-#include "components/viz/host/hit_test/hit_test_region_observer.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/browser/renderer_host/render_widget_targeter.h"
 #include "content/common/content_export.h"
@@ -48,7 +48,7 @@ class LatencyInfo;
 }
 
 namespace viz {
-class HostFrameSinkManager;
+class HitTestDataProvider;
 }
 
 namespace content {
@@ -59,9 +59,8 @@ class TouchEmulator;
 class TouchEventAckQueue;
 
 // Helper method also used from hit_test_debug_key_event_observer.cc
-viz::HitTestQuery* GetHitTestQuery(
-    viz::HostFrameSinkManager* host_frame_sink_manager,
-    const viz::FrameSinkId& frame_sink_id);
+viz::HitTestQuery* GetHitTestQuery(viz::HitTestDataProvider* provider,
+                                   const viz::FrameSinkId& frame_sink_id);
 
 // Class owned by WebContentsImpl for the purpose of directing input events
 // to the correct RenderWidgetHost on pages with multiple RenderWidgetHosts.
@@ -75,7 +74,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
       public TouchEmulatorClient,
       public viz::HitTestRegionObserver {
  public:
-  RenderWidgetHostInputEventRouter();
+  explicit RenderWidgetHostInputEventRouter(viz::HitTestDataProvider* provider);
 
   RenderWidgetHostInputEventRouter(const RenderWidgetHostInputEventRouter&) =
       delete;
@@ -196,6 +195,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
   }
 
   void SetAutoScrollInProgress(bool is_autoscroll_in_progress);
+
+  RenderWidgetHostViewInput* GetLastMouseMoveTargetForTest();
+  RenderWidgetHostViewInput* GetLastMouseMoveRootViewForTest();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(
@@ -353,11 +355,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
       const blink::WebPointerProperties& pointer_properties,
       bool hovering);
 
-  void FlushForTest() { delegated_ink_point_renderer_.FlushForTesting(); }
-  bool IsDelegatedInkRendererBoundForTest() {
-    return delegated_ink_point_renderer_.is_bound();
-  }
-
   FrameSinkIdOwnerMap owner_map_;
   TargetMap touchscreen_gesture_target_map_;
   // This field is not a raw_ptr<> because of a reference to raw_ptr in
@@ -453,6 +450,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
   };
   TouchscreenPinchState touchscreen_pinch_state_;
 
+  // This is expected to outlive RenderWidgetHostInputEventRouter object.
+  const raw_ptr<viz::HitTestDataProvider> hit_test_provider_ = nullptr;
+
   std::unique_ptr<RenderWidgetTargeter> event_targeter_;
   bool events_being_flushed_ = false;
 
@@ -467,10 +467,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
   mutable gfx::PointF mouse_down_post_transformed_coordinate_;
   raw_ptr<RenderWidgetHostViewInput> last_mouse_down_target_ = nullptr;
 
-  // Remote end of the connection for sending delegated ink points to viz to
-  // support the delegated ink trails feature.
-  mojo::Remote<gfx::mojom::DelegatedInkPointRenderer>
-      delegated_ink_point_renderer_;
   // Used to know if we have already told viz to reset prediction because the
   // final point of the delegated ink trail has been sent. True when prediction
   // has already been reset for the most recent trail, false otherwise. This

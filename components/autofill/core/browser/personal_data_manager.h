@@ -7,26 +7,13 @@
 
 #include <memory>
 #include <string>
-#include <string_view>
-#include <vector>
 
-#include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
-#include "components/autofill/core/browser/address_data_cleaner.h"
 #include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_shared_storage_handler.h"
 #include "components/autofill/core/browser/country_type.h"
-#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
-#include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/data_model/bank_account.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/data_model/credit_card_benefit.h"
-#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
-#include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/geo/alternative_state_name_map_updater.h"
-#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/history/core/browser/history_service.h"
@@ -34,7 +21,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
-class Profile;
 class PrefService;
 
 namespace syncer {
@@ -87,16 +73,9 @@ class PersonalDataManager : public KeyedService,
                             public AddressDataManager::Observer,
                             public PaymentsDataManager::Observer {
  public:
-  // Kicks off asynchronous loading of profiles and credit cards.
-  // |profile_database| is a profile-scoped database that will be used to save
-  // local cards. |account_database| is scoped to the currently signed-in
-  // account, and is wiped on signout and browser exit. This can be a nullptr
-  // if personal_data_manager should use |profile_database| for all data.
-  // If passed in, the |account_database| is used by default for server cards.
-  // |pref_service| must outlive this instance. |sync_service| is either null
-  // (sync disabled by CLI) or outlives this object, it may not have started yet
-  // but its preferences can already be queried. |image_fetcher| is to fetch the
-  // customized images for autofill data.
+  // Initializes the `address_data_manager_` and `payments_data_manager_` with
+  // the provided services and triggers asynchronous loading of address and
+  // payments data.
   PersonalDataManager(
       scoped_refptr<AutofillWebDataService> profile_database,
       scoped_refptr<AutofillWebDataService> account_database,
@@ -115,8 +94,8 @@ class PersonalDataManager : public KeyedService,
   ~PersonalDataManager() override;
 
   // The (Address|Payments)DataManager classes are responsible for handling
-  // address/payments specific functionality. All new address or payments
-  // specific code should go through them.
+  // address/payments specific functionality. All address or payments specific
+  // code should go through them.
   AddressDataManager& address_data_manager() { return *address_data_manager_; }
   const AddressDataManager& address_data_manager() const {
     return *address_data_manager_;
@@ -137,7 +116,7 @@ class PersonalDataManager : public KeyedService,
   // PaymentsDataManager::Observer:
   void OnPaymentsDataChanged() override;
 
-  // history::HistoryServiceObserver
+  // history::HistoryServiceObserver:
   // TODO(b/322170538): This is used to clear the crowdsourcing manager's
   // history. Consider moving the observer there.
   void OnHistoryDeletions(history::HistoryService* history_service,
@@ -157,29 +136,6 @@ class PersonalDataManager : public KeyedService,
   // Returns whether the personal data has been loaded from the web database.
   virtual bool IsDataLoaded() const;
 
-  // All of the following functions simply forward the call to a function of the
-  // same name in the `address_data_manager()` or the `payments_data_manager().
-  // They should not be used anymore. Instead, callers should use the function
-  // in the address/payments data manager instead.
-  // TODO(b/322170538): Migrate existing callers.
-  void AddProfile(const AutofillProfile& profile);
-  void UpdateProfile(const AutofillProfile& profile);
-  void AddCreditCard(const CreditCard& credit_card);
-  void UpdateCreditCard(const CreditCard& credit_card);
-  void ClearAllServerDataForTesting();
-  void AddServerCreditCardForTest(std::unique_ptr<CreditCard> credit_card);
-  CreditCard* GetCreditCardByGUID(const std::string& guid);
-  CreditCard* GetCreditCardByInstrumentId(int64_t instrument_id);
-  CreditCard* GetCreditCardByServerId(const std::string& server_id);
-  std::vector<AutofillProfile*> GetProfiles(
-      AddressDataManager::ProfileOrder order =
-          AddressDataManager::ProfileOrder::kNone) const;
-  std::vector<CreditCard*> GetCreditCards() const;
-  std::vector<const AutofillOfferData*>
-  GetActiveAutofillPromoCodeOffersForOrigin(GURL origin) const;
-  std::vector<CreditCard*> GetCreditCardsToSuggest() const;
-  void SetSyncingForTest(bool is_syncing_for_test);
-
   // Re-loads profiles, credit cards, and IBANs from the WebDatabase
   // asynchronously. In the general case, this is a no-op and will re-create
   // the same in-memory model as existed prior to the call.  If any change
@@ -191,14 +147,9 @@ class PersonalDataManager : public KeyedService,
   // Returns the |app_locale_| that was provided during construction.
   const std::string& app_locale() const { return app_locale_; }
 
-  // Triggers `OnPersonalDataChanged()` for all `observers_`.
-  // Additionally, if all of the PDM's pending operations have finished, meaning
-  // that the data exposed through the PDM matches the database,
-  // `OnPersonalDataFinishedProfileTasks()` is triggered.
+  // Triggers `OnPersonalDataChanged()` for all `observers_` if no address or
+  // payment changes are pending.
   void NotifyPersonalDataObserver();
-
-  // Returns true if either Profile or CreditCard Autofill is enabled.
-  bool IsAutofillEnabled() const;
 
   // TODO(b/40100455): Consider moving this to the TestPDM or a TestAPI.
   void SetSyncServiceForTest(syncer::SyncService* sync_service);
@@ -218,13 +169,12 @@ class PersonalDataManager : public KeyedService,
   base::ScopedObservation<PaymentsDataManager, PaymentsDataManager::Observer>
       payments_data_manager_observation_{this};
 
-  // The observers.
-  base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
-
   // The PrefService that this instance uses. Must outlive this instance.
   raw_ptr<PrefService> pref_service_ = nullptr;
 
  private:
+  base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
+
   // Stores the |app_locale| supplied on construction.
   const std::string app_locale_;
 

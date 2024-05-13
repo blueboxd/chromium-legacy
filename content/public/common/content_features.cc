@@ -634,17 +634,6 @@ BASE_FEATURE(kPepperCrossOriginRedirectRestriction,
              "PepperCrossOriginRedirectRestriction",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables an in-content element that interacts with the permissions
-// infrastructure.
-BASE_FEATURE(kPermissionElement,
-             "PermissionElement",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables different positioning of the permission dialog, so that it's placed
-// near the permission element, if possible.
-constexpr base::FeatureParam<bool> kPermissionElementDialogPositioning{
-    &kPermissionElement, "PermissionElementDialogPositioning", false};
-
 // Enables Persistent Origin Trials. It causes tokens for an origin to be stored
 // and persisted for the next navigation. This way, an origin trial can affect
 // things before receiving the response, for instance it can affect the next
@@ -652,6 +641,12 @@ constexpr base::FeatureParam<bool> kPermissionElementDialogPositioning{
 BASE_FEATURE(kPersistentOriginTrials,
              "PersistentOriginTrials",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled, browser-initiated prefetch is allowed.
+// Please see crbug.com/40946257 for more details.
+BASE_FEATURE(kPrefetchBrowserInitiatedTriggers,
+             "PrefetchBrowserInitiatedTriggers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, then an updated prefetch request limit policy will be used that
 // separates eager and non-eager prefetches, and allows for evictions.
@@ -1151,6 +1146,12 @@ BASE_FEATURE(kAccessibilityPageZoomEnhancements,
 // Enables the use of a unified code path for AXTree snapshots.
 BASE_FEATURE(kAccessibilityUnifiedSnapshots,
              "AccessibilityUnifiedSnapshots",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables posting registering, unregistering the broadcast receiver to the
+// background thread.
+BASE_FEATURE(kAccessibilityManageBroadcastReceiverOnBackground,
+             "AccessibilityManageBroadcastReceiverOnBackground",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable open PDF inline on Android.

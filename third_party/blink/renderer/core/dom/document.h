@@ -487,7 +487,15 @@ class CORE_EXPORT Document : public ContainerNode,
                             const CreateElementFlags = CreateElementFlags());
 
   Range* caretRangeFromPoint(int x, int y);
-  CaretPosition* caretPositionFromPoint(float x, float y);
+
+  // Returns a |CaretPosition| from given point. If the point is inside a shadow
+  // tree, then |CaretPosition| only points inside the shadow tree if it's
+  // provided in the |shadow_roots| argument.
+  // https://drafts.csswg.org/cssom-view/#ref-for-dom-document-caretpositionfrompoint
+  CaretPosition* caretPositionFromPoint(
+      float x,
+      float y,
+      const HeapVector<Member<ShadowRoot>>& shadow_roots);
   Element* scrollingElement();
 
   // When calling from C++ code, use this method. scrollingElement() is
@@ -501,6 +509,8 @@ class CORE_EXPORT Document : public ContainerNode,
   //
   // [1] https://drafts.csswg.org/scroll-animations-1/#avoiding-cycles
   Element* ScrollingElementNoLayout();
+
+  bool KeyboardFocusableScrollersEnabled();
 
   String readyState() const;
 
@@ -1894,11 +1904,16 @@ class CORE_EXPORT Document : public ContainerNode,
   void CountUse(mojom::WebFeature feature) final;
   void CountDeprecation(mojom::WebFeature feature) final;
   void CountUse(mojom::WebFeature feature) const;
+  void CountWebDXFeature(mojom::blink::WebDXFeature feature) final;
+  void CountWebDXFeature(mojom::blink::WebDXFeature feature) const;
   void CountProperty(CSSPropertyID property_id) const;
   void CountAnimatedProperty(CSSPropertyID property_id) const;
   // Return whether the Feature was previously counted for this document.
   // NOTE: only for use in testing.
   bool IsUseCounted(mojom::WebFeature) const;
+  // Return whether the property was previously counted for this document.
+  // NOTE: only for use in testing.
+  bool IsWebDXFeatureCounted(mojom::blink::WebDXFeature) const;
   // Return whether the property was previously counted for this document.
   // NOTE: only for use in testing.
   bool IsPropertyCounted(CSSPropertyID property) const;

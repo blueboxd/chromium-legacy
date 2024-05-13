@@ -58,6 +58,7 @@
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h"
+#include "chrome/browser/privacy_sandbox/tracking_protection_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
@@ -406,7 +407,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                                        kEnableFingerprintingProtectionFilter)) {
     fingerprinting_protection_filter::
         FingerprintingProtectionWebContentsHelper::CreateForWebContents(
-            web_contents);
+            web_contents,
+            TrackingProtectionSettingsFactory::GetForProfile(profile));
   }
   download::DownloadNavigationObserver::CreateForWebContents(
       web_contents,
@@ -546,11 +548,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   v8_compile_hints::V8CompileHintsTabHelper::MaybeCreateForWebContents(
       web_contents);
   vr::VrTabHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(permissions::features::kOneTimePermission) ||
-      base::FeatureList::IsEnabled(
-          features::kFileSystemAccessPersistentPermissions)) {
-    OneTimePermissionsTrackerHelper::CreateForWebContents(web_contents);
-  }
+  OneTimePermissionsTrackerHelper::CreateForWebContents(web_contents);
 
   // NO! Do not just add your tab helper here. This is a large alphabetized
   // block; please insert your tab helper above in alphabetical order.

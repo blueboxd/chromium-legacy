@@ -95,16 +95,13 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,
-                          const gfx::RectF& bounding_box,
                           base::TimeTicks timestamp) override {}
 
   void TextFieldDidScroll(const FormData& form,
-                          const FormFieldData& field,
-                          const gfx::RectF& bounding_box) override {}
+                          const FormFieldData& field) override {}
 
   void SelectControlDidChange(const FormData& form,
-                              const FormFieldData& field,
-                              const gfx::RectF& bounding_box) override {}
+                              const FormFieldData& field) override {}
 
   void JavaScriptChangedAutofilledValue(const FormData& form,
                                         const FormFieldData& field,
@@ -114,16 +111,14 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   void AskForValuesToFill(
       const FormData& form,
       const FormFieldData& field,
-      const gfx::RectF& bounding_box,
       AutofillSuggestionTriggerSource trigger_source) override {}
 
   void HidePopup() override {}
 
-  void FocusNoLongerOnForm(bool had_interacted_form) override {}
+  void FocusOnNonFormField(bool had_interacted_form) override {}
 
   void FocusOnFormField(const FormData& form,
-                        const FormFieldData& field,
-                        const gfx::RectF& bounding_box) override {}
+                        const FormFieldData& field) override {}
 
   void DidFillAutofillFormData(const FormData& form,
                                base::TimeTicks timestamp) override {}

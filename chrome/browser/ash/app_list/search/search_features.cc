@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ash/app_list/search/search_features.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
+#include "chromeos/components/libsegmentation/buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
 
 namespace search_features {
@@ -31,11 +33,11 @@ BASE_FEATURE(kLauncherFuzzyMatchForOmnibox,
 
 BASE_FEATURE(kLauncherImageSearch,
              "LauncherImageSearch",
+#if BUILDFLAG(ENABLE_MERGE_REQUEST)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else   //  BUILDFLAG(ENABLE_MERGE_REQUEST)
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kFeatureManagementLocalImageSearch,
-             "FeatureManagementLocalImageSearch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(ENABLE_MERGE_REQUEST)
 
 BASE_FEATURE(kLauncherLocalImageSearchConfidence,
              "LauncherLocalImageSearchConfidence",
@@ -55,7 +57,11 @@ BASE_FEATURE(kICASupportedByHardware,
 
 BASE_FEATURE(kLauncherImageSearchOcr,
              "LauncherImageSearchOcr",
+#if BUILDFLAG(ENABLE_MERGE_REQUEST)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else   //  BUILDFLAG(ENABLE_MERGE_REQUEST)
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(ENABLE_MERGE_REQUEST)
 
 BASE_FEATURE(kLauncherImageSearchIndexingLimit,
              "LauncherImageSearchIndexingLimit",
@@ -63,6 +69,10 @@ BASE_FEATURE(kLauncherImageSearchIndexingLimit,
 
 BASE_FEATURE(kLauncherSystemInfoAnswerCards,
              "LauncherSystemInfoAnswerCards",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kLauncherSearchFileScan,
+             "kLauncherSearchFileScan",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // TODO(b/330386392): kLauncherGameSearch can be removed because if there's no
@@ -85,13 +95,14 @@ bool IsLauncherFuzzyMatchAcrossProvidersEnabled() {
   return base::FeatureList::IsEnabled(kLauncherFuzzyMatchAcrossProviders);
 }
 
-bool isLauncherFuzzyMatchForOmniboxEnabled() {
+bool IsLauncherFuzzyMatchForOmniboxEnabled() {
   return base::FeatureList::IsEnabled(kLauncherFuzzyMatchForOmnibox);
 }
 
 // Only enable image search for ICA supported devices.
 bool IsLauncherImageSearchEnabled() {
-  return base::FeatureList::IsEnabled(kFeatureManagementLocalImageSearch) &&
+  return base::FeatureList::IsEnabled(
+             ash::features::kFeatureManagementLocalImageSearch) &&
          base::FeatureList::IsEnabled(kLauncherImageSearch);
 }
 
@@ -108,8 +119,12 @@ bool IsLauncherImageSearchIndexingLimitEnabled() {
   return base::FeatureList::IsEnabled(kLauncherImageSearchIndexingLimit);
 }
 
-bool isLauncherSystemInfoAnswerCardsEnabled() {
+bool IsLauncherSystemInfoAnswerCardsEnabled() {
   return base::FeatureList::IsEnabled(kLauncherSystemInfoAnswerCards);
+}
+
+bool IsLauncherSearchFileScanEnabled() {
+  return base::FeatureList::IsEnabled(kLauncherSearchFileScan);
 }
 
 }  // namespace search_features

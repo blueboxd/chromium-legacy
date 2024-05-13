@@ -168,15 +168,17 @@ void ClusterManager::OnProductSpecificationsSetAdded(
 }
 
 void ClusterManager::OnProductSpecificationsSetUpdate(
+    const ProductSpecificationsSet& before,
     const ProductSpecificationsSet& product_specifications_set) {
   OnProductSpecificationsSetAdded(product_specifications_set);
 }
 
-void ClusterManager::OnProductSpecificationsSetRemoved(const base::Uuid& uuid) {
+void ClusterManager::OnProductSpecificationsSetRemoved(
+    const ProductSpecificationsSet& set) {
   // TODO(qinmin): Check if we still want to keep candidate product from
   // the removed product group in `candidate_product_map_` if tab is still
   // open.
-  product_group_map_.erase(uuid);
+  product_group_map_.erase(set.uuid());
 }
 
 void ClusterManager::WebWrapperDestroyed(const GURL& url) {
@@ -240,6 +242,9 @@ void ClusterManager::OnProductInfoRetrieved(
   }
 
   AddCandidateProduct(url, product_info);
+  for (auto& observer : observers_) {
+    observer.OnClusterFinishedForNavigation(url);
+  }
 }
 
 void ClusterManager::OnAllCategoryDataRetrieved(
@@ -304,6 +309,14 @@ std::vector<GURL> ClusterManager::FindSimilarCandidateProductsForProductGroup(
     }
   }
   return candidate_products;
+}
+
+void ClusterManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ClusterManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 std::set<GURL> ClusterManager::FindSimilarCandidateProducts(

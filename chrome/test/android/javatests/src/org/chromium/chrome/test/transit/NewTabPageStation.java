@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.test.transit;
 
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.chromium.base.test.transit.ViewElement.sharedViewElement;
 
 import org.chromium.base.test.transit.Elements;
+import org.chromium.base.test.transit.Facility;
 import org.chromium.base.test.transit.ViewElement;
 import org.chromium.chrome.R;
 
@@ -44,6 +46,12 @@ public class NewTabPageStation extends PageStation {
             elements.declareView(MOST_VISITED_TILES);
         }
 
-        elements.declareEnterCondition(new NtpLoadedCondition(mPageLoadedEnterCondition));
+        elements.declareEnterCondition(new NtpLoadedCondition(mPageLoadedCondition));
+    }
+
+    /** Opens the app menu by pressing the toolbar "..." button */
+    public NewTabPageRegularAppMenuFacility openAppMenu() {
+        return Facility.enterSync(
+                new NewTabPageRegularAppMenuFacility(this), () -> MENU_BUTTON.perform(click()));
     }
 }

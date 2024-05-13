@@ -9,7 +9,6 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -35,6 +34,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 
 namespace em = enterprise_management;
 
@@ -50,6 +50,9 @@ BASE_FEATURE(kGetBrowserIdentifierAsync,
              "GetBrowserIdentifierAsync",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
+
+const char kDmServerCloudPolicyRequestHistogramBase[] =
+    "Enterprise.DMServerCloudPolicyRequestStatus";
 
 // Translates the DeviceRegisterResponse::DeviceMode |mode| to the enum used
 // internally to represent different device modes.
@@ -233,6 +236,19 @@ std::string FormatMacAddress(const CloudPolicyClient::MacAddress& mac_address) {
       mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
   DCHECK_EQ(mac_address_string.size(), 12u);
   return mac_address_string;
+}
+
+// Returns the histogram variant for the corresponding `type`. Returns nullopt
+// if there is no variant for the type.
+std::optional<std::string_view> HistogramVariantForType(std::string_view type) {
+  if (type == dm_protocol::kChromeUserPolicyType) {
+    return "UserPolicy";
+  } else if (type == dm_protocol::kChromeMachineLevelUserCloudPolicyType) {
+    return "MachineLevelUserCloudPolicy";
+  } else if (type == dm_protocol::kChromeDevicePolicyType) {
+    return "ChromeDevicePolicy";
+  }
+  return std::nullopt;
 }
 
 }  // namespace
@@ -1388,11 +1404,24 @@ void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
   // |this| might be deleted at this point.
 }
 
+void CloudPolicyClient::RecordFetchStatus(DeviceManagementStatus status) {
+  for (const auto& [type, _] : types_to_fetch_) {
+    const auto variant = HistogramVariantForType(type);
+    if (variant) {
+      base::UmaHistogramSparse(
+          base::StrCat(
+              {kDmServerCloudPolicyRequestHistogramBase, ".", *variant}),
+          status);
+    }
+    base::UmaHistogramSparse(kDmServerCloudPolicyRequestHistogramBase, status);
+  }
+}
+
 void CloudPolicyClient::OnPolicyFetchCompleted(base::Time start_time,
                                                DMServerJobResult result) {
   UMA_HISTOGRAM_LONG_TIMES(kPolicyFetchingTimeHistogramName,
                            base::Time::Now() - start_time);
-
+  RecordFetchStatus(result.dm_status);
   if (result.dm_status == DM_STATUS_SUCCESS) {
     if (!result.response.has_policy_response() ||
         result.response.policy_response().responses_size() == 0) {
@@ -1589,8 +1618,7 @@ void CloudPolicyClient::OnGcmIdUpdated(StatusCallback callback,
 void CloudPolicyClient::OnClientCertProvisioningRequestResponse(
     ClientCertProvisioningRequestCallback callback,
     DMServerJobResult result) {
-  base::ScopedClosureRunner job_cleaner(base::BindOnce(
-      &CloudPolicyClient::RemoveJob, base::Unretained(this), result.job));
+  absl::Cleanup job_cleaner = [this, &result] { RemoveJob(result.job); };
 
   last_dm_status_ = result.dm_status;
   // For DM_STATUS_SUCCESS, always expect that the response contains the correct

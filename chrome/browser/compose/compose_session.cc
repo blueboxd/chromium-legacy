@@ -620,6 +620,8 @@ void ComposeSession::ModelExecutionComplete(
     result.log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
         ->set_was_generated_via_edit(was_input_edited);
     result.log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+        ->set_started_with_proactive_nudge(started_with_proactive_nudge_);
+    result.log_entry->quality_data<optimization_guide::ComposeFeatureTypeMap>()
         ->set_request_latency_ms(request_delta.InMilliseconds());
     optimization_guide::proto::Int128* token =
         result.log_entry
@@ -872,7 +874,7 @@ bool ComposeSession::CanShowFeedbackPage() {
       OptimizationGuideKeyedServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
   if (!opt_guide_keyed_service ||
-      !opt_guide_keyed_service->ShouldFeatureBeCurrentlyAllowedForLogging(
+      !opt_guide_keyed_service->ShouldFeatureBeCurrentlyAllowedForFeedback(
           optimization_guide::UserVisibleFeatureKey::kCompose)) {
     return false;
   }
@@ -887,7 +889,7 @@ void ComposeSession::OpenFeedbackPage(std::string feedback_id) {
   chrome::ShowFeedbackPage(
       web_contents_->GetLastCommittedURL(),
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-      chrome::kFeedbackSourceAI,
+      feedback::kFeedbackSourceAI,
       /*description_template=*/std::string(),
       /*description_placeholder_text=*/
       l10n_util::GetStringUTF8(IDS_COMPOSE_FEEDBACK_PLACEHOLDER),

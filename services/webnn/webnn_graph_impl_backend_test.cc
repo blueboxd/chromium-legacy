@@ -29,9 +29,6 @@
 #include "third_party/fp16/src/include/fp16.h"
 
 #if BUILDFLAG(IS_WIN)
-#include <DirectML.h>
-#include <wrl.h>
-
 #include "base/containers/fixed_flat_map.h"
 #include "services/webnn/dml/adapter.h"
 #include "services/webnn/dml/command_queue.h"
@@ -40,6 +37,11 @@
 #include "services/webnn/dml/graph_impl.h"
 #include "services/webnn/dml/test_base.h"
 #include "services/webnn/dml/utils.h"
+#include "third_party/microsoft_dxheaders/include/directml.h"
+
+// Windows SDK headers should be included after DirectX headers.
+#include <wrl.h>
+
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_MAC)
@@ -273,6 +275,9 @@ void WebNNGraphImplBackendTest::SetUp() {
        // DML_GATHER_OPERATOR_DESC support for 1~8 dimensions was introduced in
        // DML_FEATURE_LEVEL_3_0.
        {"BuildAndComputeSingleOperatorGather", DML_FEATURE_LEVEL_3_0},
+       // DML_ACTIVATION_GELU_OPERATOR_DESC is supported in
+       // DML_FEATURE_LEVEL_5_1.
+       {"BuildAndComputeSingleOperatorGelu", DML_FEATURE_LEVEL_5_1},
        // DML_GEMM_OPERATOR_DESC support for 2 dimensions was introduced in
        // DML_FEATURE_LEVEL_4_0.
        {"BuildSingleOperatorGemmOnNpu", DML_FEATURE_LEVEL_4_0},
@@ -4233,6 +4238,9 @@ struct UnaryOperatorTester {
         builder.BuildElu(input_operand_id, output_operand_id,
                          elu_alpha.value());
         break;
+      case mojom::Operation::Tag::kGelu:
+        builder.BuildGelu(input_operand_id, output_operand_id);
+        break;
       case mojom::Operation::Tag::kHardSigmoid:
         builder.BuildHardSigmoid(input_operand_id, output_operand_id,
                                  hard_sigmoid_alpha, hard_sigmoid_beta);
@@ -5332,6 +5340,35 @@ TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorGather) {
                    // [[0 1 2 3 3]
                    //  [3 2 1 0 3]] with shape (2, 5)
                    .values = {0, 1, 2, 3, 3, 3, 2, 1, 0, 3}}}
+        .Test();
+  }
+}
+
+// Test building and computing a graph with single operator gelu.
+TEST_F(WebNNGraphImplBackendTest, BuildAndComputeSingleOperatorGelu) {
+  // Test gelu with a 1d input.
+  {
+    UnaryOperatorTester<float>{
+        .tag = mojom::Operation::Tag::kGelu,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {3},
+                  .values = {-1, 0, 1}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {3},
+                   .values = {-0.15865526383236372, 0, 0.8413447361676363}}}
+        .Test();
+  }
+
+  // Test gelu with a 4d input.
+  {
+    UnaryOperatorTester<float>{
+        .tag = mojom::Operation::Tag::kGelu,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 1, 3},
+                  .values = {-1, 0, 1}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 1, 3},
+                   .values = {-0.15865526383236372, 0, 0.8413447361676363}}}
         .Test();
   }
 }

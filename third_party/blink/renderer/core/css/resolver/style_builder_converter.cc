@@ -510,20 +510,19 @@ StyleBuilderConverter::ConvertFontVariantPosition(StyleResolverState&,
   }
 }
 
-FontDescription::FontVariantEmoji
-StyleBuilderConverter::ConvertFontVariantEmoji(StyleResolverState&,
-                                               const CSSValue& value) {
+FontVariantEmoji StyleBuilderConverter::ConvertFontVariantEmoji(
+    StyleResolverState&,
+    const CSSValue& value) {
   // When the font shorthand is specified, font-variant-emoji property should
   // be reset to it's initial value. In this case, the CSS parser uses a special
   // value CSSPendingSystemFontValue to defer resolution of system font
   // properties. The auto generated converter does not handle this incoming
   // value.
   if (value.IsPendingSystemFontValue()) {
-    return FontDescription::kNormalVariantEmoji;
+    return kNormalVariantEmoji;
   }
 
-  return To<CSSIdentifierValue>(value)
-      .ConvertTo<FontDescription::FontVariantEmoji>();
+  return To<CSSIdentifierValue>(value).ConvertTo<FontVariantEmoji>();
 }
 
 OpticalSizing StyleBuilderConverter::ConvertFontOpticalSizing(
@@ -2514,15 +2513,14 @@ TextBoxEdge StyleBuilderConverter::ConvertTextBoxEdge(
     StyleResolverState& status,
     const CSSValue& value) {
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    return TextBoxEdge(
-        identifier_value->ConvertTo<TextBoxEdge::TextBoxEdgeType>());
+    return TextBoxEdge(identifier_value->ConvertTo<TextBoxEdge::Type>());
   }
   const auto* const list = DynamicTo<CSSValueList>(&value);
   DCHECK_EQ(list->length(), 2u);
   const CSSIdentifierValue& over = To<CSSIdentifierValue>(list->Item(0));
   const CSSIdentifierValue& under = To<CSSIdentifierValue>(list->Item(1));
-  return TextBoxEdge(over.ConvertTo<TextBoxEdge::TextBoxEdgeType>(),
-                     under.ConvertTo<TextBoxEdge::TextBoxEdgeType>());
+  return TextBoxEdge(over.ConvertTo<TextBoxEdge::Type>(),
+                     under.ConvertTo<TextBoxEdge::Type>());
 }
 
 TextDecorationThickness StyleBuilderConverter::ConvertTextDecorationThickness(

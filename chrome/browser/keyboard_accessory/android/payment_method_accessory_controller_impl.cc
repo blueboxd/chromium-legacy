@@ -25,7 +25,10 @@
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/payments/constants.h"
+#include "components/autofill/core/browser/payments/iban_access_manager.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -137,6 +140,18 @@ PromoCodeInfo TranslateOffer(const AutofillOfferData* data) {
   return promo_code_info;
 }
 
+IbanInfo TranslateIban(const Iban& data) {
+  bool is_local = data.record_type() == Iban::kLocalIban;
+  std::string id_string;
+  if (!is_local) {
+    id_string = base::NumberToString(data.instrument_id());
+  }
+  IbanInfo iban_info(data.GetIdentifierStringForAutofillDisplay(),
+                     is_local ? data.value() : std::u16string(), id_string);
+
+  return iban_info;
+}
+
 }  // namespace
 
 PaymentMethodAccessoryControllerImpl::~PaymentMethodAccessoryControllerImpl() {
@@ -197,6 +212,10 @@ PaymentMethodAccessoryControllerImpl::GetSheetData() const {
     data.add_promo_code_info(TranslateOffer(offer));
   }
 
+  for (const Iban& iban : GetIbans()) {
+    data.add_iban_info(TranslateIban(iban));
+  }
+
   if (has_suggestions && !allow_filling && autofill_manager) {
     data.set_warning(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
@@ -217,8 +236,8 @@ void PaymentMethodAccessoryControllerImpl::OnFillingTriggered(
     return;
   }
 
-  // Credit card number fields have a GUID populated to allow deobfuscation
-  // before filling.
+  // IBAN field or Credit card number fields have a GUID populated to allow
+  // deobfuscation before filling.
   if (selection.id().empty()) {
     GetDriver()->ApplyFieldAction(mojom::FieldActionType::kReplaceAll,
                                   mojom::ActionPersistence::kFill,
@@ -226,23 +245,15 @@ void PaymentMethodAccessoryControllerImpl::OnFillingTriggered(
     return;
   }
 
-  std::vector<CardOrVirtualCard> cards = GetAllCreditCards();
-  auto card_iter =
-      base::ranges::find_if(cards, [&selection](const auto& card_or_virtual) {
-        const CreditCard* card = UnwrapCardOrVirtualCard(card_or_virtual);
-        return card && card->guid() == selection.id();
-      });
-
-  if (card_iter == cards.end()) {
-    NOTREACHED() << "Tried to fill card with unknown GUID";
+  last_focused_field_id_ = focused_field_id;
+  if (FetchIfCreditCardId(selection.id())) {
+    return;
+  }
+  if (FetchIfIban(selection.id())) {
     return;
   }
 
-  last_focused_field_id_ = focused_field_id;
-  GetAutofillManager()->GetCreditCardAccessManager().FetchCreditCard(
-      UnwrapCardOrVirtualCard(*card_iter),
-      base::BindOnce(&PaymentMethodAccessoryControllerImpl::OnCreditCardFetched,
-                     weak_ptr_factory_.GetWeakPtr()));
+  NOTREACHED_NORETURN() << "Neither fillable value nor known ID.";
 }
 
 void PaymentMethodAccessoryControllerImpl::OnPasskeySelected(
@@ -287,7 +298,8 @@ void PaymentMethodAccessoryControllerImpl::RefreshSuggestions() {
   if (source_observer_) {
     source_observer_.Run(
         this, IsFillingSourceAvailable(!GetAllCreditCards().empty() ||
-                                       !GetPromoCodeOffers().empty()));
+                                       !GetPromoCodeOffers().empty() ||
+                                       !GetIbans().empty()));
   } else {
     // TODO(crbug.com/40165275): Remove once filling controller pulls this
     // information instead of waiting to get it pushed.
@@ -311,6 +323,13 @@ void PaymentMethodAccessoryControllerImpl::OnCreditCardFetched(
     const CreditCard* credit_card) {
   if (result != CreditCardFetchResult::kSuccess)
     return;
+  DCHECK(credit_card);
+
+  ApplyToField(credit_card->number());
+}
+
+void PaymentMethodAccessoryControllerImpl::ApplyToField(
+    const std::u16string& value) {
   content::RenderFrameHost* rfh = GetWebContents().GetFocusedFrame();
   if (!rfh || !last_focused_field_id_ ||
       last_focused_field_id_.frame_token !=
@@ -318,12 +337,12 @@ void PaymentMethodAccessoryControllerImpl::OnCreditCardFetched(
     last_focused_field_id_ = {};
     return;  // If frame isn't focused anymore, don't attempt to fill.
   }
-  DCHECK(credit_card);
+
   DCHECK(GetDriver());
 
   GetDriver()->ApplyFieldAction(mojom::FieldActionType::kReplaceAll,
                                 mojom::ActionPersistence::kFill,
-                                last_focused_field_id_, credit_card->number());
+                                last_focused_field_id_, value);
   last_focused_field_id_ = {};
 }
 
@@ -376,8 +395,8 @@ PaymentMethodAccessoryControllerImpl::GetAllCreditCards() const {
     return std::vector<CardOrVirtualCard>();
 
   std::vector<CardOrVirtualCard> cards;
-  for (const CreditCard* card :
-       personal_data_manager_->GetCreditCardsToSuggest()) {
+  for (const CreditCard* card : personal_data_manager_->payments_data_manager()
+                                    .GetCreditCardsToSuggest()) {
     // If any of cards is enrolled for virtual cards and the feature is active,
     // then insert a virtual card suggestion right before the actual card.
     if (ShouldCreateVirtualCard(card)) {
@@ -415,10 +434,22 @@ PaymentMethodAccessoryControllerImpl::GetPromoCodeOffers() const {
   if (!personal_data_manager_ || !autofill_manager)
     return std::vector<const AutofillOfferData*>();
 
-  return personal_data_manager_->GetActiveAutofillPromoCodeOffersForOrigin(
-      autofill_manager->client()
-          .GetLastCommittedPrimaryMainFrameURL()
-          .DeprecatedGetOriginAsURL());
+  return personal_data_manager_->payments_data_manager()
+      .GetActiveAutofillPromoCodeOffersForOrigin(
+          autofill_manager->client()
+              .GetLastCommittedPrimaryMainFrameURL()
+              .DeprecatedGetOriginAsURL());
+}
+
+std::vector<Iban> PaymentMethodAccessoryControllerImpl::GetIbans() const {
+  const AutofillManager* autofill_manager =
+      GetWebContents().GetFocusedFrame() ? GetAutofillManager() : nullptr;
+  if (!personal_data_manager_ || !autofill_manager) {
+    return std::vector<Iban>();
+  }
+
+  return personal_data_manager_->payments_data_manager()
+      .GetOrderedIbansToSuggest();
 }
 
 base::WeakPtr<ManualFillingController>
@@ -464,6 +495,49 @@ content::WebContents& PaymentMethodAccessoryControllerImpl::GetWebContents()
   return const_cast<content::WebContents&>(
       content::WebContentsUserData<
           PaymentMethodAccessoryControllerImpl>::GetWebContents());
+}
+
+bool PaymentMethodAccessoryControllerImpl::FetchIfCreditCardId(
+    const std::string& selection_id) {
+  std::vector<CardOrVirtualCard> cards = GetAllCreditCards();
+  auto card_iter = base::ranges::find_if(
+      cards, [&selection_id](const auto& card_or_virtual) {
+        const CreditCard* card = UnwrapCardOrVirtualCard(card_or_virtual);
+        return card && card->guid() == selection_id;
+      });
+
+  if (card_iter == cards.end()) {
+    return false;
+  }
+
+  GetAutofillManager()->GetCreditCardAccessManager().FetchCreditCard(
+      UnwrapCardOrVirtualCard(*card_iter),
+      base::BindOnce(&PaymentMethodAccessoryControllerImpl::OnCreditCardFetched,
+                     weak_ptr_factory_.GetWeakPtr()));
+  return true;
+}
+
+bool PaymentMethodAccessoryControllerImpl::FetchIfIban(
+    const std::string& selection_id) {
+  std::vector<Iban> ibans = GetIbans();
+  auto iban_iter =
+      base::ranges::find_if(ibans, [&selection_id](const Iban& available_iban) {
+        return available_iban.record_type() == Iban::kServerIban &&
+               base::NumberToString(available_iban.instrument_id()) ==
+                   selection_id;
+      });
+
+  if (iban_iter == ibans.end()) {
+    return false;
+  }
+
+  Suggestion::BackendId backend_id = Suggestion::BackendId(
+      Suggestion::InstrumentId((*iban_iter).instrument_id()));
+  GetAutofillManager()->client().GetIbanAccessManager()->FetchValue(
+      backend_id,
+      base::BindOnce(&PaymentMethodAccessoryControllerImpl::ApplyToField,
+                     weak_ptr_factory_.GetWeakPtr()));
+  return true;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PaymentMethodAccessoryControllerImpl);

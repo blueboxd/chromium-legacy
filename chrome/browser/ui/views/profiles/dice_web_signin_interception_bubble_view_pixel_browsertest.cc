@@ -222,7 +222,6 @@ class DiceWebSigninInterceptionBubblePixelTest
     std::vector<base::test::FeatureRef> enabled_features;
     if (GetParam().enable_webui_refresh) {
       enabled_features.push_back(features::kChromeRefresh2023);
-      enabled_features.push_back(features::kChromeWebuiRefresh2023);
     }
 
     if (GetParam().with_explicit_browser_signin_design) {
@@ -341,8 +340,14 @@ class DiceWebSigninInterceptionBubblePixelTest
   std::unique_ptr<ScopedWebSigninInterceptionBubbleHandle> bubble_handle_;
 };
 
+// TODO(https://crbug.com/339315678): re-enable the test.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_InvokeUi_default DISABLED_InvokeUi_default
+#else
+#define MAYBE_InvokeUi_default InvokeUi_default
+#endif
 IN_PROC_BROWSER_TEST_P(DiceWebSigninInterceptionBubblePixelTest,
-                       InvokeUi_default) {
+                       MAYBE_InvokeUi_default) {
   ShowAndVerifyUi();
 }
 

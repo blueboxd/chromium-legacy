@@ -14,6 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/events/ash/modifier_split_dogfood_controller.h"
 #include "ui/events/ash/mojom/modifier_key.mojom-shared.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/devices/keyboard_device.h"
@@ -150,6 +151,16 @@ inline constexpr auto kSixPackKeyToSearchSystemKeyMap =
         {KeyboardCode::VKEY_END, KeyboardCode::VKEY_RIGHT},
         {KeyboardCode::VKEY_NEXT, KeyboardCode::VKEY_DOWN},
         {KeyboardCode::VKEY_INSERT, KeyboardCode::VKEY_BACK},
+    });
+
+// A map between six pack keys to function keys.
+inline constexpr auto kSixPackKeyToFnKeyMap =
+    base::MakeFixedFlatMap<KeyboardCode, KeyboardCode>({
+        {KeyboardCode::VKEY_DELETE, KeyboardCode::VKEY_BACK},
+        {KeyboardCode::VKEY_HOME, KeyboardCode::VKEY_LEFT},
+        {KeyboardCode::VKEY_PRIOR, KeyboardCode::VKEY_UP},
+        {KeyboardCode::VKEY_END, KeyboardCode::VKEY_RIGHT},
+        {KeyboardCode::VKEY_NEXT, KeyboardCode::VKEY_DOWN},
     });
 
 // A map between six pack keys to alt system keys.
@@ -350,6 +361,7 @@ class KeyboardCapability : public InputDeviceEventObserver {
   // Check if the Function key exists on the given keyboard.
   bool HasFunctionKey(const KeyboardDevice& keyboard) const;
   bool HasFunctionKey(int device_id) const;
+  bool HasFunctionKeyOnAnyKeyboard() const;
 
   // Check if the RightAlt key exists on the given keyboard.
   bool HasRightAltKey(const KeyboardDevice& keyboard) const;
@@ -380,6 +392,12 @@ class KeyboardCapability : public InputDeviceEventObserver {
     return keyboard_info_map_;
   }
 
+  bool IsModifierSplitEnabled() const {
+    return modifier_split_dogfood_controller_->IsEnabled();
+  }
+
+  void ResetModifierSplitDogfoodControllerForTesting();
+
  private:
   const KeyboardInfo* GetKeyboardInfo(const KeyboardDevice& keyboard) const;
   void TrimKeyboardInfoMap();
@@ -397,6 +415,9 @@ class KeyboardCapability : public InputDeviceEventObserver {
 
   // Board name of the current ChromeOS device.
   std::string board_name_;
+
+  std::unique_ptr<ModifierSplitDogfoodController>
+      modifier_split_dogfood_controller_;
 };
 
 }  // namespace ui

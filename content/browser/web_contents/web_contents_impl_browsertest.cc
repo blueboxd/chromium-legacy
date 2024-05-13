@@ -5395,7 +5395,7 @@ class DidStopLoadingInterceptor : public mojom::FrameHostInterceptorForTesting {
       delete;
 
   mojom::FrameHost* GetForwardingInterface() override {
-    return render_frame_host_;
+    return swapped_impl_.old_impl();
   }
 
   void DidStopLoading() override {
@@ -5406,9 +5406,7 @@ class DidStopLoadingInterceptor : public mojom::FrameHostInterceptorForTesting {
 
  private:
   raw_ptr<RenderFrameHostImpl> render_frame_host_;
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<mojom::FrameHost>>
-      swapped_impl_;
+  mojo::test::ScopedSwapImplForTesting<mojom::FrameHost> swapped_impl_;
 };
 
 // Test that get_process_idle_time() returns reasonable values when compared

@@ -19,13 +19,13 @@ TestAutofillExternalDelegate::TestAutofillExternalDelegate(
 
 TestAutofillExternalDelegate::~TestAutofillExternalDelegate() = default;
 
-void TestAutofillExternalDelegate::OnPopupShown() {
+void TestAutofillExternalDelegate::OnSuggestionsShown() {
   popup_hidden_ = false;
 
-  AutofillExternalDelegate::OnPopupShown();
+  AutofillExternalDelegate::OnSuggestionsShown();
 }
 
-void TestAutofillExternalDelegate::OnPopupHidden() {
+void TestAutofillExternalDelegate::OnSuggestionsHidden() {
   popup_hidden_ = true;
 
   run_loop_.Quit();
@@ -34,7 +34,6 @@ void TestAutofillExternalDelegate::OnPopupHidden() {
 void TestAutofillExternalDelegate::OnQuery(
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& bounds,
     AutofillSuggestionTriggerSource trigger_source) {
   on_query_seen_ = true;
   on_suggestions_returned_seen_ = false;
@@ -43,7 +42,7 @@ void TestAutofillExternalDelegate::OnQuery(
   // If necessary, call the superclass's OnQuery to set up its other fields
   // properly.
   if (call_parent_methods_)
-    AutofillExternalDelegate::OnQuery(form, field, bounds, trigger_source);
+    AutofillExternalDelegate::OnQuery(form, field, trigger_source);
 }
 
 void TestAutofillExternalDelegate::OnSuggestionsReturned(

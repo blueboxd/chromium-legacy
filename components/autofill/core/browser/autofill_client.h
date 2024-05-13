@@ -80,9 +80,8 @@ class AutofillMlPredictionModelHandler;
 class AutofillOfferData;
 class AutofillOfferManager;
 class AutofillOptimizationGuide;
-class AutofillPopupDelegate;
+class AutofillSuggestionDelegate;
 class AutofillProfile;
-struct CardUnmaskChallengeOption;
 class CreditCard;
 enum class CreditCardFetchResult;
 class CreditCardRiskBasedAuthenticator;
@@ -160,17 +159,6 @@ class AutofillClient {
     kDeclined,
 
     // The user ignored the credit card save prompt.
-    kIgnored,
-  };
-
-  enum class SaveIbanOfferUserDecision {
-    // The user accepted IBAN save.
-    kAccepted,
-
-    // The user explicitly declined IBAN save.
-    kDeclined,
-
-    // The user ignored the IBAN save prompt.
     kIgnored,
   };
 
@@ -346,14 +334,6 @@ class AutofillClient {
 
   using CreditCardScanCallback = base::OnceCallback<void(const CreditCard&)>;
 
-  // Callback to run after local/upload IBAN save is offered. The callback runs
-  // with `user_decision` indicating whether the prompt was accepted, declined,
-  // or ignored. `nickname` is optionally provided by the user when IBAN local
-  // or upload save is offered, and can be an empty string.
-  using SaveIbanPromptCallback =
-      base::OnceCallback<void(SaveIbanOfferUserDecision user_decision,
-                              std::u16string_view nickname)>;
-
   // Callback to run if the OK button or the cancel button in a
   // Webauthn dialog is clicked.
   using WebauthnDialogCallback =
@@ -509,21 +489,6 @@ class AutofillClient {
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings(FillingProduct main_filling_product) = 0;
 
-  // Shows a dialog for the user to choose/confirm the authentication
-  // to use in card unmasking.
-  virtual void ShowUnmaskAuthenticatorSelectionDialog(
-      const std::vector<CardUnmaskChallengeOption>& challenge_options,
-      base::OnceCallback<void(const std::string&)>
-          confirm_unmask_challenge_option_callback,
-      base::OnceClosure cancel_unmasking_closure);
-  // This should be invoked upon server accepting the authentication method, in
-  // which case, we dismiss the selection dialog to open the authentication
-  // dialog. |server_success| dictates whether we received a success response
-  // from the server, with true representing success and false representing
-  // failure. A successful server response means that the issuer has sent an OTP
-  // and we can move on to the next portion of this flow.
-  virtual void DismissUnmaskAuthenticatorSelectionDialog(bool server_success);
-
   // Shows a dialog for the user to enroll in a virtual card.
   virtual void ShowVirtualCardEnrollDialog(
       const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
@@ -577,13 +542,6 @@ class AutofillClient {
   // visible and has been closed.
   virtual bool CloseWebauthnDialog();
 
-  // Shows the dialog including all credit cards that are available to be used
-  // as a virtual card. |candidates| must not be empty and has at least one
-  // card. Runs |callback| when a card is selected.
-  virtual void OfferVirtualCardOptions(
-      const std::vector<raw_ptr<CreditCard, VectorExperimental>>& candidates,
-      base::OnceCallback<void(const std::string&)> callback);
-
 #else  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   // Display the cardholder name fix flow prompt and run the |callback| if
   // the card should be uploaded to payments with updated name from the user.
@@ -628,21 +586,6 @@ class AutofillClient {
       const LegalMessageLines& legal_message_lines,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback);
-
-  // Runs `callback` once the user makes a decision with respect to the
-  // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
-  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
-  virtual void ConfirmSaveIbanLocally(const Iban& iban,
-                                      bool should_show_prompt,
-                                      SaveIbanPromptCallback callback);
-
-  // Runs `callback` once the user makes a decision with respect to the
-  // offer-to-upload prompt. On desktop, shows the offer-to-upload bubble if
-  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
-  virtual void ConfirmUploadIbanToCloud(const Iban& iban,
-                                        LegalMessageLines legal_message_lines,
-                                        bool should_show_prompt,
-                                        SaveIbanPromptCallback callback);
 
   // Will show an infobar to get user consent for Credit Card assistive filling.
   // Will run |callback| on success.
@@ -690,6 +633,14 @@ class AutofillClient {
       base::WeakPtr<TouchToFillDelegate> delegate,
       base::span<const autofill::CreditCard> cards_to_suggest) = 0;
 
+  // Shows the Touch To Fill surface for filling IBAN information, if
+  // possible, returning `true` on success. `delegate` will be notified of
+  // events. This function is not implemented on iOS and iOS WebView, and
+  // should not be used on those platforms.
+  virtual bool ShowTouchToFillIban(
+      base::WeakPtr<TouchToFillDelegate> delegate,
+      base::span<const autofill::Iban> ibans_to_suggest);
+
   // Hides the Touch To Fill surface for filling credit card information
   // if one is currently shown. Should be called only if the feature is
   // supported by the platform.
@@ -698,10 +649,10 @@ class AutofillClient {
   // Shows Autofill suggestions with the given `values`, `labels`, `icons`, and
   // `identifiers` for the element at `element_bounds`. `delegate` will be
   // notified of suggestion events, e.g., the user accepting a suggestion.
-  // The popup is shown asynchronously on Desktop and Android.
+  // The suggestions are shown asynchronously on Desktop and Android.
   virtual void ShowAutofillSuggestions(
       const PopupOpenArgs& open_args,
-      base::WeakPtr<AutofillPopupDelegate> delegate) = 0;
+      base::WeakPtr<AutofillSuggestionDelegate> delegate) = 0;
 
   // Update the data list values shown by the Autofill suggestions, if visible.
   virtual void UpdateAutofillDataListValues(

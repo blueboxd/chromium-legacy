@@ -4,11 +4,20 @@
 
 #include "chrome/browser/ash/input_method/editor_metrics_recorder.h"
 
+#include <optional>
+
+#include "ash/constants/ash_features.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/ash/input_method/editor_consent_enums.h"
+#include "chrome/browser/ash/input_method/editor_context.h"
 #include "chrome/browser/ash/input_method/editor_metrics_enums.h"
+#include "chrome/browser/ash/input_method/input_methods_by_language.h"
 #include "chromeos/ash/services/orca/public/mojom/orca_service.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace ash::input_method {
 
@@ -55,6 +64,57 @@ EditorTone GetEditorToneFromString(std::string_view tone) {
   }
   return EditorTone::kUnknown;
 }
+
+std::string_view AsString(const EditorOpportunityMode& mode) {
+  switch (mode) {
+    case EditorOpportunityMode::kWrite:
+      return "Write";
+    case EditorOpportunityMode::kRewrite:
+      return "Rewrite";
+    case EditorOpportunityMode::kNone:
+      return "None";
+  }
+}
+
+std::string_view AsString(const LanguageCategory& category) {
+  switch (category) {
+    case LanguageCategory::kEnglish:
+      return "English";
+    case LanguageCategory::kFrench:
+      return "French";
+    case LanguageCategory::kGerman:
+      return "German";
+    case LanguageCategory::kJapanese:
+      return "Japanese";
+    case LanguageCategory::kOther:
+      return "Other";
+  }
+}
+
+std::optional<EditorCriticalStates> AsCriticalState(const EditorStates& state) {
+  switch (state) {
+    case EditorStates::kNativeUIShown:
+    case EditorStates::kPromoCardImpression:
+      return EditorCriticalStates::kShowUI;
+    case EditorStates::kNativeRequest:
+    case EditorStates::kWebUIRequest:
+      return EditorCriticalStates::kRequestTriggered;
+    case EditorStates::kInsert:
+      return EditorCriticalStates::kTextInserted;
+    default:
+      return std::nullopt;
+  }
+}
+
+std::string_view AsEnglishOrOther(const LanguageCategory& category) {
+  switch (category) {
+    case LanguageCategory::kEnglish:
+      return "English";
+    default:
+      return "Other";
+  }
+}
+
 }  // namespace
 
 EditorStates ToEditorStatesMetric(EditorBlockedReason reason) {
@@ -151,8 +211,9 @@ EditorTone ToEditorMetricTone(orca::mojom::TriggerContextPtr trigger_context) {
   }
 }
 
-EditorMetricsRecorder::EditorMetricsRecorder(EditorOpportunityMode mode)
-    : mode_(mode) {}
+EditorMetricsRecorder::EditorMetricsRecorder(EditorContext* context,
+                                             EditorOpportunityMode mode)
+    : context_(context), mode_(mode) {}
 
 void EditorMetricsRecorder::SetMode(EditorOpportunityMode mode) {
   mode_ = mode;
@@ -177,19 +238,28 @@ void EditorMetricsRecorder::SetTone(EditorTone tone) {
 }
 
 void EditorMetricsRecorder::LogEditorState(EditorStates state) {
-  std::string histogram_name;
-  switch (mode_) {
-    case EditorOpportunityMode::kWrite:
-      histogram_name = "InputMethod.Manta.Orca.States.Write";
-      break;
-    case EditorOpportunityMode::kRewrite:
-      histogram_name = "InputMethod.Manta.Orca.States.Rewrite";
-      break;
-    case EditorOpportunityMode::kNone:
-      return;
+  if (mode_ == EditorOpportunityMode::kNone) {
+    return;
   }
 
-  base::UmaHistogramEnumeration(histogram_name, state);
+  base::UmaHistogramEnumeration(
+      base::StrCat({"InputMethod.Manta.Orca.States.", AsString(mode_)}), state);
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kOrcaInternationalize)) {
+    base::UmaHistogramEnumeration(
+        base::StrCat({"InputMethod.Manta.Orca.",
+                      AsString(InputMethodToLanguageCategory(
+                          context_->active_engine_id())),
+                      ".States.", AsString(mode_)}),
+        state);
+  }
+
+  if (std::optional<EditorCriticalStates> critical_state =
+          AsCriticalState(state);
+      critical_state != std::nullopt) {
+    LogEditorCriticalState(*critical_state);
+  }
+
   if (mode_ != EditorOpportunityMode::kRewrite) {
     return;
   }
@@ -201,19 +271,24 @@ void EditorMetricsRecorder::LogEditorState(EditorStates state) {
 
 void EditorMetricsRecorder::LogNumberOfCharactersInserted(
     int number_of_characters) {
-  std::string histogram_name;
-  switch (mode_) {
-    case EditorOpportunityMode::kWrite:
-      histogram_name = "InputMethod.Manta.Orca.CharactersInserted.Write";
-      break;
-    case EditorOpportunityMode::kRewrite:
-      histogram_name = "InputMethod.Manta.Orca.CharactersInserted.Rewrite";
-      break;
-    case EditorOpportunityMode::kNone:
-      return;
+  if (mode_ == EditorOpportunityMode::kNone) {
+    return;
   }
 
-  base::UmaHistogramCounts100000(histogram_name, number_of_characters);
+  base::UmaHistogramCounts100000(
+      base::StrCat(
+          {"InputMethod.Manta.Orca.CharactersInserted.", AsString(mode_)}),
+      number_of_characters);
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kOrcaInternationalize)) {
+    base::UmaHistogramCounts100000(
+        base::StrCat({"InputMethod.Manta.Orca.",
+                      AsEnglishOrOther(InputMethodToLanguageCategory(
+                          context_->active_engine_id())),
+                      ".CharactersInserted.", AsString(mode_)}),
+        number_of_characters);
+  }
+
   if (mode_ != EditorOpportunityMode::kRewrite) {
     return;
   }
@@ -225,21 +300,24 @@ void EditorMetricsRecorder::LogNumberOfCharactersInserted(
 
 void EditorMetricsRecorder::LogNumberOfCharactersSelectedForInsert(
     int number_of_characters) {
-  std::string histogram_name;
-  switch (mode_) {
-    case EditorOpportunityMode::kWrite:
-      histogram_name =
-          "InputMethod.Manta.Orca.CharactersSelectedForInsert.Write";
-      break;
-    case EditorOpportunityMode::kRewrite:
-      histogram_name =
-          "InputMethod.Manta.Orca.CharactersSelectedForInsert.Rewrite";
-      break;
-    case EditorOpportunityMode::kNone:
-      return;
+  if (mode_ == EditorOpportunityMode::kNone) {
+    return;
   }
 
-  base::UmaHistogramCounts100000(histogram_name, number_of_characters);
+  base::UmaHistogramCounts100000(
+      base::StrCat({"InputMethod.Manta.Orca.CharactersSelectedForInsert.",
+                    AsString(mode_)}),
+      number_of_characters);
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kOrcaInternationalize)) {
+    base::UmaHistogramCounts100000(
+        base::StrCat({"InputMethod.Manta.Orca.",
+                      AsEnglishOrOther(InputMethodToLanguageCategory(
+                          context_->active_engine_id())),
+                      ".CharactersSelectedForInsert.", AsString(mode_)}),
+        number_of_characters);
+  }
+
   if (mode_ != EditorOpportunityMode::kRewrite) {
     return;
   }
@@ -252,45 +330,70 @@ void EditorMetricsRecorder::LogNumberOfCharactersSelectedForInsert(
 
 void EditorMetricsRecorder::LogNumberOfResponsesFromServer(
     int number_of_responses) {
-  switch (mode_) {
-    case EditorOpportunityMode::kWrite:
-      base::UmaHistogramExactLinear("InputMethod.Manta.Orca.NumResponses.Write",
-                                    number_of_responses,
-                                    kMaxNumResponsesFromServer);
-      return;
-    case EditorOpportunityMode::kRewrite:
-      base::UmaHistogramExactLinear(
-          "InputMethod.Manta.Orca.NumResponses.Rewrite", number_of_responses,
-          kMaxNumResponsesFromServer);
-      base::UmaHistogramExactLinear(
-          base::StrCat({"InputMethod.Manta.Orca.NumResponses.",
-                        GetToneStringFromEnum(tone_)}),
-          number_of_responses, kMaxNumResponsesFromServer);
-      return;
-    case EditorOpportunityMode::kNone:
-      return;
+  if (mode_ == EditorOpportunityMode::kNone) {
+    return;
   }
+
+  base::UmaHistogramExactLinear(
+      base::StrCat({"InputMethod.Manta.Orca.NumResponses.", AsString(mode_)}),
+      number_of_responses, kMaxNumResponsesFromServer);
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kOrcaInternationalize)) {
+    base::UmaHistogramExactLinear(
+        base::StrCat({"InputMethod.Manta.Orca.",
+                      AsEnglishOrOther(InputMethodToLanguageCategory(
+                          context_->active_engine_id())),
+                      ".NumResponses.", AsString(mode_)}),
+        number_of_responses, kMaxNumResponsesFromServer);
+  }
+
+  if (mode_ != EditorOpportunityMode::kRewrite) {
+    return;
+  }
+
+  base::UmaHistogramExactLinear(
+      base::StrCat({"InputMethod.Manta.Orca.NumResponses.",
+                    GetToneStringFromEnum(tone_)}),
+      number_of_responses, kMaxNumResponsesFromServer);
 }
 
 void EditorMetricsRecorder::LogLengthOfLongestResponseFromServer(
     int number_of_characters) {
-  switch (mode_) {
-    case EditorOpportunityMode::kWrite:
-      base::UmaHistogramCounts100000(
-          "InputMethod.Manta.Orca.LengthOfLongestResponse.Write",
-          number_of_characters);
-      return;
-    case EditorOpportunityMode::kRewrite:
-      base::UmaHistogramCounts100000(
-          "InputMethod.Manta.Orca.LengthOfLongestResponse.Rewrite",
-          number_of_characters);
-      base::UmaHistogramCounts100000(
-          base::StrCat({"InputMethod.Manta.Orca.LengthOfLongestResponse.",
-                        GetToneStringFromEnum(tone_)}),
-          number_of_characters);
-      return;
-    case EditorOpportunityMode::kNone:
-      return;
+  if (mode_ == EditorOpportunityMode::kNone) {
+    return;
+  }
+
+  base::UmaHistogramCounts100000(
+      base::StrCat(
+          {"InputMethod.Manta.Orca.LengthOfLongestResponse.", AsString(mode_)}),
+      number_of_characters);
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kOrcaInternationalize)) {
+    base::UmaHistogramCounts100000(
+        base::StrCat({"InputMethod.Manta.Orca.",
+                      AsEnglishOrOther(InputMethodToLanguageCategory(
+                          context_->active_engine_id())),
+                      ".LengthOfLongestResponse.", AsString(mode_)}),
+        number_of_characters);
+  }
+
+  if (mode_ != EditorOpportunityMode::kRewrite) {
+    return;
+  }
+
+  base::UmaHistogramCounts100000(
+      base::StrCat({"InputMethod.Manta.Orca.LengthOfLongestResponse.",
+                    GetToneStringFromEnum(tone_)}),
+      number_of_characters);
+}
+
+void EditorMetricsRecorder::LogEditorCriticalState(
+    const EditorCriticalStates& critical_state) {
+  if (std::optional<ukm::SourceId> source_id = context_->GetUkmSourceId();
+      source_id.has_value()) {
+    ukm::builders::InputMethod_Manta_Orca(*source_id)
+        .SetEditorCriticalStates(static_cast<int>(critical_state))
+        .Record(ukm::UkmRecorder::Get());
   }
 }
 

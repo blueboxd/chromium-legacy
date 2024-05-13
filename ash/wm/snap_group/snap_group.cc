@@ -12,6 +12,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
+#include "ash/wm/snap_group/snap_group_metrics.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_types.h"
@@ -22,12 +23,15 @@
 #include "base/auto_reset.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/metrics/user_metrics.h"
+#include "base/time/time.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range_f.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -37,8 +41,13 @@ using chromeos::WindowStateType;
 
 }  // namespace
 
-SnapGroup::SnapGroup(aura::Window* window1, aura::Window* window2)
-    : snap_group_divider_(this) {
+SnapGroup::SnapGroup(aura::Window* window1,
+                     aura::Window* window2,
+                     std::optional<base::TimeTicks> sticky_creation_time)
+    : snap_group_divider_(this),
+      carry_over_creation_time_(
+          sticky_creation_time.value_or(base::TimeTicks().Now())),
+      actual_creation_time_(base::TimeTicks().Now()) {
   CHECK_EQ(window1->parent(), window2->parent());
 
   auto* window_state1 = WindowState::Get(window1);
@@ -63,6 +72,7 @@ SnapGroup::SnapGroup(aura::Window* window1, aura::Window* window2)
   // We manually add ourselves as a display observer so we can early remove
   // ourselves in `Shutdown()`.
   display::Screen::GetScreen()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
 }
 
 SnapGroup::~SnapGroup() {
@@ -74,6 +84,7 @@ SnapGroup::~SnapGroup() {
 void SnapGroup::Shutdown() {
   is_shutting_down_ = true;
 
+  Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 
   // Restore the snapped window bounds that were adjusted to make room for
@@ -88,6 +99,14 @@ void SnapGroup::Shutdown() {
   StopObservingWindows();
 }
 
+aura::Window* SnapGroup::GetPhysicallyLeftOrTopWindow() {
+  return IsPhysicallyLeftOrTop(window1_) ? window1_ : window2_;
+}
+
+aura::Window* SnapGroup::GetPhysicallyRightOrBottomWindow() {
+  return IsPhysicallyLeftOrTop(window1_) ? window2_ : window1_;
+}
+
 const aura::Window* SnapGroup::GetWindowOfSnapViewType(
     SnapViewType snap_type) const {
   return snap_type == SnapViewType::kPrimary ? window1_ : window2_;
@@ -96,7 +115,7 @@ const aura::Window* SnapGroup::GetWindowOfSnapViewType(
 void SnapGroup::ShowDivider() {
   // TODO(b/338130287): Determine whether `window1_` should always be
   // `primary_window`.
-  const bool is_left_or_top = IsPhysicalLeftOrTop(window1_);
+  const bool is_left_or_top = IsPhysicallyLeftOrTop(window1_);
   aura::Window* primary_window = is_left_or_top ? window1_ : window2_;
   aura::Window* secondary_window = is_left_or_top ? window2_ : window1_;
 
@@ -148,6 +167,7 @@ void SnapGroup::OnLocatedEvent(ui::LocatedEvent* event) {
   // the group to avoid re-stacking the divider on top of the dragged window.
   if (window1_->Contains(target) || window2_->Contains(target)) {
     SnapGroupController::Get()->RemoveSnapGroup(this);
+    RecordSnapGroupExitPoint(SnapGroupExitPoint::kDragWindowOut);
   }
 }
 
@@ -165,6 +185,7 @@ void SnapGroup::MinimizeWindows() {
 
 void SnapGroup::OnWindowDestroying(aura::Window* window) {
   DCHECK(window == window1_ || window == window2_);
+  RecordSnapGroupExitPoint(SnapGroupExitPoint::kWindowDestruction);
   // `this` will be shut down and removed from the controller immediately, and
   // then destroyed asynchronously soon.
   SnapGroupController::Get()->RemoveSnapGroup(this);
@@ -191,11 +212,15 @@ void SnapGroup::OnWindowParentChanged(aura::Window* window,
   aura::Window* to_be_moved_window = window == window1_ ? window2_ : window1_;
   bool did_parent_change = false;
   if (window->GetRootWindow() != to_be_moved_window->GetRootWindow()) {
+    base::RecordAction(
+        base::UserMetricsAction("SnapGroups_MoveSnapGroupToDisplay"));
     window_util::MoveWindowToDisplay(
         to_be_moved_window,
         display::Screen::GetScreen()->GetDisplayNearestWindow(parent).id());
     did_parent_change = true;
   } else if (parent != to_be_moved_window->parent()) {
+    base::RecordAction(
+        base::UserMetricsAction("SnapGroups_MoveSnapGroupToDesk"));
     parent->AddChild(to_be_moved_window);
     did_parent_change = true;
   }
@@ -219,6 +244,7 @@ void SnapGroup::OnPreWindowStateTypeChange(WindowState* window_state,
   CHECK(old_type == WindowStateType::kPrimarySnapped ||
         old_type == WindowStateType::kSecondarySnapped);
   if (window_state->GetStateType() != old_type) {
+    RecordSnapGroupExitPoint(SnapGroupExitPoint::kWindowStateChange);
     // `this` will be shut down and removed from the controller immediately, and
     // then destroyed asynchronously soon.
     SnapGroupController::Get()->RemoveSnapGroup(this);
@@ -234,8 +260,7 @@ aura::Window* SnapGroup::GetRootWindow() {
 
 void SnapGroup::StartResizeWithDivider(const gfx::Point& location_in_screen) {
   // `SplitViewDivider` will do the work to start resizing.
-  // TODO(sophiewen): Maybe start performant resizing and add presentation time
-  // metrics.
+  base::RecordAction(base::UserMetricsAction("SnapGroups_ResizeSnapGroup"));
 }
 
 void SnapGroup::UpdateResizeWithDivider(const gfx::Point& location_in_screen) {
@@ -293,7 +318,13 @@ void SnapGroup::OnDisplayMetricsChanged(const display::Display& display,
     return;
   }
 
-  // Divider widiget can be invisible in Overview mode.
+  // The divider widget is invisible in Overview mode, skip the
+  // `RefreshSnapGroup()` since it would need to consider the divider bounds.
+  // Additionally, we want to avoid intensive visual updates and grid re-layout
+  // in Overview when the snapped windows no longer fit in the work area due to
+  // changes in device scale (in which case, the `OverviewGroupItem` is split
+  // into two separate `OverviewItem`s). `RefreshSnapGroup()` will be called in
+  // `SnapGroupController::OnOverviewModeEndingAnimationComplete()` instead.
   auto* divider_widget = snap_group_divider_.divider_widget();
   if (!divider_widget || !divider_widget->IsVisible()) {
     return;
@@ -306,6 +337,18 @@ void SnapGroup::OnDisplayMetricsChanged(const display::Display& display,
   }
 
   RefreshSnapGroup();
+}
+
+void SnapGroup::OnWindowActivated(ActivationReason reason,
+                                  aura::Window* gained_active,
+                                  aura::Window* lost_active) {
+  // We are only interested when neither of the windows was active.
+  if (lost_active == window1_ || lost_active == window2_) {
+    return;
+  }
+  if (gained_active == window1_ || gained_active == window2_) {
+    base::RecordAction(base::UserMetricsAction("SnapGroups_RecallSnapGroup"));
+  }
 }
 
 void SnapGroup::StartObservingWindows() {
@@ -422,6 +465,15 @@ void SnapGroup::OnOverviewModeStarting() {
 
 void SnapGroup::OnOverviewModeEnding() {
   hide_windows_in_partial_overview_.reset();
+
+  // On Overview mode ending, call `RefreshSnapGroup()` to refresh the bounds
+  // of the snapped windows and divider. This ensures they either maintain a
+  // proper fit within the work area or are gracefully broken from the group
+  // if they no longer fit due to potential device scale factor in Overview.
+  // By doing this refresh after exiting Overview, we prevent heavy visual
+  // updates and re-layout (break `OverviewGroupItem` back to two individual
+  // `Overviewitem`s) while in Overview mode.
+  RefreshSnapGroup();
 }
 
 }  // namespace ash

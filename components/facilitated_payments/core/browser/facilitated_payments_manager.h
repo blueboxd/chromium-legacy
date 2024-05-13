@@ -15,8 +15,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/types/expected.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_driver.h"
-#include "components/facilitated_payments/core/browser/payments/facilitated_payments_initiate_payment_request_details.h"
+#include "components/facilitated_payments/core/browser/network_api/facilitated_payments_initiate_payment_request_details.h"
+#include "components/facilitated_payments/core/browser/network_api/facilitated_payments_initiate_payment_response_details.h"
 #include "components/facilitated_payments/core/mojom/facilitated_payments_agent.mojom.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -112,6 +114,9 @@ class FacilitatedPaymentsManager {
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
       ApiClientAvailable_RiskDataNotLoaded_TriggersLoadRiskData);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
+                           PaymentNotOfferedReason_RiskDataEmpty);
+
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
       ApiClientAvailable_RiskDataLoaded_DoesNotTriggerLoadRiskData);
@@ -120,11 +125,17 @@ class FacilitatedPaymentsManager {
       DoesNotRetrieveClientTokenIfPixPaymentPromptRejected);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
                            RetrievesClientTokenIfPixPaymentPromptAccepted);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
+                           GetClientTokenHistogram_ClientTokenNotEmpty);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
+                           GetClientTokenHistogram_ClientTokenEmpty);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
       TriggerPixDetectionOnDomContentLoadedExpDisabled_Ukm);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
                            TriggerPixDetectionOnDomContentLoadedExpEnabled_Ukm);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
+                           ResettingPreventsPayment);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerWithPixPaymentsDisabledTest,
       ValidPixCodeDetectionResult_HasPixAccounts_ApiClientNotTriggered);
@@ -146,10 +157,20 @@ class FacilitatedPaymentsManager {
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
                            PixCodeValidated_ApiClientTriggered);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           PaymentNotOfferedReason_CodeValidatorReturnsFalse);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
                            PixCodeValidationFailed_NoApiClientTriggered);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           PaymentNotOfferedReason_CodeValidatorFailed);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           ApiAvailabilityHistogram);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
       PixCodeValidatorTerminatedUnexpectedly_NoApiClientTriggered);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           PaymentNotOfferedReason_ApiNotAvailable);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           SendInitiatePaymentRequest);
 
   // Register optimization guide deciders for PIX. It is an allowlist of URLs
   // where we attempt PIX code detection.
@@ -206,6 +227,17 @@ class FacilitatedPaymentsManager {
   // the account for making the payment.
   void SendInitiatePaymentRequest();
 
+  // Called after receiving the `result` of the initiate payment call. The
+  // `response_details` contains the action token used for payment.
+  void OnInitiatePaymentResponseReceived(
+      autofill::AutofillClient::PaymentsRpcResult result,
+      std::unique_ptr<FacilitatedPaymentsInitiatePaymentResponseDetails>
+          response_details);
+
+  // Calling `Reset` has no effect in tests. Adding this method to specifically
+  // test `Resets` in tests.
+  void ResetForTesting();
+
   // Owner.
   raw_ref<FacilitatedPaymentsDriver> driver_;
 
@@ -232,8 +264,19 @@ class FacilitatedPaymentsManager {
   // Measures the time taken to scan the document for the PIX code.
   base::TimeTicks pix_code_detection_latency_measuring_timestamp_;
 
+  // Measures the time taken to check the availability of the facilitated
+  // payments API client.
+  base::TimeTicks api_availability_check_latency_;
+
+  // Measures the time take to load the client token from the facilitated
+  // payments API client.
+  base::TimeTicks get_client_token_loading_latency_;
+
   // Contains the details required for the `InitiatePayment` request to be sent
-  // to the Payments server.
+  // to the Payments server. Its ownership is transferred to
+  // `FacilitatedPaymentsInitiatePaymentRequest` in
+  // `SendInitiatePaymentRequest`. `Reset` destroys the existing instance, and
+  // creates a new instance.
   std::unique_ptr<FacilitatedPaymentsInitiatePaymentRequestDetails>
       initiate_payment_request_details_;
 

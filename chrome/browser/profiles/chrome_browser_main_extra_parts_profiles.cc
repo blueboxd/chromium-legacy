@@ -324,6 +324,7 @@
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater_factory.h"
 #include "chrome/browser/smart_card/smart_card_permission_context_factory.h"
+#include "chrome/browser/webauthn/chromeos/passkey_service_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #endif
 
@@ -514,8 +515,8 @@
 #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
 #if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+#include "chrome/browser/enterprise/data_controls/chrome_rules_service.h"
 #include "chrome/browser/enterprise/data_controls/reporting_service.h"
-#include "chrome/browser/enterprise/data_controls/rules_service.h"
 #endif
 
 namespace chrome {
@@ -707,6 +708,9 @@ void ChromeBrowserMainExtraPartsProfiles::
     chromeos::cloud_upload::CloudUploadPrefsWatcherFactory::GetInstance();
   }
 #endif
+#if BUILDFLAG(IS_CHROMEOS)
+  chromeos::PasskeyServiceFactory::GetInstance();
+#endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::RemoteAppsProxyLacrosFactory::GetInstance();
 #endif
@@ -752,7 +756,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
   data_controls::ReportingServiceFactory::GetInstance();
-  data_controls::RulesServiceFactory::GetInstance();
+  data_controls::ChromeRulesServiceFactory::GetInstance();
 #endif
   data_sharing::DataSharingServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
@@ -976,9 +980,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if !BUILDFLAG(IS_ANDROID)
   OneGoogleBarServiceFactory::GetInstance();
-  if (base::FeatureList::IsEnabled(permissions::features::kOneTimePermission)) {
-    OneTimePermissionsTrackerFactory::GetInstance();
-  }
+  OneTimePermissionsTrackerFactory::GetInstance();
 #endif
   OpenerHeuristicServiceFactory::GetInstance();
   if (optimization_guide::ShouldStartModelValidator()) {

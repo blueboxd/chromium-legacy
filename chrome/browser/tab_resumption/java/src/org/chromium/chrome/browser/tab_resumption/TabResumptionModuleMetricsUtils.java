@@ -81,6 +81,12 @@ public class TabResumptionModuleMetricsUtils {
             "MagicStack.Clank.TabResumption.ModuleShowConfig";
     static final String HISTOGRAM_STABILITY_DELAY = "MagicStack.Clank.TabResumption.StabilityDelay";
 
+    static final String HISTOGRAM_IS_SALIENT_IMAGE_AVAILABLE =
+            "MagicStack.Clank.TabResumption.IsSalientImageAvailable";
+
+    static final String HISTOGRAM_SEE_MORE_LINK_CLICKED =
+            "MagicStack.Clank.TabResumption.SeeMoreLinkClicked";
+
     /** Maps specification of a clicked tile to a ClickInfo for logging. */
     static @ClickInfo int computeClickInfo(@ModuleShowConfig int moduleShowConfig, int tileIndex) {
         switch (moduleShowConfig) {
@@ -153,5 +159,18 @@ public class TabResumptionModuleMetricsUtils {
         // imposes stability after a timeout of STABILITY_TIMEOUT_MS, after which delay logging is
         // moot. This timeout is well below the max bucket of 10 seconds.
         RecordHistogram.recordTimesHistogram(HISTOGRAM_STABILITY_DELAY, stabilityDelay);
+    }
+
+    /** Records whether a salient image fetch attempt was successful. */
+    static void recordSalientImageAvailability(boolean isAvailable) {
+        RecordHistogram.recordBooleanHistogram(HISTOGRAM_IS_SALIENT_IMAGE_AVAILABLE, isAvailable);
+    }
+
+    /**
+     * Records the configuration of the tab resumption module when the "see more" link is clicked.
+     */
+    static void recordSeeMoreLinkClicked(@ModuleShowConfig int config) {
+        RecordHistogram.recordEnumeratedHistogram(
+                HISTOGRAM_SEE_MORE_LINK_CLICKED, config, ModuleShowConfig.NUM_ENTRIES);
     }
 }

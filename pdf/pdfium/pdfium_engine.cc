@@ -40,6 +40,7 @@
 #include "pdf/accessibility_structs.h"
 #include "pdf/draw_utils/coordinates.h"
 #include "pdf/draw_utils/shadow.h"
+#include "pdf/input_utils.h"
 #include "pdf/loader/document_loader_impl.h"
 #include "pdf/loader/url_loader.h"
 #include "pdf/loader/url_loader_wrapper_impl.h"
@@ -309,21 +310,6 @@ bool IsLinkArea(PDFiumPage::Area area) {
 
 bool IsSelectableArea(PDFiumPage::Area area) {
   return area == PDFiumPage::TEXT_AREA || IsLinkArea(area);
-}
-
-// Normalize a blink::WebMouseEvent. For macOS, normalization means transforming
-// the ctrl + left button down events into a right button down event.
-blink::WebMouseEvent NormalizeMouseEvent(const blink::WebMouseEvent& event) {
-  blink::WebMouseEvent normalized_event = event;
-#if BUILDFLAG(IS_MAC)
-  if ((event.GetModifiers() & blink::WebInputEvent::Modifiers::kControlKey) &&
-      event.button == blink::WebPointerProperties::Button::kLeft &&
-      event.GetType() == blink::WebInputEvent::Type::kMouseDown) {
-    normalized_event.SetModifiers(
-        event.GetModifiers() & ~blink::WebInputEvent::Modifiers::kControlKey);
-  }
-#endif
-  return normalized_event;
 }
 
 // These values are intended for the JS to handle, and it doesn't have access
@@ -1200,13 +1186,14 @@ PDFiumPage::Area PDFiumEngine::GetCharIndex(const gfx::Point& point,
 }
 
 bool PDFiumEngine::OnMouseDown(const blink::WebMouseEvent& event) {
-  switch (event.button) {
+  blink::WebMouseEvent normalized_event = NormalizeMouseEvent(event);
+  switch (normalized_event.button) {
     case blink::WebPointerProperties::Button::kLeft:
-      return OnLeftMouseDown(NormalizeMouseEvent(event));
+      return OnLeftMouseDown(normalized_event);
     case blink::WebPointerProperties::Button::kMiddle:
-      return OnMiddleMouseDown(NormalizeMouseEvent(event));
+      return OnMiddleMouseDown(normalized_event);
     case blink::WebPointerProperties::Button::kRight:
-      return OnRightMouseDown(NormalizeMouseEvent(event));
+      return OnRightMouseDown(normalized_event);
     default:
       return false;
   }

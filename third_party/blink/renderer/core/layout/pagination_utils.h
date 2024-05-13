@@ -9,17 +9,30 @@
 
 namespace blink {
 
+class BlockBreakToken;
 class LayoutView;
 class PhysicalBoxFragment;
 struct PhysicalRect;
+
+// Return the scale factor to use when scaling paginated content (and the page
+// border box) from layout to target to the target output. Layout may use a
+// different viewport size than the requested page size because of a scale
+// factor in the print parameters, or in order to fit more unbreakable content
+// in the inline direction. Additionally, if the target is actual paper, it may
+// be necessary to scale everything down to fit within the given paper size.
+float TargetScaleForPage(const PhysicalBoxFragment& page_container);
 
 // Return the total number of pages. Only to be called on a document that has
 // been laid out for pagination.
 wtf_size_t PageCount(const LayoutView& view);
 
-// Return the page rectangle at the specified index in the stitched coordinate
-// system.
-PhysicalRect StitchedPageContentRect(const LayoutView&, wtf_size_t page_number);
+// Get the page container (BoxType::kPageContainer) for a given page.
+const PhysicalBoxFragment* GetPageContainer(const LayoutView&,
+                                            wtf_size_t page_number);
+
+// Get the page area (BoxType::kPageArea) for a given page.
+const PhysicalBoxFragment* GetPageArea(const LayoutView&,
+                                       wtf_size_t page_number);
 
 // Get the page border box (BoxType::kPageBorderBox) child of a page container.
 const PhysicalBoxFragment& GetPageBorderBox(
@@ -28,6 +41,17 @@ const PhysicalBoxFragment& GetPageBorderBox(
 // Get the page area (BoxType::kPageArea) child of a page border box.
 const PhysicalBoxFragment& GetPageArea(
     const PhysicalBoxFragment& page_border_box);
+
+// Return the page rectangle at the specified index in the stitched coordinate
+// system.
+PhysicalRect StitchedPageContentRect(const LayoutView&, wtf_size_t page_number);
+
+// Return the page rectangle of the page area inside the specified container in
+// the stitched coordinate system.
+PhysicalRect StitchedPageContentRect(const PhysicalBoxFragment& page_container);
+
+const BlockBreakToken* FindPreviousBreakTokenForPageArea(
+    const PhysicalBoxFragment& page_area);
 
 float CalculateOverflowShrinkForPrinting(const LayoutView&,
                                          float maximum_shrink_factor);

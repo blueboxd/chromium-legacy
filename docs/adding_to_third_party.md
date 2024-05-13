@@ -106,8 +106,8 @@ You should not check in any pre-built binaries where there is an alternate,
 supported solution for getting them. If you need to compile from source,
 consider using [CIPD](cipd_and_3pp.md) instead.
 
-_Accessible to Googlers only. Non-Googlers can email one of the people in
-third_party/OWNERS for help.
+This is accessible to Googlers only. Non-Googlers can email one of the people
+in third_party/OWNERS for help.
 
 See [Chrome Code Policy](https://goto.google.com/chrome-code-policy)
 
@@ -185,8 +185,8 @@ and do not need to modify `//third_party/.gitignore`.
 
 ### Checking in large files
 
-_Accessible to Googlers only. Non-Googlers can email one of the people in
-third_party/OWNERS for help.
+This is accessible to Googlers only. Non-Googlers can email one of the people
+in third_party/OWNERS for help.
 
 See [Moving large files to Google Storage](https://goto.google.com/checking-in-large-files)
 
@@ -194,12 +194,12 @@ See [Moving large files to Google Storage](https://goto.google.com/checking-in-l
 
 ### Add OWNERS
 
-Your OWNERS file must either list two Chromium developer accounts as the first
-two lines or include a `file:` directive to an OWNERS file within the
-`third_party` directory that itself conforms to this criterion. This will ensure
-accountability for maintenance of the code over time. While there isn't always
-an ideal or obvious set of people that should go in OWNERS, this is critical for
-first-line triage of any issues that crop up in the code.
+Your OWNERS file must either list the email addresses of two Chromium
+committers on the first two lines or include a `file:` directive to an OWNERS
+file within the `third_party` directory that itself conforms to this criterion.
+This will ensure accountability for maintenance of the code over time. While
+there isn't always an ideal or obvious set of people that should go in OWNERS,
+this is critical for first-line triage of any issues that crop up in the code.
 
 As an OWNER, you're expected to:
 

@@ -38,10 +38,12 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/lens/lens_overlay_controller.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
@@ -52,8 +54,8 @@
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/startup/default_browser_prompt_manager.h"
-#include "chrome/browser/ui/startup/default_browser_prompt_prefs.h"
+#include "chrome/browser/ui/startup/default_browser_prompt/default_browser_prompt_manager.h"
+#include "chrome/browser/ui/startup/default_browser_prompt/default_browser_prompt_prefs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 #include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_utils.h"
@@ -765,8 +767,17 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_CREATE_SHORTCUT:
       base::RecordAction(base::UserMetricsAction("CreateShortcut"));
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+      if (base::FeatureList::IsEnabled(features::kShortcutsNotApps)) {
+        chrome::CreateDesktopShortcutForActiveWebContents(browser_);
+      } else {
+        web_app::CreateWebAppFromCurrentWebContents(
+            browser_, web_app::WebAppInstallFlow::kCreateShortcut);
+      }
+#else
       web_app::CreateWebAppFromCurrentWebContents(
           browser_, web_app::WebAppInstallFlow::kCreateShortcut);
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
       break;
     case IDC_INSTALL_PWA:
       base::RecordAction(base::UserMetricsAction("InstallWebAppFromMenu"));
@@ -802,7 +813,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
 #endif
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case IDC_FEEDBACK:
-      OpenFeedbackDialog(browser_, kFeedbackSourceBrowserCommand);
+      OpenFeedbackDialog(browser_, feedback::kFeedbackSourceBrowserCommand);
       break;
     case IDC_SHOW_SEARCH_COMPANION:
       SidePanelUI::GetSidePanelUIForBrowser(browser_)->Show(
@@ -1429,10 +1440,9 @@ void BrowserCommandController::InitCommandState() {
                                           true);
   }
 
-  if (lens::features::IsLensOverlayEnabled()) {
-    command_updater_.UpdateCommandEnabled(IDC_CONTENT_CONTEXT_LENS_OVERLAY,
-                                          true);
-  }
+  command_updater_.UpdateCommandEnabled(
+      IDC_CONTENT_CONTEXT_LENS_OVERLAY,
+      LensOverlayController::IsEnabled(browser_->profile()));
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
   if (base::FeatureList::IsEnabled(

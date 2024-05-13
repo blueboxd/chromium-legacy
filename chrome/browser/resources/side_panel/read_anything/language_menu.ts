@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '//resources/cr_elements/cr_hidden_style.css.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import '//resources/cr_elements/cr_icons.css.js';
 import '//resources/cr_elements/icons.html.js';
@@ -37,8 +36,8 @@ interface LanguageDropdownItem {
   checked: boolean;
   languageCode: string;
   notification: Notification;
-  // Whether this is the language of the currently selected voice
-  selectedVoiceLang: boolean;
+  // Whether this toggle should be disabled
+  disabled: boolean;
   callback: () => void;
 }
 
@@ -118,7 +117,8 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
     // Ensure we've added the available pack manager supported languages to
     // the language menu first, only on ChromeOS.
     const langsAndReadableLangs: Array<[string, string]> =
-        chrome.readingMode.isChromeOsAsh ?
+        chrome.readingMode.isLanguagePackDownloadingEnabled &&
+            chrome.readingMode.isChromeOsAsh ?
         Array.from(
             this.baseLanguages,
             (key) => [key, this.getDisplayName(localeToDisplayName, key)]) :
@@ -161,7 +161,9 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
                 isError: this.isNotificationError(lang, voicePackInstallStatus),
                 text: this.getNotificationText(lang, voicePackInstallStatus),
               },
-              selectedVoiceLang: lang.toLowerCase() === selectedLangLowerCase,
+              disabled: this.enabledLanguagesInPref &&
+                  this.enabledLanguagesInPref.includes(lang) &&
+                  (lang.toLowerCase() === selectedLangLowerCase),
               callback: () =>
                   this.dispatchEvent(new CustomEvent(LANGUAGE_TOGGLE_EVENT, {
                     bubbles: true,

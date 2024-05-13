@@ -54,6 +54,7 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/client/client_shared_image_interface.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/renderers/video_resource_updater.h"
@@ -2178,6 +2179,9 @@ TEST_P(IntersectingQuadPixelTest, RenderPassQuads) {
 }
 
 TEST_P(IntersectingMultiplanarVideoQuadPixelTest, YUVVideoQuads) {
+  if (!media::IsWritePixelsYUVEnabled()) {
+    GTEST_SKIP() << "Skip this test if UseWritePixelsYUV is disabled";
+  }
   this->SetupQuadStateTransformsAndRenderPass();
   gfx::Rect inner_rect(
       ((this->quad_rect_.x() + (this->quad_rect_.width() / 4)) & ~0xF),
@@ -2220,6 +2224,9 @@ TEST_P(IntersectingMultiplanarVideoQuadPixelTest, YUVVideoQuads) {
 }
 
 TEST_P(IntersectingMultiplanarVideoQuadPixelTest, Y16VideoQuads) {
+  if (!media::IsWritePixelsYUVEnabled()) {
+    GTEST_SKIP() << "Skip this test if UseWritePixelsYUV is disabled";
+  }
   this->SetupQuadStateTransformsAndRenderPass();
   gfx::Rect inner_rect(
       ((this->quad_rect_.x() + (this->quad_rect_.width() / 4)) & ~0xF),
@@ -2399,6 +2406,9 @@ class VideoRendererPixelHiLoTest : public VideoRendererPixelTestBase,
 INSTANTIATE_TEST_SUITE_P(, VideoRendererPixelHiLoTest, testing::Bool());
 
 TEST_P(VideoRendererPixelHiLoTest, SimpleYUVRect) {
+  if (!media::IsWritePixelsYUVEnabled()) {
+    GTEST_SKIP() << "Skip this test if UseWritePixelsYUV is disabled";
+  }
   gfx::Rect rect(this->device_viewport_size_);
 
   CompositorRenderPassId id{1};
@@ -2483,6 +2493,9 @@ INSTANTIATE_TEST_SUITE_P(,
                                           testing::ValuesIn(yuv_color_spaces)));
 
 TEST_P(VideoRendererPixelHiLoColorSpaceTest, SimpleYUVRect) {
+  if (!media::IsWritePixelsYUVEnabled()) {
+    GTEST_SKIP() << "Skip this test if UseWritePixelsYUV is disabled";
+  }
   gfx::Rect rect(this->device_viewport_size_);
 
   CompositorRenderPassId id{1};
@@ -2525,6 +2538,9 @@ TEST_P(VideoRendererPixelHiLoColorSpaceTest, SimpleYUVRect) {
 #define MAYBE_ClippedYUVRect ClippedYUVRect
 #endif  // BUILDFLAG(IS_IOS)
 TEST_P(VideoRendererPixelHiLoTest, MAYBE_ClippedYUVRect) {
+  if (!media::IsWritePixelsYUVEnabled()) {
+    GTEST_SKIP() << "Skip this test if UseWritePixelsYUV is disabled";
+  }
   gfx::Rect viewport(this->device_viewport_size_);
   gfx::Rect draw_rect(this->device_viewport_size_.width() * 1.5,
                       this->device_viewport_size_.height() * 1.5);
@@ -2572,6 +2588,9 @@ INSTANTIATE_TEST_SUITE_P(,
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VideoRendererPixelTest);
 
 TEST_P(VideoRendererPixelTest, OffsetYUVRect) {
+  if (!media::IsWritePixelsYUVEnabled()) {
+    GTEST_SKIP() << "Skip this test if UseWritePixelsYUV is disabled";
+  }
   gfx::Rect rect(this->device_viewport_size_);
 
   CompositorRenderPassId id{1};
@@ -2658,6 +2677,37 @@ TEST_P(VideoRendererPixelTest, SimpleYUVJRect) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("green.png")),
       cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
+}
+
+TEST_P(VideoRendererPixelTest, SimpleYUVJRectWithYV12) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  CompositorRenderPassId id{1};
+  auto pass = CreateTestRootRenderPass(id, rect);
+
+  // YUV of (84,114,224) should be crimson red (220,20,60) in RGB.
+  CreateTestMultiplanarVideoDrawQuad_Solid(
+      media::PIXEL_FORMAT_YV12, gfx::ColorSpace::CreateJpeg(), false,
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 84, 114, 224, pass.get(),
+      this->video_resource_updater_.get(), rect, rect,
+      this->resource_provider_.get(), this->child_resource_provider_.get(),
+      this->child_context_provider_.get());
+
+  AggregatedRenderPassId new_id{1};
+  auto copy_pass = cc::CopyToAggregatedRenderPass(
+      pass.get(), new_id, gfx::ContentColorUsage::kSRGB);
+
+  AggregatedRenderPassList pass_list;
+  pass_list.push_back(std::move(copy_pass));
+
+  SkBitmap ref_bitmap;
+  ref_bitmap.allocPixels(
+      SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
+  ref_bitmap.eraseColor(SkColor4f::FromColor(SkColorSetARGB(255, 220, 20, 60)));
+
+  EXPECT_TRUE(
+      this->RunPixelTest(&pass_list, ref_bitmap,
+                         cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
 }
 
 TEST_P(VideoRendererPixelTest, SimpleYUVJRectWithTemperature) {

@@ -180,6 +180,8 @@ shaktisahu@chromium.org
 dfried@chromium.org
 # file
 nigeltao@chromium.org
+# fingerprinting_protection
+thesalsa@google.com
 # gcm
 peter@chromium.org
 # geolocation
@@ -272,6 +274,7 @@ curranmax@chromium.org
 tbansal@chromium.org
 # omnibox
 ender@google.com
+jdonnelly@chromium.org
 manukh@chromium.org
 toyoshim@chromium.org
 # oobe
@@ -383,6 +386,7 @@ altimin@chromium.org
 spvw@chromium.org
 # search
 ender@google.com
+gangwu@chromium.org
 # security
 cthomp@chromium.org
 dullweber@chromium.org
@@ -405,6 +409,8 @@ khorimoto@chromium.org
 ellyjones@chromium.org
 jeffreycohen@chromium.org
 knollr@chromium.org
+# shortcuts
+dmurph@chromium.org
 # signin
 alexilin@chromium.org
 # simple
@@ -429,6 +435,7 @@ ckitagawa@chromium.org
 joenotcharles@google.com
 olivierli@chromium.org
 dfried@chromium.org
+dljames@chromium.org
 # translate
 perrier@chromium.org
 curranmax@chromium.org

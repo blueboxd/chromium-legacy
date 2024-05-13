@@ -127,6 +127,7 @@ DisplayResourceProviderSkia::LockSetForExternalUse::LockSetForExternalUse(
     ExternalUseClient* client)
     : resource_provider_(resource_provider) {
   DCHECK(!resource_provider_->external_use_client_);
+  DCHECK(client);
   resource_provider_->external_use_client_ = client;
 }
 
@@ -159,10 +160,12 @@ DisplayResourceProviderSkia::LockSetForExternalUse::LockResource(
 
       resource.image_context =
           resource_provider_->external_use_client_->CreateImageContext(
-              resource.transferable.mailbox_holder, resource.transferable.size,
-              resource.transferable.format, maybe_concurrent_reads,
-              resource.transferable.ycbcr_info, std::move(image_color_space),
-              raw_draw_is_possible);
+              gpu::MailboxHolder(resource.transferable.mailbox(),
+                                 resource.transferable.sync_token(),
+                                 resource.transferable.texture_target()),
+              resource.transferable.size, resource.transferable.format,
+              maybe_concurrent_reads, resource.transferable.ycbcr_info,
+              std::move(image_color_space), raw_draw_is_possible);
     }
     resource.locked_for_external_use = true;
 

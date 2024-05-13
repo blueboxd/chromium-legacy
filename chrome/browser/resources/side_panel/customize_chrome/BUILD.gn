@@ -27,9 +27,6 @@ build_webui("build") {
     "shortcuts.ts",
     "themes.ts",
     "theme_snapshot.ts",
-    "wallpaper_search/combobox/customize_chrome_combobox.ts",
-    "wallpaper_search/wallpaper_search.ts",
-    "wallpaper_search/wallpaper_search_tile.ts",
   ]
 
   non_web_component_files = [
@@ -37,20 +34,31 @@ build_webui("build") {
     "common.ts",
     "customize_chrome_api_proxy.ts",
     "customize_toolbar/customize_toolbar_api_proxy.ts",
+    "wallpaper_search/combobox/customize_chrome_combobox.ts",
+    "wallpaper_search/combobox/customize_chrome_combobox.html.ts",
+    "wallpaper_search/wallpaper_search.ts",
+    "wallpaper_search/wallpaper_search.html.ts",
+    "wallpaper_search/wallpaper_search_tile.ts",
+    "wallpaper_search/wallpaper_search_tile.html.ts",
     "wallpaper_search/wallpaper_search_proxy.ts",
     "window_proxy.ts",
   ]
 
   css_files = [
+    "app.css",
     "appearance.css",
     "button_label.css",
     "cards.css",
     "categories.css",
     "check_mark_wrapper.css",
+    "customize_toolbar/toolbar.css",
     "hover_button.css",
     "shortcuts.css",
     "themes.css",
     "theme_snapshot.css",
+    "wallpaper_search/combobox/customize_chrome_combobox.css",
+    "wallpaper_search/wallpaper_search.css",
+    "wallpaper_search/wallpaper_search_tile.css",
   ]
 
   mojo_files_deps = [
@@ -70,7 +78,6 @@ build_webui("build") {
   ts_deps = [
     "../shared:build_ts",
     "//third_party/lit/v3_0:build_ts",
-    "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/cr_components/help_bubble:build_ts",
     "//ui/webui/resources/cr_components/managed_dialog:build_ts",

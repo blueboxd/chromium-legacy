@@ -196,4 +196,19 @@ BASE_FEATURE(kMetricsBackfillAdjustmentHoldback,
              "MetricsBackfillAdjustmentHoldback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kWaitForLateScrollEvents,
+             "WaitForLateScrollEvents",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<double> kWaitForLateScrollEventsDeadlineRatio{
+    &kWaitForLateScrollEvents, "deadline_ratio", 0.333};
+
+BASE_FEATURE(kNonBatchedCopySharedImage,
+             "NonBatchedCopySharedImage",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDontAlwaysPushPictureLayerImpls,
+             "DontAlwaysPushPictureLayerImpls",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace features

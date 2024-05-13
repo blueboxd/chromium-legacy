@@ -477,8 +477,13 @@ std::vector<apps::IntentFilterPtr> GetHardcodedPlayStoreIntentFilters() {
 apps::InstallReason GetInstallReason(const ArcAppListPrefs* prefs,
                                      const std::string& app_id,
                                      const ArcAppListPrefs::AppInfo& app_info) {
+  if (prefs->IsControlledByPolicy(app_info.package_name)) {
+    return apps::InstallReason::kPolicy;
+  }
+
   // Sticky represents apps that cannot be uninstalled and are installed by the
-  // system.
+  // system. Policy installed apps are also considered sticky, so kPolicy must
+  // be first.
   if (app_info.sticky) {
     return apps::InstallReason::kSystem;
   }
@@ -489,10 +494,6 @@ apps::InstallReason GetInstallReason(const ArcAppListPrefs* prefs,
 
   if (prefs->IsDefault(app_id)) {
     return apps::InstallReason::kDefault;
-  }
-
-  if (prefs->IsControlledByPolicy(app_info.package_name)) {
-    return apps::InstallReason::kPolicy;
   }
 
   return apps::InstallReason::kUser;
@@ -957,6 +958,48 @@ void ArcApps::UnpauseApp(const std::string& app_id) {
       AppType::kArc, app_id, /*paused=*/false));
 }
 
+void ArcApps::BlockApp(const std::string& app_id) {
+  if (base::Contains(blocked_app_ids_, app_id)) {
+    return;
+  }
+
+  blocked_app_ids_.insert(app_id);
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  CHECK(prefs);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  if (!app_info) {
+    return;
+  }
+
+  auto app = std::make_unique<App>(AppType::kArc, app_id);
+  app->readiness = GetReadiness(app_id, *app_info);
+  app->icon_key = IconKey(GetIconEffects(app_id, *app_info));
+  AppPublisher::Publish(std::move(app));
+
+  CloseTasks(app_id);
+}
+
+void ArcApps::UnblockApp(const std::string& app_id) {
+  if (!base::Contains(blocked_app_ids_, app_id)) {
+    return;
+  }
+
+  blocked_app_ids_.erase(app_id);
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  CHECK(prefs);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  if (!app_info) {
+    return;
+  }
+
+  auto app = std::make_unique<App>(AppType::kArc, app_id);
+  app->readiness = GetReadiness(app_id, *app_info);
+  app->icon_key = IconKey(GetIconEffects(app_id, *app_info));
+  AppPublisher::Publish(std::move(app));
+}
+
 void ArcApps::StopApp(const std::string& app_id) {
   CloseTasks(app_id);
 }
@@ -1063,6 +1106,7 @@ void ArcApps::OnAppStatesChanged(const std::string& app_id,
 void ArcApps::OnAppRemoved(const std::string& app_id) {
   app_notifications_.RemoveNotificationsForApp(app_id);
   paused_apps_.MaybeRemoveApp(app_id);
+  blocked_app_ids_.erase(app_id);
 
   if (base::Contains(app_id_to_task_ids_, app_id)) {
     for (int task_id : app_id_to_task_ids_[app_id]) {
@@ -1381,10 +1425,8 @@ AppPtr ArcApps::CreateApp(ArcAppListPrefs* prefs,
                           bool raw_icon_updated) {
   auto install_reason = GetInstallReason(prefs, app_id, app_info);
   auto app = AppPublisher::MakeApp(
-      AppType::kArc, app_id,
-      IsAppSuspended(app_id, app_info) ? Readiness::kDisabledByPolicy
-                                       : Readiness::kReady,
-      app_info.name, install_reason,
+      AppType::kArc, app_id, GetReadiness(app_id, app_info), app_info.name,
+      install_reason,
       install_reason == InstallReason::kSystem ? InstallSource::kSystem
                                                : InstallSource::kPlayStore);
 
@@ -1491,7 +1533,7 @@ void ArcApps::ConvertAndPublishPackageApps(
 IconEffects ArcApps::GetIconEffects(const std::string& app_id,
                                     const ArcAppListPrefs::AppInfo& app_info) {
   IconEffects icon_effects = IconEffects::kNone;
-  if (IsAppSuspended(app_id, app_info)) {
+  if (GetReadiness(app_id, app_info) != Readiness::kReady) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
   }
@@ -1651,6 +1693,19 @@ void ArcApps::OnInstallationFinished(const std::string& package_name,
   }
 }
 
+void ArcApps::OnAppConnectionClosed() {
+  std::vector<PromiseAppPtr> promise_apps =
+      proxy()->PromiseAppRegistryCache()->GetAllPromiseApps();
+
+  for (auto& promise_app : promise_apps) {
+    if (promise_app->package_id.package_type() != PackageType::kArc) {
+      continue;
+    }
+    promise_app->status = PromiseStatus::kCancelled;
+    AppPublisher::PublishPromiseApp(std::move(promise_app));
+  }
+}
+
 void ArcApps::ObserveDisabledSystemFeaturesPolicy() {
   PrefService* const local_state = g_browser_process->local_state();
   if (!local_state) {  // Sometimes it's not available in tests.
@@ -1695,7 +1750,7 @@ void ArcApps::OnDisableListPolicyChanged() {
   bool is_disabled = false;
   bool found = proxy()->AppRegistryCache().ForOneApp(
       arc::kSettingsAppId, [&is_disabled](const apps::AppUpdate& update) {
-        is_disabled = (update.Readiness() == Readiness::kDisabledByPolicy);
+        is_disabled = apps_util::IsDisabled(update.Readiness());
       });
   if (!found) {
     return;
@@ -1708,14 +1763,12 @@ void ArcApps::OnDisableListPolicyChanged() {
   auto app = std::make_unique<App>(AppType::kArc, arc::kSettingsAppId);
   if (disable_arc_settings) {
     settings_app_is_disabled_ = true;
-    app->readiness = Readiness::kDisabledByPolicy;
     app->icon_key = IconKey(/*raw_icon_updated=*/false, IconEffects::kBlocked);
   } else {
     settings_app_is_disabled_ = false;
-    app->readiness =
-        app_info->suspended ? Readiness::kDisabledByPolicy : Readiness::kReady;
     app->icon_key = IconKey(GetIconEffects(arc::kSettingsAppId, *app_info));
   }
+  app->readiness = GetReadiness(arc::kSettingsAppId, *app_info);
 
   AppPublisher::Publish(std::move(app));
 }
@@ -1728,4 +1781,18 @@ bool ArcApps::IsAppSuspended(const std::string& app_id,
 
   return app_info.suspended;
 }
+
+Readiness ArcApps::GetReadiness(const std::string& app_id,
+                                const ArcAppListPrefs::AppInfo& app_info) {
+  if (IsAppSuspended(app_id, app_info)) {
+    return Readiness::kDisabledByPolicy;
+  }
+
+  if (base::Contains(blocked_app_ids_, app_id)) {
+    return Readiness::kDisabledByLocalSettings;
+  }
+
+  return Readiness::kReady;
+}
+
 }  // namespace apps

@@ -499,13 +499,8 @@ public class StartSurfaceTestUtils {
             logoInSurfaceHeight =
                     LogoUtils.getLogoTotalHeightForLogoPolish(
                             resources, StartSurfaceConfiguration.getLogoSizeForLogoPolish());
-        } else if (isSurfacePolishEnabled
-                && StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.getValue()) {
-            if (StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE.getValue()) {
-                logoInSurfaceHeight = LogoUtils.getLogoTotalHeightPolishedShort(resources);
-            } else {
-                logoInSurfaceHeight = LogoUtils.getLogoTotalHeightPolished(resources);
-            }
+        } else if (isSurfacePolishEnabled) {
+            logoInSurfaceHeight = LogoUtils.getLogoTotalHeightPolished(resources);
         }
         float toY =
                 -cta.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)

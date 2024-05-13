@@ -504,6 +504,18 @@ bool IsContentPushNotificationsProvisionalEnabled();
 // and the time based conditions should be ignored.
 bool IsContentPushNotificationsProvisionalBypass();
 
+// YES when the Content Push Notifications Promo is registered with no UI
+// change.
+bool IsContentPushNotificationsPromoRegistrationOnly();
+
+// YES when the Content Push Notifications Provisional is registered with no UI
+// change.
+bool IsContentPushNotificationsProvisionalRegistrationOnly();
+
+// YES when the Content Push Notifications Set Up List is registered with no UI
+// change.
+bool IsContentPushNotificationsSetUpListRegistrationOnly();
+
 // Returns true when the IOSLargeFakebox feature is enabled.
 bool IsIOSLargeFakeboxEnabled();
 
@@ -615,5 +627,8 @@ BASE_DECLARE_FEATURE(kPrefetchSystemCapabilitiesOnFirstRun);
 
 // Returns true if the system capabilities are prefetched on first run.
 bool IsPrefetchingSystemCapabilitiesOnFirstRun();
+
+// Feature flag for caching the ios module ranker.
+BASE_DECLARE_FEATURE(kSegmentationPlatformIosModuleRankerCaching);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

@@ -97,6 +97,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerSuggestionViewProperties.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerText.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerTextNewLayout.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/RichAnswerText.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/ActionChipsBinder.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/ActionChipsProcessor.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/ActionChipsProperties.java",
@@ -151,6 +152,8 @@ android_library("java") {
 
   deps = [
     ":java_resources",
+    "$google_play_services_package:google_play_services_location_java",
+    "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
     "//build/android:build_java",
     "//chrome/browser/android/lifecycle:java",
@@ -424,6 +427,7 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/action/OmniboxPedalUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerSuggestionProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerTextNewLayoutUnitTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/RichAnswerTextTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/ActionChipsProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/ActionChipsViewUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionProcessorUnitTest.java",
@@ -461,6 +465,8 @@ robolectric_library("junit") {
   deps = [
     ":java",
     ":java_resources",
+    "$google_play_services_package:google_play_services_location_java",
+    "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",

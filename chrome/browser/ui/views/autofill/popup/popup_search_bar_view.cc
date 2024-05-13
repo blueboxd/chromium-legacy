@@ -13,6 +13,8 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/events/types/event_type.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -20,12 +22,9 @@
 
 namespace autofill {
 
-PopupSearchBarView::PopupSearchBarView(
-    const std::u16string& placeholder,
-    OnInputChangedCallback on_input_changed_callback,
-    base::RepeatingClosure on_focus_lost_callback)
-    : on_input_changed_callback_(std::move(on_input_changed_callback)),
-      on_focus_lost_callback_(std::move(on_focus_lost_callback)) {
+PopupSearchBarView::PopupSearchBarView(const std::u16string& placeholder,
+                                       Delegate& delegate)
+    : delegate_(delegate) {
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -48,6 +47,7 @@ PopupSearchBarView::PopupSearchBarView(
           // TODO(b/325246516): Set default placeholder according to approved
           // greenlines.
           .SetPlaceholderText(placeholder.empty() ? u"Search" : placeholder)
+          .SetController(this)
           .SetBorder(nullptr)
           .SetProperty(views::kElementIdentifierKey, kInputField)
           .SetProperty(views::kFlexBehaviorKey,
@@ -66,6 +66,8 @@ PopupSearchBarView::PopupSearchBarView(
   // LayoutManager).
   clear_ = AddChildView(
       views::Builder<views::ImageButton>()
+          .SetCallback(base::BindRepeating(&PopupSearchBarView::OnClearPressed,
+                                           base::Unretained(this)))
           .SetImageModel(views::Button::STATE_NORMAL,
                          ui::ImageModel::FromVectorIcon(
                              vector_icons::kCloseChromeRefreshIcon))
@@ -85,8 +87,16 @@ void PopupSearchBarView::RemovedFromWidget() {
 void PopupSearchBarView::OnDidChangeFocus(views::View* focused_before,
                                           views::View* focused_now) {
   if (focused_now != input_ && focused_now != clear_) {
-    on_focus_lost_callback_.Run();
+    delegate_->SearchBarOnFocusLost();
   }
+}
+
+bool PopupSearchBarView::HandleKeyEvent(views::Textfield* sender,
+                                        const ui::KeyEvent& key_event) {
+  if (key_event.type() == ui::ET_KEY_PRESSED) {
+    return delegate_->SearchBarHandleKeyPressed(key_event);
+  }
+  return false;
 }
 
 void PopupSearchBarView::Focus() {
@@ -97,12 +107,24 @@ void PopupSearchBarView::SetInputTextForTesting(const std::u16string& text) {
   input_->SetText(text);
 }
 
+gfx::Point PopupSearchBarView::GetClearButtonScreenCenterPointForTesting()
+    const {
+  return clear_->GetBoundsInScreen().CenterPoint();
+}
+
 PopupSearchBarView::~PopupSearchBarView() = default;
 
 void PopupSearchBarView::OnInputChanged() {
   input_change_notification_timer_.Start(
       FROM_HERE, kInputChangeCallbackDelay,
-      base::BindOnce(on_input_changed_callback_, input_->GetText()));
+      // `delegate_` is expected to outlive `this`, the timer will either be
+      // triggered when it is alive or canceled.
+      base::BindOnce(&Delegate::SearchBarOnInputChanged,
+                     base::Unretained(delegate_), input_->GetText()));
+}
+
+void PopupSearchBarView::OnClearPressed() {
+  input_->SetText(u"");
 }
 
 BEGIN_METADATA(PopupSearchBarView)

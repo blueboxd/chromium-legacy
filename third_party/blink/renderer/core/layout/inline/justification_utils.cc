@@ -44,11 +44,14 @@ String BuildJustificationText(const String& text_content,
         line_text_builder.Append(kTextCombineItemMarker);
         continue;
       }
-      if (item_result.item->Type() == InlineItem::kOpenRubyColumn &&
-          item_result.ruby_column) {
-        line_text_builder.Append(StringView(text_content,
-                                            item_result.item->StartOffset(),
-                                            item_result.item->Length()));
+      if (item_result.IsRubyColumn()) {
+        // No need to add k*IsolateCharacter for kOpenRubyColumn if
+        // is_continuation is true. It is not followed by `base_line` results.
+        if (!item_result.ruby_column->is_continuation) {
+          line_text_builder.Append(StringView(text_content,
+                                              item_result.item->StartOffset(),
+                                              item_result.item->Length()));
+        }
         // Add the ruby-base results only if the ruby-base is wider than its
         // ruby-text. Shorter ruby-bases don't participate in the justification
         // for the whole line.
@@ -98,7 +101,7 @@ String BuildJustificationText(const String& text_content,
 }
 
 void JustifyResults(const String& text_content,
-                    String line_text,
+                    const String& line_text,
                     unsigned line_text_start_offset,
                     ShapeResultSpacing<String>& spacing,
                     InlineItemResults& results) {
@@ -151,8 +154,7 @@ void JustifyResults(const String& text_content,
         // |spacing_before| is non-zero only before CJK characters.
         DCHECK_EQ(spacing_before, 0.0f);
       }
-    } else if (item_result.item->Type() == InlineItem::kOpenRubyColumn &&
-               item_result.ruby_column) {
+    } else if (item_result.IsRubyColumn()) {
       LineInfo& base_line = item_result.ruby_column->base_line;
       if (item_result.inline_size == base_line.Width()) {
         JustifyResults(text_content, line_text, line_text_start_offset, spacing,
@@ -163,19 +165,18 @@ void JustifyResults(const String& text_content,
             std::max(item_result.inline_size, base_line.Width());
       }
       if (i + 1 < results.size()) {
-        // Adjust line_text and line_text_start_offset because line_text is
-        // intermittent due to ruby annotations.
+        // Adjust line_text_start_offset because line_text is intermittent due
+        // to ruby annotations.
         wtf_size_t next_start_offset = results[i + 1].StartOffset();
         if (item_result.inline_size == base_line.Width()) {
-          line_text = line_text.Substring(base_line.EndTextOffset() -
-                                          line_text_start_offset);
+          // BuildJustificationText() didn't produce text for the annotation.
+          line_text_start_offset +=
+              next_start_offset - base_line.EndTextOffset();
         } else {
           // BuildJustificationText() didn't produce any text for this ruby
-          // column. We drop the text prior to this column.
-          line_text = line_text.Substring(base_line.StartOffset() -
-                                          line_text_start_offset);
+          // column.
+          line_text_start_offset += next_start_offset - base_line.StartOffset();
         }
-        line_text_start_offset = next_start_offset;
       }
     }
   }

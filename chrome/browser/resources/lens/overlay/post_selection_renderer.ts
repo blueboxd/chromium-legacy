@@ -4,14 +4,16 @@
 
 import {assert, assertNotReached} from '//resources/js/assert.js';
 import {EventTracker} from '//resources/js/event_tracker.js';
+import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
-import {toPercent} from './values_converter.js';
 import {CenterRotatedBox_CoordinateType} from './geometry.mojom-webui.js';
 import type {CenterRotatedBox} from './geometry.mojom-webui.js';
+import {focusShimmerOnRegion, ShimmerControlRequester, unfocusShimmer} from './overlay_shimmer.js';
 import {getTemplate} from './post_selection_renderer.html.js';
 import type {GestureEvent} from './selection_utils.js';
+import {toPercent} from './values_converter.js';
 
 // Bounding box send to PostSelectionRendererElement to render a bounding box.
 // The numbers should be normalized to the image dimensions, between 0 and 1
@@ -73,6 +75,10 @@ export class PostSelectionRendererElement extends PolymerElement {
       screenshotDataUri: String,
       currentDragTarget: Number,
       cornerIds: Array,
+      enableSelectionDragging: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -89,10 +95,13 @@ export class PostSelectionRendererElement extends PolymerElement {
   // IDs used to generate the corner hitbox divs.
   private cornerIds: string[] =
       ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
-
+  // Listener IDs for events tracked from the browser.
+  private listenerIds: number[];
   // The original bounds from the start of a drag.
   private originalBounds:
       PostSelectionBoundingBox = {left: 0, top: 0, width: 0, height: 0};
+  private enableSelectionDragging: boolean =
+      loadTimeData.getBoolean('enableSelectionDragging');
 
   override connectedCallback() {
     super.connectedCallback();
@@ -101,14 +110,28 @@ export class PostSelectionRendererElement extends PolymerElement {
         (e: CustomEvent<PostSelectionBoundingBox>) => {
           this.onRenderPostSelection(e);
         });
+    // Set up listener to listen to events from C++.
+    this.listenerIds = [
+      BrowserProxyImpl.getInstance()
+          .callbackRouter.clearAllSelections.addListener(
+              this.clearSelection.bind(this)),
+      BrowserProxyImpl.getInstance()
+          .callbackRouter.setPostRegionSelection.addListener(
+              this.setSelection.bind(this)),
+    ];
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.eventTracker_.removeAll();
+    this.listenerIds.forEach(
+        id => assert(
+            BrowserProxyImpl.getInstance().callbackRouter.removeListener(id)));
+    this.listenerIds = [];
   }
 
   clearSelection() {
+    unfocusShimmer(this, ShimmerControlRequester.POST_SELECTION);
     this.height = 0;
     this.width = 0;
   }
@@ -117,8 +140,8 @@ export class PostSelectionRendererElement extends PolymerElement {
     this.currentDragTarget =
         this.dragTargetFromPoint(event.clientX, event.clientY);
 
-    if (this.currentDragTarget !== DragTarget.NONE) {
-      // User is dragging the post selection or resizing.
+    if (this.shouldHandleDownGesture()) {
+      // User is dragging the post selection (if enabled) or resizing.
       this.originalBounds = {
         left: this.left,
         top: this.top,
@@ -280,6 +303,24 @@ export class PostSelectionRendererElement extends PolymerElement {
     this.currentDragTarget = DragTarget.NONE;
   }
 
+  enableSelectionDraggingForTesting() {
+    this.enableSelectionDragging = true;
+  }
+
+  private setSelection(region: CenterRotatedBox) {
+    const normalizedTop = region.box.y - (region.box.height / 2);
+    const normalizedLeft = region.box.x - (region.box.width / 2);
+
+    this.top = normalizedTop;
+    this.left = normalizedLeft;
+    this.height = region.box.height;
+    this.width = region.box.width;
+    this.originalBounds = {left: 0, top: 0, width: 0, height: 0};
+
+    this.rerender();
+    this.triggerNewBoxAnimation();
+  }
+
   private onRenderPostSelection(e: CustomEvent<PostSelectionBoundingBox>) {
     this.top = e.detail.top;
     this.left = e.detail.left;
@@ -296,6 +337,11 @@ export class PostSelectionRendererElement extends PolymerElement {
     this.style.setProperty('--selection-height', toPercent(this.height));
     this.style.setProperty('--selection-top', toPercent(this.top));
     this.style.setProperty('--selection-left', toPercent(this.left));
+
+    // Focus the shimmer on the new post selection region.
+    focusShimmerOnRegion(
+        this, this.top, this.left, this.width, this.height,
+        ShimmerControlRequester.POST_SELECTION);
   }
 
   private triggerNewBoxAnimation() {
@@ -356,6 +402,14 @@ export class PostSelectionRendererElement extends PolymerElement {
         break;
     }
     return DragTarget.NONE;
+  }
+
+  private shouldHandleDownGesture(): boolean {
+    if (this.enableSelectionDragging) {
+      return this.currentDragTarget !== DragTarget.NONE;
+    }
+    return this.currentDragTarget !== DragTarget.NONE &&
+        this.currentDragTarget !== DragTarget.WHOLE_BOX;
   }
 
   // Converts the current region to a CenterRotatedBox

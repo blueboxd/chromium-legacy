@@ -11,6 +11,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> топтом, <ph name="CPU_MAX_CLOCK_SPEED" />ГГц)</translation>
 <translation id="1047773237499189053">Жаңы функциялар бар. Кеңири маалымат алуу үчүн Өйдө жебе баскычын басыңыз.</translation>
 <translation id="1049663189809099096">пастель сары</translation>
+<translation id="1056898198331236512">Эскертүү</translation>
 <translation id="1059913517121127803">Скандалып башталган жок</translation>
 <translation id="1062823486781306604"><ph name="COUNT" /> ичинен <ph name="INDEX" />, <ph name="NAME" />.</translation>
 <translation id="1070066693520972135">WEP</translation>
@@ -28,6 +29,7 @@
 <translation id="1145018782460575098">Тышкы түзмөктөрдө орнотулган программаны жаңыртуу терезеси ачык. <ph name="NUM_UPDATES" /> жаңыртуу бар.</translation>
 <translation id="1145516343487477149">Chromebook тууралуу көп берилүүчү суроолорго жоопторду жана макалаларды табасыз</translation>
 <translation id="1154390310959620237">5 ыкчам баскычты гана ыңгайлаштыра аласыз. Жаңы ыкчам баскычты кошуу үчүн эскисин өчүрүңүз.</translation>
+<translation id="1155154308031262006">Кеңешти киргизиңиз</translation>
 <translation id="115705039208660697">ананастар</translation>
 <translation id="1164939766849482256">Таңдан караңгыга көшөгөсү</translation>
 <translation id="1167755866710282443">Баскычтарды тууралоо үчүн менюну ачыңыз. Жылдыруу үчүн менюну сүйрөңүз.</translation>
@@ -95,7 +97,6 @@
 <translation id="1478594628797167447">Сканер</translation>
 <translation id="1483493594462132177">Жөнтүү</translation>
 <translation id="1488850966314959671">Бул тармакка иштетилген жеке APN'дер менен туташуу мүмкүн эмес. Толук маалымат алуу үчүн мобилдик байланыш операторуна кайрылыңыз.</translation>
-<translation id="1491076385728777984"><ph name="DEVICE_NAME" /> түзмөгүндө орнотулган программа жаңыртылууда</translation>
 <translation id="1499041187027566160">катуулатуу</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> алыстан параметрлерди башкарып, колдонуучунун аракеттерин көзөмөлдөй алат.</translation>
 <translation id="150962533380566081">Жараксыз PUK.</translation>
@@ -260,6 +261,7 @@
 <translation id="2287186687001756809">Сүрөт жок. Сүрөттөрдү кошуу үчүн төмөнкү жерге өтүңүз: <ph name="LINK" /></translation>
 <translation id="2305172810646967500">кара</translation>
 <translation id="2307344026739914387">Учурдагы жуп ачкычты колдонуу</translation>
+<translation id="2308243864813041101">Жаңыртуу процессин улантуу үчүн <ph name="DEVICE_NAME" /> түзмөгүнүн электр кубатынын кабелин сууруңуз</translation>
 <translation id="2320295602967756579">Жарык теманы иштетүү</translation>
 <translation id="2323506179655536734">ӨТКӨРҮЛҮП ЖИБЕРИЛДИ</translation>
 <translation id="2324354238778375592">Калкыма</translation>
@@ -291,7 +293,6 @@
 <translation id="2505327257735685095">Тушкагаздын учурдагы сүрөтүн жаңыртуу</translation>
 <translation id="2512979179176933762">терезелерди көрсөтүү</translation>
 <translation id="2513396635448525189">Аккаунтка кирүү сүрөтү</translation>
-<translation id="2517472476991765520">Скандоо</translation>
 <translation id="2521835766824839541">мурунку трек</translation>
 <translation id="2526590354069164005">Иштакта</translation>
 <translation id="2529641961800709867">Баскыч параметрлери</translation>
@@ -317,6 +318,7 @@
 <translation id="2645380101799517405">Башкаруу элементтери</translation>
 <translation id="2652403576514495859">текстти айтып терүүнү иштетүү же өчүрүү/күйгүзүү</translation>
 <translation id="2653659639078652383">Тапшыруу</translation>
+<translation id="2654647726140493436">Жаңыртуу жүрүп жатканда <ph name="DEVICE_TYPE" /> түзмөгүн өчүрбөңүз же анын (<ph name="DEVICE_TYPE" />) электр кубатынын кабелин суурбаңыз</translation>
 <translation id="2656001153562991489">Chromebook Plus'та гана жеткиликтүү</translation>
 <translation id="2665671725390405060">Айтылышын угуу</translation>
 <translation id="267442004702508783">жаңылоо</translation>
@@ -330,6 +332,7 @@
 <translation id="2744221223678373668">Бөлүшүлгөн</translation>
 <translation id="2751739896257479635">EAP 2-фазадагы аныктыгын текшерүү</translation>
 <translation id="2754757901767760034">чырак</translation>
+<translation id="2780756493585863768">Google сунуштаган ЖИ технологиялары менен түзүлгөн соңку фондор</translation>
 <translation id="2783010256799387990">ТЕКШЕРҮҮДӨН ӨТТҮ</translation>
 <translation id="2786429550992142861">болотнай</translation>
 <translation id="2787435249130282949">баскычтоптун жарыктыгын көбөйтүү</translation>
@@ -394,6 +397,7 @@
 <translation id="3237710083340813756">Кайра жазуу</translation>
 <translation id="3246869037381808805">1 күндөн мурунку басып чыгаруу тапшырмалары өчүрүлөт</translation>
 <translation id="324961752321393509">Администраторуңуз бул колдонмону жабууга тыюу салган</translation>
+<translation id="3263941347294171263">Жаңыртуу процессин улантуу үчүн <ph name="DEVICE_NAME" /> түзмөгүн ажыратып, кайра туташтырыңыз</translation>
 <translation id="3268178239013324452">Басылып чыгарылган жок - Принтердин эшиги ачык</translation>
 <translation id="3275729367986477355">Аватардын сүрөтү</translation>
 <translation id="3283504360622356314">{0,plural, =1{Файлды түзөтүү}other{Файлдарды түзөтүү}}</translation>
@@ -426,6 +430,7 @@
 <translation id="3456078764689556234"><ph name="TOTAL_PAGES" /> ичинен <ph name="PRINTED_PAGES" /> барак басылып чыгарылды.</translation>
 <translation id="345898999683440380"><ph name="PAGE_NUM" />-бет скандалууда. <ph name="PERCENTAGE_VALUE" />% бүттү.</translation>
 <translation id="3459509316159669723">Басып чыгаруу</translation>
+<translation id="3462187165860821523"><ph name="DEVICE_NAME" /> жаңыртылууда</translation>
 <translation id="346423161771747987">Электр кубатын керектөө</translation>
 <translation id="346539236881580388">Кайра тартуу</translation>
 <translation id="3484914941826596830">Орнотулган программа жаңыртылып жатканда, тышкы түзмөктү ажыратпаңыз же компьютерди өчүрбөңүз. Бул терезени кичирейтип койсоңуз болот. Жаңыртуу бир нече мүнөткө созулуп, ал эми тышкы түзмөгүңүз бул убакытта иштебеши мүмкүн.</translation>
@@ -726,6 +731,7 @@
 <translation id="5160857336552977725"><ph name="DEVICE_TYPE" /> түзмөгүңүзгө кириңиз</translation>
 <translation id="5168185087976003268">Батареянын иштөө мөөнөтү</translation>
 <translation id="5170568018924773124">Куржунда көрсөтүү</translation>
+<translation id="517075088756846356">Жаңыртуу процессин улантуу үчүн <ph name="DEVICE_NAME" /> түзмөгүнүн электр кубатынын кабелин сууруп, кайра сайыңыз</translation>
 <translation id="5180108905184566358">баобаб дарактары</translation>
 <translation id="5180712487038406644">Даана</translation>
 <translation id="5190187232518914472">Эсте калган учурларды кайра көз алдыңыздан өткөрүңүз. Альбомдорду кошуу же түзөтүү үчүн <ph name="LINK_BEGIN" />Google Фотого<ph name="LINK_END" /> өтүңүз.</translation>
@@ -787,9 +793,11 @@
 <translation id="554067135846762198">маржан жана ачык күрөң</translation>
 <translation id="5543701552415191873">кулпуланган</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5554741914132564590">Бул жаңыртууну тышкы түзмөк өндүрүүчүсү сунган жана Google тарабынан тастыкталган эмес.</translation>
 <translation id="5559898619118303662">Күн батканда автоматтык түрдө караңгы темага которулуу</translation>
 <translation id="556042886152191864">Баскыч</translation>
 <translation id="5562551811867441927"><ph name="TERRAIN_FEATURE" /> <ph name="TERRAIN_COLOR" /> түсүндө</translation>
+<translation id="5572169899491758844">Скандоо</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Кайра скандоо</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -879,7 +887,6 @@
 <translation id="6075872808778243331">(Android) HTTP күтүү убакыты</translation>
 <translation id="6078323886959318429">Кыска жол кошуу</translation>
 <translation id="6091080061796993741">сары</translation>
-<translation id="610371409726072606">Google сунуштаган ЖИ технологиялары менен түзүлгөн камера тушкагазы</translation>
 <translation id="6104112872696127344">Скандоо токтотулду</translation>
 <translation id="6106186594183574873">Бүтүрүү үчүн эски сырсөзүңүздү киргизиңиз</translation>
 <translation id="6108689792487843350">Шлюз жеткиликсиз</translation>
@@ -906,6 +913,7 @@
 <translation id="6205145102504628069">Булут</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">Жеткиликтүү сканерлер жок</translation>
+<translation id="6231648282154119906">Шектүү файлдар сиз тандаган мыктылап коргоонун алкагында Google Коопсуз серептөө тарабынан автоматтык түрдө текшерилет</translation>
 <translation id="6232017090690406397">Батарея</translation>
 <translation id="6234024205316847054">Тышкы сызыктарды көрсөтүү</translation>
 <translation id="6235460611964961764">Трафиктин колдонулушу жөнүндө маалыматты кол менен баштапкы абалга келтирүү</translation>
@@ -1011,7 +1019,6 @@
 <translation id="672609503628871915">Эмне жаңылык бар</translation>
 <translation id="6740695858234317715">крем жана кызгылт сары</translation>
 <translation id="6741823073189174383">кайык</translation>
-<translation id="674276385369049081">Google сунуштаган ЖИ технологиялары менен түзүлгөн камеранын жаңы тушкагаздары</translation>
 <translation id="6744441848304920043">жунгли</translation>
 <translation id="6747035363363040417">нейтралдуу</translation>
 <translation id="6747215703636344499">Токтоду – Түпкүч толуп калды</translation>
@@ -1032,6 +1039,7 @@
 <translation id="6871256179359663621">ачык кызгылт көгүш</translation>
 <translation id="6889786074662672253">Өчүрүп күйгүзүп жатканда тышкы түзмөктү ажыратпаңыз же компьютерди өчүрбөңүз. Бул терезени кичирейтип койсоңуз болот. Бул бир нече мүнөткө созулуп, ал эми тышкы түзмөгүңүз бул убакытта иштебеши мүмкүн.</translation>
 <translation id="6900701049656042631">Бул альбомдо сүрөттөр жок. Сүрөттөрдү кошуу үчүн төмөнкү жерге өтүңүз: <ph name="LINK" /></translation>
+<translation id="6902359863093437070">Фонду ЖИ менен түзүү</translation>
 <translation id="6905163627763043954">Сынап көрүү</translation>
 <translation id="6905724422583748843">Төмөнкүгө кайтуу: <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">Сканердин капкагы ачык. Капкагын жаап, кайра аракет кылыңыз.</translation>
@@ -1077,6 +1085,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7097908713073775559">түстүү</translation>
 <translation id="710028965487274708">Ишке ашкан жок – Уруксат берилген жок</translation>
+<translation id="7101959270679078188">Жаңыртуу процессин улантуу үчүн <ph name="DEVICE_NAME" /> түзмөгүнүн кулпусун ачыңыз</translation>
 <translation id="7103252855940681301"><ph name="COUNT" /> түзмөктүн ичинен <ph name="NAME" /> деп аталган <ph name="INDEX" />-түзмөк.</translation>
 <translation id="7107255225945990211"><ph name="PRODUCT_NAME" /> өзгөчө сүрөттөрүн тандаңыз</translation>
 <translation id="7108668606237948702">enter</translation>
@@ -1269,6 +1278,7 @@
 <translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8156233298086717232">сыйкырдуу</translation>
 <translation id="8162776280680283326">түлкүлөр</translation>
+<translation id="8167413449582155132">Фон Google сунуштаган ЖИ технологиялары менен түзүлгөн</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183975772394450380">жээк</translation>
 <translation id="8206859287963243715">Уюктук</translation>
@@ -1351,6 +1361,7 @@
 <translation id="8675354002693747642">Алдын ала бөлүшүлгөн ачкыч</translation>
 <translation id="8677859815076891398">Альбомдор жок. <ph name="LINK_BEGIN" />Google Фотодо<ph name="LINK_END" /> альбом түзүңүз.</translation>
 <translation id="8682949824227998083">рамён</translation>
+<translation id="8689520252402395106">Жаңыртуу процессин улантуу үчүн <ph name="DEVICE_NAME" /> түзмөгүнүн USB кабелин кайра сайыңыз</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Бул функцияны Солго же Оңго жебе баскычы менен башкарасыз.</translation>
 <translation id="8712637175834984815">Түшүндүм</translation>
 <translation id="871560550817059752">Басылып чыгарылган жок - Сыя түгөнүп калды</translation>
@@ -1358,6 +1369,7 @@
 <translation id="8725066075913043281">Кайра аракет кылып көрүү</translation>
 <translation id="8726019395068607495">Токтоду – Эшик ачык</translation>
 <translation id="8730621377337864115">Бүттү</translation>
+<translation id="8739555075907731077">Тындырылды (<ph name="PERCENTAGE_VALUE" />% аткарылды)</translation>
 <translation id="8747900814994928677">Өзгөртүүнү ырастоо</translation>
 <translation id="8749478549112817787">Камера фону</translation>
 <translation id="8755946156089753497">мунара</translation>

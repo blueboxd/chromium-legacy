@@ -19,6 +19,8 @@
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_notification_controller.h"
+#include "ash/system/input_device_settings/input_device_settings_pref_names.h"
+#include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
@@ -51,6 +53,8 @@
 #include "ui/base/ime/ash/mock_input_method_manager.h"
 #include "ui/base/ime/ash/mock_input_method_manager_impl.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/ash/caps_lock_event_rewriter.h"
+#include "ui/events/ash/discard_key_event_rewriter.h"
 #include "ui/events/ash/event_rewriter_ash.h"
 #include "ui/events/ash/event_rewriter_metrics.h"
 #include "ui/events/ash/keyboard_capability.h"
@@ -90,6 +94,7 @@ constexpr uint32_t kNoScanCode = 0;
 constexpr char kKbdSysPath[] = "/devices/platform/i8042/serio2/input/input1";
 constexpr char kKbdTopRowPropertyName[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
 constexpr char kKbdTopRowLayoutAttributeName[] = "function_row_physmap";
+constexpr char kSixPackKeyNoMatchNudgeId[] = "six-patch-key-no-match-nudge-id";
 
 constexpr char kKbdTopRowLayoutUnspecified[] = "";
 constexpr char kKbdTopRowLayout1Tag[] = "1";
@@ -684,25 +689,53 @@ class EventRewriterTestBase : public ChromeAshTestBase {
                 delegate_.get()),
             keyboard_layout_engine_.get(), keyboard_capability_.get(),
             &fake_ime_keyboard_);
+    caps_lock_event_rewriter_ = std::make_unique<ui::CapsLockEventRewriter>(
+        keyboard_layout_engine_.get(), keyboard_capability_.get(),
+        &fake_ime_keyboard_);
     event_rewriter_ash_ = std::make_unique<ui::EventRewriterAsh>(
         delegate_.get(), keyboard_capability_.get(),
         Shell::Get()->sticky_keys_controller(), false, &fake_ime_keyboard_);
+    discard_key_event_rewriter_ =
+        std::make_unique<ui::DiscardKeyEventRewriter>();
 
     source_.AddEventRewriter(keyboard_device_id_event_rewriter_.get());
     if (ash::features::IsKeyboardRewriterFixEnabled()) {
       source_.AddEventRewriter(keyboard_modifier_event_rewriter_.get());
     }
+    if (ash::features::IsKeyboardRewriterFixEnabled() &&
+        features::IsModifierSplitEnabled()) {
+      source_.AddEventRewriter(caps_lock_event_rewriter_.get());
+    }
     source_.AddEventRewriter(event_rewriter_ash_.get());
+    if (!ash::features::IsKeyboardRewriterFixEnabled() &&
+        features::IsModifierSplitEnabled()) {
+      source_.AddEventRewriter(caps_lock_event_rewriter_.get());
+    }
+    if (features::IsModifierSplitEnabled()) {
+      source_.AddEventRewriter(discard_key_event_rewriter_.get());
+    }
   }
 
   void TearDown() override {
+    if (features::IsModifierSplitEnabled()) {
+      source_.RemoveEventRewriter(discard_key_event_rewriter_.get());
+    }
+    if (!ash::features::IsKeyboardRewriterFixEnabled() &&
+        features::IsModifierSplitEnabled()) {
+      source_.RemoveEventRewriter(caps_lock_event_rewriter_.get());
+    }
     source_.RemoveEventRewriter(event_rewriter_ash_.get());
+    if (ash::features::IsKeyboardRewriterFixEnabled() &&
+        features::IsModifierSplitEnabled()) {
+      source_.RemoveEventRewriter(caps_lock_event_rewriter_.get());
+    }
     if (ash::features::IsKeyboardRewriterFixEnabled()) {
       source_.RemoveEventRewriter(keyboard_modifier_event_rewriter_.get());
     }
     source_.RemoveEventRewriter(keyboard_device_id_event_rewriter_.get());
 
     event_rewriter_ash_.reset();
+    caps_lock_event_rewriter_.reset();
     keyboard_modifier_event_rewriter_.reset();
     keyboard_device_id_event_rewriter_.reset();
 
@@ -947,40 +980,59 @@ class EventRewriterTestBase : public ChromeAshTestBase {
       keyboard_device_id_event_rewriter_;
   std::unique_ptr<ui::KeyboardModifierEventRewriter>
       keyboard_modifier_event_rewriter_;
+  std::unique_ptr<ui::CapsLockEventRewriter> caps_lock_event_rewriter_;
   std::unique_ptr<ui::EventRewriterAsh> event_rewriter_ash_;
+  std::unique_ptr<ui::DiscardKeyEventRewriter> discard_key_event_rewriter_;
   TestEventSink sink_;
   ui::test::TestEventSource source_{&sink_};
   message_center::FakeMessageCenter message_center_;
+  base::AutoReset<bool> ignore_modifier_split_secret_key_ =
+      switches::SetIgnoreModifierSplitSecretKeyForTest();
   raw_ptr<DeprecationNotificationController>
       deprecation_controller_;  // Not owned.
   raw_ptr<InputDeviceSettingsNotificationController>
       input_device_settings_notification_controller_;  // Not owned.
 };
 
-class EventRewriterTest : public EventRewriterTestBase,
-                          public testing::WithParamInterface<bool> {
+class EventRewriterTest
+    : public EventRewriterTestBase,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   void SetUp() override {
-    if (GetParam()) {
+    auto [enable_keyboard_rewriter_fix, enable_modifier_split] = GetParam();
+    if (enable_keyboard_rewriter_fix) {
       fix_feature_list_.InitAndEnableFeature(
           ash::features::kEnableKeyboardRewriterFix);
     } else {
       fix_feature_list_.InitAndDisableFeature(
           ash::features::kEnableKeyboardRewriterFix);
     }
+
+    if (enable_modifier_split) {
+      modifier_split_feature_list_.InitAndEnableFeature(
+          ash::features::kModifierSplit);
+    } else {
+      modifier_split_feature_list_.InitAndDisableFeature(
+          ash::features::kModifierSplit);
+    }
+
     EventRewriterTestBase::SetUp();
   }
 
   void TearDown() override {
     EventRewriterTestBase::TearDown();
+    modifier_split_feature_list_.Reset();
     fix_feature_list_.Reset();
   }
 
  private:
   base::test::ScopedFeatureList fix_feature_list_;
+  base::test::ScopedFeatureList modifier_split_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, EventRewriterTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         EventRewriterTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 // TestKeyRewriteLatency checks that the event rewriter
 // publishes a latency metric every time a key is pressed.
@@ -1787,6 +1839,12 @@ TEST_P(EventRewriterTest, TestRewriteToRightAlt) {
 }
 
 TEST_P(EventRewriterTest, TestRewriteToFunction) {
+  if (!features::IsModifierSplitEnabled()) {
+    GTEST_SKIP() << "Test is only valid with the modifier split flag enabled";
+  }
+
+  SetUpKeyboard(kInternalChromeSplitModifierLayoutKeyboard);
+
   // Remap RightAlt to Control
   Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember control;
@@ -1799,19 +1857,14 @@ TEST_P(EventRewriterTest, TestRewriteToFunction) {
                       ui::mojom::ModifierKey::kMeta,
                       ui::mojom::ModifierKey::kFunction);
 
-  for (const auto& keyboard : kChromeKeyboardVariants) {
-    SCOPED_TRACE(keyboard.name);
-    SetUpKeyboard(keyboard);
+  // Keys + rewritten modifiers produce rewritten six-pack keys.
+  EXPECT_EQ(KeyPageUp::Typed(),
+            RunRewriter(KeyArrowUp::Typed(), ui::EF_CONTROL_DOWN));
+  EXPECT_EQ(KeyPageDown::Typed(),
+            RunRewriter(KeyArrowDown::Typed(), ui::EF_COMMAND_DOWN));
 
-    // A + rewritten modifiers produce events with function flag down.
-    EXPECT_EQ(KeyA::Typed(ui::EF_FUNCTION_DOWN),
-              RunRewriter(KeyA::Typed(), ui::EF_CONTROL_DOWN));
-    EXPECT_EQ(KeyA::Typed(ui::EF_FUNCTION_DOWN),
-              RunRewriter(KeyA::Typed(), ui::EF_COMMAND_DOWN));
-
-    // After command + control are released, events are not affected.
-    EXPECT_EQ(KeyA::Typed(), RunRewriter(KeyA::Typed()));
-  }
+  // After command + control are released, events are not affected.
+  EXPECT_EQ(KeyA::Typed(), RunRewriter(KeyA::Typed()));
 }
 
 TEST_P(EventRewriterTest, TestRewriteFromFunction) {
@@ -1867,11 +1920,13 @@ TEST_P(EventRewriterTest, TestRewriteFromFunction) {
 }
 
 TEST_P(EventRewriterTest, TestRewriteFromRightAlt) {
-  // RightAlt is only available when InputDeviceSettingsSplit is enabled.
-  scoped_feature_list_.InitWithFeatures(
-      {features::kModifierSplit, features::kInputDeviceSettingsSplit}, {});
-  auto reset = switches::SetIgnoreModifierSplitSecretKeyForTest();
+  if (!features::IsModifierSplitEnabled()) {
+    GTEST_SKIP() << "Test is only valid with the modifier split flag enabled";
+  }
 
+  // RightAlt is only available when InputDeviceSettingsSplit is enabled.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kInputDeviceSettingsSplit);
   SetUpKeyboard(kInternalChromeSplitModifierLayoutKeyboard);
 
   // Test that identity is working as expected.
@@ -2552,27 +2607,24 @@ TEST_P(EventRewriterTest, TestRewriteFunctionKeysCustomLayouts) {
     for (auto& unknown : unknowns) {
       unknown.scan_code = scan_code;
     }
-    auto unknowns_with_function = KeyUnknown::Typed(ui::EF_FUNCTION_DOWN);
-    for (auto& unknown : unknowns_with_function) {
-      unknown.scan_code = scan_code;
-    }
     auto expected_events = typed(ui::EF_NONE, {});
     for (auto& event : expected_events) {
       event.scan_code = scan_code;
     }
     EXPECT_EQ(expected_events, RunRewriter(unknowns, ui::EF_COMMAND_DOWN));
 
-    // With fn down, nothing should change since this keyboard uses Search based
-    // rewriting.
-    EXPECT_EQ(unknowns_with_function,
-              RunRewriter(unknowns, ui::EF_FUNCTION_DOWN));
+    if (features::IsModifierSplitEnabled()) {
+      // With fn down, nothing should change since this keyboard uses Search
+      // based rewriting.
+      EXPECT_EQ(unknowns, RunRewriter(unknowns, ui::EF_FUNCTION_DOWN));
+    }
   }
 }
 
 TEST_P(EventRewriterTest, TestRewriteFunctionKeysCustomLayoutsWithFunction) {
-  scoped_feature_list_.InitAndEnableFeature(features::kModifierSplit);
-  auto reset = switches::SetIgnoreModifierSplitSecretKeyForTest();
-  Preferences::RegisterProfilePrefs(prefs()->registry());
+  if (!features::IsModifierSplitEnabled()) {
+    GTEST_SKIP() << "Test is only valid with the modifier split flag enabled";
+  }
 
   // On devices with custom layouts, scan codes that match the layout
   // map get mapped to F-Keys based only on the scan code. The search
@@ -4077,7 +4129,7 @@ class EventRewriterInputSettingsSplitDisabledTest : public EventRewriterTest {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          EventRewriterInputSettingsSplitDisabledTest,
-                         testing::Bool());
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_P(EventRewriterInputSettingsSplitDisabledTest,
        TestRewriteCommandToControl) {
@@ -4295,20 +4347,30 @@ TEST_P(EventRewriterInputSettingsSplitDisabledTest,
             RunRewriter(KeyRMeta::Typed(), ui::EF_ALT_DOWN));
 }
 
-class StickyKeysOverlayTest : public EventRewriterTestBase,
-                              public testing::WithParamInterface<bool> {
+class StickyKeysOverlayTest
+    : public EventRewriterTestBase,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   StickyKeysOverlayTest() : overlay_(nullptr) {}
 
   ~StickyKeysOverlayTest() override {}
 
   void SetUp() override {
-    if (GetParam()) {
+    auto [enable_keyboard_rewriter_fix, enable_modifier_split] = GetParam();
+    if (enable_keyboard_rewriter_fix) {
       fix_feature_list_.InitAndEnableFeature(
           ash::features::kEnableKeyboardRewriterFix);
     } else {
       fix_feature_list_.InitAndDisableFeature(
           ash::features::kEnableKeyboardRewriterFix);
+    }
+
+    if (enable_modifier_split) {
+      modifier_split_feature_list_.InitAndEnableFeature(
+          ash::features::kModifierSplit);
+    } else {
+      modifier_split_feature_list_.InitAndDisableFeature(
+          ash::features::kModifierSplit);
     }
 
     EventRewriterTestBase::SetUp();
@@ -4322,9 +4384,12 @@ class StickyKeysOverlayTest : public EventRewriterTestBase,
 
  private:
   base::test::ScopedFeatureList fix_feature_list_;
+  base::test::ScopedFeatureList modifier_split_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, StickyKeysOverlayTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         StickyKeysOverlayTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_P(StickyKeysOverlayTest, OneModifierEnabled) {
   EXPECT_FALSE(overlay_->is_visible());
@@ -4475,29 +4540,36 @@ TEST_P(StickyKeysOverlayTest, ModifierVisibility) {
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_COMMAND_DOWN));
   EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
   EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
+  EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_FUNCTION_DOWN));
 
   // Turn all modifiers on.
   auto* sticky_keys_controller = Shell::Get()->sticky_keys_controller();
-  sticky_keys_controller->SetModifiersEnabled(true, true);
+  sticky_keys_controller->SetMod3AndAltGrModifiersEnabled(true, true);
+  sticky_keys_controller->SetFnModifierEnabled(true);
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_CONTROL_DOWN));
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_SHIFT_DOWN));
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_ALT_DOWN));
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_COMMAND_DOWN));
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_FUNCTION_DOWN));
+
+  // Turn off Fn.
+  sticky_keys_controller->SetFnModifierEnabled(false);
+  EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_FUNCTION_DOWN));
 
   // Turn off Mod3.
-  sticky_keys_controller->SetModifiersEnabled(false, true);
+  sticky_keys_controller->SetMod3AndAltGrModifiersEnabled(false, true);
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
   EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
 
   // Turn off AltGr.
-  sticky_keys_controller->SetModifiersEnabled(true, false);
+  sticky_keys_controller->SetMod3AndAltGrModifiersEnabled(true, false);
   EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
   EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
 
   // Turn off AltGr and Mod3.
-  sticky_keys_controller->SetModifiersEnabled(false, false);
+  sticky_keys_controller->SetMod3AndAltGrModifiersEnabled(false, false);
   EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
   EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
 }
@@ -4709,9 +4781,9 @@ TEST_P(EventRewriterTest, AltgrLatch) {
 }
 
 TEST_P(EventRewriterTest, SixPackRemappingsFnBased) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kModifierSplit);
-  auto reset = switches::SetIgnoreModifierSplitSecretKeyForTest();
+  if (!features::IsModifierSplitEnabled()) {
+    GTEST_SKIP() << "Test is only valid with the modifier split flag enabled";
+  }
 
   SetUpKeyboard(kInternalChromeSplitModifierLayoutKeyboard);
 
@@ -4730,6 +4802,84 @@ TEST_P(EventRewriterTest, SixPackRemappingsFnBased) {
     EXPECT_EQ(KeyPageDown::Typed(flag),
               RunRewriter(KeyArrowDown::Typed(), ui::EF_FUNCTION_DOWN | flag));
   }
+}
+
+TEST_P(EventRewriterTest, NotifySixPackRewriteBlockedByFnKey) {
+  if (!features::IsModifierSplitEnabled()) {
+    GTEST_SKIP() << "Test is only valid with the modifier split flag enabled";
+  }
+
+  AnchoredNudgeManagerImpl* nudge_manager =
+      Shell::Get()->anchored_nudge_manager();
+  ASSERT_TRUE(nudge_manager);
+  SetUpKeyboard(kInternalChromeSplitModifierLayoutKeyboard);
+  EXPECT_EQ(KeyArrowLeft::Typed(ui::EF_COMMAND_DOWN),
+            RunRewriter(KeyArrowLeft::Typed(), ui::EF_COMMAND_DOWN));
+
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  nudge_manager->Cancel(kSixPackKeyNoMatchNudgeId);
+}
+
+TEST_P(EventRewriterTest, CapsLockRemappingFnBased) {
+  if (!features::IsModifierSplitEnabled()) {
+    GTEST_SKIP() << "Test is only valid with the modifier split flag enabled";
+  }
+
+  SetUpKeyboard(kInternalChromeSplitModifierLayoutKeyboard);
+
+  for (const auto flag :
+       {ui::EF_NONE, ui::EF_CONTROL_DOWN, ui::EF_SHIFT_DOWN, ui::EF_ALT_DOWN}) {
+    EXPECT_EQ(KeyCapsLock::Typed(flag | ui::EF_CAPS_LOCK_ON),
+              RunRewriter(KeyRightAlt::Typed(ui::EF_NONE, {kPropertyRightAlt}),
+                          ui::EF_FUNCTION_DOWN | flag));
+    EXPECT_TRUE(fake_ime_keyboard_.IsCapsLockEnabled());
+
+    EXPECT_EQ(KeyCapsLock::Typed(flag),
+              RunRewriter(
+                  KeyRightAlt::Typed(ui::EF_CAPS_LOCK_ON, {kPropertyRightAlt}),
+                  ui::EF_FUNCTION_DOWN | flag));
+    EXPECT_FALSE(fake_ime_keyboard_.IsCapsLockEnabled());
+  }
+}
+
+TEST_P(EventRewriterTest, FnDiscarded) {
+  if (!features::IsModifierSplitEnabled()) {
+    GTEST_SKIP() << "Test is only valid with the modifier split flag enabled";
+  }
+
+  SetUpKeyboard(kInternalChromeSplitModifierLayoutKeyboard);
+
+  EXPECT_EQ(KeyA::Typed(), RunRewriter(KeyA::Typed(), ui::EF_FUNCTION_DOWN));
+  EXPECT_EQ(
+      KeyA::Typed(ui::EF_CONTROL_DOWN),
+      RunRewriter(KeyA::Typed(), ui::EF_FUNCTION_DOWN | ui::EF_CONTROL_DOWN));
+
+  EXPECT_EQ(std::vector<TestKeyEvent>(), RunRewriter(KeyFunction::Typed()));
+}
+
+// Tests that when you press Fn -> Right Alt -> Release Fn -> Release Right Alt
+// that the release of right alt is remapped to CapsLock to match the remapped
+// press.
+TEST_P(EventRewriterTest, CapsLockRemappingFnBasedReleaseOrdering) {
+  if (!features::IsModifierSplitEnabled()) {
+    GTEST_SKIP() << "Test is only valid with the modifier split flag enabled";
+  }
+
+  SetUpKeyboard(kInternalChromeSplitModifierLayoutKeyboard);
+
+  EXPECT_EQ(std::vector<TestKeyEvent>(),
+            RunRewriter(std::vector<TestKeyEvent>{KeyFunction::Pressed()}));
+  EXPECT_EQ(
+      std::vector<TestKeyEvent>({KeyCapsLock::Pressed(ui::EF_CAPS_LOCK_ON)}),
+      RunRewriter(std::vector<TestKeyEvent>{
+          KeyRightAlt::Pressed(ui::EF_FUNCTION_DOWN, {kPropertyRightAlt})}));
+  EXPECT_EQ(std::vector<TestKeyEvent>(),
+            RunRewriter(std::vector<TestKeyEvent>{
+                KeyFunction::Released(ui::EF_CAPS_LOCK_ON)}));
+  EXPECT_EQ(
+      std::vector<TestKeyEvent>({KeyCapsLock::Released(ui::EF_CAPS_LOCK_ON)}),
+      RunRewriter(std::vector<TestKeyEvent>{
+          KeyRightAlt::Released(ui::EF_CAPS_LOCK_ON, {kPropertyRightAlt})}));
 }
 
 class ModifierPressedMetricsTest
@@ -5076,22 +5226,29 @@ TEST_P(ModifierPressedMetricsTest, KeyReleasedTest) {
       modifier_key_usage_mapping_, 0);
 }
 
-class EventRewriterSixPackKeysTest : public EventRewriterTestBase,
-                                     public testing::WithParamInterface<bool> {
+class EventRewriterSixPackKeysTest
+    : public EventRewriterTestBase,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   void SetUp() override {
+    auto [enable_keyboard_rewriter_fix, enable_modifier_split] = GetParam();
+
     std::vector<base::test::FeatureRef> enabled_features, disabled_features;
     enabled_features.push_back(features::kInputDeviceSettingsSplit);
     enabled_features.push_back(features::kAltClickAndSixPackCustomization);
-    (GetParam() ? enabled_features : disabled_features)
+    (enable_keyboard_rewriter_fix ? enabled_features : disabled_features)
         .push_back(ash::features::kEnableKeyboardRewriterFix);
+    (enable_modifier_split ? enabled_features : disabled_features)
+        .push_back(ash::features::kModifierSplit);
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     EventRewriterTestBase::SetUp();
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(All, EventRewriterSixPackKeysTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         EventRewriterSixPackKeysTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_P(EventRewriterSixPackKeysTest, TestRewriteSixPackKeysSearchVariants) {
   Preferences::RegisterProfilePrefs(prefs()->registry());
@@ -5225,21 +5382,26 @@ TEST_P(EventRewriterSixPackKeysTest, TestRewriteSixPackKeysBlockedBySetting) {
 
 class EventRewriterExtendedFkeysTest
     : public EventRewriterTestBase,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   void SetUp() override {
+    auto [enable_keyboard_rewriter_fix, enable_modifier_split] = GetParam();
     std::vector<base::test::FeatureRef> enabled_features, disabled_features;
     enabled_features.push_back(ash::features::kInputDeviceSettingsSplit);
     enabled_features.push_back(::features::kSupportF11AndF12KeyShortcuts);
-    (GetParam() ? enabled_features : disabled_features)
+    (enable_keyboard_rewriter_fix ? enabled_features : disabled_features)
         .push_back(ash::features::kEnableKeyboardRewriterFix);
+    (enable_modifier_split ? enabled_features : disabled_features)
+        .push_back(ash::features::kModifierSplit);
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     EventRewriterTestBase::SetUp();
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(All, EventRewriterExtendedFkeysTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         EventRewriterExtendedFkeysTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_P(EventRewriterExtendedFkeysTest, TestRewriteExtendedFkeys) {
   Preferences::RegisterProfilePrefs(prefs()->registry());
@@ -5310,20 +5472,26 @@ TEST_P(EventRewriterExtendedFkeysTest, TestRewriteExtendedFkeysTopRowAreFkeys) {
 
 class EventRewriterSettingsSplitTest
     : public EventRewriterTestBase,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   void SetUp() override {
+    auto [enable_keyboard_rewriter_fix, enable_modifier_split] = GetParam();
+
     std::vector<base::test::FeatureRef> enabled_features, disabled_features;
     enabled_features.push_back(ash::features::kInputDeviceSettingsSplit);
-    (GetParam() ? enabled_features : disabled_features)
+    (enable_keyboard_rewriter_fix ? enabled_features : disabled_features)
         .push_back(ash::features::kEnableKeyboardRewriterFix);
+    (enable_modifier_split ? enabled_features : disabled_features)
+        .push_back(ash::features::kModifierSplit);
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     EventRewriterTestBase::SetUp();
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(All, EventRewriterSettingsSplitTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         EventRewriterSettingsSplitTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_P(EventRewriterSettingsSplitTest, TopRowAreFKeys) {
   mojom::KeyboardSettings settings;
@@ -5438,14 +5606,17 @@ TEST_P(KeyEventRemappedToSixPackKeyTest, KeyEventRemappedTest) {
 class EventRewriterRemapToRightClickTest
     : public EventRewriterTestBase,
       public message_center::MessageCenterObserver,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   void SetUp() override {
+    auto [enable_keyboard_rewriter_fix, enable_modifier_split] = GetParam();
     std::vector<base::test::FeatureRef> enabled_features, disabled_features;
     enabled_features.push_back(features::kInputDeviceSettingsSplit);
     enabled_features.push_back(features::kAltClickAndSixPackCustomization);
-    (GetParam() ? enabled_features : disabled_features)
+    (enable_keyboard_rewriter_fix ? enabled_features : disabled_features)
         .push_back(ash::features::kEnableKeyboardRewriterFix);
+    (enable_modifier_split ? enabled_features : disabled_features)
+        .push_back(ash::features::kModifierSplit);
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     EventRewriterTestBase::SetUp();
@@ -5492,7 +5663,7 @@ class EventRewriterRemapToRightClickTest
 
 INSTANTIATE_TEST_SUITE_P(All,
                          EventRewriterRemapToRightClickTest,
-                         testing::Bool());
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_P(EventRewriterRemapToRightClickTest, AltClickRemappedToRightClick) {
   SetSimulateRightClickSetting(ui::mojom::SimulateRightClickModifier::kAlt);
@@ -5586,14 +5757,18 @@ TEST_P(EventRewriterRemapToRightClickTest, RemapToRightClickIsDisabled) {
 
 class FKeysRewritingPeripheralCustomizationTest
     : public EventRewriterTestBase,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   void SetUp() override {
+    auto [enable_keyboard_rewriter_fix, enable_modifier_split] = GetParam();
+
     std::vector<base::test::FeatureRef> enabled_features, disabled_features;
     enabled_features.push_back(features::kInputDeviceSettingsSplit);
     enabled_features.push_back(features::kPeripheralCustomization);
-    (GetParam() ? enabled_features : disabled_features)
+    (enable_keyboard_rewriter_fix ? enabled_features : disabled_features)
         .push_back(ash::features::kEnableKeyboardRewriterFix);
+    (enable_modifier_split ? enabled_features : disabled_features)
+        .push_back(ash::features::kModifierSplit);
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     EventRewriterTestBase::SetUp();
@@ -5606,7 +5781,7 @@ class FKeysRewritingPeripheralCustomizationTest
 
 INSTANTIATE_TEST_SUITE_P(All,
                          FKeysRewritingPeripheralCustomizationTest,
-                         testing::Bool());
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_P(FKeysRewritingPeripheralCustomizationTest, FKeysNotRewritten) {
   EXPECT_CALL(*input_device_settings_controller_mock_,

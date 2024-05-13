@@ -6,6 +6,7 @@
 #define EXTENSIONS_COMMON_EXTENSION_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace extensions_features {
 
@@ -43,9 +44,6 @@ BASE_DECLARE_FEATURE(kApiEnterpriseKioskInput);
 
 // Controls the availability of the ReadingList API.
 BASE_DECLARE_FEATURE(kApiReadingList);
-
-// Controls the availability of the userScripts API.
-BASE_DECLARE_FEATURE(kApiUserScripts);
 
 // Controls the availability of specifying different world IDs in the
 // userScripts API.
@@ -94,6 +92,11 @@ BASE_DECLARE_FEATURE(kExtensionDynamicURLRedirection);
 // Controls displaying a warning that affected MV2 extensions may no longer be
 // supported.
 BASE_DECLARE_FEATURE(kExtensionManifestV2DeprecationWarning);
+
+// Allows server-side configuration of a temporary exception list.
+BASE_DECLARE_FEATURE(kExtensionManifestV2ExceptionList);
+extern const base::FeatureParam<std::string>
+    kExtensionManifestV2ExceptionListParam;
 
 // Side panel API availability.
 BASE_DECLARE_FEATURE(kExtensionSidePanelIntegration);
@@ -174,11 +177,6 @@ BASE_DECLARE_FEATURE(kTelemetryExtensionPendingApprovalApi);
 // from installing in base::TEMP_DIR to .../<profile_dir>/UnpackedExtensions and
 // persist until removed by the user.
 BASE_DECLARE_FEATURE(kExtensionsZipFileInstalledInProfileDir);
-
-// If enabled, extensions with service workers use an optimized event
-// dispatching flow that does not start the worker for every event. It only
-// starts a worker if it is not already running.
-BASE_DECLARE_FEATURE(kExtensionsServiceWorkerOptimizedEventDispatch);
 
 // If enabled, the button for visiting the chrome webstore in both the
 // extensions menu in the app menu and the chrome://extensions sidebar will send

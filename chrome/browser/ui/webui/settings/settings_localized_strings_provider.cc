@@ -80,6 +80,7 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/saved_tab_groups/features.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_branded_strings.h"
@@ -386,6 +387,8 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
       {"systemMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_SYSTEM_LABEL},
       {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
       {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
+      {"showTabGroupsInBookmarksBar",
+       IDS_SETTINGS_SHOW_TAB_GROUPS_IN_BOOKMARKS_BAR},
       {"hoverCardTitle", IDS_SETTINGS_HOVER_CARD_TITLE},
       {"showHoverCardImages", IDS_SETTINGS_SHOW_HOVER_CARD_IMAGES},
       {"showHoverCardMemoryUsage", IDS_SETTINGS_SHOW_HOVER_CARD_MEMORY_USAGE},
@@ -437,6 +440,8 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "showHoverCardImagesOption",
       base::FeatureList::IsEnabled(features::kTabHoverCardImages));
+  html_source->AddBoolean("tabGroupsSaveUIUpdateEnabled",
+                          tab_groups::IsTabGroupsSaveUIUpdateEnabled());
 
 // TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -563,8 +568,6 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
 void AddGetTheMostOutOfChromeStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"getTheMostOutOfChrome", IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME},
-      {"getTheMostOutOfChromePageButton",
-       IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_PAGE_BUTTON},
       {"getTheMostOutOfChromeBetterForYou",
        IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_BETTER_FOR_YOU},
       {"getTheMostOutOfChromeYourDataInChrome",
@@ -760,6 +763,8 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
 #endif
 
 void AddPerformanceStrings(content::WebUIDataSource* html_source) {
+  // TODO(crbug.com/339250758): Clean up unused strings now that multistate mode
+  // UI no longer exists.
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"performancePageTitle", IDS_SETTINGS_PERFORMANCE_PAGE_TITLE},
       {"memoryPageTitle", IDS_SETTINGS_MEMORY_PAGE_TITLE},
@@ -778,6 +783,18 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_RADIO_GROUP_ARIA_LABEL},
       {"memorySaverChooseDiscardTimeAriaLabel",
        IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_CHOOSE_DISCARD_TIME_ARIA_LABEL},
+      {"memorySaverModeConservativeLabel",
+       IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_CONSERVATIVE_LABEL},
+      {"memorySaverModeMediumLabel",
+       IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_MEDIUM_LABEL},
+      {"memorySaverModeAggressiveLabel",
+       IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_AGGRESSIVE_LABEL},
+      {"memorySaverModeConservativeDescription",
+       IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_CONSERVATIVE_DESCRIPTION},
+      {"memorySaverModeMediumDescription",
+       IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_MEDIUM_DESCRIPTION},
+      {"memorySaverModeAggressiveDescription",
+       IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_AGGRESSIVE_DESCRIPTION},
       {"batteryPageTitle", IDS_SETTINGS_BATTERY_PAGE_TITLE},
       {"batterySaverModeLabel",
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING},
@@ -1227,8 +1244,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"plusAddressSettings", IDS_PLUS_ADDRESS_SETTINGS_LABEL},
       {"cvcTagForCreditCardListEntry",
        IDS_AUTOFILL_SETTINGS_PAGE_CVC_TAG_FOR_CREDIT_CARD_LIST_ENTRY},
-      {"benefitsAvailableTagForCreditCardListEntry",
-       IDS_AUTOFILL_SETTINGS_PAGE_BENEFITS_AVAILABLE_TAG_FOR_CREDIT_CARD_LIST_ENTRY},
       {"benefitsTermsTagForCreditCardListEntry",
        IDS_AUTOFILL_SETTINGS_PAGE_BENEFITS_TERMS_TAG_FOR_CREDIT_CARD_LIST_ENTRY},
       {"cardBenefitsToggleLabel",
@@ -1314,10 +1329,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
           IDS_AUTOFILL_SETTINGS_PAGE_CARD_BENEFITS_TOGGLE_SUBLABEL_WITH_LEARN_LINK,
           l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
 
-  html_source->AddBoolean(
-      "autofillEnablePaymentsMandatoryReauth",
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnablePaymentsMandatoryReauth));
+  // TODO(crbug.com/288458283): Clean up mandatory reauth code branch and remove
+  // the FIDO toggle.
+  html_source->AddBoolean("autofillEnablePaymentsMandatoryReauth", true);
 
   html_source->AddBoolean(
       "fidoAuthenticationAvailableForAutofill",
@@ -1433,10 +1447,7 @@ void AddSyncAccountControlStrings(content::WebUIDataSource* html_source) {
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
       {"syncAdvancedPageTitle", IDS_SETTINGS_NEW_SYNC_ADVANCED_PAGE_TITLE},
 #endif
-      // TODO(crbug.com/330680561): Use a settings specific string or combine
-      // all the string usages of "Verify it's you" in a single translatable
-      // string.
-      {"signinPaused", IDS_AVATAR_BUTTON_SIGNIN_PAUSED},
+      {"verifyAccount", IDS_SETTINGS_PEOPLE_VERIFY_ACCOUNT_BUTTON},
   };
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
@@ -1934,7 +1945,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
 
   html_source->AddString("syncAndGoogleServicesLearnMoreURL",
                          chrome::kSyncAndGoogleServicesLearnMoreURL);
-
+  html_source->AddString("composeLearnMorePageURL",
+                         chrome::kComposeLearnMorePageURL);
   html_source->AddString("doNotTrackLearnMoreURL",
                          chrome::kDoNotTrackLearnMoreURL);
   html_source->AddString("exceptionsLearnMoreURL",
@@ -2486,6 +2498,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_LEARN_MORE_ARIA_LABEL},
       {"trackingProtectionIpProtectionToggleLabel",
        IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_LABEL},
+      {"trackingProtectionIpProtectionToggleSubLabel",
+       IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_SUB_LABEL},
+      {"trackingProtectionFingerprintingProtectionToggleLabel",
+       IDS_SETTINGS_TRACKING_PROTECTION_FINGERPRINTING_PROTECTION_TOGGLE_LABEL},
+      {"trackingProtectionFingerprintingProtectionToggleSubLabel",
+       IDS_SETTINGS_TRACKING_PROTECTION_FINGERPRINTING_PROTECTION_TOGGLE_SUB_LABEL},
       {"trackingProtectionDoNotTrackToggleSubLabel",
        IDS_SETTINGS_TRACKING_PROTECTION_DO_NOT_TRACK_TOGGLE_SUB_LABEL},
       {"trackingProtectionSitesAllowedCookiesTitle",
@@ -3248,6 +3266,16 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       {"siteSettingsPerformance", IDS_SITE_SETTINGS_TYPE_PERFORMANCE},
       {"siteSettingsPerformanceSublabel",
        IDS_SITE_SETTINGS_TYPE_PERFORMANCE_SUBLABEL},
+      {"siteSettingsOfferWritingHelp",
+       IDS_SITE_SETTINGS_TYPE_OFFER_WRITING_HELP},
+      {"offerWritingHelpToggleLabel",
+       IDS_SETTINGS_OFFER_WRITING_HELP_TOGGLE_LABEL},
+      {"offerWritingHelpToggleSublabel",
+       IDS_SETTINGS_OFFER_WRITING_HELP_TOGGLE_SUB_LABEL},
+      {"siteSettingsOfferWritingHelpEnabledSublabel",
+       IDS_SETTINGS_OFFER_WRITING_HELP_ENABLED_SUB_LABEL},
+      {"siteSettingsOfferWritingHelpDisabledSublabel",
+       IDS_SETTINGS_OFFER_WRITING_HELP_DISABLED_SUB_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -3269,15 +3297,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
               IDS_SETTINGS_TRACKING_PROTECTION_ROLLBACK_NOTICE_LEARN_MORE_ARIA_LABEL)));
   html_source->AddString("trackingProtectionThirdPartyCookiesLearnMoreUrl",
                          chrome::kManage3pcHelpCenterURL);
-  html_source->AddString(
-      "trackingProtectionIpProtectionToggleSubLabel",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_SUB_LABEL,
-          l10n_util::GetStringUTF16(
-              IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_LEARN_MORE_ARIA_LABEL),
-          l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
-  html_source->AddString("ipProtectionLearnMoreUrl",
-                         chrome::kIpProtectionHelpCenterURL);
 
   // These ones cannot be constexpr because we need to check base::FeatureList.
   static webui::LocalizedString kSensorsLocalizedStrings[] = {

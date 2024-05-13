@@ -165,6 +165,10 @@ ActionInfo CompositeMatcher::GetAction(
 
   for (const auto& matcher : matchers_) {
     std::optional<RequestAction> action = matcher->GetAction(params, stage);
+    // TODO(crbug.com/40727004): Allow/AllowAllRequests rules matched can still
+    // take effect for stages of the request past the one they're matched in. If
+    // they are the max priority action, they should be returned instead of
+    // silently causing no action to be matched.
     if (!action || action->index_priority <=
                        max_allow_rule_priority_for_request.value_or(0)) {
       continue;
@@ -198,7 +202,8 @@ ActionInfo CompositeMatcher::GetAction(
 }
 
 std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
-    const RequestParams& params) const {
+    const RequestParams& params,
+    RulesetMatchingStage stage) const {
   std::vector<RequestAction> modify_headers_actions;
   DCHECK(params.allow_rule_max_priority.contains(extension_id_));
 
@@ -212,7 +217,8 @@ std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
     // modifyHeaders rules with priorities less than or equal to the highest
     // priority matching allow/allowAllRequests rule are ignored.
     std::vector<RequestAction> actions_for_matcher =
-        matcher->GetModifyHeadersActions(params, max_allow_rule_priority);
+        matcher->GetModifyHeadersActions(params, stage,
+                                         max_allow_rule_priority);
 
     modify_headers_actions.insert(
         modify_headers_actions.end(),

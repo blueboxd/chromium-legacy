@@ -92,20 +92,6 @@ public class StartSurfaceConfiguration {
                     START_SURFACE_RETURN_TIME_USE_MODEL_PARAM,
                     false);
 
-    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_OMNIBOX_COLOR =
-            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.SURFACE_POLISH, "polish_omnibox_color", true);
-
-    private static final String SURFACE_POLISH_MOVE_DOWN_LOGO_PARAM = "move_down_logo";
-    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_MOVE_DOWN_LOGO =
-            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.SURFACE_POLISH, SURFACE_POLISH_MOVE_DOWN_LOGO_PARAM, true);
-
-    private static final String SURFACE_POLISH_LESS_BRAND_SPACE_PARAM = "less_brand_space";
-    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_LESS_BRAND_SPACE =
-            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.SURFACE_POLISH, SURFACE_POLISH_LESS_BRAND_SPACE_PARAM, true);
-
     private static final String SURFACE_POLISH_SCROLLABLE_MVT_PARAM = "scrollable_mvt";
     public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_SCROLLABLE_MVT =
             ChromeFeatureList.newBooleanCachedFieldTrialParameter(
@@ -141,14 +127,12 @@ public class StartSurfaceConfiguration {
 
     /** Returns whether a magic stack is enabled on Start surface. */
     public static boolean useMagicStack() {
-        return ChromeFeatureList.sSurfacePolish.isEnabled()
-                && ChromeFeatureList.sMagicStackAndroid.isEnabled();
+        return ChromeFeatureList.sMagicStackAndroid.isEnabled();
     }
 
     /** Returns whether logo polish flag is enabled in the given context. */
     public static boolean isLogoPolishEnabled() {
-        return ChromeFeatureList.sSurfacePolish.isEnabled()
-                && ChromeFeatureList.sLogoPolish.isEnabled();
+        return ChromeFeatureList.sLogoPolish.isEnabled();
     }
 
     /**

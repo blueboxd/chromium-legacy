@@ -172,9 +172,9 @@ AuthenticatorGetAssertionResponseFromValue(const cbor::Value::MapValue& map) {
   const std::vector<uint8_t>* user_handle =
       cborFindBytestring(map, "userHandle");
 
-  AuthenticatorGetAssertionResponse response(std::move(*authenticator_data),
-                                             std::move(*signature),
-                                             /*transport_used=*/std::nullopt);
+  AuthenticatorGetAssertionResponse response(
+      std::move(*authenticator_data), std::move(*signature),
+      /*transport_used=*/FidoTransportProtocol::kInternal);
   if (user_handle) {
     response.user_entity =
         PublicKeyCredentialUserEntity(std::move(*user_handle));
@@ -367,8 +367,7 @@ ParseMakeCredentialResponse(cbor::Value response_value,
   entity.set_rp_id(request.rp.id);
   entity.set_user_id(
       std::string(request.user.id.begin(), request.user.id.end()));
-  entity.set_creation_time(
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  entity.set_creation_time(base::Time::Now().ToTimeT() * 1000);
   entity.set_user_name(request.user.name ? *request.user.name : std::string());
   entity.set_user_display_name(
       request.user.display_name ? *request.user.display_name : std::string());
@@ -387,7 +386,9 @@ ParseMakeCredentialResponse(cbor::Value response_value,
 
   uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
-      static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
+      static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation) |
+      static_cast<uint8_t>(AuthenticatorData::Flag::kBackupEligible) |
+      static_cast<uint8_t>(AuthenticatorData::Flag::kBackupState);
   if (user_verified) {
     flags |=
         static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserVerification);

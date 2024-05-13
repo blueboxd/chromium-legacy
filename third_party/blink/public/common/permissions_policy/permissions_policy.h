@@ -196,8 +196,12 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
       base::span<const blink::mojom::PermissionsPolicyFeature>
           effective_enabled_permissions);
 
+  // Creates a PermissionsPolicy from a parsed policy. If `base_policy` is
+  // supplied, it will be used first and the `parsed_policy` may further
+  // restrict the policy.
   static std::unique_ptr<PermissionsPolicy> CreateFromParsedPolicy(
       const ParsedPermissionsPolicy& parsed_policy,
+      const std::optional<ParsedPermissionsPolicy>& base_policy,
       const url::Origin& origin);
 
   bool IsFeatureEnabled(mojom::PermissionsPolicyFeature feature) const;
@@ -232,20 +236,13 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
   std::optional<std::string> GetEndpointForFeature(
       mojom::PermissionsPolicyFeature feature) const;
 
-  // Further restricts the policy for Isolated Apps that have a
-  // Permissions-Policy HTTP header, |parsed_header|, that might be more
-  // restrictive than its permissions policy declared in the Web App Manifest.
-  // TODO(crbug.com/1336701): Rename to something more generic so Permissions
-  // Policy remains unaware of isolated apps.
-  void SetHeaderPolicyForIsolatedApp(
-      const ParsedPermissionsPolicy& parsed_header);
-
-  // Used to update a client hint header policy set via the accept-ch meta tag.
-  // It will fail if header policies not for client hints are included in
-  // `parsed_header` or if allowlists_ has already been used for a check.
-  // TODO(crbug.com/1278127): Replace w/ generic HTML policy modification.
-  void OverwriteHeaderPolicyForClientHints(
-      const ParsedPermissionsPolicy& parsed_header);
+  // Returns a new permissions policy, based on this policy and a client hint
+  // header policy set via the accept-ch meta tag. It will fail if header
+  // policies not for client hints are included in `parsed_header`.
+  // TODO(https://crbug.com/40208054): Replace w/ generic HTML policy
+  // modification.
+  std::unique_ptr<PermissionsPolicy> WithClientHints(
+      const ParsedPermissionsPolicy& parsed_header) const;
 
   const url::Origin& GetOriginForTest() const { return origin_; }
   const std::map<mojom::PermissionsPolicyFeature, Allowlist>& allowlists()
@@ -276,6 +273,17 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
   static AllowlistsAndReportingEndpoints CreateAllowlistsAndReportingEndpoints(
       const ParsedPermissionsPolicy& parsed_header);
 
+  // Merges |base_policy| with |second_policy|. For each feature, if
+  // |base_policy| allows all domains then the |second_policy| overrides it if
+  // it specifies an allowlist. If both policies specify an allowlist then the
+  // combined allowlist will be the intersection of the two.
+  //
+  // This is used e.g. for merging the policy in an isolated app manifest with
+  // a policy received in an HTTP header.
+  static AllowlistsAndReportingEndpoints CombinePolicies(
+      const ParsedPermissionsPolicy& base_policy,
+      const ParsedPermissionsPolicy& second_policy);
+
   PermissionsPolicy(
       url::Origin origin,
       AllowlistsAndReportingEndpoints allow_lists_and_reporting_endpoints,
@@ -290,6 +298,8 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
 
   static std::unique_ptr<PermissionsPolicy> CreateFromParsedPolicy(
       const ParsedPermissionsPolicy& parsed_policy,
+      const std::optional<ParsedPermissionsPolicy>&
+          parsed_policy_for_isolated_app,
       const url::Origin& origin,
       const PermissionsPolicyFeatureList& features);
 
@@ -341,14 +351,12 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
 
   // Map of feature names to declared allowlists. Any feature which is missing
   // from this map should use the inherited policy.
-  std::map<mojom::PermissionsPolicyFeature, Allowlist> allowlists_;
+  const std::map<mojom::PermissionsPolicyFeature, Allowlist> allowlists_;
 
   // Map of feature names to reporting endpoints. Any feature which is missing
   // from this map should report to the default endpoint, if it is set.
-  std::map<mojom::PermissionsPolicyFeature, std::string> reporting_endpoints_;
-
-  // Set this to true if `allowlists_` have already been checked.
-  mutable bool disallow_updates_ = false;
+  const std::map<mojom::PermissionsPolicyFeature, std::string>
+      reporting_endpoints_;
 
   // Records whether or not each feature was enabled for this frame by its
   // parent frame.

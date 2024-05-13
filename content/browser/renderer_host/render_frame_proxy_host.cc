@@ -115,14 +115,13 @@ bool RenderFrameProxyHost::IsFrameTokenInUse(
 }
 
 RenderFrameProxyHost::RenderFrameProxyHost(
-    SiteInstanceImpl* site_instance,
+    SiteInstanceGroup* site_instance_group,
     scoped_refptr<RenderViewHostImpl> render_view_host,
     FrameTreeNode* frame_tree_node,
     const blink::RemoteFrameToken& frame_token)
-    : routing_id_(site_instance->GetProcess()->GetNextRoutingID()),
-      site_instance_deprecated_(site_instance),
-      site_instance_group_(site_instance->group()),
-      process_(site_instance->GetProcess()),
+    : routing_id_(site_instance_group->process()->GetNextRoutingID()),
+      site_instance_group_(site_instance_group),
+      process_(site_instance_group->process()),
       frame_tree_node_(frame_tree_node),
       render_frame_proxy_created_(false),
       render_view_host_(std::move(render_view_host)),
@@ -145,7 +144,8 @@ RenderFrameProxyHost::RenderFrameProxyHost(
 
   bool is_proxy_to_parent =
       !frame_tree_node_->IsMainFrame() &&
-      frame_tree_node_->parent()->GetSiteInstance() == site_instance;
+      frame_tree_node_->parent()->GetSiteInstance()->group() ==
+          site_instance_group;
   bool is_proxy_to_outer_delegate =
       frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate();
 
@@ -383,7 +383,7 @@ void RenderFrameProxyHost::UpdateOpener() {
 
   if (frame_tree_node_->opener()) {
     frame_tree_node_->opener()->render_manager()->CreateOpenerProxies(
-        GetSiteInstanceDeprecated(), frame_tree_node_,
+        site_instance_group(), frame_tree_node_,
         frame_tree_node_->current_frame_host()->browsing_context_state());
   }
 
@@ -567,6 +567,13 @@ void RenderFrameProxyHost::RouteMessageEvent(
     return;
   }
 
+  // Don't deliver any messages to PDF content frames.
+  if (target_rfh->GetSiteInstance()->GetSiteInfo().is_pdf()) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFPH_POST_MESSAGE_PDF_CONTENT_FRAME);
+    return;
+  }
+
   // If there is a |source_frame_token|, translate it to the frame token of the
   // equivalent RenderFrameProxyHost in the target process.
   std::optional<blink::RemoteFrameToken> translated_source_token;
@@ -600,7 +607,7 @@ void RenderFrameProxyHost::RouteMessageEvent(
         source_rfh->frame_tree_node()
             ->render_manager()
             ->CreateRenderFrameProxyAndAncestorChainIfNeeded(
-                target_rfh->GetSiteInstance());
+                target_rfh->GetSiteInstance()->group());
       } else {
         // Ensure that we have a swapped-out RVH and proxy for the source frame
         // in the target SiteInstance. If it doesn't exist, create it on demand

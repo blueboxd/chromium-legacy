@@ -201,12 +201,7 @@ class CORE_EXPORT InlineLayoutStateStack {
   HeapVector<Member<LogicalRubyColumn>>& RubyColumnList() {
     return ruby_column_list_;
   }
-  // Returns `ruby_column_list_`. The data member becomes unusable after
-  // calling this functions.
-  // This function should be called after finishing to fill LogicalLineItems.
-  HeapVector<Member<LogicalRubyColumn>> TakeRubyColumnList() {
-    return std::move(ruby_column_list_);
-  }
+  void ClearRubyColumnList() { ruby_column_list_.Shrink(0); }
 
   bool HasBoxFragments() const { return !box_data_list_.empty(); }
 
@@ -234,8 +229,12 @@ class CORE_EXPORT InlineLayoutStateStack {
   // LogicalLineItems in the block direction before calling
   // CreateBoxFragments().
   void MoveBoxDataInBlockDirection(LayoutUnit diff);
+  // Same for the inline direction.
+  void MoveBoxDataInInlineDirection(LayoutUnit diff);
 
-  void ApplyRelativePositioning(const ConstraintSpace&, LogicalLineItems*);
+  void ApplyRelativePositioning(const ConstraintSpace&,
+                                LogicalLineItems*,
+                                const LogicalOffset* parent_offset);
   // Create box fragments. This function turns a flat list of children into
   // a box tree.
   void CreateBoxFragments(const ConstraintSpace&,
@@ -281,9 +280,12 @@ class CORE_EXPORT InlineLayoutStateStack {
   FontHeight MetricsForTopAndBottomAlign(const InlineBoxState&,
                                          const LogicalLineItems&) const;
 
+ public:
   // Data for a box fragment. See AddBoxFragmentPlaceholder().
   // This is a transient object only while building a line box.
+  // This is public only for WTF_ALLOW_CLEAR_UNUSED_SLOTS_*.
   struct BoxData {
+    DISALLOW_NEW();
     BoxData(unsigned start,
             unsigned end,
             const InlineItem* item,
@@ -307,6 +309,8 @@ class CORE_EXPORT InlineLayoutStateStack {
     // The range of child fragments this box contains.
     unsigned fragment_start;
     unsigned fragment_end;
+    // Ruby columns in the above range.
+    Member<HeapVector<Member<LogicalRubyColumn>>> ruby_column_list;
 
     const InlineItem* item;
     LogicalRect rect;
@@ -324,13 +328,15 @@ class CORE_EXPORT InlineLayoutStateStack {
     unsigned parent_box_data_index = 0;
     unsigned fragmented_box_data_index = 0;
 
-    void UpdateFragmentEdges(Vector<BoxData, 4>& list);
+    void UpdateFragmentEdges(HeapVector<BoxData, 4>& list);
 
     const LayoutResult* CreateBoxFragment(const ConstraintSpace&,
                                           LogicalLineItems*,
                                           bool is_opaque = false);
+    void Trace(Visitor* visitor) const;
   };
 
+ private:
   // Update start/end of the first BoxData found at |index|.
   //
   // If inline fragmentation is found, a new BoxData is added.
@@ -339,13 +345,13 @@ class CORE_EXPORT InlineLayoutStateStack {
   // this function.
   unsigned UpdateBoxDataFragmentRange(LogicalLineItems*,
                                       unsigned index,
-                                      Vector<BoxData>* fragmented_boxes);
+                                      HeapVector<BoxData>* fragmented_boxes);
 
   // Update edges of inline fragmented boxes.
-  void UpdateFragmentedBoxDataEdges(Vector<BoxData>* fragmented_boxes);
+  void UpdateFragmentedBoxDataEdges(HeapVector<BoxData>* fragmented_boxes);
 
   HeapVector<InlineBoxState, 4> stack_;
-  Vector<BoxData, 4> box_data_list_;
+  HeapVector<BoxData, 4> box_data_list_;
   HeapVector<Member<LogicalRubyColumn>> ruby_column_list_;
 
   bool is_empty_line_ = false;
@@ -366,9 +372,6 @@ struct CORE_EXPORT LogicalRubyColumn
 
   Member<LogicalLineItems> annotation_items;
 
-  // Nested <ruby>s in `annotation_items`.
-  HeapVector<Member<LogicalRubyColumn>> ruby_column_list;
-
   // `ruby-position` property value.
   RubyPosition ruby_position = RubyPosition::kOver;
 
@@ -376,10 +379,16 @@ struct CORE_EXPORT LogicalRubyColumn
 
   void Trace(Visitor* visitor) const;
   unsigned EndIndex() const { return start_index + size; }
+  // Nested <ruby>s in `annotation_items`.
+  HeapVector<Member<LogicalRubyColumn>>& RubyColumnList() {
+    return state_stack.RubyColumnList();
+  }
 };
 
 }  // namespace blink
 
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::InlineBoxState)
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(
+    blink::InlineLayoutStateStack::BoxData)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_INLINE_INLINE_BOX_STATE_H_

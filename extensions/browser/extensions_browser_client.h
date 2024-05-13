@@ -264,6 +264,7 @@ class ExtensionsBrowserClient {
 
   virtual mojo::PendingRemote<network::mojom::URLLoaderFactory>
   GetControlledFrameEmbedderURLLoader(
+      const url::Origin& app_origin,
       int frame_tree_node_id,
       content::BrowserContext* browser_context) = 0;
 
@@ -463,6 +464,14 @@ class ExtensionsBrowserClient {
       content::BrowserContext* context,
       const ExtensionId& extension_id,
       const std::vector<api::declarative_net_request::Rule>& rules) const;
+
+  // Notifies the extension telemetry service when declarativeNetRequest
+  // redirect action is invoked.
+  virtual void NotifyExtensionDeclarativeNetRequestRedirectAction(
+      content::BrowserContext* context,
+      const ExtensionId& extension_id,
+      const GURL& request_url,
+      const GURL& redirect_url) const;
 
   // TODO(zackhan): This is a temporary implementation of notifying the
   // extension telemetry service when there are web requests initiated from

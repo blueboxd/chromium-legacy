@@ -42,6 +42,10 @@ BASE_FEATURE(kClientSideDetectionNotificationPrompt,
              "ClientSideDetectionNotificationPrompt",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kClientSideDetectionSamplePing,
+             "ClientSideDetectionSamplePing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCreateNotificationsAcceptedClientSafeBrowsingReports,
              "CreateNotificationsAcceptedClientSafeBrowsingReports",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -93,8 +97,16 @@ BASE_FEATURE(kEncryptedArchivesMetadata,
              "SafeBrowsingEncryptedArchivesMetadata",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kExtendedReportingRemovePrefDependency,
+             "ExtendedReportingRemovePrefDependency",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kExtensionTelemetryConfiguration,
              "SafeBrowsingExtensionTelemetryConfiguration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kExtensionTelemetryDeclarativeNetRequestActionSignal,
+             "SafeBrowsingExtensionTelemetryDeclarativeNetRequestActionSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryFileDataForCommandLineExtensions,
@@ -263,6 +275,10 @@ BASE_FEATURE(kSafeBrowsingSkipSubresources2,
              "SafeBrowsingSkipSubResources2",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSafetyHubAbusiveNotificationRevocation,
+             "SafetyHubAbusiveNotificationRevocation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSevenZipEvaluationEnabled,
              "SafeBrowsingSevenZipEvaluationEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -281,7 +297,7 @@ constexpr base::FeatureParam<int> kStrictDownloadTimeoutMilliseconds{
 
 BASE_FEATURE(kSuspiciousSiteDetectionRTLookups,
              "SuspiciousSiteDetectionRTLookups",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSuspiciousSiteTriggerQuotaFeature,
              "SafeBrowsingSuspiciousSiteTriggerQuota",
@@ -299,10 +315,6 @@ BASE_FEATURE(kTailoredSecurityObserverRetries,
 
 BASE_FEATURE(kTailoredSecurityIntegration,
              "TailoredSecurityIntegration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kTailoredSecurityUpdatedMessages,
-             "TailoredSecurityUpdatedMessages",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThreatDomDetailsTagAndAttributeFeature,
@@ -363,6 +375,7 @@ constexpr struct {
     {&kDlpRegionalizedEndpoints, true},
     {&kDownloadReportWithoutUserDecision, true},
     {&kDownloadTailoredWarnings, true},
+    {&kExtensionTelemetryDeclarativeNetRequestActionSignal, true},
     {&kExtensionTelemetryDisableOffstoreExtensions, true},
     {&kExtensionTelemetryInterceptRemoteHostsContactedInRenderer, true},
     {&kExtensionTelemetryPotentialPasswordTheft, true},
@@ -380,6 +393,7 @@ constexpr struct {
     {&kSafeBrowsingAsyncRealTimeCheck, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
     {&kSafeBrowsingSkipSubresources2, true},
+    {&kSafetyHubAbusiveNotificationRevocation, true},
     {&kSevenZipEvaluationEnabled, true},
     {&kSimplifiedUrlDisplay, true},
     {&kStrictDownloadTimeout, true},

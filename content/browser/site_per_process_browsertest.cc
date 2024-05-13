@@ -5978,7 +5978,7 @@ class ShowCreatedWindowInterceptor
   ~ShowCreatedWindowInterceptor() override = default;
 
   blink::mojom::LocalMainFrameHost* GetForwardingInterface() override {
-    return render_frame_host_;
+    return swapped_impl_.old_impl();
   }
 
   void ShowCreatedWindow(const blink::LocalFrameToken& opener_frame_token,
@@ -6009,8 +6009,7 @@ class ShowCreatedWindowInterceptor
   blink::mojom::WindowFeaturesPtr window_features_;
   bool user_gesture_ = false;
   WindowOpenDisposition disposition_;
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<blink::mojom::LocalMainFrameHost>>
+  mojo::test::ScopedSwapImplForTesting<blink::mojom::LocalMainFrameHost>
       swapped_impl_;
 };
 
@@ -6127,23 +6126,20 @@ class RequestCloseWidgetInterceptor
  public:
   explicit RequestCloseWidgetInterceptor(
       RenderWidgetHostImpl* render_widget_host)
-      : render_widget_host_(render_widget_host),
-        swapped_impl_(
-            render_widget_host_->popup_widget_host_receiver_for_testing(),
+      : swapped_impl_(
+            render_widget_host->popup_widget_host_receiver_for_testing(),
             this) {}
 
   ~RequestCloseWidgetInterceptor() override = default;
 
   blink::mojom::PopupWidgetHost* GetForwardingInterface() override {
-    return render_widget_host_;
+    return swapped_impl_.old_impl();
   }
 
   void RequestClosePopup() override {}
 
  private:
-  raw_ptr<RenderWidgetHostImpl> render_widget_host_;
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<blink::mojom::PopupWidgetHost>>
+  mojo::test::ScopedSwapImplForTesting<blink::mojom::PopupWidgetHost>
       swapped_impl_;
 };
 
@@ -6166,7 +6162,7 @@ class ShowCreatedPopupWidgetInterceptor
   ~ShowCreatedPopupWidgetInterceptor() override = default;
 
   blink::mojom::PopupWidgetHost* GetForwardingInterface() override {
-    return render_widget_host_;
+    return swapped_impl_.old_impl();
   }
 
   void ShowPopup(const gfx::Rect& initial_rect,
@@ -6193,8 +6189,7 @@ class ShowCreatedPopupWidgetInterceptor
   base::OnceCallback<void(int32_t pending_widget_routing_id)> test_callback_;
   ShowPopupCallback show_callback_;
   gfx::Rect initial_rect_;
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<blink::mojom::PopupWidgetHost>>
+  mojo::test::ScopedSwapImplForTesting<blink::mojom::PopupWidgetHost>
       swapped_impl_;
 };
 
@@ -6205,16 +6200,11 @@ class NewPopupWidgetCreatedObserver {
   NewPopupWidgetCreatedObserver(
       RenderFrameHostImpl* frame_host,
       base::OnceCallback<void(int32_t pending_widget_routing_id)> test_callback)
-      : frame_host_(frame_host), test_callback_(std::move(test_callback)) {
-    frame_host_->SetCreateNewPopupCallbackForTesting(base::BindRepeating(
-        &NewPopupWidgetCreatedObserver::DidCreatePopupWidget,
-        base::Unretained(this)));
-  }
-
-  ~NewPopupWidgetCreatedObserver() {
-    if (frame_host_)
-      frame_host_->SetCreateNewPopupCallbackForTesting(base::NullCallback());
-  }
+      : create_new_popup_widget_interceptor_(
+            frame_host,
+            base::BindOnce(&NewPopupWidgetCreatedObserver::DidCreatePopupWidget,
+                           base::Unretained(this))),
+        test_callback_(std::move(test_callback)) {}
 
   void ResumeShowPopupWidget() { show_interceptor_->ResumeShowPopupWidget(); }
 
@@ -6222,13 +6212,9 @@ class NewPopupWidgetCreatedObserver {
   void DidCreatePopupWidget(RenderWidgetHostImpl* widget) {
     show_interceptor_ = std::make_unique<ShowCreatedPopupWidgetInterceptor>(
         widget, std::move(test_callback_));
-
-    // Stop observing now.
-    frame_host_->SetCreateNewPopupCallbackForTesting(base::NullCallback());
-    frame_host_ = nullptr;
   }
 
-  raw_ptr<RenderFrameHostImpl> frame_host_;
+  CreateNewPopupWidgetInterceptor create_new_popup_widget_interceptor_;
   std::unique_ptr<ShowCreatedPopupWidgetInterceptor> show_interceptor_;
   base::OnceCallback<void(int32_t pending_widget_routing_id)> test_callback_;
 };
@@ -6612,24 +6598,21 @@ class DispatchLoadInterceptor
     : public blink::mojom::LocalFrameHostInterceptorForTesting {
  public:
   explicit DispatchLoadInterceptor(RenderFrameHostImpl* render_frame_host)
-      : render_frame_host_(render_frame_host),
-        swapped_impl_(
-            render_frame_host_->local_frame_host_receiver_for_testing(),
+      : swapped_impl_(
+            render_frame_host->local_frame_host_receiver_for_testing(),
             this) {}
 
   ~DispatchLoadInterceptor() override = default;
 
   LocalFrameHost* GetForwardingInterface() override {
-    return render_frame_host_;
+    return swapped_impl_.old_impl();
   }
 
   // Discard incoming calls to LocalFrameHost::DispatchLoad().
   void DispatchLoad() override {}
 
  private:
-  raw_ptr<RenderFrameHostImpl> render_frame_host_;
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>>
+  mojo::test::ScopedSwapImplForTesting<blink::mojom::LocalFrameHost>
       swapped_impl_;
 };
 

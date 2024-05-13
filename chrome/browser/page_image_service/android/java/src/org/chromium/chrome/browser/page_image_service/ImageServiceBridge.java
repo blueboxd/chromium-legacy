@@ -55,6 +55,13 @@ public class ImageServiceBridge {
         ImageServiceBridgeJni.get().destroy(mNativeImageServiceBridge);
         mSalientImageUrlCache.clear();
         mCallbackController.destroy();
+        mImageFetcher.destroy();
+    }
+
+    /** Cleanup any cached bitmap or URLs in memory. */
+    public void clear() {
+        mSalientImageUrlCache.clear();
+        mImageFetcher.clear();
     }
 
     /**

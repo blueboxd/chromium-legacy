@@ -323,12 +323,6 @@ crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphi
 crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] Pixel_VideoStreamFrom2DCanvas [ Skip ]
 crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] Pixel_Video_BackdropFilter [ Skip ]
 
-# Can flakily hang browser shutdown.
-crbug.com/335672567 [ win10 intel-0x4680 ] Pixel_Video_Context_Loss_MP4 [ Failure ]
-crbug.com/335672567 [ win10 intel-0x4680 ] Pixel_Video_Context_Loss_VP9 [ Failure ]
-crbug.com/335672567 [ win intel-0x4680 ] Pixel_WebGLContextRestored [ Skip ]
-crbug.com/335672567 [ win intel-0x4680 ] Pixel_WebGLSadCanvas [ Skip ]
-
 ###############################
 # Permanent Slow Expectations #
 ###############################
@@ -351,6 +345,18 @@ crbug.com/335672567 [ win intel-0x4680 ] Pixel_WebGLSadCanvas [ Skip ]
 
 # Long-running test, can flakily time out on old/slow hardware.
 [ mac amd-0x679e ] Pixel_ReflectedDiv [ Slow ]
+
+# Mac Asan timeouts
+crbug.com/338200323 [ mac angle-opengl asan graphite-disabled intel-0x3e9b passthrough ] Pixel_WebGPUDisplayP3 [ Slow ]
+crbug.com/338200323 [ mac angle-opengl asan graphite-disabled intel-0x3e9b passthrough ] Pixel_WebGPUToDataURL [ Slow ]
+crbug.com/338200323 [ mac angle-metal asan intel-0x3e9b passthrough ] Pixel_WebGLSadCanvas [ Slow ]
+crbug.com/338200323 [ mac angle-metal asan intel-0x3e9b passthrough ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Slow ]
+crbug.com/338200323 [ mac angle-metal asan intel-0x3e9b passthrough ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Slow ]
+crbug.com/338200323 [ mac angle-metal asan intel-0x3e9b passthrough ] Pixel_OffscreenCanvasTransferToImageBitmapSoftwareCompositing [ Slow ]
+crbug.com/338200323 [ mac angle-metal asan intel-0x3e9b passthrough ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Slow ]
+crbug.com/338200323 [ mac angle-metal asan intel-0x3e9b passthrough ] Pixel_Video_Context_Loss_VP9 [ Slow ]
+crbug.com/338200323 [ mac angle-metal asan intel-0x3e9b passthrough ] Pixel_Video_Context_Loss_MP4 [ Slow ]
+crbug.com/338200323 [ mac angle-metal asan intel-0x3e9b passthrough ] Pixel_WebGLContextRestored [ Slow ]
 
 ###################
 # Failures/Flakes #
@@ -393,8 +399,6 @@ crbug.com/1290953 [ android android-pixel-4 android-webview-instrumentation ] Pi
 crbug.com/1345777 [ android ] Pixel_VideoStreamFromWebGLCanvas [ Skip ]
 
 
-# WebGPU interop fails -- pixel color diff
-crbug.com/1395227 [ amd-0x7340 no-clang-coverage release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 
 crbug.com/1372141 [ android android-sm-a235m ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
 
@@ -430,7 +434,7 @@ crbug.com/1494227 [ mac graphite-enabled intel ] Pixel_CSSFilterEffects [ Failur
 crbug.com/1474611 [ mac nvidia angle-opengl graphite-disabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
 crbug.com/1477318 [ mac ] Pixel_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
 
-crbug.com/328649150 [ sonoma amd angle-opengl ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ RetryOnFailure ]
+crbug.com/328649150 [ sonoma amd angle-opengl ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ Failure ]
 
 
 # Fails almost consistently, but likely to pass when run on its own in the retry.
@@ -449,6 +453,14 @@ crbug.com/40937765 [ android android-pixel-6 renderer-skia-vulkan ] Pixel_Video_
 crbug.com/40937765 [ android android-pixel-6 renderer-skia-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ RetryOnFailure ]
 crbug.com/40937765 [ android android-pixel-6 renderer-skia-vulkan ] Pixel_Video_MP4_Rounded_Corner [ RetryOnFailure ]
 # finder:enable-narrowing
+
+# Flaking due to DCHECK see https://crbug.com/339457781
+crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_BackdropFilter [ RetryOnFailure ]
+crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_VP9 [ RetryOnFailure ]
+crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_MP4 [ RetryOnFailure ]
+crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_AV1 [ RetryOnFailure ]
+crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+crbug.com/339457781 [ android android-SM-S911U1 renderer-skia-vulkan ] Pixel_Video_HEVC [ RetryOnFailure ]
 
 # ChromeOS Volteer failures
 crbug.com/1516977 [ chromeos cros-chrome chromeos-board-volteer ] Pixel_WebGLContextRestored [ Failure ]
@@ -472,27 +484,21 @@ crbug.com/40935289 [ fuchsia web-engine-shell ] Pixel_Video_MP4_Rounded_Corner [
 crbug.com/40935289 [ fuchsia no-clang-coverage web-engine-shell ] Pixel_Video_VP9 [ Failure ]
 
 # Failures on Windows with SkiaGraphite
-crbug.com/329235191 [ amd-0x7340 graphite-enabled release-x64 win10 ] Pixel_BackgroundImage [ Failure ]
-crbug.com/329235191 [ amd-0x7340 graphite-enabled release-x64 win10 ] Pixel_PrecisionRoundedCorner [ Failure ]
 crbug.com/329235191 [ amd-0x7340 graphite-enabled release-x64 win10 ] Pixel_VideoStreamFrom2DCanvas [ Failure ]
 crbug.com/329235191 [ graphite-enabled qualcomm-0x41333430 win11 ] Pixel_VideoStreamFrom2DCanvas [ Failure ]
 crbug.com/329235191 [ graphite-enabled qualcomm-0x41333430 win11 ] Pixel_VideoStreamFromWebGLCanvas [ Failure ]
 crbug.com/329235191 [ graphite-enabled qualcomm-0x41333430 win11 ] Pixel_VideoStreamFromWebGLCanvas_OneCopy [ Failure ]
-crbug.com/329235191 [ amd-0x7340 graphite-enabled release-x64 target-cpu-64 win10 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
 crbug.com/329235191 [ graphite-enabled nvidia-0x2184 win10 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
 crbug.com/329235191 [ graphite-enabled qualcomm-0x41333430 target-cpu-64 win11 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
 
 # Failures on Mac Asan with Graphite
 crbug.com/338071687 [ mac angle-metal asan graphite-enabled intel-0x3e9b passthrough ] Pixel_Canvas2DBlitText [ Failure ]
 
-# Mac Asan timeouts
-crbug.com/338200323 [ mac angle-opengl asan graphite-disabled intel-0x3e9b passthrough ] Pixel_WebGPUDisplayP3 [ Slow ]
-
 # Tab change tests failing to find foreground tabs
-crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_Canvas2DTabSwitch [ RetryOnFailure ]
-crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ RetryOnFailure ]
-crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_WebGLReadPixelsTabSwitch [ RetryOnFailure ]
-crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ RetryOnFailure ]
+crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_Canvas2DTabSwitch [ Failure ]
+crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Failure ]
+crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_WebGLReadPixelsTabSwitch [ Failure ]
+crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

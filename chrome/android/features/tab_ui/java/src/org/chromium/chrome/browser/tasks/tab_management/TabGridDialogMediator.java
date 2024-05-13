@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
@@ -139,6 +141,7 @@ public class TabGridDialogMediator
     private final @NonNull BottomSheetController mBottomSheetController;
     private final Runnable mShowColorPickerPopupRunnable;
     private final Runnable mShowInviteFlowUIRunnable;
+    private final ActionConfirmationManager mActionConfirmationManager;
 
     private TabGroupTitleEditor mTabGroupTitleEditor;
     private Supplier<TabListEditorController> mTabListEditorControllerSupplier;
@@ -165,7 +168,8 @@ public class TabGridDialogMediator
             Runnable showShareBottomSheetRunnable,
             String componentName,
             Runnable showColorPickerPopupRunnable,
-            Runnable showInviteFlowUIRunnable) {
+            Runnable showInviteFlowUIRunnable,
+            @Nullable ActionConfirmationManager actionConfirmationManager) {
         mContext = activity;
         mModel = model;
         mCurrentTabModelFilterSupplier = currentTabModelFilterSupplier;
@@ -183,6 +187,7 @@ public class TabGridDialogMediator
         mShowShareBottomSheetRunnable = showShareBottomSheetRunnable;
         mShowColorPickerPopupRunnable = showColorPickerPopupRunnable;
         mShowInviteFlowUIRunnable = showInviteFlowUIRunnable;
+        mActionConfirmationManager = actionConfirmationManager;
 
         // Register for tab model.
         mTabModelObserver =
@@ -303,7 +308,7 @@ public class TabGridDialogMediator
                     }
 
                     @Override
-                    public void onFinishingMultipleTabClosure(List<Tab> tabs) {
+                    public void onFinishingMultipleTabClosure(List<Tab> tabs, boolean canRestore) {
                         // Allow this to update while invisible so the snackbar updates correctly.
                         if (tabs.size() == 1) {
                             dismissSingleTabSnackbar(tabs.get(0).getId());
@@ -544,6 +549,15 @@ public class TabGridDialogMediator
             return;
         }
 
+        Resources res = mContext.getResources();
+        // Change the ungroup bar text if the tab being ungrouped is the last tab in the group.
+        final @StringRes int ungroupBarTextId =
+                tabsCount == 1
+                        ? R.string.remove_last_tab_action
+                        : R.string.tab_grid_dialog_remove_from_group;
+        mModel.set(
+                TabGridDialogProperties.DIALOG_UNGROUP_BAR_TEXT, res.getString(ungroupBarTextId));
+
         TabGroupModelFilter filter = (TabGroupModelFilter) mCurrentTabModelFilterSupplier.get();
         Tab currentTab = TabModelUtils.getTabById(filter.getTabModel(), mCurrentTabId);
         if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()) {
@@ -556,21 +570,19 @@ public class TabGridDialogMediator
             if (storedTitle != null && filter.isTabInTabGroup(currentTab)) {
                 mModel.set(
                         TabGridDialogProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
-                        mContext.getResources()
-                                .getQuantityString(
-                                        R.plurals.accessibility_dialog_back_button_with_group_name,
-                                        tabsCount,
-                                        storedTitle,
-                                        tabsCount));
+                        res.getQuantityString(
+                                R.plurals.accessibility_dialog_back_button_with_group_name,
+                                tabsCount,
+                                storedTitle,
+                                tabsCount));
                 mModel.set(TabGridDialogProperties.HEADER_TITLE, storedTitle);
                 return;
             }
         }
         mModel.set(
                 TabGridDialogProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
-                mContext.getResources()
-                        .getQuantityString(
-                                R.plurals.accessibility_dialog_back_button, tabsCount, tabsCount));
+                res.getQuantityString(
+                        R.plurals.accessibility_dialog_back_button, tabsCount, tabsCount));
         mModel.set(
                 TabGridDialogProperties.HEADER_TITLE,
                 TabGroupTitleEditor.getDefaultTitle(mContext, tabsCount));
@@ -659,7 +671,8 @@ public class TabGridDialogMediator
                         mContext,
                         ShowMode.MENU_ONLY,
                         ButtonType.ICON_AND_TEXT,
-                        IconPosition.START));
+                        IconPosition.START,
+                        mActionConfirmationManager));
         actions.add(
                 TabListEditorBookmarkAction.createAction(
                         mActivity,

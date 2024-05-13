@@ -324,6 +324,11 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableGetNetworkConnectivityHintAPI);
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableTcpPortRandomization);
 #endif
 
+// Avoid creating cache entries for transactions that are most likely no-store.
+NET_EXPORT BASE_DECLARE_FEATURE(kAvoidEntryCreationForNoStore);
+NET_EXPORT extern const base::FeatureParam<int>
+    kAvoidEntryCreationForNoStoreCacheSize;
+
 // Prefetch to follow normal semantics instead of 5-minute rule
 // https://crbug.com/1345207
 NET_EXPORT BASE_DECLARE_FEATURE(kPrefetchFollowsNormalCacheSemantics);
@@ -391,10 +396,6 @@ NET_EXPORT extern const base::FeatureParam<std::string>
 // of the proxies in the proxy list. This supports experimental comparison of
 // connections that _would_ have been proxied, but were not.
 NET_EXPORT extern const base::FeatureParam<bool> kIpPrivacyDirectOnly;
-
-// The PSK added to connections to proxyB with `Proxy-Authorization: Preshared
-// $PSK`.
-NET_EXPORT extern const base::FeatureParam<std::string> kIpPrivacyProxyBPsk;
 
 // If true, pass OAuth token to Phosphor in GetProxyConfig API for IP
 // Protection.

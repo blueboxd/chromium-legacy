@@ -5,19 +5,20 @@
 #ifndef CHROME_BROWSER_ASH_EXTENDED_UPDATES_EXTENDED_UPDATES_NOTIFICATION_H_
 #define CHROME_BROWSER_ASH_EXTENDED_UPDATES_EXTENDED_UPDATES_NOTIFICATION_H_
 
+#include <string_view>
+
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observation.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_observer.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 namespace ash {
 
-// Class that constructs, shows, and handles the Extended Updates notification.
-// This class manages its own ownership. It stays alive while the notification
-// is shown, and self-destructs when the notification is closed.
-class ExtendedUpdatesNotification : public message_center::NotificationObserver,
-                                    public ProfileObserver {
+// Class that is responsible for showing the Extended Updates notification and
+// acts as the delegate that handles interactions.
+class ExtendedUpdatesNotification
+    : public message_center::NotificationDelegate {
  public:
   // Maps notification buttons to their ordered indices.
   enum class IndexedButton : int {
@@ -25,40 +26,44 @@ class ExtendedUpdatesNotification : public message_center::NotificationObserver,
     kLearnMore = 1,
   };
 
-  static constexpr char kNotificationId[] = "ash.extended_updates.available";
+  static constexpr std::string_view kNotificationId =
+      "ash.extended_updates.available";
+  static constexpr NotificationHandler::Type kNotificationType =
+      NotificationHandler::Type::TRANSIENT;
 
-  // Creates a new notification handler.
-  static base::WeakPtr<ExtendedUpdatesNotification> Create(Profile* profile);
+  // Shows the notification.
+  static void Show(Profile* profile);
+  static void Show(scoped_refptr<ExtendedUpdatesNotification> delegate);
 
+  // Returns true if Extended Updates notification was dismissed by the user.
+  static bool IsNotificationDismissed(Profile* profile);
+
+  explicit ExtendedUpdatesNotification(Profile* profile);
   ExtendedUpdatesNotification(const ExtendedUpdatesNotification&) = delete;
   ExtendedUpdatesNotification& operator=(const ExtendedUpdatesNotification&) =
       delete;
-  ~ExtendedUpdatesNotification() override;
 
-  // Shows the notification.
-  void Show();
-
-  // message_center::NotificationObserver overrides.
+  // message_center::NotificationDelegate overrides.
   void Close(bool by_user) override;
   void Click(const std::optional<int>& button_index,
              const std::optional<std::u16string>& reply) override;
 
-  // ProfileObserver overrides.
-  void OnProfileWillBeDestroyed(Profile* profile) override;
-
-  base::WeakPtr<ExtendedUpdatesNotification> GetWeakPtr();
-
  protected:
-  explicit ExtendedUpdatesNotification(Profile* profile);
+  // Ref-counted class requires protected destructor.
+  ~ExtendedUpdatesNotification() override;
 
   virtual void ShowExtendedUpdatesDialog();
   virtual void OpenLearnMoreUrl();
 
  private:
-  base::WeakPtr<ExtendedUpdatesNotification> BuildAndDisplayNotification(
-      Profile* profile);
+  Profile* profile() { return profile_.get(); }
 
-  base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
+  void SubscribeToDeviceSettingsChanges();
+  void OnDeviceSettingsChanged();
+
+  base::WeakPtr<Profile> profile_;
+
+  base::CallbackListSubscription settings_change_subscription_;
 
   base::WeakPtrFactory<ExtendedUpdatesNotification> weak_factory_{this};
 };

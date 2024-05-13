@@ -4,6 +4,7 @@
 
 #include "content/browser/interest_group/interest_group_auction_reporter.h"
 
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <memory>
@@ -38,6 +39,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
+#include "content/services/auction_worklet/public/mojom/real_time_reporting.mojom-forward.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/public/cpp/system/functions.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -97,6 +99,17 @@ auto ElementsAreRequests(Ts&... requests) {
   return testing::UnorderedElementsAre(testing::Eq(std::ref(requests))...);
 }
 
+// Helper to avoid excess boilerplate.
+template <typename... Ts>
+auto ElementsAreContributions(Ts&... requests) {
+  static_assert(
+      std::conjunction<std::is_same<
+          std::remove_const_t<Ts>,
+          auction_worklet::mojom::RealTimeReportingContributionPtr>...>::value);
+  // Need to use `std::ref` as `mojo::StructPtr`s are move-only.
+  return testing::UnorderedElementsAre(testing::Eq(std::ref(requests))...);
+}
+
 class EventReportingAttestationBrowserClient : public TestContentBrowserClient {
  public:
   bool IsPrivacySandboxReportingDestinationAttested(
@@ -120,9 +133,13 @@ class InterestGroupAuctionReporterTest
       : RenderViewHostTestHarness(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         winning_bid_info_(GetWinningBidInfo()) {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kPrivateAggregationApi,
-        {{"fledge_extensions_enabled", "true"}});
+    feature_list_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/{{blink::features::kPrivateAggregationApi,
+                               {{"fledge_extensions_enabled", "true"}}},
+                              {blink::features::
+                                   kPrivateAggregationApiFilteringIds,
+                               {}}},
+        /*disabled_features=*/{});
 
     mojo::SetDefaultProcessErrorHandler(
         base::BindRepeating(&InterestGroupAuctionReporterTest::OnBadMessage,
@@ -263,7 +280,8 @@ class InterestGroupAuctionReporterTest
             std::move(debug_win_report_urls_),
             std::move(debug_loss_report_urls_), k_anon_keys_to_join_,
             std::move(private_aggregation_requests_reserved_),
-            std::move(private_aggregation_event_map_));
+            std::move(private_aggregation_event_map_),
+            std::move(real_time_contributions_));
     interest_group_auction_reporter_->Start(
         base::BindOnce(&InterestGroupAuctionReporterTest::OnCompleteCallback,
                        base::Unretained(this)));
@@ -482,6 +500,9 @@ class InterestGroupAuctionReporterTest
       url::Origin::Create(kWinningBidderScriptUrl);
   const std::string kWinningBidderName = "winning interest group name";
   const std::string kWinningAdMetadata = R"({"render_url": "https://foo/"})";
+  const GURL kWinningBidderRealTimeReportingUrl = GURL(
+      "https://winning.bidder.origin.test/.well-known/interest-group/"
+      "real-time-report");
 
   const GURL kLosingBidderScriptUrl =
       GURL("https://losing.bidder.origin.test/bidder_script.js");
@@ -519,7 +540,7 @@ class InterestGroupAuctionReporterTest
                       blink::mojom::AggregatableReportHistogramContribution::
                           New(/*bucket=*/3,
                               /*value=*/4,
-                              /*filtering_id=*/std::nullopt)),
+                              /*filtering_id=*/0)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -530,7 +551,7 @@ class InterestGroupAuctionReporterTest
                       blink::mojom::AggregatableReportHistogramContribution::
                           New(/*bucket=*/5,
                               /*value=*/6,
-                              /*filtering_id=*/std::nullopt)),
+                              /*filtering_id=*/1)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -541,7 +562,7 @@ class InterestGroupAuctionReporterTest
                       blink::mojom::AggregatableReportHistogramContribution::
                           New(/*bucket=*/7,
                               /*value=*/8,
-                              /*filtering_id=*/std::nullopt)),
+                              /*filtering_id=*/255)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -577,6 +598,7 @@ class InterestGroupAuctionReporterTest
                                   NewIdBucket(1),
                               auction_worklet::mojom::ForEventSignalValue::
                                   NewIntValue(2),
+                              /*filtering_id=*/std::nullopt,
                               "event_type")),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
@@ -591,6 +613,7 @@ class InterestGroupAuctionReporterTest
                                   NewIdBucket(42),
                               auction_worklet::mojom::ForEventSignalValue::
                                   NewIntValue(24),
+                              /*filtering_id=*/std::nullopt,
                               "event_type2")),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
@@ -605,9 +628,24 @@ class InterestGroupAuctionReporterTest
                                   NewIdBucket(3),
                               auction_worklet::mojom::ForEventSignalValue::
                                   NewIntValue(4),
+                              /*filtering_id=*/0,
                               "event_type")),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
+
+  const auction_worklet::mojom::RealTimeReportingContributionPtr
+      kRealTimeReportingContribution =
+          auction_worklet::mojom::RealTimeReportingContribution::New(
+              /*bucket=*/100,
+              /*priority_weight=*/0.5,
+              /*latency_threshold=*/std::nullopt);
+
+  const auction_worklet::mojom::RealTimeReportingContributionPtr
+      kRealTimeReportingLatencyContribution =
+          auction_worklet::mojom::RealTimeReportingContribution::New(
+              /*bucket=*/200,
+              /*priority_weight=*/2,
+              /*latency_threshold=*/1);
 
   std::vector<GURL> debug_win_report_urls_;
   std::vector<GURL> debug_loss_report_urls_;
@@ -628,7 +666,7 @@ class InterestGroupAuctionReporterTest
   const GURL kComponentSellerReportUrl =
       GURL("https://component.seller.report.test/component-seller-report");
   const GURL kBidderReportUrl =
-      GURL("https://bidder.report.test/bidder=report");
+      GURL("https://bidder.report.test/bidder-report");
 
   // These are used in ad beacon tests. Not used by default.
   const FencedFrameReporter::ReportingUrlMap kSellerBeaconMap = {
@@ -684,6 +722,11 @@ class InterestGroupAuctionReporterTest
   std::map<std::string,
            InterestGroupAuctionReporter::PrivateAggregationRequests>
       private_aggregation_event_map_;
+
+  // The real time reporting histograms passed in to the constructor.
+  std::map<url::Origin,
+           InterestGroupAuctionReporter::RealTimeReportingContributions>
+      real_time_contributions_;
 
   std::unique_ptr<TestInterestGroupManagerImpl> interest_group_manager_impl_ =
       std::make_unique<TestInterestGroupManagerImpl>(
@@ -765,7 +808,7 @@ TEST_F(InterestGroupAuctionReporterTest,
   dummy_test_url_loader_factory_.AddResponse(
       "https://seller.report.test/seller-report", "");
   dummy_test_url_loader_factory_.AddResponse(
-      "https://bidder.report.test/bidder=report", "");
+      "https://bidder.report.test/bidder-report", "");
 
   SetUpAndStartSingleSellerAuction();
 
@@ -1705,6 +1748,76 @@ TEST_F(InterestGroupAuctionReporterTest,
   WaitForCompletion();
 }
 
+// Check that real time reporting contributions are passed along as expected.
+// This covers the case where a navigation occurs before the seller's reporting
+// script completes.
+TEST_F(InterestGroupAuctionReporterTest, RealTimeReporting) {
+  real_time_contributions_[kWinningBidderOrigin].push_back(
+      kRealTimeReportingContribution.Clone());
+  real_time_contributions_[kWinningBidderOrigin].push_back(
+      kRealTimeReportingLatencyContribution.Clone());
+
+  SetUpAndStartSingleSellerAuction();
+  interest_group_auction_reporter_
+      ->OnNavigateToWinningAdCallback(FrameTreeNode::kFrameTreeNodeInvalidId)
+      .Run();
+
+  EXPECT_THAT(
+      interest_group_manager_impl_->TakeRealTimeContributions(),
+      testing::UnorderedElementsAre(testing::Pair(
+          kWinningBidderOrigin,
+          ElementsAreContributions(kRealTimeReportingContribution,
+                                   kRealTimeReportingLatencyContribution))));
+
+  WaitForReportResultAndRunCallback(kSellerScriptUrl,
+                                    /*report_url=*/std::nullopt);
+  interest_group_manager_impl_->ExpectReports({});
+  WaitForReportWinAndRunCallback(/*report_url=*/std::nullopt);
+  interest_group_manager_impl_->ExpectReports({});
+
+  WaitForCompletion();
+}
+
+// Check that real time reporting histograms are passed along as expected. This
+// covers the case where a navigation occurs after all reporting scripts have
+// completed.
+TEST_F(InterestGroupAuctionReporterTest, RealTimeReportingLateNavigation) {
+  real_time_contributions_[kWinningBidderOrigin].push_back(
+      kRealTimeReportingContribution.Clone());
+  real_time_contributions_[kWinningBidderOrigin].push_back(
+      kRealTimeReportingLatencyContribution.Clone());
+
+  SetUpAndStartSingleSellerAuction();
+  interest_group_manager_impl_->ExpectReports({});
+  EXPECT_TRUE(
+      interest_group_manager_impl_->TakeRealTimeContributions().empty());
+
+  WaitForReportResultAndRunCallback(kSellerScriptUrl,
+                                    /*report_url=*/std::nullopt);
+  interest_group_manager_impl_->ExpectReports({});
+  EXPECT_TRUE(
+      interest_group_manager_impl_->TakeRealTimeContributions().empty());
+  WaitForReportWinAndRunCallback(/*report_url=*/std::nullopt);
+  interest_group_manager_impl_->ExpectReports({});
+  EXPECT_TRUE(
+      interest_group_manager_impl_->TakeRealTimeContributions().empty());
+
+  // When the navigation finally occurs, all previously queued requests should
+  // be passed along.
+  interest_group_auction_reporter_
+      ->OnNavigateToWinningAdCallback(FrameTreeNode::kFrameTreeNodeInvalidId)
+      .Run();
+
+  EXPECT_THAT(
+      interest_group_manager_impl_->TakeRealTimeContributions(),
+      testing::UnorderedElementsAre(testing::Pair(
+          kWinningBidderOrigin,
+          ElementsAreContributions(kRealTimeReportingContribution,
+                                   kRealTimeReportingLatencyContribution))));
+
+  WaitForCompletion();
+}
+
 // Check that private aggregation requests are passed along to trigger use
 // counter logging as appropriate.
 TEST_F(InterestGroupAuctionReporterTest,
@@ -1844,6 +1957,17 @@ TEST_F(InterestGroupAuctionReporterTest, NoNavigation) {
   private_aggregation_event_map_["event_type"].push_back(
       kWinningBidderGenerateBidPrivateAggregationRequest.Clone());
 
+  auction_worklet::mojom::RealTimeReportingContribution expected_contribution(
+      /*bucket=*/100, /*priority_weight=*/0.5,
+      /*latency_threshold=*/std::nullopt);
+  auction_worklet::mojom::RealTimeReportingContribution
+      expected_latency_contribution(
+          /*bucket=*/200, /*priority_weight=*/2, /*latency_threshold=*/1);
+  real_time_contributions_[kWinningBidderOrigin].push_back(
+      expected_contribution.Clone());
+  real_time_contributions_[kWinningBidderOrigin].push_back(
+      expected_latency_contribution.Clone());
+
   SetUpAndStartSingleSellerAuction();
   scoped_refptr<FencedFrameReporter> fenced_frame_reporter =
 
@@ -1883,6 +2007,11 @@ TEST_F(InterestGroupAuctionReporterTest, MultipleNavigations) {
       .push_back(kWinningBidderGenerateBidPrivateAggregationRequest.Clone());
   private_aggregation_event_map_["event_type"].push_back(
       kWinningBidderGenerateBidPrivateAggregationRequest.Clone());
+
+  real_time_contributions_[kWinningBidderOrigin].push_back(
+      kRealTimeReportingContribution.Clone());
+  real_time_contributions_[kWinningBidderOrigin].push_back(
+      kRealTimeReportingLatencyContribution.Clone());
 
   SetUpAndStartSingleSellerAuction();
   base::RepeatingClosure callback =
@@ -1947,6 +2076,14 @@ TEST_F(InterestGroupAuctionReporterTest, MultipleNavigations) {
                             kWinningBidderGenerateBidPrivateAggregationRequest,
                             kReportWinPrivateAggregationRequest))));
 
+  // Real time reporting data should have been passed along only once.
+  EXPECT_THAT(
+      interest_group_manager_impl_->TakeRealTimeContributions(),
+      testing::UnorderedElementsAre(testing::Pair(
+          kWinningBidderOrigin,
+          ElementsAreContributions(kRealTimeReportingContribution,
+                                   kRealTimeReportingLatencyContribution))));
+
   // Reports should also have been sent only once.
   interest_group_manager_impl_->ExpectReports(
       {{InterestGroupManagerImpl::ReportType::kSendReportTo, kSellerReportUrl},
@@ -1972,7 +2109,7 @@ TEST_F(InterestGroupAuctionReporterPrivateAggregationDisabledTest,
   // This is possible currently because we're not checking the feature flags
   // when collecting PA requests and sending to InterestGroupAuctionReporter,
   // and a compromised worklet can send PA requests to browser process when
-  // featrue kPrivateAggregationApi is disabled.
+  // feature kPrivateAggregationApi is disabled.
   private_aggregation_event_map_["event_type"].push_back(
       kWinningBidderGenerateBidPrivateAggregationRequest.Clone());
   private_aggregation_event_map_["event_type2"].push_back(
@@ -1999,7 +2136,7 @@ TEST_F(InterestGroupAuctionReporterPrivateAggregationDisabledTest,
 
   // The non-reserved aggregation requests from the bidder's reportWin() method
   // should not be passed along neither. reportWin() could only return PA
-  // requests if the worklet is compromised when featrue kPrivateAggregationApi
+  // requests if the worklet is compromised when feature kPrivateAggregationApi
   // is disabled.
   WaitForReportWinAndRunCallback(
       /*report_url=*/std::nullopt, /*ad_beacon_map=*/{}, /*ad_macro_map=*/{},

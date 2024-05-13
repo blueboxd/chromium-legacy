@@ -9,6 +9,7 @@
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -37,8 +38,11 @@ ProductSpecificationsUI::ProductSpecificationsUI(content::WebUI* web_ui)
           kProductSpecifications, kProductSpecificationsRegionLaunched)) {
     return;
   }
-  // Add ThemeSource to serve chrome logo.
+  // Add ThemeSource to serve the chrome logo.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
+  // Add SanitizedImageSource to embed images in WebUI.
+  content::URLDataSource::Add(profile,
+                              std::make_unique<SanitizedImageSource>(profile));
 
   // Set up the chrome://compare source.
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
@@ -52,21 +56,23 @@ ProductSpecificationsUI::ProductSpecificationsUI(content::WebUI* web_ui)
       IDR_COMMERCE_PRODUCT_SPECIFICATIONS_PRODUCT_SPECIFICATIONS_HTML);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"emptyMenu", IDS_PRODUCT_SPECIFICATIONS_EMPTY_SELECTION_MENU},
       {"emptyProductSelector",
        IDS_PRODUCT_SPECIFICATIONS_EMPTY_PRODUCT_SELECTOR},
-      {"emptyStateTitle", IDS_PRODUCT_SPECIFICATIONS_EMPTY_STATE_TITLE},
       {"emptyStateDescription",
        IDS_PRODUCT_SPECIFICATIONS_EMPTY_STATE_TITLE_DESCRIPTION},
+      {"emptyStateTitle", IDS_PRODUCT_SPECIFICATIONS_EMPTY_STATE_TITLE},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 
   source->AddString("message", "Some example content...");
   source->AddString("pageTitle", "Product Specifications");
-  source->AddString("categoryTitle", "Product category being compared...");
   source->AddString("summaryTitle", "Summary");
 
   static constexpr webui::LocalizedString kStrings[] = {
-      {"openTabsSectionTitle", IDS_PRODUCT_SPECIFICATIONS_OPEN_TABS_SECTION},
+      {"openTabs", IDS_PRODUCT_SPECIFICATIONS_OPEN_TABS_SECTION},
+      {"recentlyViewedTabs",
+       IDS_PRODUCT_SPECIFICATIONS_RECENTLY_VIEWED_TABS_SECTION},
   };
 
   source->AddLocalizedStrings(kStrings);

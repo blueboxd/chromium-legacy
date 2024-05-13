@@ -17,12 +17,12 @@
 #include "base/trace_event/traced_value.h"
 #include "components/subresource_filter/content/browser/ad_tagging_utils.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_web_contents_helper.h"
-#include "components/subresource_filter/content/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/browser/profile_interaction_manager.h"
 #include "components/subresource_filter/content/browser/safe_browsing_child_navigation_throttle.h"
 #include "components/subresource_filter/content/browser/safe_browsing_page_activation_throttle.h"
 #include "components/subresource_filter/content/mojom/subresource_filter.mojom.h"
 #include "components/subresource_filter/content/shared/browser/activation_state_computing_navigation_throttle.h"
+#include "components/subresource_filter/content/shared/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/shared/common/subresource_filter_utils.h"
 #include "components/subresource_filter/core/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
@@ -334,8 +334,8 @@ void ContentSubresourceFilterThrottleManager::DidFinishInFrameNavigation(
     current_committed_load_has_notified_disallowed_load_ = false;
     statistics_.reset();
     if (filter) {
-      statistics_ =
-          std::make_unique<PageLoadStatistics>(filter->activation_state());
+      statistics_ = std::make_unique<PageLoadStatistics>(
+          filter->activation_state(), kUmaFilterTag);
       if (filter->activation_state().enable_logging) {
         DCHECK(filter->activation_state().activation_level !=
                mojom::ActivationLevel::kDisabled);

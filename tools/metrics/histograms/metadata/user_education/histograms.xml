@@ -27,6 +27,8 @@ chromium-metrics-reviews@google.com.
       summary="For Compose feature; shown in web context menu."/>
   <variant name="ComposeNudge"
       summary="For Compose feature; shown on autofill popup."/>
+  <variant name="LensOverlay"
+      summary="Lens Overlay entry points in app and web context menus."/>
   <variant name="NewBadgeTestFeature"
       summary="Used for testing purposes only."/>
 </variants>
@@ -42,6 +44,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".SidePanelReadingList"
       summary="the tutorial for the side panel reading list"/>
   <variant name=".TabGroup" summary="the tutorial for tab groups"/>
+  <variant name=".Test" summary="the tutorial used for testing only"/>
 </variants>
 
 <histogram name="Tutorial.TabGroup.EditedTitle" enum="BooleanSuccess"
@@ -126,7 +129,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UserEducation.MessageShown.Subtype" enum="PromoSubtype"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>mickeyburks@chromium.org</owner>
   <owner>frizzle-team@google.com</owner>
   <summary>
@@ -138,7 +141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UserEducation.MessageShown.Type" enum="PromoType"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>mickeyburks@chromium.org</owner>
   <owner>frizzle-team@google.com</owner>
   <summary>

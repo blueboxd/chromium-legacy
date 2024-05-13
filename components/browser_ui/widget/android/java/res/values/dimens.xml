@@ -50,6 +50,8 @@ found in the LICENSE file.
     <dimen name="list_item_start_icon_right_margin">20dp</dimen>
     <dimen name="list_item_start_icon_width">36dp</dimen>
     <dimen name="list_item_end_icon_width">56dp</dimen>
+    <dimen name="list_item_start_icon_small_right_margin">16dp</dimen>
+    <dimen name="list_item_start_icon_small_width">20dp</dimen>
 
     <!-- SelectableListLayout dimensions -->
     <dimen name="selectable_list_action_bar_end_padding">6dp</dimen>
@@ -192,8 +194,7 @@ found in the LICENSE file.
     <dimen name="empty_state_subheading_padding_top">8dp</dimen>
     <!-- Surface Polish -->
     <dimen name="home_surface_background_color_elevation">@dimen/default_elevation_2</dimen>
-    <dimen name="home_surface_search_box_background_neutral_color_elevation">@dimen/default_elevation_0</dimen>
-    <item name="home_surface_search_box_background_colorful_alpha" format="float" type="dimen">0.15</item>
+    <item name="home_surface_search_box_background_alpha" format="float" type="dimen">0.15</item>
 
     <!-- Preference switch -->
     <!-- Work around to adopt the material switch . See crbug/1248590. -->

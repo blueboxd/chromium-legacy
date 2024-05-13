@@ -1262,12 +1262,16 @@ mojom::blink::ColorScheme PaintLayerScrollableArea::UsedColorSchemeScrollbars()
   //     specified),
   //   - the preferred color scheme is dark (OS-based),
   //   - the browser preferred color scheme is dark.
+  //   - there is no custom browser theme active
+  //   - there is no color-picked browser theme active
+  //     (both theme conditions are embedded into
+  //        `GetPreferredRootScrollbarColorScheme()`)
   if (IsGlobalRootNonOverlayScroller() &&
       layout_box->StyleRef().ColorSchemeFlagsIsNormal()) {
     const auto& document = layout_box->GetDocument();
     if (document.GetPreferredColorScheme() ==
             mojom::blink::PreferredColorScheme::kDark &&
-        document.GetSettings()->GetBrowserPreferredColorScheme() ==
+        document.GetSettings()->GetPreferredRootScrollbarColorScheme() ==
             mojom::blink::PreferredColorScheme::kDark) {
       UseCounter::Count(GetLayoutBox()->GetDocument(),
                         WebFeature::kUsedColorSchemeRootScrollbarsDark);
@@ -1345,7 +1349,7 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
 
   // The scrollbar overlay color theme depends on styles such as the background
   // color and the used color scheme.
-  RecalculateScrollbarOverlayColorTheme();
+  RecalculateOverlayScrollbarColorScheme();
 
   if (NeedsScrollbarReconstruction()) {
     RemoveScrollbarsForReconstruction();

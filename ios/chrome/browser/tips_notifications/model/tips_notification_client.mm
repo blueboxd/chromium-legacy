@@ -64,6 +64,24 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
   }
 }
 
+// Returns true if a Default Browser Promo was canceled.
+bool DefaultBrowserPromoCanceled() {
+  std::optional<IOSDefaultBrowserPromoAction> action =
+      DefaultBrowserPromoLastAction();
+  if (!action.has_value()) {
+    return false;
+  }
+
+  switch (action.value()) {
+    case IOSDefaultBrowserPromoAction::kCancel:
+      return true;
+    case IOSDefaultBrowserPromoAction::kActionButton:
+    case IOSDefaultBrowserPromoAction::kRemindMeLater:
+    case IOSDefaultBrowserPromoAction::kDismiss:
+      return false;
+  }
+}
+
 }  // namespace
 
 TipsNotificationClient::TipsNotificationClient()
@@ -97,8 +115,6 @@ void TipsNotificationClient::HandleNotificationInteraction(
   // If the app is not yet foreground active, store the notification type and
   // handle it later when the app becomes foreground active.
   if (IsSceneLevelForegroundActive()) {
-    HandleNotificationInteraction(interacted_type_.value());
-    interacted_type_ = std::nullopt;
     ClearAndMaybeRequestNotification(base::DoNothing());
   }
 }
@@ -150,18 +166,26 @@ void TipsNotificationClient::ClearAndMaybeRequestNotification(
   permitted_ = IsPermitted();
   if (interacted_type_.has_value()) {
     HandleNotificationInteraction(interacted_type_.value());
-    interacted_type_ = std::nullopt;
   }
+
+  // If we're no longer in the first 3 weeks, exit early to avoid incurring
+  // the cost of checking delivered and requested notifications.
+  if (!IsFirstRunRecent(base::Days(21))) {
+    std::move(closure).Run();
+    return;
+  }
+
   ClearNotification(
       base::BindOnce(&TipsNotificationClient::MaybeRequestNotification,
-                     weak_ptr_factory_.GetWeakPtr())
-          .Then(std::move(closure)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(closure)));
 }
 
 // static
 void TipsNotificationClient::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kTipsNotificationsSentPref, 0);
+  registry->RegisterIntegerPref(kTipsNotificationsLastSent, -1);
+  registry->RegisterIntegerPref(kTipsNotificationsLastTriggered, -1);
 }
 
 void TipsNotificationClient::GetPendingRequest(
@@ -188,9 +212,14 @@ void TipsNotificationClient::OnNotificationCleared(
     UNNotificationRequest* request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!request) {
+    MaybeLogTriggeredNotification();
+    MaybeLogDismissedNotification();
+    interacted_type_ = std::nullopt;
     return;
   }
 
+  MaybeLogDismissedNotification();
+  interacted_type_ = std::nullopt;
   std::optional<TipsNotificationType> type = ParseTipsNotificationType(request);
   if (type.has_value()) {
     MarkNotificationTypeNotSent(type.value());
@@ -203,9 +232,11 @@ void TipsNotificationClient::OnNotificationCleared(
       ]];
 }
 
-void TipsNotificationClient::MaybeRequestNotification() {
+void TipsNotificationClient::MaybeRequestNotification(
+    base::OnceClosure completion) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!IsFirstRunRecent(base::Days(14)) || !permitted_) {
+    std::move(completion).Run();
     return;
   }
 
@@ -232,24 +263,27 @@ void TipsNotificationClient::MaybeRequestNotification() {
       continue;
     }
     if (ShouldSendNotification(type)) {
-      RequestNotification(type);
-      break;
+      RequestNotification(type, std::move(completion));
+      return;
     }
   }
+  std::move(completion).Run();
 }
 
-void TipsNotificationClient::RequestNotification(TipsNotificationType type) {
+void TipsNotificationClient::RequestNotification(TipsNotificationType type,
+                                                 base::OnceClosure completion) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UNNotificationRequest* request = TipsNotificationRequest(type);
 
-  auto completion = base::CallbackToBlock(base::BindPostTask(
+  auto completion_block = base::CallbackToBlock(base::BindPostTask(
       base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&TipsNotificationClient::OnNotificationRequested,
-                     weak_ptr_factory_.GetWeakPtr(), type)));
+                     weak_ptr_factory_.GetWeakPtr(), type)
+          .Then(std::move(completion))));
 
   [UNUserNotificationCenter.currentNotificationCenter
       addNotificationRequest:request
-       withCompletionHandler:completion];
+       withCompletionHandler:completion_block];
 }
 
 void TipsNotificationClient::OnNotificationRequested(TipsNotificationType type,
@@ -267,7 +301,7 @@ bool TipsNotificationClient::ShouldSendNotification(TipsNotificationType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (type) {
     case TipsNotificationType::kDefaultBrowser:
-      return !IsChromeLikelyDefaultBrowser();
+      return ShouldSendDefaultBrowser();
     case TipsNotificationType::kWhatsNew:
       return ShouldSendWhatsNew();
     case TipsNotificationType::kSignin:
@@ -275,6 +309,11 @@ bool TipsNotificationClient::ShouldSendNotification(TipsNotificationType type) {
     case TipsNotificationType::kError:
       NOTREACHED_NORETURN();
   }
+}
+
+bool TipsNotificationClient::ShouldSendDefaultBrowser() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return !IsChromeLikelyDefaultBrowser() && !DefaultBrowserPromoCanceled();
 }
 
 bool TipsNotificationClient::ShouldSendWhatsNew() {
@@ -370,6 +409,7 @@ void TipsNotificationClient::MarkNotificationTypeSent(
   int sent_bitfield = local_state->GetInteger(kTipsNotificationsSentPref);
   sent_bitfield |= 1 << int(type);
   local_state->SetInteger(kTipsNotificationsSentPref, sent_bitfield);
+  local_state->SetInteger(kTipsNotificationsLastSent, int(type));
   base::UmaHistogramEnumeration("IOS.Notifications.Tips.Sent", type);
 }
 
@@ -380,6 +420,59 @@ void TipsNotificationClient::MarkNotificationTypeNotSent(
   int sent_bitfield = local_state->GetInteger(kTipsNotificationsSentPref);
   sent_bitfield &= ~(1 << int(type));
   local_state->SetInteger(kTipsNotificationsSentPref, sent_bitfield);
+  local_state->ClearPref(kTipsNotificationsLastSent);
+}
+
+void TipsNotificationClient::MaybeLogTriggeredNotification() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+  const PrefService::Preference* last_sent =
+      local_state->FindPreference(kTipsNotificationsLastSent);
+  if (last_sent->IsDefaultValue()) {
+    return;
+  }
+
+  TipsNotificationType type =
+      static_cast<TipsNotificationType>(last_sent->GetValue()->GetInt());
+  base::UmaHistogramEnumeration("IOS.Notifications.Tips.Triggered", type);
+  local_state->SetInteger(kTipsNotificationsLastTriggered, int(type));
+  local_state->ClearPref(kTipsNotificationsLastSent);
+}
+
+void TipsNotificationClient::MaybeLogDismissedNotification() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+  if (interacted_type_.has_value()) {
+    local_state->ClearPref(kTipsNotificationsLastTriggered);
+    return;
+  }
+  const PrefService::Preference* last_triggered =
+      local_state->FindPreference(kTipsNotificationsLastTriggered);
+  if (last_triggered->IsDefaultValue()) {
+    return;
+  }
+
+  auto completion = base::CallbackToBlock(base::BindPostTask(
+      base::SequencedTaskRunner::GetCurrentDefault(),
+      base::BindOnce(&TipsNotificationClient::OnGetDeliveredNotifications,
+                     weak_ptr_factory_.GetWeakPtr())));
+  [UNUserNotificationCenter.currentNotificationCenter
+      getDeliveredNotificationsWithCompletionHandler:completion];
+}
+
+void TipsNotificationClient::OnGetDeliveredNotifications(
+    NSArray<UNNotification*>* notifications) {
+  for (UNNotification* notification in notifications) {
+    if ([notification.request.identifier isEqualToString:kTipsNotificationId]) {
+      return;
+    }
+  }
+  // No notification was found, so it must have been dismissed.
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+  TipsNotificationType type = static_cast<TipsNotificationType>(
+      local_state->GetInteger(kTipsNotificationsLastTriggered));
+  base::UmaHistogramEnumeration("IOS.Notifications.Tips.Dismissed", type);
+  local_state->ClearPref(kTipsNotificationsLastTriggered);
 }
 
 bool TipsNotificationClient::IsPermitted() {

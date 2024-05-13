@@ -130,6 +130,8 @@ class GpuIntegrationTest(
   # flakiness workaround. See crbug.com/323927831.
   _is_first_browser_start = True
 
+  _is_asan = False
+
   tab: Optional[ct.Tab] = None
 
   def __init__(self, *args, **kwargs):
@@ -266,6 +268,10 @@ class GpuIntegrationTest(
     """
     default_args = [
         '--disable-metal-test-shaders',
+        # TODO(crbug.com/339479329): Remove this once we either determine that
+        # BFCache is not the culprit or it is and the root cause of flakiness
+        # is fixed.
+        '--disable-features=BackForwardCache',
     ]
     if cls._SuiteSupportsParallelTests():
       # When running tests in parallel, windows can be treated as occluded if a
@@ -922,6 +928,7 @@ class GpuIntegrationTest(
     if system_info:
       gpu_tags = []
       gpu_info = system_info.gpu
+      cls._is_asan = gpu_info.aux_attributes.get('is_asan', False)
       # On the dual-GPU MacBook Pros, surface the tags of the secondary GPU if
       # it's the discrete GPU, so that test expectations can be written that
       # target the discrete GPU.

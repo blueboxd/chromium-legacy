@@ -42,6 +42,10 @@
 #include "ui/events/ash/keyboard_layout_util.h"
 #include "ui/events/devices/device_data_manager.h"
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chromeos/ash/resources/internal/strings/grit/ash_internal_strings.h"
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 namespace ash::settings {
 
 namespace mojom {
@@ -841,15 +845,30 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"perDeviceKeyboardKeyEscape",
        IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_ESCAPE},
       {"perDeviceKeyboardKeyMeta", IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_META},
-      {"perDeviceKeyboardKeyRightAlt",
-       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_RIGHT_ALT},
       {"perDeviceKeyboardKeyFunction",
        IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_FUNCTION},
   };
   html_source->AddLocalizedStrings(keyboard_strings);
 
-  html_source->AddBoolean("enableModifierSplit",
-                          ash::features::IsModifierSplitEnabled());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // For official builds, only add the real string if the feature is enabled.
+  if (Shell::Get()->keyboard_capability()->IsModifierSplitEnabled()) {
+    html_source->AddLocalizedString("perDeviceKeyboardKeyRightAlt",
+                                    IDS_KEYBOARD_RIGHT_ALT_LABEL);
+  } else {
+    html_source->AddLocalizedString(
+        "perDeviceKeyboardKeyRightAlt",
+        IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_RIGHT_ALT);
+  }
+#else
+  html_source->AddLocalizedString(
+      "perDeviceKeyboardKeyRightAlt",
+      IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_RIGHT_ALT);
+#endif
+
+  html_source->AddBoolean(
+      "enableModifierSplit",
+      Shell::Get()->keyboard_capability()->IsModifierSplitEnabled());
 
   if (Shell::Get()->keyboard_capability()->HasLauncherButtonOnAnyKeyboard()) {
     html_source->AddLocalizedString(

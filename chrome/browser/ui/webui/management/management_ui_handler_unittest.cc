@@ -26,7 +26,7 @@
 #include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/ui/webui/management/management_ui_handler.h"
+#include "chrome/browser/ui/webui/management/management_ui_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -121,6 +121,12 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/lacros/lacros_test_helper.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/ui/webui/management/management_ui_handler_chromeos.h"
+#else
+#include "chrome/browser/ui/webui/management/management_ui_handler.h"
+#endif
 
 using testing::_;
 using testing::AnyNumber;
@@ -221,12 +227,18 @@ class TestDeviceCloudPolicyManagerAsh
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-class TestManagementUIHandler : public ManagementUIHandler {
+#if BUILDFLAG(IS_CHROMEOS)
+using ManagementUIHandlerBase = ManagementUIHandlerChromeOS;
+#else
+using ManagementUIHandlerBase = ManagementUIHandler;
+#endif
+class TestManagementUIHandler : public ManagementUIHandlerBase {
  public:
-  TestManagementUIHandler() = default;
+  TestManagementUIHandler() : ManagementUIHandlerBase(/*profile=*/nullptr) {}
   TestManagementUIHandler(policy::PolicyService* policy_service,
                           content::WebUI* web_ui)
-      : policy_service_(policy_service) {
+      : ManagementUIHandlerBase(/*profile=*/nullptr),
+        policy_service_(policy_service) {
     set_web_ui(web_ui);
   }
 
@@ -254,11 +266,11 @@ class TestManagementUIHandler : public ManagementUIHandler {
   }
 
   base::Value::List GetManagedWebsitesInfo(Profile* profile) {
-    return ManagementUIHandler::GetManagedWebsitesInfo(profile);
+    return ManagementUIHandlerBase::GetManagedWebsitesInfo(profile);
   }
 
   base::Value::Dict GetThreatProtectionInfo(Profile* profile) {
-    return ManagementUIHandler::GetThreatProtectionInfo(profile);
+    return ManagementUIHandlerBase::GetThreatProtectionInfo(profile);
   }
 
   policy::PolicyService* GetPolicyService() override { return policy_service_; }
@@ -397,6 +409,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     std::string profile_name;
     bool override_policy_connector_is_managed;
     bool managed_account;
+    bool managed_browser;
     bool managed_device;
     std::string device_domain;
     base::FilePath crostini_ansible_playbook_filepath;
@@ -429,6 +442,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     setup_config_.profile_name = "";
     setup_config_.override_policy_connector_is_managed = false;
     setup_config_.managed_account = true;
+    setup_config_.managed_browser = true;
     setup_config_.managed_device = false;
     setup_config_.device_domain = "devicedomain.com";
     setup_config_.insights_extension_enabled = false;
@@ -550,10 +564,10 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     ON_CALL(testing::Const(handler_), GetDeviceCloudPolicyManager())
         .WillByDefault(Return(manager_.get()));
     base::Value::List result;
-    ManagementUIHandler::AddDeviceReportingInfoForTesting(
+    ManagementUIHandlerBase::AddDeviceReportingInfoForTesting(
         &result, &status_collector, &system_log_uploader, GetProfile());
     if (GetTestConfig().report_dlp_events) {
-      ManagementUIHandler::AddDlpDeviceReportingElementForTesting(
+      ManagementUIHandlerBase::AddDlpDeviceReportingElementForTesting(
           &result, kManagementReportDlpEvents);
     }
     return result;
@@ -576,7 +590,11 @@ class ManagementUIHandlerTests : public TestingBaseClass {
         content::WebContents::CreateParams(profile_.get()));
     web_ui_.set_web_contents(web_contents_.get());
     handler_.SetAccountManagedForTesting(GetTestConfig().managed_account);
+#if BUILDFLAG(IS_CHROMEOS)
     handler_.SetDeviceManagedForTesting(GetTestConfig().managed_device);
+#else
+    handler_.SetBrowserManagedForTesting(GetTestConfig().managed_browser);
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     handler_.SetDeviceDomain(GetTestConfig().device_domain);
 #endif
@@ -790,11 +808,42 @@ AssertionResult ReportingElementsToBeEQ(
 }
 #endif
 
+#if !BUILDFLAG(IS_CHROMEOS)
+TEST_F(ManagementUIHandlerTests,
+       ManagementContextualSourceUpdateProfileManagedOnly) {
+  ResetTestConfig();
+  GetTestConfig().managed_browser = false;
+  SetUpProfileAndHandler();
+
+  EXPECT_EQ(GetBrowserManagementNotice(),
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_PROFILE_NOTICE, chrome::kManagedUiLearnMoreUrl,
+                base::EscapeForHTML(l10n_util::GetStringUTF16(
+                    IDS_MANAGEMENT_LEARN_MORE_ACCCESSIBILITY_TEXT))));
+  EXPECT_TRUE(GetManaged());
+}
+
+TEST_F(ManagementUIHandlerTests,
+       ManagementContextualSourceUpdateBrowserManagedOnly) {
+  ResetTestConfig();
+  GetTestConfig().managed_account = false;
+  SetUpProfileAndHandler();
+
+  EXPECT_EQ(GetBrowserManagementNotice(),
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_BROWSER_NOTICE, chrome::kManagedUiLearnMoreUrl,
+                base::EscapeForHTML(l10n_util::GetStringUTF16(
+                    IDS_MANAGEMENT_LEARN_MORE_ACCCESSIBILITY_TEXT))));
+  EXPECT_TRUE(GetManaged());
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateUnmanagedNoDomain) {
   ResetTestConfig();
   GetTestConfig().managed_account = false;
+  GetTestConfig().managed_browser = false;
   SetUpProfileAndHandler();
 
   EXPECT_EQ(GetExtensionReportingSubtitle(),
@@ -856,8 +905,10 @@ TEST_F(ManagementUIHandlerTests,
   GetTestConfig().profile_name = "managed@" + domain;
   GetTestConfig().override_policy_connector_is_managed = true;
   GetTestConfig().managed_account = false;
+  GetTestConfig().managed_browser = false;
   SetUpProfileAndHandler();
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_EQ(GetExtensionReportingSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        base::UTF8ToUTF16(domain)));
@@ -865,6 +916,14 @@ TEST_F(ManagementUIHandlerTests,
       GetManagedWebsitesTitle(),
       l10n_util::GetStringFUTF16(IDS_MANAGEMENT_MANAGED_WEBSITES_BY_EXPLANATION,
                                  base::UTF8ToUTF16(domain)));
+#else
+  EXPECT_EQ(GetExtensionReportingSubtitle(),
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
+  EXPECT_EQ(
+      GetManagedWebsitesTitle(),
+      l10n_util::GetStringUTF16(IDS_MANAGEMENT_MANAGED_WEBSITES_EXPLANATION));
+
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_EQ(
       GetBrowserManagementNotice(),
       l10n_util::GetStringFUTF16(
@@ -878,6 +937,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateUnmanagedCustomerDomain) {
   ResetTestConfig();
   GetTestConfig().managed_account = false;
+  GetTestConfig().managed_browser = false;
   SetUpProfileAndHandler();
 
   EXPECT_EQ(GetExtensionReportingSubtitle(),
@@ -904,6 +964,7 @@ TEST_F(ManagementUIHandlerTests,
   GetTestConfig().override_policy_connector_is_managed = true;
   SetUpProfileAndHandler();
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_EQ(GetExtensionReportingSubtitle(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        base::UTF8ToUTF16(domain)));
@@ -911,6 +972,14 @@ TEST_F(ManagementUIHandlerTests,
       GetManagedWebsitesTitle(),
       l10n_util::GetStringFUTF16(IDS_MANAGEMENT_MANAGED_WEBSITES_BY_EXPLANATION,
                                  base::UTF8ToUTF16(domain)));
+
+#else
+  EXPECT_EQ(GetExtensionReportingSubtitle(),
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
+  EXPECT_EQ(
+      GetManagedWebsitesTitle(),
+      l10n_util::GetStringUTF16(IDS_MANAGEMENT_MANAGED_WEBSITES_EXPLANATION));
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_EQ(GetBrowserManagementNotice(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_BROWSER_NOTICE, chrome::kManagedUiLearnMoreUrl,
@@ -1054,6 +1123,7 @@ TEST_F(ManagementUIHandlerTests, ManagementContextualSourceUpdateUnmanaged) {
   ResetTestConfig();
   GetTestConfig().profile_name = "";
   GetTestConfig().managed_account = false;
+  GetTestConfig().managed_browser = false;
   GetTestConfig().device_domain = "";
   SetUpProfileAndHandler();
 
@@ -1104,8 +1174,8 @@ TEST_F(ManagementUIHandlerTests, NoDeviceReportingInfo) {
   GetTestConfig().managed_account = false;
   SetUpProfileAndHandler();
 
-  base::Value::List info =
-      ManagementUIHandler::GetDeviceReportingInfo(nullptr, GetProfile());
+  base::Value::List info = ManagementUIHandlerChromeOS::GetDeviceReportingInfo(
+      nullptr, GetProfile());
 
   EXPECT_EQ(info.size(), 0u);
 }

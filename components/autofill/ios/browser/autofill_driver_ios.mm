@@ -222,9 +222,6 @@ void AutofillDriverIOS::RendererShouldSetSuggestionAvailability(
     const FieldGlobalId& field,
     mojom::AutofillSuggestionAvailability suggestion_availability) {}
 
-void AutofillDriverIOS::PopupHidden() {
-}
-
 net::IsolationInfo AutofillDriverIOS::IsolationInfo() {
   web::WebFramesManager* frames_manager =
       AutofillJavaScriptFeature::GetInstance()->GetWebFramesManager(web_state_);
@@ -254,8 +251,7 @@ void AutofillDriverIOS::AskForValuesToFill(const FormData& form,
   // TODO(crbug.com/40266699): Route this using AutofillDriverRouter.
   // TODO(crbug.com/40269303): Distinguish between different trigger sources.
   GetAutofillManager().OnAskForValuesToFill(
-      form, field, /*bounding_box=*/gfx::RectF(),
-      autofill::AutofillSuggestionTriggerSource::kiOS);
+      form, field, autofill::AutofillSuggestionTriggerSource::kiOS);
 }
 
 void AutofillDriverIOS::DidFillAutofillFormData(const FormData& form,
@@ -313,7 +309,6 @@ void AutofillDriverIOS::TextFieldDidChange(const FormData& form,
   // TODO(crbug.com/40266699): Route this using AutofillDriverRouter.
   GetAutofillManager().OnTextFieldDidChange(
       form, field,
-      gfx::RectF(),  // Bounds aren't needed on iOS since we don't use popups.
       timestamp);
 }
 
@@ -338,12 +333,6 @@ void AutofillDriverIOS::UpdateLastInteractedForm(
     return;
   }
 
-  // Only update the interacted form if different from the previous one.
-  if (last_interacted_form_ &&
-      last_interacted_form_->formless_field == formless_field &&
-      FormData::DeepEqual(last_interacted_form_->form_data, form_data)) {
-    return;
-  }
   last_interacted_form_.emplace(form_data, formless_field);
 }
 
@@ -434,7 +423,7 @@ void AutofillDriverIOS::UpdateLastInteractedFormFromFieldDataManager() {
     if (!field_data_manager->HasFieldData(field_id)) {
       continue;
     }
-    field.set_user_input(field_data_manager->GetUserInput(field_id));
+    field.set_value(field_data_manager->GetUserInput(field_id));
     field.set_properties_mask(
         field_data_manager->GetFieldPropertiesMask(field_id));
   }

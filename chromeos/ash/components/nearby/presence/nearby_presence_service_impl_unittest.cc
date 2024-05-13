@@ -53,18 +53,57 @@ class FakeScanDelegate : public NearbyPresenceService::ScanDelegate {
   void OnPresenceDeviceFound(
       ::nearby::presence::PresenceDevice presence_device) override {
     found_called = true;
+
+    EXPECT_EQ(kEndpointId, presence_device.GetEndpointId());
+    EXPECT_EQ(::nearby::internal::DEVICE_TYPE_PHONE,
+              presence_device.GetDeviceIdentityMetadata().device_type());
+    EXPECT_EQ(kDeviceName,
+              presence_device.GetDeviceIdentityMetadata().device_name());
+    EXPECT_EQ(
+        std::string(kMacAddress.begin(), kMacAddress.end()),
+        presence_device.GetDeviceIdentityMetadata().bluetooth_mac_address());
+    EXPECT_EQ(std::string(kDeviceId.begin(), kDeviceId.end()),
+              presence_device.GetDeviceIdentityMetadata().device_id());
+
     std::move(next_scan_delegate_callback_).Run();
   }
+
   void OnPresenceDeviceChanged(
       ::nearby::presence::PresenceDevice presence_device) override {
     changed_called = true;
+
+    EXPECT_EQ(kEndpointId, presence_device.GetEndpointId());
+    EXPECT_EQ(::nearby::internal::DEVICE_TYPE_PHONE,
+              presence_device.GetDeviceIdentityMetadata().device_type());
+    EXPECT_EQ(kDeviceName,
+              presence_device.GetDeviceIdentityMetadata().device_name());
+    EXPECT_EQ(
+        std::string(kMacAddress.begin(), kMacAddress.end()),
+        presence_device.GetDeviceIdentityMetadata().bluetooth_mac_address());
+    EXPECT_EQ(std::string(kDeviceId.begin(), kDeviceId.end()),
+              presence_device.GetDeviceIdentityMetadata().device_id());
+
     std::move(next_scan_delegate_callback_).Run();
   }
+
   void OnPresenceDeviceLost(
       ::nearby::presence::PresenceDevice presence_device) override {
     lost_called = true;
+
+    EXPECT_EQ(kEndpointId, presence_device.GetEndpointId());
+    EXPECT_EQ(::nearby::internal::DEVICE_TYPE_PHONE,
+              presence_device.GetDeviceIdentityMetadata().device_type());
+    EXPECT_EQ(kDeviceName,
+              presence_device.GetDeviceIdentityMetadata().device_name());
+    EXPECT_EQ(
+        std::string(kMacAddress.begin(), kMacAddress.end()),
+        presence_device.GetDeviceIdentityMetadata().bluetooth_mac_address());
+    EXPECT_EQ(std::string(kDeviceId.begin(), kDeviceId.end()),
+              presence_device.GetDeviceIdentityMetadata().device_id());
+
     std::move(next_scan_delegate_callback_).Run();
   }
+
   void OnScanSessionInvalidated() override {}
   bool WasOnPresenceDeviceFoundCalled() { return found_called; }
   bool WasOnPresenceDeviceChangedCalled() { return changed_called; }
@@ -227,7 +266,7 @@ class NearbyPresenceServiceImplTest : public testing::Test {
 };
 
 TEST_F(NearbyPresenceServiceImplTest, StartPrivateScan) {
-  TestStartScan(::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE);
+  TestStartScan(::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE_GROUP);
 }
 
 TEST_F(NearbyPresenceServiceImplTest, StartPublicScan) {
@@ -235,12 +274,12 @@ TEST_F(NearbyPresenceServiceImplTest, StartPublicScan) {
 }
 
 TEST_F(NearbyPresenceServiceImplTest, StartTrustedScan) {
-  TestStartScan(::nearby::internal::IdentityType::IDENTITY_TYPE_TRUSTED);
+  TestStartScan(::nearby::internal::IdentityType::IDENTITY_TYPE_CONTACTS_GROUP);
 }
 
 TEST_F(NearbyPresenceServiceImplTest, StartScan_DeviceChanged) {
   NearbyPresenceService::ScanFilter filter(
-      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE,
+      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE_GROUP,
       /*actions=*/{});
   FakeScanDelegate scan_delegate;
   {
@@ -279,7 +318,7 @@ TEST_F(NearbyPresenceServiceImplTest, StartScan_DeviceChanged) {
 
 TEST_F(NearbyPresenceServiceImplTest, StartScan_DeviceLost) {
   NearbyPresenceService::ScanFilter filter(
-      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE,
+      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE_GROUP,
       /*actions=*/{});
   FakeScanDelegate scan_delegate;
   {
@@ -315,7 +354,7 @@ TEST_F(NearbyPresenceServiceImplTest, StartScan_DeviceLost) {
 
 TEST_F(NearbyPresenceServiceImplTest, EndScan) {
   NearbyPresenceService::ScanFilter filter(
-      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE,
+      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE_GROUP,
       /*actions=*/{});
   FakeScanDelegate scan_delegate;
 
@@ -364,7 +403,7 @@ TEST_F(NearbyPresenceServiceImplTest, EndScan) {
 
 TEST_F(NearbyPresenceServiceImplTest, EndScanBeforeStart) {
   NearbyPresenceService::ScanFilter filter(
-      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE,
+      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE_GROUP,
       /*actions=*/{});
   FakeScanDelegate scan_delegate;
 
@@ -433,7 +472,7 @@ TEST_F(NearbyPresenceServiceImplTest, InvalidPushNotificationClientId) {
 
 TEST_F(NearbyPresenceServiceImplTest, NullProcessReference) {
   NearbyPresenceService::ScanFilter filter(
-      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE,
+      ::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE_GROUP,
       /*actions=*/{});
   FakeScanDelegate scan_delegate;
 

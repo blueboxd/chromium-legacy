@@ -67,7 +67,6 @@ class ChromeUserManagerImpl
   bool IsDeprecatedSupervisedAccountId(
       const AccountId& account_id) const override;
   bool IsValidDefaultUserImageId(int image_index) const override;
-  bool IsEnterpriseManaged() const override;
 
   // DeviceSettingsService::Observer:
   void OwnershipStatusChanged() override;
@@ -142,7 +141,7 @@ class ChromeUserManagerImpl
   // Creates a user for the given device local account.
   std::unique_ptr<user_manager::User> CreateUserFromDeviceLocalAccount(
       const AccountId& account_id,
-      const policy::DeviceLocalAccount::Type type) const;
+      const policy::DeviceLocalAccountType type) const;
 
   void UpdateOwnerId();
 

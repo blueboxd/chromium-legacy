@@ -144,8 +144,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       data.initialize_at_minimum_page_scale();
   out->smart_insert_delete_enabled = data.smart_insert_delete_enabled();
   out->spatial_navigation_enabled = data.spatial_navigation_enabled();
-  out->fake_no_alloc_direct_call_for_testing_enabled =
-      data.fake_no_alloc_direct_call_for_testing_enabled();
   out->v8_cache_options = data.v8_cache_options();
   out->record_whole_document = data.record_whole_document();
   out->stylus_handwriting_enabled = data.stylus_handwriting_enabled();
@@ -219,7 +217,8 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->require_transient_activation_for_html_fullscreen =
       data.require_transient_activation_for_html_fullscreen();
   out->in_forced_colors = data.in_forced_colors();
-  out->browser_preferred_color_scheme = data.browser_preferred_color_scheme();
+  out->preferred_root_scrollbar_color_scheme =
+      data.preferred_root_scrollbar_color_scheme();
   out->preferred_color_scheme = data.preferred_color_scheme();
   out->preferred_contrast = data.preferred_contrast();
   out->picture_in_picture_enabled = data.picture_in_picture_enabled();

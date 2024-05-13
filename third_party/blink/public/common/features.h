@@ -569,6 +569,15 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeAlwaysReuseBidderContext);
 // Reuse a single V8 context to score all ads in a seller worklet.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeAlwaysReuseSellerContext);
 
+// Feature params for feature kFledgeRealTimeReporting.
+// Epsilon of Rappor noise algorithm.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
+    kFledgeRealTimeReportingEpsilon;
+// Total number of buckets supported for real time reporting. Supported buckets
+// will be [0, kFledgeRealTimeReportingNumBuckets).
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kFledgeRealTimeReportingNumBuckets;
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kForceWebContentsDarkMode);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkInversionMethod>
     kForceDarkInversionMethodParam;
@@ -1169,6 +1178,13 @@ BLINK_COMMON_EXPORT extern const char kPrerender2MemoryThresholdParamName[];
 BLINK_COMMON_EXPORT extern const char
     kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[];
 
+// Enables the prerendering page to perform prepaint document lifecycle updates
+// before activation. See https://crbug.com/336963892.
+// TODO( https://crbug.com/336963892): Make the expected DocumentLifecycle
+// status a feature parameter.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kPrerender2EarlyDocumentLifecycleUpdate);
+
 // Enables to run prerendering for new tabs (e.g., target="_blank").
 // See https://crbug.com/1350676.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InNewTab);
@@ -1501,6 +1517,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kSpeculativeServiceWorkerWarmUpOnIdleTimeout;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStopInBackground);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStreamlineRendererInit);
 
 // Stylus gestures for editable web content.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStylusRichGestures);

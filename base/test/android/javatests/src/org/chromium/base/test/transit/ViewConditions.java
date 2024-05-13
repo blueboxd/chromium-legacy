@@ -55,9 +55,13 @@ public class ViewConditions {
         }
 
         @Override
-        public ConditionStatus check() throws Exception {
+        protected ConditionStatus checkWithSuppliers() throws Exception {
             ConditionStatus gateStatus = mGate.check();
             String gateMessage = gateStatus.getMessageAsGate();
+            if (gateStatus.isAwaiting()) {
+                return notFulfilled(gateMessage);
+            }
+
             if (!gateStatus.isFulfilled()) {
                 return fulfilled(gateMessage);
             }
@@ -92,7 +96,7 @@ public class ViewConditions {
         }
 
         @Override
-        public ConditionStatus check() {
+        protected ConditionStatus checkWithSuppliers() {
             ViewInteraction viewInteraction = onView(mMatcher);
             String[] message = new String[1];
             try {
@@ -185,7 +189,7 @@ public class ViewConditions {
         }
 
         @Override
-        public ConditionStatus check() {
+        protected ConditionStatus checkWithSuppliers() {
             try {
                 onView(mMatcher).check(doesNotExist());
                 return fulfilled();

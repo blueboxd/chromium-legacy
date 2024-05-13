@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class InlineBreakToken;
 class InlineChildLayoutContext;
 class InlineLayoutAlgorithm;
 class InlineLayoutStateStack;
@@ -26,8 +27,13 @@ class LogicalLineBuilder {
  public:
   LogicalLineBuilder(InlineNode node,
                      const ConstraintSpace& constraint_space,
+                     const InlineBreakToken* break_token,
                      InlineLayoutStateStack* state_stack,
                      InlineChildLayoutContext* context);
+
+  void RebuildBoxStates(const LineInfo& line_info,
+                        wtf_size_t start_item_index,
+                        wtf_size_t end_item_index);
 
   // `main_line_helper` can be nullptr if the line is for ruby annotations.
   void CreateLine(LineInfo* line_info,
@@ -46,17 +52,15 @@ class LogicalLineBuilder {
     return has_relative_positioned_items_;
   }
 
-  InlineBoxState* HandleOpenTag(const InlineItem&,
-                                const InlineItemResult&,
-                                LogicalLineItems*,
-                                InlineLayoutStateStack*) const;
-
  private:
   InlineBoxState* HandleItemResults(const LineInfo& line_info,
                                     InlineItemResults& line_items,
                                     LogicalLineItems* line_box,
                                     InlineLayoutAlgorithm* main_line_helper,
                                     InlineBoxState* box);
+  InlineBoxState* HandleOpenTag(const InlineItem&,
+                                const InlineItemResult&,
+                                LogicalLineItems*);
   InlineBoxState* HandleCloseTag(const InlineItem&,
                                  const InlineItemResult&,
                                  LogicalLineItems* line_box,
@@ -97,6 +101,7 @@ class LogicalLineBuilder {
 
   InlineNode node_;
   const ConstraintSpace& constraint_space_;
+  const InlineBreakToken* break_token_;
   InlineLayoutStateStack* box_states_;
   InlineChildLayoutContext* context_;
   const FontBaseline baseline_type_;

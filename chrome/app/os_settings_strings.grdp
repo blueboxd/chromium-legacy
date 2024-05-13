@@ -1238,6 +1238,16 @@
   <message name="IDS_SETTINGS_ALWAYS_MOVE_OFFICE_TO_ONEDRIVE_PREFERENCE_LABEL" desc="Label for the preference that allows users to always copy/move files to OneDrive without asking for confirmation.">
     Ask before copying or moving Microsoft files to Microsoft OneDrive
   </message>
+  <!--TODO(b/247049860): Finalize strings for MirrorSync. -->
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_SECTION_TITLE" desc="Label for section title which includs options to allow user tweak file sync configurations." translateable="false">
+    File Sync
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_MIRROR_SYNC_TOGGLE_LABEL" desc="Label for backup mode which allow user to toggle of Mirror Sync." translateable="false">
+    Backup your local files to Drive
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_MIRROR_SYNC_TOGGLE_DESCRIPTION" desc="Description for backup mode which allow user to toggle of Mirror Sync." translateable="false">
+    Backup all your files under My files to Google Drive.
+  </message>
 
   <!-- Accessibility -->
   <message name="IDS_SETTINGS_A11Y_TABLET_MODE_SHELF_BUTTONS_LABEL" desc="The name of a setting within accessibility settings that controls whether ChromeOS system shelf navigation buttons (for going back, home, or to overview) should be shown when the device is in tablet mode.">
@@ -1410,8 +1420,8 @@
   <message name="IDS_SETTINGS_CARET_BLINK_INTERVAL_LABEL" desc="The label for a slider that allows users to pick the blink rate of their text insertion cursor.">
     Text cursor blink rate
   </message>
-  <message name="IDS_SETTINGS_CARET_BLINK_INTERVAL_OFF" desc="The label for the minimum value on a slider that turns off the caret blink rate (so the caret is always steady on).">
-    Off
+  <message name="IDS_SETTINGS_CARET_BLINK_INTERVAL_OFF" desc="The label for the minimum value on a slider that turns off the caret blink rate (so the caret does not blink).">
+    Don't blink
   </message>
   <message name="IDS_SETTINGS_CARET_BLINK_INTERVAL_FAST" desc="The label for the maximum value on a slider that makes the caret blink rate faster than normal.">
     Fast
@@ -1748,9 +1758,6 @@ Use Ctrl + Alt + Brightness down to zoom out.
   </message>
   <message name="IDS_OS_SETTINGS_ACCESSIBILITY_MOUSE_KEYS_DESCRIPTION" desc="Description of the mouse keys setting toggle." translateable="false">
     Use your Chromebook keyboard or a numeric keypad to control the cursor
-  </message>
-  <message name="IDS_OS_SETTINGS_ACCESSIBILITY_MOUSE_KEYS_SHORTCUT_TO_PAUSE" desc="Description of the setting to disable mouse keys with a keyboard shortcut." translateable="false">
-    Press ctrl key 5 times to pause mouse keys
   </message>
   <message name="IDS_OS_SETTINGS_ACCESSIBILITY_MOUSE_KEYS_DISABLE_IN_TEXT_FIELDS" desc="Description of the setting to disable mouse keys in text fields." translateable="false">
     Temporarily disable mouse keys when you are in a text field.  Press esc to resume.
@@ -6021,7 +6028,7 @@ Press an assigned switch or key to remove assignment.
     right alt
   </message>
   <message name="IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_FUNCTION" translateable="false" desc="In keyboard remap keys subpage, the dropdown list item for a function key.">
-    function
+    fn
   </message>
   <message name="IDS_SETTINGS_PER_DEVICE_CONNECTED_A11Y_LABEL" desc="The message announced to screen readers when a device is connected.">
     <ph name="DEVICE_NAME">$1<ex>Internal Keyboard</ex></ph> has been connected
@@ -6172,6 +6179,9 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   </message>
   <message name="IDS_OS_SETTINGS_APPS_MENU_ITEM_DESCRIPTION" desc="Description for the Apps menu item in the left menu.">
     Notifications, Google Play
+  </message>
+  <message name="IDS_OS_SETTINGS_APPS_MENU_ITEM_DESCRIPTION_ARC_UNAVAILABLE" desc="Description for the Apps menu item in the left menu, when ARC is unavailable.">
+    Notifications
   </message>
   <message name="IDS_SETTINGS_APPS_LINK_TEXT" desc="The label for the button which links to the App Management page.">
     Manage your apps
@@ -6407,6 +6417,15 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   <message name="IDS_SETTINGS_STORAGE_ITEM_SYSTEM" desc="In Device Settings > Storage, label for the total system size, difference between the size of the filesystem and the size of all items listed on the storage page.">
     System
   </message>
+  <message name="IDS_SETTINGS_STORAGE_ITEM_ENCRYPTION_LABEL" desc="In Device Settings > Storage, label for the algorithm used for storage encryption.">
+    Encrypted using
+  </message>
+  <message name="IDS_SETTINGS_STORAGE_ITEM_ENCRYPTION_AES_128" desc="In Device Settings > Storage, string for the algorithm used for storage encryption.">
+    AES-128
+  </message>
+  <message name="IDS_SETTINGS_STORAGE_ITEM_ENCRYPTION_AES_256" desc="In Device Settings > Storage, string for the algorithm used for storage encryption.">
+    AES-256
+  </message>
 
   <!-- Privacy Page -->
   <if expr="reven">
@@ -6596,8 +6615,14 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   <message name="IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_TITLE" desc="The title of the geolocation row under the Privacy controls (aka Privacy Hub) os-settings page.">
     Location access
   </message>
-  <message name="IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_DESCRIPTION" desc="The description of the geolocation row under the Privacy controls (aka Privacy Hub) os-settings page. Displays the system overivew for geolocation usage.">
-    Manage location access for apps, websites and system services. Location may use sources like Wi-Fi, mobile networks, and sensors to help estimate your device's location. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  <message name="IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_ALLOWED_SUBTEXT" desc="The subtext of the geolocation row under the Privacy controls (aka Privacy Hub) os-settings page. Shown when the system geolocation state is allowed, explaining how the system is affected.">
+    Apps and websites with the location permission, as well as system services, can use your location
+  </message>
+  <message name="IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_ONLY_ALLOWED_FOR_SYSTEM_SUBTEXT" desc="The subtext of the geolocation row under the Privacy controls (aka Privacy Hub) os-settings page. Shown when the system geolocation state is only-allowed-for-system, explaining how the system is affected.">
+    Only system services can use your location
+  </message>
+  <message name="IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_DISALLOWED_SUBTEXT" desc="The subtext of the geolocation row under the Privacy controls (aka Privacy Hub) os-settings page. Shown when the system geolocation state is blocked, explaining how the system is affected.">
+    Location access is blocked
   </message>
   <message name="IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ACCESS_LEVEL_ALLOWED" desc="In Geolocation setting subpage (under Privacy Controls), Dropdown list item to set system-wide geolocation access level. ">
     Allowed
@@ -6696,6 +6721,9 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   </message>
   <message name="IDS_OS_SETTINGS_PRIVACY_HUB_SYSTEM_SERVICES_SECTION_TITLE" desc="The title of the System services section of the privacy hub sensor subpages.">
     System services
+  </message>
+  <message name="IDS_OS_SETTINGS_PRIVACY_HUB_SYSTEM_SERVICES_GEOLOCATION_NOT_CONFIGURED" desc="The sub-label displayed in the rows of the System services section of the privacy hub geolocation subpage, when the respective feature is not configured to use geolocation service (e.g. time zone is selected from the static list, not set to be resolved automatically)">
+    Manually set, not using location
   </message>
   <message name="IDS_OS_SETTINGS_PRIVACY_HUB_SYSTEM_SERVICES_ALLOWED_TEXT" desc="The sub-label displayed in the rows of the System services section of the privacy hub sensor subpages when sensor access is allowed.">
     Allowed

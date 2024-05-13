@@ -57,9 +57,6 @@
     <message name="IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME" desc="Section title for the 'Get the most out of Chrome' page.">
       Get the most out of Chrome
     </message>
-    <message name="IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_PAGE_BUTTON" desc="Accessibility description for a button navigating the user to the 'Get the most out of Chromne' page.">
-      Get the most out of Chrome, page
-    </message>
     <message name="IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_BETTER_FOR_YOU" desc="Title of the 'Chrome makes the web work better for you' section of the 'Get the most out of Chrome' page.">
       Chrome makes the web work better for you
     </message>
@@ -373,6 +370,9 @@
   </message>
   <message name="IDS_SETTINGS_SHOW_BOOKMARKS_BAR" desc="Label for the checkbox which enables or disables showing the bookmarks bar in the toolbar.">
     Show bookmarks bar
+  </message>
+  <message name="IDS_SETTINGS_SHOW_TAB_GROUPS_IN_BOOKMARKS_BAR" desc="Label for the checkbox which enables or disables showing saved tab groups in bookmarks bar.">
+    Show tab groups in bookmarks bar
   </message>
   <message name="IDS_SETTINGS_HOVER_CARD_TITLE" desc="Title for the section in appearance settings for configuring what gets displayed in tab hovercards.">
     Tab hover preview card
@@ -1117,16 +1117,9 @@
   <message name="IDS_SETTINGS_CLEAR_COOKIES" desc="Checkbox for deleting Cookies and other site data">
     Cookies and other site data
   </message>
-  <if expr="not is_macosx">
-    <message name="IDS_SETTINGS_CLEAR_PASSWORDS" desc="Checkbox for deleting Passwords and other sign-in data">
-      Passwords and other sign-in data
-    </message>
-  </if>
-  <if expr="is_macosx">
-    <message name="IDS_SETTINGS_CLEAR_PASSWORDS" desc="Checkbox for deleting Passwords and passkeys. Refer to Glossary for the translation of passkey.">
-      Passwords and passkeys
-    </message>
-  </if>
+  <message name="IDS_SETTINGS_CLEAR_PASSWORDS" desc="Checkbox for deleting Passwords and other sign-in data">
+    Passwords and other sign-in data
+  </message>
   <message name="IDS_SETTINGS_CLEAR_FORM_DATA" desc="Checkbox for deleting form data saved for Autofill">
     Autofill form data
   </message>
@@ -1246,6 +1239,24 @@
   </message>
   <message name="IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_CHOOSE_DISCARD_TIME_ARIA_LABEL" desc="Accessibility label which will be read by screen readers when focus enters the dropdown menu in the second option of the memory saver radio group. The dropdown allows the user to select the time before a tab is discarded by memory saver.">
     Choose time range
+  </message>
+  <message name="IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_CONSERVATIVE_LABEL" desc="Label for the conservative memory saver aggressiveness option">
+    Moderate
+  </message>
+  <message name="IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_MEDIUM_LABEL" desc="Label for the medium memory saver aggressiveness option">
+    Balanced (recommended)
+  </message>
+  <message name="IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_AGGRESSIVE_LABEL" desc="Label for the aggressive memory saver aggressiveness option">
+    Maximum
+  </message>
+  <message name="IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_CONSERVATIVE_DESCRIPTION" desc="Description for the conservative memory saver aggressiveness option">
+    Get moderate memory savings. Your tabs become inactive after a longer period of time.
+  </message>
+  <message name="IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_MEDIUM_DESCRIPTION" desc="Description for the medium memory saver aggressiveness option">
+    Get balanced memory savings. Your tabs become inactive after an optimal period of time.
+  </message>
+  <message name="IDS_SETTINGS_PERFORMANCE_MEMORY_SAVER_MODE_AGGRESSIVE_DESCRIPTION" desc="Description for the aggressive memory saver aggressiveness option">
+    Get maximum memory savings. Your tabs become inactive after a shorter period of time.
   </message>
   <message name="IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_BUTTON_ARIA_LABEL" desc="Accessibility label which will be read by screen readers when focusing the tab discarding exceptions list add button. Sites added to the list will not be discarded by memory saver.">
     Add to the "always keep these sites active" list
@@ -1511,6 +1522,20 @@
       </message>
     </if>
   </if>
+
+  <!-- Offer Writing Help Page -->
+  <message name="IDS_SETTINGS_OFFER_WRITING_HELP_TOGGLE_LABEL" desc="Label of the setting that enables the feature that provides writing help suggestions.">
+    Offer writing help
+  </message>
+  <message name="IDS_SETTINGS_OFFER_WRITING_HELP_TOGGLE_SUB_LABEL" desc="Sub-label of the setting that enables the feature that provides writing help suggestions.">
+    "Help me write" can automatically open when a text box on a site can be filled with short-form content
+  </message>
+  <message name="IDS_SETTINGS_OFFER_WRITING_HELP_ENABLED_SUB_LABEL" desc="Sub-label for the site settings writing help page link, used when the offer writing help preference is enabled.">
+    Allow "Help me write" to automatically open
+  </message>
+  <message name="IDS_SETTINGS_OFFER_WRITING_HELP_DISABLED_SUB_LABEL" desc="Sub-label for the site settings writing help page link, used when the offer writing help preference is disabled.">
+    Don't allow "Help me write" to automatically open
+  </message>
 
   <!-- Anti-abuse Page -->
   <message name="IDS_SETTINGS_ANTI_ABUSE_ENABLED_SUB_LABEL" desc="The label used for the anti-abuse site settings sub-label when the anti-abuse setting is turned on.">
@@ -3316,14 +3341,17 @@
   <message name="IDS_SETTINGS_TRACKING_PROTECTION_ADVANCED_LABEL" desc="Label for a section on the Tracking Protection settings page containing advanced options.">
     Advanced
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_LABEL" desc="Label for a toggle that lets users turn on IP protection to hide their IP address." translateable="false">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_LABEL" desc="Label for a toggle that controls the IP protection feature." translateable="false">
     Hide your IP address
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_SUB_LABEL" desc="Sub-label for the IP protection toggle. Explains that the feature only works for signed-in users and that some requests will be sent through privacy servers when the feature is on. Provides a link to a help center article." translateable="false">
-    When you’re signed in to Chrome, this setting can limit what suspected trackers can see as you browse. When a page loads, some requests for content get sent through privacy servers. Learn more about <ph name="LINK_BEGIN">&lt;a href="#" aria-label="$1" aria-description="$2" target="_blank"&gt;</ph>how IP protection works<ph name="LINK_END">&lt;/a&gt;</ph>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_SUB_LABEL" desc="Sub-label for the IP protection toggle. Explains that the feature only works for signed-in users and that some traffic may be sent through privacy servers when the feature is on." translateable="false">
+    When you’re signed in to Chrome, some of your traffic may be sent through privacy servers if Chrome suspects a site may be tracking you
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_LEARN_MORE_ARIA_LABEL" desc="Screenreader text for the help center article link in the sub-label text of the IP protection toggle." translateable="false">
-    Learn more about hiding your IP address
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_FINGERPRINTING_PROTECTION_TOGGLE_LABEL" desc="Label for a toggle that controls the fingerprinting protection feature." translateable="false">
+    Limit digital fingerprinting
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_FINGERPRINTING_PROTECTION_TOGGLE_SUB_LABEL" desc="Sub-label for the fingerprinting protection toggle. Explains that the feature helps prevent sites from tracking users via identifiers related to their device or browser." translateable="false">
+    This setting makes it harder for sites to identify you using data about your device and browser, such as your device model or browser version
   </message>
   <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_LABEL" desc="Label for a toggle that blocks all third-party cookies when on.">
     Block all third-party cookies
@@ -3853,6 +3881,9 @@
   <message name="IDS_SETTINGS_PEOPLE_SIGN_IN" desc="The label of the button that lets user sign-in to chrome.">
     Sign in
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_VERIFY_ACCOUNT_BUTTON" desc="This button is shown in Chrome's Settings, in the 'You and Google' section. It appears when the user needs to sign back in to Chrome in order to continue saving and using data (like bookmarks, passwords, or payment methods) in their Google Account. When the user clicks this button, they will be prompted to enter their Google Account credentials.">
+    Verify it's you
+  </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION" desc="The text to display in the 'Sign out of Chrome' dialog to stop syncing for managed profiles.">
     Because this account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>, your bookmarks, history, passwords, and other settings will be cleared from this device. However, your data will remain stored in your Google Account and can be managed on <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
   </message>
@@ -3914,9 +3945,6 @@
   <message name="IDS_SETTINGS_SYNC_WILL_START" desc="The message to tell users that sync will start once they leave the sync setup page.">
     Sync will start once you leave sync settings
   </message>
-  <message name="IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT" desc="Label for the button that takes the user to the Google Account website.">
-    Manage your Google Account
-  </message>
   <message name="IDS_SETTINGS_USER_EVENTS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables recording user events.">
     Activity and interactions
   </message>
@@ -3953,6 +3981,17 @@
   <message name="IDS_SETTINGS_SIGNIN_CHROME_SIGNIN_OPTION_ALWAYS_ASK" desc="One of three options for the setting is called 'Sign in to Chrome when you sign in to other Google services'. When the user chooses this option, the user will be asked whether they want to sign in to Chrome after they sign in to a Google service (like Gmail) using Chrome. The verb tense should be descriptive, not imperative.">
     Ask me every time
   </message>
+
+  <if expr="not use_titlecase">
+    <message name="IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT" desc="Label for the button that takes the user to the Google Account website.">
+      Manage your Google Account
+    </message>
+  </if>
+  <if expr="use_titlecase">
+    <message name="IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT" desc="Label for the button that takes the user to the Google Account website.">
+      Manage Your Google Account
+    </message>
+  </if>
 
   <if expr="not is_chromeos">
     <!-- Import Settings Dialog -->

@@ -19,6 +19,7 @@
 #include "crypto/random.h"
 #include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/enclave/constants.h"
+#include "device/fido/enclave/metrics.h"
 #include "device/fido/enclave/transact.h"
 #include "device/fido/enclave/types.h"
 #include "device/fido/fido_constants.h"
@@ -120,6 +121,17 @@ void EnclaveAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
         ui_request_->secret.has_value());
   CHECK(ui_request_->key_version.has_value());
 
+  if (base::ranges::any_of(request.exclude_list, [this](const auto& excluded) {
+        return base::ranges::any_of(ui_request_->existing_cred_ids,
+                                    [&excluded](const auto& existing_cred_id) {
+                                      return existing_cred_id == excluded.id;
+                                    });
+      })) {
+    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrCredentialExcluded,
+                            std::nullopt);
+    return;
+  }
+
   pending_make_credential_request_ =
       std::make_unique<PendingMakeCredentialRequest>(
           std::move(request), std::move(options), std::move(callback));
@@ -131,6 +143,8 @@ void EnclaveAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
             weak_factory_.GetWeakPtr()));
     return;
   }
+
+  RecordEvent(Event::kMakeCredential);
 
   Transact(network_context_factory_, GetEnclaveIdentity(),
            std::move(ui_request_->access_token),
@@ -187,6 +201,8 @@ void EnclaveAuthenticator::GetAssertion(CtapGetAssertionRequest request,
             weak_factory_.GetWeakPtr()));
     return;
   }
+
+  RecordEvent(Event::kGetAssertion);
 
   Transact(network_context_factory_, GetEnclaveIdentity(),
            std::move(ui_request_->access_token),

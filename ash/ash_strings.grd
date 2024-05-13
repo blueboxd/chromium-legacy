@@ -950,6 +950,9 @@ Style notes:
       <message name="IDS_ASH_FEATURE_TILE_DOWNLOAD_IN_PROGRESS_TITLE" desc="The title of a feature tile that currently has an in-progress download.">
         Downloading <ph name="DOWNLOAD_PERCENT">$1<ex>7</ex></ph>%
       </message>
+      <message name="IDS_ASH_FEATURE_TILE_DOWNLOAD_ERROR" desc="The title of a feature tile that has an error downloading.">
+        <ph name="FEATURE_NAME">$1<ex>Live Caption</ex></ph> is unavailable
+      </message>
 
       <!-- Upgrade notifications -->
       <message name="IDS_RELAUNCH_REQUIRED_TITLE_DAYS" desc="The title of a dialog that tells users the device must be restarted within two or more days.">
@@ -2447,6 +2450,9 @@ Style notes:
       </message>
       <message name="IDS_ASH_MOD3_KEY" desc="Name of ISOLevel5 (mod3) key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         mod3
+      </message>
+      <message name="IDS_ASH_FN_KEY" desc="Name of [Fn] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
+        fn
       </message>
 
       <!-- Dictation -->
@@ -7862,6 +7868,24 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_OPEN_SETTINGS_BUTTON" desc="Notification button text, if the user clicks on the button it will redirect them to the Settings App.">
         Open Settings
       </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_WELCOME_EXPERIENCE_KEYBOARD_TITLE" translateable="false" desc="Notification title to tell users that the keyboard is customizable.">
+        Customize your keyboard
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_WELCOME_EXPERIENCE_KEYBOARD" translateable="false" desc="The message shown to notify a user that the keyboard is customizable in settings.">
+        You can personalize settings for your <ph name="PERIPHERAL_NAME">$1<ex>Awesome Keyboard</ex></ph>
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_WELCOME_EXPERIENCE_TOUCHPAD_TITLE" translateable="false" desc="Notification title to tell users that the touchpad is customizable.">
+        Customize your touchpad
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_WELCOME_EXPERIENCE_TOUCHPAD" translateable="false" desc="The message shown to notify a user that the touchpad is customizable in settings.">
+        You can personalize settings for your <ph name="PERIPHERAL_NAME">$1<ex>Awesome Touchpad</ex></ph>
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_WELCOME_EXPERIENCE_POINTING_STICK_TITLE" translateable="false" desc="Notification title to tell users that the TrackPoint is customizable.">
+        Customize your TrackPoint
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_WELCOME_EXPERIENCE_POINTING_STICK" translateable="false" desc="The message shown to notify a user that the TrackPoint is customizable in settings.">
+        You can personalize settings for your <ph name="PERIPHERAL_NAME">$1<ex>Lexmark-Unicomp FSR</ex></ph>
+      </message>
       <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard has changed.">
         The right-click shortcut is updated to alt + click from <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> key + click
       </message>
@@ -7924,46 +7948,46 @@ To shut down the device, press and hold the power button on the device again.
       </message>
       <!-- TODO(b/330399248: Finalize and translate the shortcut notification strings. -->
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_NUDGE_TITLE" translateable="false" desc="Title of the pop up nudge to remind using fn key.">
-        Use your Fn Key
+        Use your fn Key
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus top row key.">
-        Press Fn + top Row key instead of search + top row key
+        Press fn + the action key
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_CAPS_LOCK_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus top row key.">
-        Press Fn + Right-alt key to switch caps lock
+        Press fn + right alt for CAPS LOCK
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_UP_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus up arrow key.">
-        Press Fn + up arrow key in stead of search + up arrow key
+        Press fn + up for page up
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_DOWN_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus down arrow key.">
-        Press Fn + down arrow key in stead of search + down arrow key
+        Press fn + down for page down
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_LEFT_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus left arrow key.">
-        Press Fn + left arrow key in stead of search + left arrow key
+        Press fn + left for home
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_RIGHT_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus right arrow key.">
-        Press Fn + right arrow key in stead of search + right arrow key
+        Press fn + right for end
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_BACKSPACE_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus backspace key.">
-        Press Fn + backspace in stead of search + backspace key
+        Press fn + backspace for delete
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_SHIFT_BACKSPACE_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus shift backspace key.">
         Press Fn + shift + backspace in stead of search + shift + backspace key
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_UP_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus up arrow key.">
-        Press Fn + up arrow key in stead of alt + up arrow key
+        Press fn + up for page up
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_DOWN_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus down arrow key.">
-        Press Fn + down arrow key in stead of alt + down arrow key
+        Press fn + down for page down
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_LEFT_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus left arrow key.">
-        Press Fn + left arrow key in stead of alt + left arrow key
+        Press fn + left for home
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_RIGHT_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus right arrow key.">
-        Press Fn + right arrow key in stead of allt + right arrow key
+        Press fn + right for end
       </message>
       <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_BACKSPACE_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus backspace key.">
-        Press Fn + backspace in stead of alt + backspace key
+        Press fn + backspace for delete
       </message>
       <!-- Modifier key names -->
       <message name="IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_LAUNCHER" desc="Name of the [Launcher] key. This key has a different name and keyboard glyph/icon depending on the device. This is the string for when it is called Launcher and has a circle/launcher icon.">
@@ -7995,6 +8019,9 @@ To shut down the device, press and hold the power button on the device again.
       </message>
       <message name="IDS_SETTINGS_CUSTOMIZATION_MIDDLE_BUTTON_DEFAULT_NAME" desc="The name of the middle mouse button on a mouse">
         Middle Button
+      </message>
+      <message name="IDS_SETTINGS_CUSTOMIZATION_TOP_BUTTON_DEFAULT_NAME" desc="The name of the top mouse button on a mouse">
+        Top Button
       </message>
       <message name="IDS_SETTINGS_CUSTOMIZATION_SIDE_BUTTON_DEFAULT_NAME" desc="The name of the side mouse button on a mouse">
         Side Button

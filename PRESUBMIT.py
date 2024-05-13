@@ -808,8 +808,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
           "content/browser/renderer_host/text_input_manager.cc",
           "content/browser/sandbox_parameters_mac.mm",
           "device/fido/mock_fido_device.cc",
-          "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.cc",
-          "extensions/browser/api/declarative_net_request/ruleset_matcher_unittest.cc",
           "gpu/command_buffer/tests/gl_webgl_multi_draw_test.cc",
           "gpu/config/gpu_control_list.cc",
           "media/audio/win/core_audio_util_win.cc",
@@ -1375,7 +1373,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       r'/\bstd::to_address\b',
       (
         'std::to_address is banned because it is not guaranteed to be',
-        'SFINAE-compatible. Use base::to_address instead.',
+        'SFINAE-compatible. Use base::to_address from base/types/to_address.h',
+        'instead.',
       ),
       True,
       [
@@ -3817,7 +3816,7 @@ def CheckPythonDevilInit(input_api, output_api):
         affected_file,
         files_to_skip=(_EXCLUDED_PATHS + input_api.DEFAULT_FILES_TO_SKIP + (
             r'^build/android/devil_chromium\.py',
-            r'^tools/bisect/.*',
+            r'^tools/bisect-builds\.py',
             r'^third_party/.*',
         )),
         files_to_check=[r'.*\.py$'])

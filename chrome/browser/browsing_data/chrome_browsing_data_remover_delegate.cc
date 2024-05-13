@@ -157,6 +157,8 @@
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck crbug.com/1125897
 #include "components/installedapp/android/jni_headers/PackageHash_jni.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -197,10 +199,6 @@
 #include "components/user_manager/user.h"
 #include "device/fido/cros/credential_store.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_MAC)
-#include "device/fido/mac/credential_store.h"
-#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/media/cdm_document_service_impl.h"
@@ -854,6 +852,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         ContentSettingsType::APP_BANNER, base::Time(), base::Time::Max(),
         website_settings_filter);
 
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, delete_begin_,
+        delete_end_, website_settings_filter);
+
 #if !BUILDFLAG(IS_ANDROID)
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::INTENT_PICKER_DISPLAY, delete_begin_, delete_end_,
@@ -865,10 +867,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, delete_begin_,
-        delete_end_, website_settings_filter);
-
-    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
-        ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, delete_begin_,
         delete_end_, website_settings_filter);
 
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
@@ -1397,6 +1395,24 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  //////////////////////////////////////////////////////////////////////////////
+  // DATA_TYPE_TABS
+  if (remove_mask & constants::DATA_TYPE_TABS) {
+#if BUILDFLAG(IS_ANDROID)
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Tabs"));
+
+    for (TabModel* tab_model : TabModelList::models()) {
+      if (tab_model->GetProfile() != profile_ || tab_model->IsOffTheRecord()) {
+        continue;
+      }
+
+      tab_model->CloseTabsNavigatedInTimeWindow(delete_begin, delete_end);
+    }
+#else   // BUILDFLAG(IS_ANDROID)
+    NOTIMPLEMENTED();
+#endif  // BUILDFLAG(IS_ANDROID)
+  }
 }
 
 void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(
@@ -1625,11 +1641,7 @@ void ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys(
 std::unique_ptr<device::fido::PlatformCredentialStore>
 ChromeBrowsingDataRemoverDelegate::MakeCredentialStore() {
   return
-#if BUILDFLAG(IS_MAC)
-      std::make_unique<device::fido::mac::TouchIdCredentialStore>(
-          ChromeWebAuthenticationDelegate::TouchIdAuthenticatorConfigForProfile(
-              profile_));
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       std::make_unique<
           device::fido::cros::PlatformAuthenticatorCredentialStore>();
 #else

@@ -4,16 +4,8 @@
 
 #include "components/autofill/core/browser/personal_data_manager.h"
 
-#include "base/functional/bind.h"
-#include "base/functional/callback.h"
-#include "base/functional/callback_helpers.h"
-#include "base/memory/raw_ptr.h"
-#include "base/observer_list.h"
 #include "components/autofill/core/browser/address_data_manager.h"
-#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.h"
-#include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/data_model/bank_account.h"
 #include "components/autofill/core/browser/manual_testing_import.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
@@ -66,11 +58,11 @@ PersonalDataManager::PersonalDataManager(
 
   Refresh();
 
-  AutofillMetrics::LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
+  AutofillMetrics::LogIsAutofillEnabledAtStartup(
+      address_data_manager_->IsAutofillProfileEnabled() ||
+      payments_data_manager_->IsAutofillPaymentMethodsEnabled());
 
-  // Potentially import profiles for testing. `Init()` is called whenever the
-  // corresponding Chrome profile is created. This is either during start-up or
-  // when the Chrome profile is changed.
+  // Potentially import addresses and credit cards for testing.
   MaybeImportDataForManualTesting(weak_factory_.GetWeakPtr());
 }
 
@@ -110,32 +102,6 @@ void PersonalDataManager::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
-  address_data_manager_->AddProfile(profile);
-}
-
-void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
-  address_data_manager_->UpdateProfile(profile);
-}
-
-void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
-  payments_data_manager_->AddCreditCard(credit_card);
-}
-
-void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
-  payments_data_manager_->UpdateCreditCard(credit_card);
-}
-
-void PersonalDataManager::ClearAllServerDataForTesting() {
-  payments_data_manager_->ClearAllServerDataForTesting();  // IN-TEST
-}
-
-void PersonalDataManager::AddServerCreditCardForTest(
-    std::unique_ptr<CreditCard> credit_card) {
-  payments_data_manager_->AddServerCreditCardForTest(
-      std::move(credit_card));  // IN-TEST
-}
-
 void PersonalDataManager::SetSyncServiceForTest(
     syncer::SyncService* sync_service) {
   address_data_manager_->SetSyncServiceForTest(sync_service);   // IN-TEST
@@ -148,57 +114,14 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   }
 }
 
-CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
-  return payments_data_manager_->GetCreditCardByGUID(guid);
-}
-
-CreditCard* PersonalDataManager::GetCreditCardByInstrumentId(
-    int64_t instrument_id) {
-  return payments_data_manager_->GetCreditCardByInstrumentId(instrument_id);
-}
-
-CreditCard* PersonalDataManager::GetCreditCardByServerId(
-    const std::string& server_id) {
-  return payments_data_manager_->GetCreditCardByServerId(server_id);
-}
-
 bool PersonalDataManager::IsDataLoaded() const {
   return address_data_manager_->has_initial_load_finished() &&
          payments_data_manager_->is_payments_data_loaded();
 }
 
-std::vector<AutofillProfile*> PersonalDataManager::GetProfiles(
-    AddressDataManager::ProfileOrder order) const {
-  return address_data_manager_->GetProfiles(order);
-}
-
-std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
-  return payments_data_manager_->GetCreditCards();
-}
-
-std::vector<const AutofillOfferData*>
-PersonalDataManager::GetActiveAutofillPromoCodeOffersForOrigin(
-    GURL origin) const {
-  return payments_data_manager_->GetActiveAutofillPromoCodeOffersForOrigin(
-      origin);
-}
-
-void PersonalDataManager::SetSyncingForTest(bool is_syncing_for_test) {
-  payments_data_manager_->SetSyncingForTest(is_syncing_for_test);
-}
-
 void PersonalDataManager::Refresh() {
   address_data_manager_->LoadProfiles();
   payments_data_manager_->Refresh();
-}
-
-std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest() const {
-  return payments_data_manager_->GetCreditCardsToSuggest();
-}
-
-bool PersonalDataManager::IsAutofillEnabled() const {
-  return address_data_manager_->IsAutofillProfileEnabled() ||
-         payments_data_manager_->IsAutofillPaymentMethodsEnabled();
 }
 
 void PersonalDataManager::NotifyPersonalDataObserver() {

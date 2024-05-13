@@ -31,7 +31,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -61,6 +60,7 @@
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 
 namespace arc {
 namespace {
@@ -887,11 +887,9 @@ TEST_F(ArcVmClientAdapterTest, DoesNotGetArcInstanceStoppedOnNestedInstance) {
   Observer child_observer(run_loop_factory, nullptr);
   Observer parent_observer(run_loop_factory, &child_observer);
   adapter()->AddObserver(&parent_observer);
-  base::ScopedClosureRunner teardown(base::BindOnce(
-      [](ArcClientAdapter* adapter, Observer* parent_observer) {
-        adapter->RemoveObserver(parent_observer);
-      },
-      adapter(), &parent_observer));
+  absl::Cleanup teardown = [this, &parent_observer] {
+    adapter()->RemoveObserver(&parent_observer);
+  };
 
   SendVmStoppedSignal(vm_tools::concierge::STOP_VM_REQUESTED);
 
@@ -1713,6 +1711,56 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_NoLvmForEphemeralCryptohome) {
   const auto& req = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_TRUE(HasDiskImage(req, kCreatedDiskImagePath));
   EXPECT_TRUE(req.enable_virtio_blk_data());
+}
+
+TEST_F(ArcVmClientAdapterTest, DataBlockIoScheduler_Enabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{arc::kLvmApplicationContainers, {}},
+       {arc::kBlockIoScheduler, {{"data_block_io_scheduler", "true"}}}},
+      {});
+
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.use_virtio_blk_data = true;
+
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(req.enable_data_block_io_scheduler());
+}
+
+TEST_F(ArcVmClientAdapterTest, DataBlockIoScheduler_Disabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{arc::kLvmApplicationContainers, {}},
+       // Disabled.
+       {arc::kBlockIoScheduler, {{"data_block_io_scheduler", "false"}}}},
+      {});
+
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.use_virtio_blk_data = true;
+
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(req.enable_data_block_io_scheduler());
+}
+
+TEST_F(ArcVmClientAdapterTest, DataBlockIoScheduler_VirtioBlkDataIsDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{arc::kLvmApplicationContainers, {}},
+       {arc::kBlockIoScheduler, {{"data_block_io_scheduler", "true"}}}},
+      {});
+
+  StartParams start_params(GetPopulatedStartParams());
+  // virtio-blk /data is disabled.
+  start_params.use_virtio_blk_data = false;
+
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(req.enable_data_block_io_scheduler());
 }
 
 TEST_F(ArcVmClientAdapterTest, MetadataDisk_DisabledForArcT) {

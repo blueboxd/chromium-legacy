@@ -53,6 +53,14 @@ suite('SiteSettingsPage', function() {
           },
         },
       },
+      compose: {
+        proactive_nudge_enabled: {
+          enabled: {
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
+        },
+      },
     };
     document.body.appendChild(page);
     flush();
@@ -186,19 +194,6 @@ suite('SiteSettingsPage', function() {
     assertTrue(isChildVisible(
         page.shadowRoot!.querySelector('#advancedContentList')!,
         '#protected-content'));
-  });
-
-  // TODO(crbug.com/40244046): Remove after crbug/1378703 launched.
-  test('SiteDataLinkRow', async function() {
-    setupPage();
-    const expandButton =
-        page.shadowRoot!.querySelector<CrExpandButtonElement>('#expandContent');
-    assertTrue(!!expandButton);
-    expandButton.click();
-    await expandButton.updateComplete;
-
-    assertTrue(isChildVisible(
-        page.shadowRoot!.querySelector('#advancedContentList')!, '#site-data'));
   });
 
   test('SiteDataLinkRowSublabel', async function() {

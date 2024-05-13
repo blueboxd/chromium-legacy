@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
@@ -27,14 +29,44 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider;
 import org.chromium.chrome.browser.tab_ui.TabUiThemeUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabListMediator.TabGroupInfo;
+import org.chromium.chrome.browser.tasks.tab_management.TabProperties.TabActionState;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
 /** {@link org.chromium.ui.modelutil.SimpleRecyclerViewMcp.ViewBinder} for tab List. */
 class TabListViewBinder {
     private static final int INVALID_COLOR_ID = -1;
     private static final int TAB_GROUP_ICON_COLOR_LEVEL = 1;
+
+    /**
+     * Main entrypoint for binding TabListView
+     *
+     * @param view The view to bind to.
+     * @param model The model to bind.
+     * @param viewType The view type to bind.
+     */
+    public static void bindTab(
+            PropertyModel model, ViewGroup view, @Nullable PropertyKey propertyKey) {
+        assert view instanceof ViewLookupCachingFrameLayout;
+        @TabActionState Integer tabActionState = model.get(TabProperties.TAB_ACTION_STATE);
+        if (tabActionState == null) {
+            assert false : "TAB_ACTION_STATE must be set before initial bindTab call.";
+            return;
+        }
+
+        ((TabListView) view).setTabActionState(tabActionState);
+        bindListTab(model, (ViewLookupCachingFrameLayout) view, propertyKey);
+        if (tabActionState == TabActionState.CLOSABLE) {
+            bindClosableListTab(model, (ViewLookupCachingFrameLayout) view, propertyKey);
+        } else if (tabActionState == TabActionState.SELECTABLE) {
+            bindSelectableListTab(model, (ViewLookupCachingFrameLayout) view, propertyKey);
+        } else {
+            assert false : "Unsupported TabActionState provided to bindTab.";
+        }
+    }
 
     // TODO(crbug.com/40107066): Merge with TabGridViewBinder for shared properties.
     private static void bindListTab(
@@ -80,11 +112,12 @@ class TabListViewBinder {
 
     /**
      * Bind a closable tab to view.
+     *
      * @param model The model to bind.
      * @param view The view to bind to.
      * @param propertyKey The property that changed.
      */
-    public static void bindClosableListTab(
+    private static void bindClosableListTab(
             PropertyModel model, ViewGroup view, @Nullable PropertyKey propertyKey) {
         bindListTab(model, view, propertyKey);
 
@@ -96,11 +129,13 @@ class TabListViewBinder {
                             view.getContext(),
                             model.get(TabProperties.IS_INCOGNITO),
                             /* isSelected= */ false));
-        } else if (TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING == propertyKey) {
+        } else if (TabProperties.ACTION_BUTTON_DESCRIPTION_STRING == propertyKey) {
             view.findViewById(R.id.end_button)
                     .setContentDescription(
-                            model.get(TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING));
+                            model.get(TabProperties.ACTION_BUTTON_DESCRIPTION_STRING));
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
+            // Stub out the long click listener to avoid selection for closable tabs.
+            view.setOnLongClickListener(v -> true);
             if (model.get(TabProperties.TAB_SELECTED_LISTENER) == null) {
                 view.setOnClickListener(null);
             } else {
@@ -120,6 +155,53 @@ class TabListViewBinder {
                                     int tabId = model.get(TabProperties.TAB_ID);
                                     model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER).run(tabId);
                                 });
+            }
+        } else if (TabProperties.TAB_GROUP_INFO == propertyKey
+                || TabProperties.TAB_ID == propertyKey) {
+            @Nullable TabGroupInfo tabGroupInfo = model.get(TabProperties.TAB_GROUP_INFO);
+            ImageView actionButton = (ImageView) view.findViewById(R.id.end_button);
+            Resources res = view.getResources();
+
+            // Only change the drawable if the property key in question is for tab groups.
+            if (TabProperties.TAB_GROUP_INFO == propertyKey) {
+                if (tabGroupInfo.getIsTabGroup()) {
+                    actionButton.setImageDrawable(
+                            ResourcesCompat.getDrawable(
+                                    res,
+                                    R.drawable.ic_more_vert_24dp,
+                                    view.getContext().getTheme()));
+                } else {
+                    int closeButtonSize =
+                            (int) res.getDimension(R.dimen.tab_grid_close_button_size);
+                    Bitmap bitmap = BitmapFactory.decodeResource(res, R.drawable.btn_close);
+                    Bitmap.createScaledBitmap(bitmap, closeButtonSize, closeButtonSize, true);
+                    actionButton.setImageBitmap(bitmap);
+                }
+            }
+
+            // Note: TAB_ID changes are NOT flag guarded, so this code will still be used.
+            // However, TAB_GROUP_INFO will never be set since it is flag guarded and will be
+            // defaulted to null so in theory this should never cause problems. If the flag is
+            // set ensure that this specific click listener is only set for tab groups.
+            if (tabGroupInfo != null && tabGroupInfo.getIsTabGroup()) {
+                actionButton.setOnClickListener(
+                        TabListGroupMenuCoordinator.getTabListGroupMenuOnClickListener(
+                                model.get(TabProperties.ON_MENU_ITEM_CLICKED_CALLBACK),
+                                model.get(TabProperties.TAB_ID),
+                                model.get(TabProperties.IS_INCOGNITO),
+                                tabGroupInfo.getShouldShowDeleteTabGroup()));
+            } else {
+                if (model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER) == null) {
+                    view.findViewById(R.id.end_button).setOnClickListener(null);
+                } else {
+                    view.findViewById(R.id.end_button)
+                            .setOnClickListener(
+                                    v -> {
+                                        int tabId = model.get(TabProperties.TAB_ID);
+                                        model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER)
+                                                .run(tabId);
+                                    });
+                }
             }
         }
     }
@@ -165,11 +247,12 @@ class TabListViewBinder {
 
     /**
      * Bind a selectable tab to view.
+     *
      * @param model The model to bind.
      * @param view The view to bind to.
      * @param propertyKey The property that changed.
      */
-    public static void bindSelectableListTab(
+    private static void bindSelectableListTab(
             PropertyModel model, ViewGroup view, @Nullable PropertyKey propertyKey) {
         bindListTab(model, view, propertyKey);
 
@@ -177,32 +260,31 @@ class TabListViewBinder {
         final int defaultLevel = view.getResources().getInteger(R.integer.list_item_level_default);
         final int selectedLevel =
                 view.getResources().getInteger(R.integer.list_item_level_selected);
-        SelectableTabListView selectableTabListView = (SelectableTabListView) view;
+        TabListView tabListView = (TabListView) view;
 
         if (TabProperties.SELECTABLE_TAB_CLICKED_LISTENER == propertyKey) {
             View.OnClickListener onClickListener =
                     v -> {
                         model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);
-                        selectableTabListView.onClick();
+                        tabListView.onClick(tabListView);
                     };
             View.OnLongClickListener onLongClickListener =
                     v -> {
                         model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);
-                        return selectableTabListView.onLongClick(selectableTabListView);
+                        return tabListView.onLongClick(tabListView);
                     };
-            selectableTabListView.setOnClickListener(onClickListener);
-            selectableTabListView.setOnLongClickListener(onLongClickListener);
+            tabListView.setOnClickListener(onClickListener);
+            tabListView.setOnLongClickListener(onLongClickListener);
 
             // The row should act as one large button.
-            ImageView endButton = selectableTabListView.findViewById(R.id.end_button);
+            ImageView endButton = tabListView.findViewById(R.id.end_button);
             endButton.setOnClickListener(onClickListener);
             endButton.setOnLongClickListener(onLongClickListener);
             endButton.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         } else if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
             assert model.get(TabProperties.TAB_SELECTION_DELEGATE) != null;
-            selectableTabListView.setSelectionDelegate(
-                    model.get(TabProperties.TAB_SELECTION_DELEGATE));
-            selectableTabListView.setItem(tabId);
+            tabListView.setSelectionDelegate(model.get(TabProperties.TAB_SELECTION_DELEGATE));
+            tabListView.setItem(tabId);
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             boolean isSelected = model.get(TabProperties.IS_SELECTED);
             ImageView actionButton = (ImageView) view.findViewById(R.id.end_button);

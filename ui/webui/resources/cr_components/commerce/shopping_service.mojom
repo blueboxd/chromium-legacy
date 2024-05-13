@@ -139,8 +139,9 @@ struct UrlInfo {
   url.mojom.Url url;
 };
 
-// Used by the price tracking section in side panel to bootstrap
-// bidirectional communication.
+// Used by surfaces like the price tracking section in side panel, product
+// specifications, chrome://history etc, to bootstrap bidirectional
+// communication.
 interface ShoppingServiceHandlerFactory {
   // The WebUI calls this method when the page is first initialized.
   CreateShoppingServiceHandler(pending_remote<Page> page,
@@ -217,9 +218,13 @@ interface ShoppingServiceHandler {
   // Get all of a user's product specifications sets.
   GetAllProductSpecificationsSets() => (array<ProductSpecificationsSet> sets);
 
+  // Return product specification set corresponding to identifier |uuid|.
+  GetProductSpecificationsSetByUuid(mojo_base.mojom.Uuid uuid)
+      => (ProductSpecificationsSet? set);
+
   // Creates a new product specifications set and returns the new entity.
   AddProductSpecificationsSet(string name, array<url.mojom.Url> urls)
-      => (ProductSpecificationsSet created_set);
+      => (ProductSpecificationsSet? created_set);
 
   // Deletes a product specifications set given its UUID.
   DeleteProductSpecificationsSet(mojo_base.mojom.Uuid uuid);

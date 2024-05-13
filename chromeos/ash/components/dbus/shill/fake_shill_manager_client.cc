@@ -590,7 +590,8 @@ void FakeShillManagerClient::CreateP2PGroup(
                        ? *create_group_argument.passphrase
                        : "direct-passphrase")
               .Set(shill::kP2PGroupInfoFrequencyProperty, 1000)
-              .Set(shill::kP2PGroupInfoNetworkIDProperty, 1));
+              .Set(shill::kP2PGroupInfoNetworkIDProperty, 1)
+              .Set(shill::kP2PGroupInfoIPv4AddressProperty, "100.0.0.1"));
       SetManagerProperty(shill::kP2PGroupInfosProperty,
                          base::Value(std::move(group_owner_info)));
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
@@ -640,7 +641,8 @@ void FakeShillManagerClient::ConnectToP2PGroup(
                    connect_group_argument.frequency
                        ? static_cast<int>(*connect_group_argument.frequency)
                        : 1000)
-              .Set(shill::kP2PClientInfoNetworkIDProperty, 1));
+              .Set(shill::kP2PClientInfoNetworkIDProperty, 1)
+              .Set(shill::kP2PClientInfoIPv4AddressProperty, "100.0.0.1"));
       SetManagerProperty(shill::kP2PClientInfosProperty,
                          base::Value(std::move(group_owner_info)));
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
@@ -663,6 +665,7 @@ void FakeShillManagerClient::DestroyP2PGroup(
     const int shill_id,
     base::OnceCallback<void(base::Value::Dict result)> callback,
     ErrorCallback error_callback) {
+  recent_destroyed_group_id = shill_id;
   switch (simulate_destroy_p2p_group_result_) {
     case FakeShillSimulatedResult::kSuccess: {
       auto fake_success_result = base::Value::Dict().Set(
@@ -683,10 +686,15 @@ void FakeShillManagerClient::DestroyP2PGroup(
   }
 }
 
+int FakeShillManagerClient::GetRecentlyDestroyedP2PGroupId() {
+  return recent_destroyed_group_id;
+}
+
 void FakeShillManagerClient::DisconnectFromP2PGroup(
     const int shill_id,
     base::OnceCallback<void(base::Value::Dict result)> callback,
     ErrorCallback error_callback) {
+  recent_disconnected_group_id = shill_id;
   switch (simulate_disconnect_p2p_group_result_) {
     case FakeShillSimulatedResult::kSuccess: {
       auto fake_success_result = base::Value::Dict().Set(
@@ -705,6 +713,10 @@ void FakeShillManagerClient::DisconnectFromP2PGroup(
       // No callbacks get executed and the caller should eventually timeout.
       return;
   }
+}
+
+int FakeShillManagerClient::GetRecentlyDisconnectedP2PGroupId() {
+  return recent_disconnected_group_id;
 }
 
 ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {

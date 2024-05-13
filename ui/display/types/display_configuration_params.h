@@ -21,16 +21,14 @@ struct DISPLAY_TYPES_EXPORT DisplayConfigurationParams {
   DisplayConfigurationParams(DisplayConfigurationParams&& other);
   DisplayConfigurationParams(int64_t id,
                              const gfx::Point& origin,
-                             const display::DisplayMode* pmode);
-  DisplayConfigurationParams(int64_t id,
-                             const gfx::Point& origin,
                              const display::DisplayMode* pmode,
-                             bool enable_vrr);
+                             bool enable_vrr = false);
   ~DisplayConfigurationParams();
 
   int64_t id = 0;
   gfx::Point origin = gfx::Point();
-  std::optional<std::unique_ptr<display::DisplayMode>> mode = std::nullopt;
+  // Set to nullptr to indicate that no mode is set.
+  std::unique_ptr<display::DisplayMode> mode = nullptr;
   bool enable_vrr = false;
 };
 

@@ -47,8 +47,8 @@ BASE_FEATURE(kAVFoundationCaptureForwardSampleTimestamps,
              "AVFoundationCaptureForwardSampleTimestamps",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAVFoundationCaptureSonomaStallCheck,
-             "AVFoundationCaptureSonomaStallCheck",
+BASE_FEATURE(kAVFoundationCaptureSonomaRestartStalledCamera,
+             "AVFoundationCaptureSonomaRestartStalledCamera",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 namespace {
@@ -85,12 +85,13 @@ std::optional<base::TimeTicks> GetCMSampleBufferTimestamp(
   return std::nullopt;
 }
 
-bool ShouldRunStallCheck() {
+bool ShouldRestartStalledCamera() {
   // The stall check should not be needed on macOS 14 due to a redesign of the
   // camera capture in macOS 14. It also interferes with the Presenter's Overlay
   // feature that was introduced in macOS 14. See https://crbug.com/335210401.
   if (@available(macOS 14.0, *)) {
-    return base::FeatureList::IsEnabled(kAVFoundationCaptureSonomaStallCheck);
+    return base::FeatureList::IsEnabled(
+        kAVFoundationCaptureSonomaRestartStalledCamera);
   }
   return true;
 }
@@ -205,7 +206,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
   // Usage of GPU memory buffer is controlled by
   // `--disable-video-capture-use-gpu-memory-buffer` and
   // `--video-capture-use-gpu-memory-buffer` commandline switches. This flag
-  // handles whether to use a GPU memoery for a video frame or not.
+  // handles whether to use a GPU memory for a video frame or not.
   bool _useGPUMemoryBuffer;
 
   // The capture format that best matches the above attributes.
@@ -385,6 +386,19 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
   _frameReceiver = frameReceiver;
 }
 
+- (void)logMessage:(const std::string&)message {
+  base::AutoLock lock(_lock);
+  [self logMessageLocked:message];
+}
+
+- (void)logMessageLocked:(const std::string&)message {
+  auto loggedMessage = std::string("AVFoundation: ") + message;
+  VLOG(1) << loggedMessage;
+  if (_frameReceiver) {
+    _frameReceiver->OnLog(loggedMessage);
+  }
+}
+
 - (void)setUseGPUMemoryBuffer:(bool)useGPUMemoryBuffer {
   _useGPUMemoryBuffer = useGPUMemoryBuffer;
 }
@@ -545,7 +559,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 - (BOOL)startCapture {
   DCHECK(_mainThreadTaskRunner->BelongsToCurrentThread());
   if (!_captureSession) {
-    DLOG(ERROR) << "Video capture session not initialized.";
+    [self logMessage:"Video capture session not initialized."];
     return NO;
   }
   // Connect the notifications.
@@ -579,9 +593,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
     _capturedFirstFrame = false;
     _capturedFrameSinceLastStallCheck = NO;
   }
-  if (ShouldRunStallCheck()) {
-    [self doStallCheck:0];
-  }
+  [self doStallCheck:0];
   return YES;
 }
 
@@ -1121,10 +1133,15 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
             nextFailedCheckCount),
         kStallCheckInterval);
   } else {
-    // Capture appears to be stalled. Restart it.
-    LOG(ERROR) << "Capture appears to have stalled, restarting.";
-    [self stopCapture];
-    [self startCapture];
+    if (ShouldRestartStalledCamera()) {
+      [self logMessage:"Capture appears to have stalled, restarting."];
+      [self stopCapture];
+      [self startCapture];
+    } else {
+      [self logMessage:
+                "Capture appears to have stalled, restarting may have helped "
+                "but is disabled. See https://issues.chromium.org/335210401."];
+    }
   }
 }
 
@@ -1143,6 +1160,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
   base::AutoLock lock(_lock);
   _capturedFrameSinceLastStallCheck = YES;
   if (!_frameReceiver || !_sampleBufferTransformer) {
+    VLOG(1) << "dropping frame due to no receiver";
     return;
   }
   auto capture_begin_time = GetCMSampleBufferTimestamp(sampleBuffer);
@@ -1155,6 +1173,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 #if BUILDFLAG(IS_MAC)
   bool logUma = !std::exchange(_capturedFirstFrame, true);
   if (logUma) {
+    [self logMessageLocked:"First frame received for this capturer instance"];
     media::LogFirstCapturedVideoFrame(_bestCaptureFormat, sampleBuffer);
   }
 #endif
@@ -1189,7 +1208,8 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
     base::apple::ScopedCFTypeRef<CVPixelBufferRef> pixelBuffer =
         _sampleBufferTransformer->Transform(sampleBuffer);
     if (!pixelBuffer) {
-      LOG(ERROR) << "Failed to transform captured frame. Dropping frame.";
+      [self logMessageLocked:
+                "Failed to transform captured frame. Dropping frame."];
       return;
     }
 
@@ -1355,13 +1375,14 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 }
 
 - (void)sendErrorString:(NSString*)error {
-  DLOG(ERROR) << base::SysNSStringToUTF8(error);
+  auto message = base::SysNSStringToUTF8(error);
+  VLOG(1) << __func__ << " message " << message;
   base::AutoLock lock(_lock);
   if (_frameReceiver) {
     _frameReceiver->ReceiveError(
         media::VideoCaptureError::
             kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification,
-        FROM_HERE, base::SysNSStringToUTF8(error));
+        FROM_HERE, message);
   }
 }
 

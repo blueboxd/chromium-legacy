@@ -142,8 +142,6 @@ public class NewTabPageLayout extends LinearLayout {
     private Boolean mIsHalfMvtLandscape;
     private Boolean mIsHalfMvtPortrait;
     private boolean mIsSurfacePolishEnabled;
-    private boolean mIsSurfacePolishOmniboxColorEnabled;
-    private boolean mIsSurfacePolishLessBrandSpaceEnabled;
     private Boolean mIsMvtAllFilledLandscape;
     private Boolean mIsMvtAllFilledPortrait;
     private final int mTileViewIntervalPaddingTabletForPolish;
@@ -218,10 +216,6 @@ public class NewTabPageLayout extends LinearLayout {
      * @param profile The {@link Profile} associated with the NTP.
      * @param windowAndroid An instance of a {@link WindowAndroid}
      * @param isSurfacePolishEnabled {@code true} if the NTP surface is polished.
-     * @param isSurfacePolishOmniboxColorEnabled {@code true} if the NTP surface is polished and the
-     *     omnibox should be colorful.
-     * @param isSurfacePolishLessBrandSpaceEnabled {@code true} if the NTP surface is polished with
-     *     less brand space.
      * @param isTablet {@code true} if the NTP surface is in tablet mode.
      * @param tabStripHeightSupplier Supplier of the tab strip height.
      */
@@ -239,8 +233,6 @@ public class NewTabPageLayout extends LinearLayout {
             Profile profile,
             WindowAndroid windowAndroid,
             boolean isSurfacePolishEnabled,
-            boolean isSurfacePolishOmniboxColorEnabled,
-            boolean isSurfacePolishLessBrandSpaceEnabled,
             boolean isTablet,
             ObservableSupplier<Integer> tabStripHeightSupplier) {
         TraceEvent.begin(TAG + ".initialize()");
@@ -252,8 +244,6 @@ public class NewTabPageLayout extends LinearLayout {
         mNewTabPageUma = uma;
         mWindowAndroid = windowAndroid;
         mIsSurfacePolishEnabled = isSurfacePolishEnabled;
-        mIsSurfacePolishOmniboxColorEnabled = isSurfacePolishOmniboxColorEnabled;
-        mIsSurfacePolishLessBrandSpaceEnabled = isSurfacePolishLessBrandSpaceEnabled;
         mIsLogoPolishEnabled =
                 StartSurfaceConfiguration.isLogoPolishEnabledWithGoogleDoodle(
                         mSearchProviderIsGoogle && mShowingNonStandardGoogleLogo);
@@ -347,21 +337,11 @@ public class NewTabPageLayout extends LinearLayout {
 
     /** Sets up the search box background or background tint. */
     private void initializeSearchBoxBackground() {
-        if (mIsSurfacePolishOmniboxColorEnabled) {
-            findViewById(R.id.search_box)
-                    .setBackground(
-                            AppCompatResources.getDrawable(
-                                    mContext,
-                                    R.drawable.home_surface_search_box_background_colorful));
-            return;
-        }
-
         if (mIsSurfacePolishEnabled) {
             findViewById(R.id.search_box)
                     .setBackground(
                             AppCompatResources.getDrawable(
-                                    mContext,
-                                    R.drawable.home_surface_search_box_background_neutral));
+                                    mContext, R.drawable.home_surface_search_box_background));
             return;
         }
 
@@ -487,7 +467,6 @@ public class NewTabPageLayout extends LinearLayout {
                     mLogoView,
                     getResources(),
                     mIsTablet,
-                    mIsSurfacePolishLessBrandSpaceEnabled,
                     mIsLogoPolishEnabled,
                     mIsInMultiWindowModeOnTablet
                             ? LogoSizeForLogoPolish.SMALL
@@ -791,7 +770,6 @@ public class NewTabPageLayout extends LinearLayout {
                 mLogoView,
                 getResources(),
                 mIsTablet,
-                mIsSurfacePolishLessBrandSpaceEnabled,
                 mIsLogoPolishEnabled,
                 mIsInMultiWindowModeOnTablet
                         ? LogoSizeForLogoPolish.SMALL
@@ -1034,12 +1012,7 @@ public class NewTabPageLayout extends LinearLayout {
         }
 
         if (mIsSurfacePolishEnabled && mSearchProviderHasLogo) {
-            if (mIsSurfacePolishLessBrandSpaceEnabled && !mIsTablet) {
-                return LogoUtils.getTopMarginPolishedSmall(resources);
-
-            } else {
-                return LogoUtils.getTopMarginPolished(resources);
-            }
+            return LogoUtils.getTopMarginPolished(resources);
         }
 
         if (mIsTablet && mSearchProviderHasLogo) {
@@ -1057,11 +1030,7 @@ public class NewTabPageLayout extends LinearLayout {
         }
 
         if (mIsSurfacePolishEnabled && mSearchProviderHasLogo) {
-            if (mIsSurfacePolishLessBrandSpaceEnabled && !mIsTablet) {
-                return LogoUtils.getBottomMarginPolishedSmall(resources);
-            } else {
-                return LogoUtils.getBottomMarginPolished(resources);
-            }
+            return LogoUtils.getBottomMarginPolished(resources);
         }
 
         if (mIsTablet && mSearchProviderHasLogo) {
@@ -1301,7 +1270,6 @@ public class NewTabPageLayout extends LinearLayout {
                     mLogoView,
                     getResources(),
                     mIsTablet,
-                    mIsSurfacePolishLessBrandSpaceEnabled,
                     mIsLogoPolishEnabled,
                     mIsInMultiWindowModeOnTablet
                             ? LogoSizeForLogoPolish.SMALL

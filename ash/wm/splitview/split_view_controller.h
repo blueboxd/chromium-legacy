@@ -337,7 +337,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnOverviewModeEnded() override;
 
   // display::DisplayObserver:
-  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplaysRemoved(const display::Displays& removed_displays) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
   void OnDisplayTabletStateChanged(display::TabletState state) override;
@@ -390,10 +390,18 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
     kWindowMovedToAnotherDisplay,
   };
 
-  // These functions return |primary_window_| and |secondary_window_|, swapped
-  // in nonprimary screen orientations. Note that they may return null.
-  aura::Window* GetPhysicalLeftOrTopWindow();
-  aura::Window* GetPhysicalRightOrBottomWindow();
+  // These functions return the snapped window in the specified snap position
+  // (left/top or right/bottom) based on the display's orientation.
+  //
+  // In primary screen orientation:
+  //  - `GetPhysicallyLeftOrTopWindow()` returns the `primary_window_`;
+  //  - `GetPhysicallyRightOrBottomWindow()` returns the `secondary_window_`.
+  //
+  // In non-primary screen orientation:
+  //  - `GetPhysicallyLeftOrTopWindow()` returns the `secondary_window_`;
+  //  - `GetPhysicallyRightOrBottomWindow()` returns the `primary_window_`.
+  aura::Window* GetPhysicallyLeftOrTopWindow();
+  aura::Window* GetPhysicallyRightOrBottomWindow();
 
   // Starts observing |window|.
   void StartObserving(aura::Window* window);

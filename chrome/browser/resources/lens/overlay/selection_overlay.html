@@ -5,12 +5,16 @@
     display: flex;
     height: 100%;
     justify-content: center;
+    /* The overlay is fullscreen, but we only want the screenshot portion to be
+    selectable */
+    pointer-events: none;
     width: 100%;
   }
 
   #selectionOverlay {
     cursor: crosshair;
     display: grid;
+    pointer-events: all;
     position: relative;
 
     /* Disable native dragging */
@@ -20,11 +24,11 @@
   }
 
   :host([is-resized]) #backgroundImage {
-    border-radius: 28px;
+    border-radius: 16px;
   }
 
   :host([is-resized]) #selectionElements {
-    border-radius: 28px;
+    border-radius: 16px;
     position: relative;
     overflow: hidden;
   }
@@ -35,6 +39,10 @@
     grid-row: 1;
     /* Allow each full size element to not interfere with each other. */
     pointer-events: none;
+  }
+
+  :host([disable-shimmer]) #overlayShimmer{
+    display: none;
   }
 
   #backgroundImage {
@@ -151,9 +159,7 @@
   background image. -->
   <div id="selectionElements">
     <!-- Other elements that need to be bounded to the image go here -->
-    <template is="dom-if" if="[[enableShimmer]]">
-      <overlay-shimmer></overlay-shimmer>
-    </template>
+    <overlay-shimmer id="overlayShimmer"></overlay-shimmer>
     <post-selection-renderer id="postSelectionRenderer"
         screenshot-data-uri="[[screenshotDataUri]]">
     </post-selection-renderer>

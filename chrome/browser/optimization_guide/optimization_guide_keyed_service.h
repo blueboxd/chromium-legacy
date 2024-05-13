@@ -126,7 +126,9 @@ class OptimizationGuideKeyedService
 
   // optimization_guide::OptimizationGuideModelExecutor implementation:
   bool CanCreateOnDeviceSession(
-      optimization_guide::ModelBasedCapabilityKey feature) override;
+      optimization_guide::ModelBasedCapabilityKey feature,
+      raw_ptr<optimization_guide::OnDeviceModelEligibilityReason> debug_reason)
+      override;
   std::unique_ptr<Session> StartSession(
       optimization_guide::ModelBasedCapabilityKey feature,
       const std::optional<optimization_guide::SessionConfigParams>&
@@ -152,9 +154,9 @@ class OptimizationGuideKeyedService
   virtual bool ShouldFeatureBeCurrentlyEnabledForUser(
       optimization_guide::UserVisibleFeatureKey feature) const;
 
-  // Returns whether the `feature` should be currently allowed for logging model
-  // quality logs.
-  virtual bool ShouldFeatureBeCurrentlyAllowedForLogging(
+  // Returns whether the `feature` should be currently allowed for showing the
+  // Feedback UI (and sending Feedback reports).
+  virtual bool ShouldFeatureBeCurrentlyAllowedForFeedback(
       optimization_guide::UserVisibleFeatureKey feature) const;
 
   // Adds `observer` which can observe the change in feature settings.

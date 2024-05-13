@@ -103,13 +103,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Printing.CUPS.AutomaticIppSetupResultOfUsbPrinterWithPpd"
-    enum="PrinterSetupResult" expires_after="2024-06-02">
+<histogram
+    name="Printing.CUPS.AutomaticSetupResultOfUsbPrinterSupportingIppAndPpd"
+    enum="PrinterSetupResult" expires_after="2025-01-15">
   <owner>pawliczek@chromium.org</owner>
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
-    The success or error code for the Ipp Everywhere setup of a USB printer. The
+    The success or error code for the automatic setup of a USB printer. The
     result is recorded only if all the following conditions are fulfilled: 1.
     The setup procedure was initiated automatically when a USB printer was
     physically connected to the device. 2. There is a matching PPD file that can
@@ -117,19 +118,46 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="Printing.CUPS.AutomaticPpdSetupResultOfUsbPrinterSupportingIpp"
-    enum="PrinterSetupResult" expires_after="2024-10-06">
-  <owner>pawliczek@chromium.org</owner>
-  <owner>bmgordon@chromium.org</owner>
-  <owner>project-bolton@google.com</owner>
+<histogram name="Printing.CUPS.DPI.AllValues" units="DPI"
+    expires_after="2025-05-01">
+  <owner>gavinwill@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
   <summary>
-    The success or error code for the PPD-based setup of a USB printer. The
-    result is recorded only if all the following conditions are fulfilled: 1.
-    The setup procedure was initiated automatically when a USB printer was
-    physically connected to the device. 2. There is a matching PPD file that can
-    be used to setup the printer. 3. The printer supports IPP over USB protocol.
+    Records one of the available DPI values from a printer's capabilities
+    whenever the printer is selected in Print Preview. A separate record is
+    emitted for every DPI value that the printer supports. The recorded value is
+    a 32 bit combination of two DPI values which can be decoded as the higher
+    order 16 bits representing the DPI width and the lower order 16 bits
+    representing the DPI height.
   </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.DPI.Count" units="resolutions"
+    expires_after="2025-05-01">
+  <owner>gavinwill@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the count of all DPI values from a printer's capabilities whenever
+    the printer is selected in Print Preview.
+  </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.DPI.{Type}" units="DPI"
+    expires_after="2025-05-01">
+  <owner>gavinwill@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the {Type} DPI value from a printer's capabilities whenever the
+    printer is selected in Print Preview. The recorded value is a 32 bit
+    combination of two DPI values which can be decoded as the higher order 16
+    bits representing the DPI width and the lower order 16 bits representing the
+    DPI height.
+  </summary>
+  <token key="Type">
+    <variant name="Default"/>
+    <variant name="Max"/>
+    <variant name="Min"/>
+  </token>
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributesSuccess" enum="BooleanSuccess"
@@ -166,7 +194,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.JobDuration.JobDone" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -190,7 +218,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.JobResultForUsbPrintersWithIppAndPpd"
-    enum="PrintJobResult" expires_after="2024-10-06">
+    enum="PrintJobResult" expires_after="2025-01-15">
   <owner>pawliczek@chromium.org</owner>
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
@@ -258,7 +286,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterEditDialogActions"
-    enum="PrinterEditDialogActions" expires_after="2024-09-01">
+    enum="PrinterEditDialogActions" expires_after="2024-11-03">
   <owner>nmuggli@google.com</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -320,7 +348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterSetupResult.SettingsDiscoveredPrinters"
-    enum="PrinterSetupResult" expires_after="2024-09-01">
+    enum="PrinterSetupResult" expires_after="2024-11-03">
   <owner>gavinwill@chromium.org</owner>
   <owner>bmgordon@chromium.org</owner>
   <owner>src/chromeos/printing/OWNERS</owner>
@@ -342,7 +370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterStatusReasons"
-    enum="PrinterStatusReasons" expires_after="2024-09-01">
+    enum="PrinterStatusReasons" expires_after="2024-11-03">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -539,6 +567,36 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PrintPreview.EnumeratePrintersTime" units="ms"
+    expires_after="2024-09-15">
+  <owner>awscreen@chromium.org</owner>
+  <owner>thestig@chromium.org</owner>
+  <summary>
+    Time to acquire the list of local printers from the print backend, as needed
+    by Print Preview.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.FetchCapabilitiesTime" units="ms"
+    expires_after="2024-09-15">
+  <owner>awscreen@chromium.org</owner>
+  <owner>thestig@chromium.org</owner>
+  <summary>
+    Time to acquire the set of capabilities for a local printer from the print
+    backend, as needed by Print Preview.
+  </summary>
+</histogram>
+
+<histogram name="PrintPreview.GetDefaultPrinterNameTime" units="ms"
+    expires_after="2024-09-15">
+  <owner>awscreen@chromium.org</owner>
+  <owner>thestig@chromium.org</owner>
+  <summary>
+    Time to acquire the name of the default printer from the print backend, as
+    needed by Print Preview.
+  </summary>
+</histogram>
+
 <histogram name="PrintPreview.GetPrintersTime.{PrinterType}" units="ms"
     expires_after="2024-10-16">
   <owner>gavinwill@chromium.org</owner>
@@ -607,7 +665,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.PrintAttemptOutcome" enum="PrintAttemptOutcome"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -644,7 +702,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.PrinterStatus.{StatusReason}.PrintJobSuccess"
-    enum="BooleanSuccess" expires_after="2024-09-01">
+    enum="BooleanSuccess" expires_after="2024-11-03">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -673,7 +731,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.PrintSettings" enum="PrintSettings"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -738,7 +796,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.RenderToPDFTime" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>Time taken to render to PDF for print preview.</summary>

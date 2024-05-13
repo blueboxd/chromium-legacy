@@ -26,14 +26,11 @@ TEST(CPU, RunExtendedInstructions) {
   // Retrieve the CPU information.
   base::CPU cpu;
 #if defined(ARCH_CPU_X86_FAMILY)
-
   ASSERT_TRUE(cpu.has_mmx());
   ASSERT_TRUE(cpu.has_sse());
   ASSERT_TRUE(cpu.has_sse2());
   ASSERT_TRUE(cpu.has_sse3());
 
-// GCC and clang instruction test.
-#if defined(COMPILER_GCC)
   // Execute an MMX instruction.
   __asm__ __volatile__("emms\n" : : : "mm0");
 
@@ -81,6 +78,30 @@ TEST(CPU, RunExtendedInstructions) {
     __asm__ __volatile__("vpunpcklbw %%ymm0, %%ymm0, %%ymm0\n" : : : "xmm0");
   }
 
+  if (cpu.has_avx_vnni()) {
+    // Execute an AVX VNNI instruction. {vex} prevents EVEX encoding, which
+    // would shift it to AVX512 VNNI.
+    __asm__ __volatile__("%{vex%} vpdpbusd %%ymm0, %%ymm0, %%ymm0\n"
+                         :
+                         :
+                         : "ymm0");
+  }
+
+  if (cpu.has_avx512_f()) {
+    // Execute an AVX-512 Foundation (F) instruction.
+    __asm__ __volatile__("vpxorq %%zmm0, %%zmm0, %%zmm0\n" : : : "zmm0");
+  }
+
+  if (cpu.has_avx512_bw()) {
+    // Execute an AVX-512 Byte & Word (BW) instruction.
+    __asm__ __volatile__("vpabsw %%zmm0, %%zmm0\n" : : : "zmm0");
+  }
+
+  if (cpu.has_avx512_vnni()) {
+    // Execute an AVX-512 VNNI instruction.
+    __asm__ __volatile__("vpdpbusd %%zmm0, %%zmm0, %%zmm0\n" : : : "zmm0");
+  }
+
   if (cpu.has_pku()) {
     // rdpkru
     uint32_t pkru;
@@ -88,57 +109,6 @@ TEST(CPU, RunExtendedInstructions) {
                          : "=a"(pkru)
                          : "c"(0), "d"(0));
   }
-// Visual C 32 bit and ClangCL 32/64 bit test.
-#elif defined(COMPILER_MSVC) && (defined(ARCH_CPU_32_BITS) || \
-      (defined(ARCH_CPU_64_BITS) && defined(__clang__)))
-
-  // Execute an MMX instruction.
-  __asm emms;
-
-  // Execute an SSE instruction.
-  __asm xorps xmm0, xmm0;
-
-  // Execute an SSE 2 instruction.
-  __asm psrldq xmm0, 0;
-
-  // Execute an SSE 3 instruction.
-  __asm addsubpd xmm0, xmm0;
-
-  if (cpu.has_ssse3()) {
-    // Execute a Supplimental SSE 3 instruction.
-    __asm psignb xmm0, xmm0;
-  }
-
-  if (cpu.has_sse41()) {
-    // Execute an SSE 4.1 instruction.
-    __asm pmuldq xmm0, xmm0;
-  }
-
-  if (cpu.has_sse42()) {
-    // Execute an SSE 4.2 instruction.
-    __asm crc32 eax, eax;
-  }
-
-  if (cpu.has_popcnt()) {
-    // Execute a POPCNT instruction.
-    __asm popcnt eax, eax;
-  }
-
-  if (cpu.has_avx()) {
-    // Execute an AVX instruction.
-    __asm vzeroupper;
-  }
-
-  if (cpu.has_fma3()) {
-    // Execute an AVX instruction.
-    __asm vfmadd132ps xmm0, xmm0, xmm0;
-  }
-
-  if (cpu.has_avx2()) {
-    // Execute an AVX 2 instruction.
-    __asm vpunpcklbw ymm0, ymm0, ymm0
-  }
-#endif  // defined(COMPILER_GCC)
 #endif  // defined(ARCH_CPU_X86_FAMILY)
 
 #if defined(ARCH_CPU_ARM64)

@@ -11,6 +11,7 @@
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/input_method/editor_consent_enums.h"
 #include "chrome/browser/ash/input_method/editor_identity_utils.h"
+#include "chrome/browser/ash/input_method/input_methods_by_language.h"
 #include "chrome/browser/ash/input_method/url_utils.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -100,62 +101,9 @@ std::vector<std::string> Combine(
   return combined;
 }
 
-const std::vector<std::string>& EnglishInputMethods() {
-  static const base::NoDestructor<std::vector<std::string>> input_methods({
-      "xkb:ca:eng:eng",           // Canada
-      "xkb:gb::eng",              // UK
-      "xkb:gb:extd:eng",          // UK Extended
-      "xkb:gb:dvorak:eng",        // UK Dvorak
-      "xkb:in::eng",              // India
-      "xkb:pk::eng",              // Pakistan
-      "xkb:us:altgr-intl:eng",    // US Extended
-      "xkb:us:colemak:eng",       // US Colemak
-      "xkb:us:dvorak:eng",        // US Dvorak
-      "xkb:us:dvp:eng",           // US Programmer Dvorak
-      "xkb:us:intl_pc:eng",       // US Intl (PC)
-      "xkb:us:intl:eng",          // US Intl
-      "xkb:us:workman-intl:eng",  // US Workman Intl
-      "xkb:us:workman:eng",       // US Workman
-      "xkb:us::eng",              // US
-      "xkb:za:gb:eng"             // South Africa
-  });
-  return *input_methods;
-}
-
-const std::vector<std::string>& FrenchInputMethods() {
-  static const base::NoDestructor<std::vector<std::string>> input_methods({
-      "xkb:be::fra",        // French (Belgium)
-      "xkb:ca::fra",        // French (Canada)
-      "xkb:ca:multix:fra",  // French (Canada) with multilingual keyboard
-      "xkb:fr::fra",        // French (France)
-      "xkb:fr:bepo:fra",    // French (France) with bepo keyboard
-      "xkb:ch:fr:fra",      // French (Switzerland)
-  });
-  return *input_methods;
-}
-
-const std::vector<std::string>& GermanInputMethods() {
-  static const base::NoDestructor<std::vector<std::string>> input_methods({
-      "xkb:be::ger",     // German (Belgium)
-      "xkb:de::ger",     // German (Germany)
-      "xkb:de:neo:ger",  // German (Germany) with neo keyboard
-      "xkb:ch::ger",     // German (Switzerland)
-  });
-  return *input_methods;
-}
-
-const std::vector<std::string>& JapaneseInputMethods() {
-  static const base::NoDestructor<std::vector<std::string>> input_methods({
-      "xkb:jp::jpn",   // Alphanumeric with Japanese keyboard
-      "nacl_mozc_us",  // Japanese with US keyboard
-      "nacl_mozc_jp",  // Japanese
-  });
-  return *input_methods;
-}
-
 const std::vector<std::string>& AllowedInputMethods() {
   static const base::NoDestructor<std::vector<std::string>> input_methods(
-      base::FeatureList::IsEnabled(features::kOrcaInternationalize)
+      base::FeatureList::IsEnabled(chromeos::features::kOrcaInternationalize)
           ? Combine({EnglishInputMethods(), FrenchInputMethods(),
                      GermanInputMethods(), JapaneseInputMethods()})
           : EnglishInputMethods());
@@ -308,13 +256,14 @@ bool IsSystemInEnglishLanguage() {
              g_browser_process->GetApplicationLocale()) == "en";
 }
 
-EditorSwitch::EditorSwitch(Delegate* delegate,
+EditorSwitch::EditorSwitch(Observer* observer,
                            Profile* profile,
-                           std::string_view country_code)
-    : delegate_(delegate),
+                           EditorContext* context)
+    : observer_(observer),
       profile_(profile),
-      country_code_(country_code),
-      ime_allowlist_(GetAllowedInputMethodEngines()) {}
+      context_(context),
+      ime_allowlist_(GetAllowedInputMethodEngines()),
+      last_known_editor_mode_(GetEditorMode()) {}
 
 EditorSwitch::~EditorSwitch() = default;
 
@@ -333,14 +282,16 @@ bool EditorSwitch::IsAllowedForUse() const {
 
   return base::FeatureList::IsEnabled(ash::features::kOrcaSupportDemoMode) &&
                  ash::DemoSession::IsDeviceInDemoMode()
-             ? IsAllowedForUseInDemoMode(country_code_)
-             : IsAllowedForUseInNonDemoMode(profile_, country_code_);
+             ? IsAllowedForUseInDemoMode(context_->active_country_code())
+             : IsAllowedForUseInNonDemoMode(profile_,
+                                            context_->active_country_code());
 }
 
 EditorOpportunityMode EditorSwitch::GetEditorOpportunityMode() const {
-  if (IsAllowedForUse() && IsInputTypeAllowed(input_type_)) {
-    return text_length_ > 0 ? EditorOpportunityMode::kRewrite
-                            : EditorOpportunityMode::kWrite;
+  if (IsAllowedForUse() && IsInputTypeAllowed(context_->input_type())) {
+    return context_->selected_text_length() > 0
+               ? EditorOpportunityMode::kRewrite
+               : EditorOpportunityMode::kWrite;
   }
   return EditorOpportunityMode::kNone;
 }
@@ -349,7 +300,7 @@ std::vector<EditorBlockedReason> EditorSwitch::GetBlockedReasons() const {
   std::vector<EditorBlockedReason> blocked_reasons;
 
   if (base::FeatureList::IsEnabled(chromeos::features::kOrca)) {
-    if (!IsCountryAllowed(country_code_)) {
+    if (!IsCountryAllowed(context_->active_country_code())) {
       blocked_reasons.push_back(
           EditorBlockedReason::kBlockedByUnsupportedRegion);
     }
@@ -384,31 +335,32 @@ std::vector<EditorBlockedReason> EditorSwitch::GetBlockedReasons() const {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedBySetting);
   }
 
-  if (!IsTriggerableFromTextLength(text_length_)) {
+  if (!IsTriggerableFromTextLength(context_->selected_text_length())) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByTextLength);
   }
 
-  if (!IsUrlAllowed(profile_, url_)) {
+  if (!IsUrlAllowed(profile_, context_->active_url())) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByUrl);
   }
 
-  if (!IsAppAllowed(profile_, app_id_)) {
+  if (!IsAppAllowed(profile_, context_->app_id())) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByApp);
   }
 
-  if (!IsAppTypeAllowed(app_type_)) {
+  if (!IsAppTypeAllowed(context_->app_type())) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByAppType);
   }
 
-  if (!IsInputMethodEngineAllowed(ime_allowlist_, active_engine_id_)) {
+  if (!IsInputMethodEngineAllowed(ime_allowlist_,
+                                  context_->active_engine_id())) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByInputMethod);
   }
 
-  if (!IsInputTypeAllowed(input_type_)) {
+  if (!IsInputTypeAllowed(context_->input_type())) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByInputType);
   }
 
-  if (tablet_mode_enabled_) {
+  if (context_->InTabletMode()) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByInvalidFormFactor);
   }
 
@@ -428,14 +380,18 @@ bool EditorSwitch::CanBeTriggered() const {
       profile_->GetPrefs()->GetInteger(prefs::kOrcaConsentStatus));
 
   return IsAllowedForUse() &&
-         IsInputMethodEngineAllowed(ime_allowlist_, active_engine_id_) &&
-         IsInputTypeAllowed(input_type_) && IsAppTypeAllowed(app_type_) &&
+         IsInputMethodEngineAllowed(ime_allowlist_,
+                                    context_->active_engine_id()) &&
+         IsInputTypeAllowed(context_->input_type()) &&
+         IsAppTypeAllowed(context_->app_type()) &&
          IsTriggerableFromConsentStatus(current_consent_status) &&
-         IsUrlAllowed(profile_, url_) && IsAppAllowed(profile_, app_id_) &&
-         !net::NetworkChangeNotifier::IsOffline() && !tablet_mode_enabled_ &&
+         IsUrlAllowed(profile_, context_->active_url()) &&
+         IsAppAllowed(profile_, context_->app_id()) &&
+         !net::NetworkChangeNotifier::IsOffline() &&
+         !context_->InTabletMode() &&
          // user pref value
          profile_->GetPrefs()->GetBoolean(prefs::kOrcaEnabled) &&
-         text_length_ <= kTextLengthMaxLimit &&
+         context_->selected_text_length() <= kTextLengthMaxLimit &&
          (!base::FeatureList::IsEnabled(features::kOrcaOnlyInEnglishLocales) ||
           IsSystemInEnglishLanguage());
 }
@@ -451,47 +407,19 @@ EditorMode EditorSwitch::GetEditorMode() const {
   if (current_consent_status == ConsentStatus::kPending ||
       current_consent_status == ConsentStatus::kUnset) {
     return EditorMode::kConsentNeeded;
-  } else if (text_length_ > 0) {
+  } else if (context_->selected_text_length() > 0) {
     return EditorMode::kRewrite;
   } else {
     return EditorMode::kWrite;
   }
 }
 
-void EditorSwitch::OnInputContextUpdated(
-    const TextInputMethod::InputContext& input_context,
-    const TextFieldContextualInfo& text_field_contextual_info) {
-  EditorMode prev_mode = GetEditorMode();
-  input_type_ = input_context.type;
-  app_type_ = text_field_contextual_info.app_type;
-  url_ = text_field_contextual_info.tab_url;
-  app_id_ = text_field_contextual_info.app_key;
-  MaybeNotifyEditorModeChanged(prev_mode);
-}
-
-void EditorSwitch::OnActivateIme(std::string_view engine_id) {
-  EditorMode prev_mode = GetEditorMode();
-  active_engine_id_ = engine_id;
-  MaybeNotifyEditorModeChanged(prev_mode);
-}
-
-void EditorSwitch::OnTabletModeUpdated(bool is_enabled) {
-  EditorMode prev_mode = GetEditorMode();
-  tablet_mode_enabled_ = is_enabled;
-  MaybeNotifyEditorModeChanged(prev_mode);
-}
-
-void EditorSwitch::OnTextSelectionLengthChanged(size_t text_length) {
-  EditorMode prev_mode = GetEditorMode();
-  text_length_ = text_length;
-  MaybeNotifyEditorModeChanged(prev_mode);
-}
-
-void EditorSwitch::MaybeNotifyEditorModeChanged(const EditorMode& prev_mode) {
-  EditorMode new_mode = GetEditorMode();
-  if (prev_mode != new_mode) {
-    delegate_->OnEditorModeChanged(new_mode);
+void EditorSwitch::OnContextUpdated() {
+  EditorMode current_mode = GetEditorMode();
+  if (current_mode != last_known_editor_mode_) {
+    observer_->OnEditorModeChanged(current_mode);
   }
+  last_known_editor_mode_ = current_mode;
 }
 
 }  // namespace ash::input_method

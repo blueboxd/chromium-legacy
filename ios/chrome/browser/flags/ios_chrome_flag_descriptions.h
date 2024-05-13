@@ -58,11 +58,6 @@ extern const char
 extern const char kAutofillEnableMerchantDomainInUnmaskCardRequestName[];
 extern const char kAutofillEnableMerchantDomainInUnmaskCardRequestDescription[];
 
-// Title and description for the flag to control whether the autofill payments
-// mandatory reauth feature is enabled.
-extern const char kAutofillEnablePaymentsMandatoryReauthName[];
-extern const char kAutofillEnablePaymentsMandatoryReauthDescription[];
-
 // Title and description for the flag to control the latency optimization where
 // the risk data pre-fetched during retrieval.
 extern const char kAutofillEnablePrefetchingRiskDataForRetrievalName[];
@@ -842,10 +837,21 @@ extern const char kSafetyCheckMagicStackDescription[];
 extern const char kScreenTimeIntegrationName[];
 extern const char kScreenTimeIntegrationDescription[];
 
+// Title and description for the flag to enable caching Segmentation ranking for
+// the Home Magic Stack on Start.
+extern const char kSegmentationPlatformIosModuleRankerCachingName[];
+extern const char kSegmentationPlatformIosModuleRankerCachingDescription[];
+
 // Title and description for the flag to enable Segmentation ranking for the
 // Home Magic Stack.
 extern const char kSegmentationPlatformIosModuleRankerName[];
 extern const char kSegmentationPlatformIosModuleRankerDescription[];
+
+// Title and description for the flag to enable Segmentation ranking for the
+// Home Magic Stack split between Start and NTP.
+extern const char kSegmentationPlatformIosModuleRankerSplitBySurfaceName[];
+extern const char
+    kSegmentationPlatformIosModuleRankerSplitBySurfaceDescription[];
 
 // Title and description for the flag to send UMA data over any network.
 extern const char kSendUmaOverAnyNetwork[];

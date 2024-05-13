@@ -18,6 +18,7 @@
 #include "ash/glanceables/tasks/test/glanceables_tasks_test_util.h"
 #include "ash/shell.h"
 #include "ash/style/combobox.h"
+#include "ash/style/counter_expand_button.h"
 #include "ash/style/icon_button.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/raw_ptr.h"
@@ -114,6 +115,11 @@ class GlanceablesTasksViewTest : public AshTestBase {
                 GlanceablesViewId::kTasksBubbleHeaderIcon)));
   }
 
+  const CounterExpandButton* GetCounterExpandButton() const {
+    return views::AsViewClass<CounterExpandButton>(view_->GetViewByID(
+        base::to_underlying(GlanceablesViewId::kTasksBubbleExpandButton)));
+  }
+
   const views::View* GetTaskItemsContainerView() const {
     return views::AsViewClass<views::View>(view_->GetViewByID(
         base::to_underlying(GlanceablesViewId::kTasksBubbleListContainer)));
@@ -167,6 +173,18 @@ class GlanceablesTasksViewTest : public AshTestBase {
 
   const GlanceablesTestNewWindowDelegate new_window_delegate_;
 };
+
+TEST_F(GlanceablesTasksViewTest, Basics) {
+  // Check that `GlanceablesTasksView` by itself doesn't have a background.
+  EXPECT_FALSE(view()->GetBackground());
+
+  // Check that the expand button does not exist when `GlanceablesTasksView` is
+  // created alone.
+  auto* expand_button = view()->GetViewByID(
+      base::to_underlying(GlanceablesViewId::kTasksBubbleExpandButton));
+  EXPECT_TRUE(expand_button);
+  EXPECT_FALSE(expand_button->GetVisible());
+}
 
 TEST_F(GlanceablesTasksViewTest, RecordShowTimeHistogramOnClose) {
   base::HistogramTester histogram_tester;
@@ -226,6 +244,7 @@ TEST_F(GlanceablesTasksViewTest, ShowsProgressBarWhileEditingTask) {
   EXPECT_FALSE(GetProgressBar()->GetVisible());
 
   const auto* const task_items_container_view = GetTaskItemsContainerView();
+  EXPECT_EQ(GetCounterExpandButton()->counter_for_test(), 2u);
   EXPECT_EQ(task_items_container_view->children().size(), 2u);
 
   const auto* const title_label = views::AsViewClass<views::Label>(
@@ -506,6 +525,7 @@ TEST_F(GlanceablesTasksViewTest, DoesNotAddTaskWithBlankTitle) {
   base::RunLoop().RunUntilIdle();
 
   // Verify executed callbacks number.
+  EXPECT_EQ(GetCounterExpandButton()->counter_for_test(), initial_tasks_count);
   EXPECT_EQ(GetTaskItemsContainerView()->children().size(),
             initial_tasks_count);
   EXPECT_EQ(tasks_client()->RunPendingAddTaskCallbacks(), 0u);
@@ -633,6 +653,7 @@ TEST_F(GlanceablesTasksViewTest, TasksContainerIsInvisibleWhenNoTask) {
             u"Task List 3 Title (empty)");
 
   const auto* const task_items_container = GetTaskItemsContainerView();
+  EXPECT_EQ(GetCounterExpandButton()->counter_for_test(), 0u);
   EXPECT_EQ(task_items_container->children().size(), 0u);
   EXPECT_FALSE(task_items_container->GetVisible());
 

@@ -257,9 +257,6 @@ public final class ProductionSupportedFlagList {
                 AutofillFeatures.AUTOFILL_NEW_FOCUS_EVENTS,
                 "Changes the semantics of Autofill's focus-change events"),
         Flag.baseFeature(
-                AutofillFeatures.AUTOFILL_PARSING_PATTERN_PROVIDER,
-                "Enables Autofill to use its new method to retrieve parsing patterns."),
-        Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_PAGE_LANGUAGE_DETECTION,
                 "Enables Autofill to retrieve the page language for form parsing."),
         Flag.baseFeature(
@@ -415,6 +412,10 @@ public final class ProductionSupportedFlagList {
                 BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
                 "Defers the first commit until FCP or timeout for cross-origin navigations."),
         Flag.baseFeature(
+                BlinkFeatures.PAINT_HOLDING_FOR_IFRAMES,
+                "Show stale paint from old Document until new Document is ready for subframe"
+                        + " navigations."),
+        Flag.baseFeature(
                 ContentFeatures.NAVIGATION_NETWORK_RESPONSE_QUEUE,
                 "Schedules tasks related to the navigation network responses on a higher "
                         + "priority task queue."),
@@ -527,6 +528,7 @@ public final class ProductionSupportedFlagList {
                 "If enabled, reads and decodes navigation body data off the main thread."),
         Flag.baseFeature(BlinkFeatures.HIT_TEST_OPAQUENESS),
         Flag.baseFeature(CcFeatures.USE_RECORDED_BOUNDS_FOR_TILING),
+        Flag.baseFeature(BlinkFeatures.FILL_SCROLLING_CONTENTS_LAYER),
         Flag.baseFeature(BlinkFeatures.DYNAMIC_SCROLL_CULL_RECT_EXPANSION),
         Flag.baseFeature(BlinkFeatures.INTERSECTION_OPTIMIZATION),
         Flag.baseFeature(BlinkFeatures.EXPAND_COMPOSITED_CULL_RECT),
@@ -708,9 +710,11 @@ public final class ProductionSupportedFlagList {
                 ContentFeatures.RENDER_DOCUMENT_COMPOSITOR_REUSE,
                 "If enabled, allows compositor to be reused on cross-RenderFrameHost navigations"),
         Flag.baseFeature("ConditionallySkipGpuChannelFlush"),
+        Flag.baseFeature("ReduceCpuUtilization2"),
         Flag.baseFeature("NetworkServiceCookiesHighPriorityTaskRunner"),
         Flag.baseFeature("IncreaseCoookieAccesCacheSize"),
         Flag.baseFeature("AvoidScheduleWorkDuringNativeEventProcessing"),
+        Flag.baseFeature("AvoidEntryCreationForNoStore"),
         Flag.baseFeature(
                 VizFeatures.ON_BEGIN_FRAME_THROTTLE_VIDEO,
                 "Enables throttling OnBeginFrame for video frame sinks"
@@ -857,6 +861,9 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 ContentFeatures.WEBVIEW_SUPPRESS_TAP_DURING_FLING, "Supress tap during fling."),
         Flag.baseFeature(
+                ContentFeatures.ACCESSIBILITY_MANAGE_BROADCAST_RECEIVER_ON_BACKGROUND,
+                "Register, un-register Accessibility broadcast receiver on a background thread."),
+        Flag.baseFeature(
                 VizFeatures.INVALIDATE_LOCAL_SURFACE_ID_PRE_COMMIT,
                 "When enabled, invalidates the LocalSurfaceId of the DelegatedFrameHostAndroid when"
                         + " the old page is about to be unloaded."),
@@ -988,6 +995,7 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 CcFeatures.METRICS_TRACING_CALCULATION_REDUCTION,
                 "Reduces Renderer event latency attribution to only during tracing."),
+        Flag.baseFeature(BlinkFeatures.STREAMLINE_RENDERER_INIT),
         // Add new commandline switches and features above. The final entry should have a
         // trailing comma for cleaner diffs.
     };

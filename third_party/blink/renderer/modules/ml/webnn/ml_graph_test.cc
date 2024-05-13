@@ -297,6 +297,8 @@ TEST_P(MLGraphTest, PowTest) {
                      .expected = {1.0, 4.0, 9.0, 16.0}}
         .Test(*this, scope);
   }
+  // TODO(crbug/327337526): Restore this test coverage when migrating to a WPT.
+  /*
   {
     // Test element-wise pow operator with exponent = 0.5.
     PowTester<float>{.lhs = {.data_type = V8MLOperandDataType::Enum::kFloat32,
@@ -308,6 +310,7 @@ TEST_P(MLGraphTest, PowTest) {
                      .expected = {1.0, 2.0, 3.0, 4.0}}
         .Test(*this, scope);
   }
+  */
 }
 
 template <typename T>
@@ -457,6 +460,8 @@ TEST_P(MLGraphTest, ElementWiseUnaryTest) {
         .expected = {-1.0, 2.0, -3.0, 4.0}}
         .Test(*this, scope);
   }
+  // TODO(crbug/327337526): Restore this test coverage when migrating to a WPT.
+  /*
   {
     // Test element-wise sqrt operator for a 4-D tensor.
     // The expected results should be the square root value of the input
@@ -469,6 +474,7 @@ TEST_P(MLGraphTest, ElementWiseUnaryTest) {
         .expected = {1.0, 2.0, 3.0, 4.0}}
         .Test(*this, scope);
   }
+  */
   // Below operators are not implemented on XNNPACK backend.
   SKIP_TEST_ON_UNSUPPORTED_BACKEND(BackendType::kXnnpack);
   {
@@ -509,77 +515,6 @@ TEST_P(MLGraphTest, ElementWiseUnaryTest) {
                   .dimensions = {2, 2},
                   .values = {1, -2, 3, -4}},
         .expected = {sin(1.f), sin(-2.f), sin(3.f), sin(-4.f)}}
-        .Test(*this, scope);
-  }
-}
-
-template <typename T>
-struct PReluTester {
-  OperandInfo<T> input;
-  OperandInfo<T> slope;
-  Vector<T> expected;
-
-  void Test(MLGraphTest& helper, V8TestingScope& scope) {
-    // Build the graph.
-    auto* builder =
-        CreateMLGraphBuilder(scope.GetExecutionContext(),
-                             scope.GetScriptState(), scope.GetExceptionState());
-    auto* input_operand =
-        BuildInput(builder, "input", input.dimensions, input.data_type,
-                   scope.GetExceptionState());
-    auto* slope_operand =
-        BuildConstant(builder, slope.dimensions, slope.data_type, slope.values,
-                      scope.GetExceptionState());
-    auto* output_operand =
-        builder->prelu(input_operand, slope_operand, scope.GetExceptionState());
-    auto [graph, error_name, error_message] =
-        helper.BuildGraph(scope, builder, {{"output", output_operand}});
-    ASSERT_THAT(graph, testing::NotNull());
-
-    // Compute the graph.
-    MLNamedArrayBufferViews inputs(
-        {{"input",
-          CreateArrayBufferViewForOperand(input_operand, input.values)}});
-    MLNamedArrayBufferViews outputs(
-        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
-    std::tie(error_name, error_message) =
-        helper.ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_TRUE(error_name.IsNull());
-    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
-    EXPECT_EQ(results, expected);
-  }
-};
-
-TEST_P(MLGraphTest, PReluTest) {
-  V8TestingScope scope;
-  {
-    // Test prelu operator with input_shape = {3} and slope_shape =
-    // {3}.
-    PReluTester<float>{
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {3},
-                  .values = {1.0, -2.0, 3.0}},
-        .slope = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {3},
-                  .values = {1.0, 2.0, 3.0}},
-        .expected = {1.0, -4.0, 3.0}}
-        .Test(*this, scope);
-  }
-  {
-    // Test prelu operator with input_shape = {1, 2, 3, 3} and slope_shape = {1,
-    // 3}.
-    PReluTester<float>{
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {1, 2, 3, 3},
-                  .values = {-1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0,
-                             -9.0, -10.0, -11.0, -12.0, -13.0, -14.0, -15.0,
-                             -16.0, -17.0, -18.0}},
-        .slope = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {1, 3},
-                  .values = {1.0, 2.0, 3.0}},
-        .expected = {-1.0, -4.0, -9.0, -4.0, -10.0, -18.0, -7.0, -16.0, -27.0,
-                     -10.0, -22.0, -36.0, -13.0, -28.0, -45.0, -16.0, -34.0,
-                     -54.0}}
         .Test(*this, scope);
   }
 }
@@ -665,100 +600,6 @@ TEST_P(MLGraphTest, ReluTest) {
                   .values = {-10.0, -0.5, 0.5, 10.0}},
         .expected = {0.0, 0.0, 0.5, 10.0}}
         .Test(*this, scope);
-  }
-}
-
-template <typename T>
-struct ReduceTester {
-  webnn::mojom::blink::Reduce::Kind kind;
-  OperandInfo<T> input;
-  bool keep_dimensions = false;
-  Vector<T> expected;
-  Vector<uint32_t> expected_output_shape;
-
-  void Test(MLGraphTest& helper,
-            V8TestingScope& scope,
-            MLReduceOptions* options = MLReduceOptions::Create()) {
-    auto* builder =
-        CreateMLGraphBuilder(scope.GetExecutionContext(),
-                             scope.GetScriptState(), scope.GetExceptionState());
-    auto* input_operand =
-        BuildInput(builder, "input", input.dimensions, input.data_type,
-                   scope.GetExceptionState());
-    options->setKeepDimensions(keep_dimensions);
-    auto* output_operand =
-        BuildReduce(scope, builder, kind, input_operand, options);
-    EXPECT_EQ(output_operand->Dimensions(), expected_output_shape);
-    auto [graph, error_name, error_message] =
-        helper.BuildGraph(scope, builder, {{"output", output_operand}});
-    ASSERT_THAT(graph, testing::NotNull());
-
-    MLNamedArrayBufferViews inputs(
-        {{"input",
-          CreateArrayBufferViewForOperand(input_operand, input.values)}});
-    MLNamedArrayBufferViews outputs(
-        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
-    std::tie(error_name, error_message) =
-        helper.ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_TRUE(error_name.IsNull());
-    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
-    EXPECT_EQ(results, expected);
-  }
-};
-
-TEST_P(MLGraphTest, ReduceTest) {
-  V8TestingScope scope;
-  {
-    // Test reduceMean operator with default options.
-    auto* options = MLReduceOptions::Create();
-    ReduceTester<float>{
-        .kind = webnn::mojom::blink::Reduce::Kind::kMean,
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {1, 2, 2, 1},
-                  .values = {1.0, 2.0, 3.0, 4.0}},
-        .expected = {2.5},
-        .expected_output_shape = {}}
-        .Test(*this, scope, options);
-  }
-  {
-    // Test reduceMean operator with keep_dimensions = true.
-    auto* options = MLReduceOptions::Create();
-    ReduceTester<float>{
-        .kind = webnn::mojom::blink::Reduce::Kind::kMean,
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {1, 2, 2, 1},
-                  .values = {1.0, 2.0, 3.0, 4.0}},
-        .keep_dimensions = true,
-        .expected = {2.5},
-        .expected_output_shape = {1, 1, 1, 1}}
-        .Test(*this, scope, options);
-  }
-  {
-    // Test reduceMean operator with axes = {1} and keep_dimensions = false.
-    auto* options = MLReduceOptions::Create();
-    options->setAxes({1});
-    ReduceTester<float>{
-        .kind = webnn::mojom::blink::Reduce::Kind::kMean,
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {2, 2},
-                  .values = {1.0, 2.0, 3.0, 4.0}},
-        .expected = {1.5, 3.5},
-        .expected_output_shape = {2}}
-        .Test(*this, scope, options);
-  }
-  {
-    // Test reduceMean operator with axes = {1} and keep_dimensions = true.
-    auto* options = MLReduceOptions::Create();
-    options->setAxes({1});
-    ReduceTester<float>{
-        .kind = webnn::mojom::blink::Reduce::Kind::kMean,
-        .input = {.data_type = V8MLOperandDataType::Enum::kFloat32,
-                  .dimensions = {2, 2},
-                  .values = {1.0, 2.0, 3.0, 4.0}},
-        .keep_dimensions = true,
-        .expected = {1.5, 3.5},
-        .expected_output_shape = {2, 1}}
-        .Test(*this, scope, options);
   }
 }
 

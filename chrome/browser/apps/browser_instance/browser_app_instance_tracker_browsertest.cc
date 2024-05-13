@@ -25,7 +25,6 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -286,8 +285,8 @@ class BrowserAppInstanceTrackerTest : public InProcessBrowserTest {
   webapps::AppId InstallWebApp(
       const std::string& start_url,
       web_app::mojom::UserDisplayMode user_display_mode) {
-    auto info = std::make_unique<web_app::WebAppInstallInfo>();
-    info->start_url = GURL(start_url);
+    auto info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+        GURL(start_url));
     info->user_display_mode = user_display_mode;
     Profile* profile = ProfileManager::GetPrimaryUserProfile();
     auto app_id = web_app::test::InstallWebApp(profile, std::move(info));

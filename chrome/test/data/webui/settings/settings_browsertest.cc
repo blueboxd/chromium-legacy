@@ -482,6 +482,10 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, ToggleButton) {
   RunTest("settings/settings_toggle_button_test.js", "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(SettingsTest, OfferWritingHelpPage) {
+  RunTest("settings/offer_writing_help_page_test.js", "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(SettingsTest, ZoomLevels) {
   RunTest("settings/zoom_levels_test.js", "mocha.run()");
 }
@@ -678,22 +682,16 @@ IN_PROC_BROWSER_TEST_F(SettingsPerformancePageTest, Controls) {
           "runMochaSuite('PerformancePage')");
 }
 
-// TODO(crbug.com/337336425): Flaky on Windows.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_ExceptionList DISABLED_ExceptionList
-#else
-#define MAYBE_ExceptionList ExceptionList
-#endif
-IN_PROC_BROWSER_TEST_F(SettingsPerformancePageTest, MAYBE_ExceptionList) {
+IN_PROC_BROWSER_TEST_F(SettingsPerformancePageTest, ExceptionList) {
   RunTest("settings/performance_page_test.js",
           "runMochaSuite('TabDiscardExceptionList')");
 }
 
-class SettingsPerformancePageMultistateTest : public SettingsBrowserTest {
+class SettingsPerformancePageImprovementsTest : public SettingsBrowserTest {
  protected:
-  SettingsPerformancePageMultistateTest() {
+  SettingsPerformancePageImprovementsTest() {
     scoped_feature_list_.InitWithFeatures(
-        {performance_manager::features::kMemorySaverMultistateMode,
+        {performance_manager::features::kMemorySaverModeAggressiveness,
          performance_manager::features::kDiscardRingImprovements},
         {});
   }
@@ -702,12 +700,12 @@ class SettingsPerformancePageMultistateTest : public SettingsBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(SettingsPerformancePageMultistateTest, Controls) {
+IN_PROC_BROWSER_TEST_F(SettingsPerformancePageImprovementsTest, Controls) {
   RunTest("settings/performance_page_test.js",
-          "runMochaSuite('PerformancePageMultistate')");
+          "runMochaSuite('PerformancePageImprovements')");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPerformancePageMultistateTest, ExceptionList) {
+IN_PROC_BROWSER_TEST_F(SettingsPerformancePageImprovementsTest, ExceptionList) {
   RunTest("settings/performance_page_test.js",
           "runMochaSuite('TabDiscardExceptionList')");
 }

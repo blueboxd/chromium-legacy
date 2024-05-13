@@ -48,7 +48,6 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
   MOCK_METHOD(bool, IsBlocklisted, (), (const override));
   MOCK_METHOD(bool, IsMovableToAccountStore, (), (const override));
   MOCK_METHOD(void, Save, (), (override));
-  MOCK_METHOD(void, Update, (const PasswordForm&), (override));
   MOCK_METHOD(bool,
               IsUpdateAffectingPasswordsStoredInTheGoogleAccount,
               (),
@@ -68,6 +67,10 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
   MOCK_METHOD(void, OnPasswordsRevealed, (), (override));
   MOCK_METHOD(void, MoveCredentialsToAccountStore, (), (override));
   MOCK_METHOD(void, BlockMovingCredentialsToAccountStore, (), (override));
+  MOCK_METHOD(PasswordForm::Store,
+              GetPasswordStoreForSaving,
+              (const PasswordForm& password_form),
+              (const override));
 };
 
 }  // namespace password_manager

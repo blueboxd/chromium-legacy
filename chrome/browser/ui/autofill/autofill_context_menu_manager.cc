@@ -14,6 +14,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/browser/ui/autofill/address_bubbles_controller.h"
@@ -65,6 +66,9 @@ constexpr char kFeedbackPlaceholder[] =
     "What was the expected result?\n"
     "\n"
     "What happened instead? (Please include the screenshot below)";
+
+// Constant determining the icon size in the context menu.
+constexpr int kContextMenuIconSize = 16;
 
 bool ShouldShowAutofillContextMenu(const content::ContextMenuParams& params) {
   if (!params.form_control_type) {
@@ -280,7 +284,7 @@ void AutofillContextMenuManager::ExecuteAutofillFeedbackCommand(
   auto& client = static_cast<ContentAutofillClient&>(manager.client());
   Browser* browser = chrome::FindBrowserWithTab(&client.GetWebContents());
   chrome::ShowFeedbackPage(
-      browser, chrome::kFeedbackSourceAutofillContextMenu,
+      browser, feedback::kFeedbackSourceAutofillContextMenu,
       /*description_template=*/std::string(),
       /*description_placeholder_text=*/kFeedbackPlaceholder,
       /*category_tag=*/"dogfood_autofill_feedback",
@@ -411,7 +415,10 @@ void AutofillContextMenuManager::MaybeAddAutofillFeedbackItem() {
   }
 
   // Includes the option of submitting feedback on Autofill.
-  if (personal_data_manager_->IsAutofillEnabled() && IsLikelyDogfoodClient()) {
+  if (static_cast<BrowserAutofillManager&>(
+          autofill_driver->GetAutofillManager())
+          .IsAutofillEnabled() &&
+      IsLikelyDogfoodClient()) {
     menu_model_->AddItemWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK,
         IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK,
@@ -479,14 +486,21 @@ void AutofillContextMenuManager::MaybeAddAutofillManualFallbackItems() {
         IDS_PLUS_ADDRESS_FALLBACK_LABEL_CONTEXT_MENU);
   }
   if (add_address_fallback) {
-    menu_model_->AddItemWithStringId(
+    menu_model_->AddItemWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS,
-        IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS);
+        IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS,
+        ui::ImageModel::FromVectorIcon(
+            vector_icons::kLocationOnChromeRefreshIcon, ui::kColorIcon,
+            kContextMenuIconSize));
+    menu_model_->SetIsNewFeatureAt(menu_model_->GetItemCount() - 1, true);
   }
   if (add_payments_fallback) {
-    menu_model_->AddItemWithStringId(
+    menu_model_->AddItemWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS,
-        IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS);
+        IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS,
+        ui::ImageModel::FromVectorIcon(kCreditCardChromeRefreshIcon,
+                                       ui::kColorIcon, kContextMenuIconSize));
+    menu_model_->SetIsNewFeatureAt(menu_model_->GetItemCount() - 1, true);
   }
   if (add_passwords_fallback) {
     // TODO(b/321678141): If the user has passwords saved, assign "Select

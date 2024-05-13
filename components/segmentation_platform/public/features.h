@@ -104,6 +104,12 @@ BASE_DECLARE_FEATURE(kSegmentationPlatformSignalDbCache);
 // Feature flag for Compose promotion targeting.
 BASE_DECLARE_FEATURE(kSegmentationPlatformComposePromotion);
 
+// Feature flag for using SQL database for UMA signals.
+BASE_DECLARE_FEATURE(kSegmentationPlatformUmaFromSqlDb);
+
+// Feature flag for having separate models for the Start and NTP surface.
+BASE_DECLARE_FEATURE(kSegmentationPlatformIosModuleRankerSplitBySurface);
+
 }  // namespace segmentation_platform::features
 
 #endif  // COMPONENTS_SEGMENTATION_PLATFORM_PUBLIC_FEATURES_H_

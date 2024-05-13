@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
-#include "base/strings/utf_string_conversions.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -129,11 +130,9 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_LocalCard) {
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
-  autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
+  autofill_client_->GetPersonalDataManager()
+      ->payments_data_manager()
+      .AddCreditCard(local_card_);
 
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
       NonInteractivePaymentMethodType::kLocalCard));
@@ -141,27 +140,12 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_LocalCard) {
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
-// opt-in if the conditions for offering it are all met, but the feature flag is
-// off.
-TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_LocalCard_FlagOff) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
-  autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
-
-  EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
-      NonInteractivePaymentMethodType::kLocalCard));
-}
-
-// Test that the MandatoryReauthManager returns that we should not offer re-auth
 // opt-in if the conditions for offering it are all met but we are in off the
 // record mode.
 TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_Incognito) {
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
-  autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
+  autofill_client_->GetPersonalDataManager()
+      ->payments_data_manager()
+      .AddCreditCard(local_card_);
 
   autofill_client_->set_is_off_the_record(true);
 
@@ -182,9 +166,6 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_VirtualCard) {
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
       NonInteractivePaymentMethodType::kVirtualCard));
   ExpectUniqueOfferOptInDecision(MandatoryReauthOfferOptInDecision::kOffered);
@@ -200,9 +181,6 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_MaskedServerCard) {
     GTEST_SKIP() << "This test should not run on automotive.";
   }
 #endif  // BUILDFLAG(IS_ANDROID)
-
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
 
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
       NonInteractivePaymentMethodType::kMaskedServerCard));
@@ -221,12 +199,11 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_UserAlreadyMadeDecision) {
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
   mandatory_reauth_manager_->OnUserCancelledOptInPrompt();
 
-  autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
+  autofill_client_->GetPersonalDataManager()
+      ->payments_data_manager()
+      .AddCreditCard(local_card_);
 
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       NonInteractivePaymentMethodType::kLocalCard));
@@ -246,13 +223,12 @@ TEST_F(MandatoryReauthManagerTest,
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
   ON_CALL(device_authenticator(), CanAuthenticateWithBiometricOrScreenLock)
       .WillByDefault(testing::Return(false));
 
-  autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
+  autofill_client_->GetPersonalDataManager()
+      ->payments_data_manager()
+      .AddCreditCard(local_card_);
 
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       NonInteractivePaymentMethodType::kLocalCard));
@@ -275,10 +251,9 @@ TEST_F(
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
-  autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
+  autofill_client_->GetPersonalDataManager()
+      ->payments_data_manager()
+      .AddCreditCard(local_card_);
 
   // 'card_identifier_if_non_interactive_authentication_flow_completed' is not
   // present, implying interactive authentication happened.
@@ -302,10 +277,9 @@ TEST_F(
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
-
-  autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
+  autofill_client_->GetPersonalDataManager()
+      ->payments_data_manager()
+      .AddCreditCard(local_card_);
 
   // Test that if the last filled card is the matching local card, we offer
   // re-auth opt-in.
@@ -541,8 +515,6 @@ TEST_P(MandatoryReauthManagerOptInFlowTest, OptInSuccess) {
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
   base::HistogramTester histogram_tester;
 
   // Verify that we shall offer opt in.
@@ -594,8 +566,6 @@ TEST_P(MandatoryReauthManagerOptInFlowTest, OptInShownButAuthFailure) {
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  base::test::ScopedFeatureList feature_list(
-      features::kAutofillEnablePaymentsMandatoryReauth);
   base::HistogramTester histogram_tester;
 
   // Verify that we shall offer opt in.

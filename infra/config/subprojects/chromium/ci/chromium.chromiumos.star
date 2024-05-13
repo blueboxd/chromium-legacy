@@ -294,7 +294,13 @@ ci.builder(
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = ["chromeos", "checkout_lacros_sdk"],
+            apply_configs = [
+                "chromeos",
+                # This is necessary due to a child builder running the
+                # telemetry_perf_unittests suite.
+                "chromium_with_telemetry_dependencies",
+                "checkout_lacros_sdk",
+            ],
         ),
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -1051,6 +1057,9 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
+    ),
     gn_args = gn_args.config(
         configs = [
             "chromeos_with_codecs",
@@ -1187,6 +1196,9 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.CHROMEOS,
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
+    ),
+    builder_config_settings = builder_config.ci_settings(
+        retry_failed_shards = True,
     ),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(

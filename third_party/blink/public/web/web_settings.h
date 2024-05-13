@@ -269,13 +269,12 @@ class WebSettings {
   virtual void SetLazyLoadingImageMarginPx4G(int) = 0;
   virtual void SetForceDarkModeEnabled(bool) = 0;
   virtual void SetInForcedColors(bool) = 0;
-  virtual void SetBrowserPreferredColorScheme(
+  virtual void SetPreferredRootScrollbarColorScheme(
       blink::mojom::PreferredColorScheme) = 0;
   virtual void SetPreferredColorScheme(blink::mojom::PreferredColorScheme) = 0;
   virtual void SetPreferredContrast(mojom::PreferredContrast) = 0;
   virtual void SetNavigationControls(NavigationControls) = 0;
   virtual void SetAriaModalPrunesAXTree(bool) = 0;
-  virtual void SetUseAXMenuList(bool) = 0;
   virtual void SetSelectionClipboardBufferAvailable(bool) = 0;
   virtual void SetAccessibilityIncludeSvgGElement(bool) = 0;
   virtual void SetWebXRImmersiveArAllowed(bool) = 0;

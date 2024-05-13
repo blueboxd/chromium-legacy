@@ -72,7 +72,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.GooglePlayInstallResult"
-    enum="WebApkGooglePlayInstallResult" expires_after="2024-09-01">
+    enum="WebApkGooglePlayInstallResult" expires_after="2024-11-03">
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
   <summary>
@@ -104,7 +104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.InstallResult" enum="WebApkInstallResult"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>eirage@chromium.org</owner>
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
@@ -196,7 +196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.ShellApkVersion2{WebApkDistributorType}" units="units"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
   <summary>
@@ -240,6 +240,54 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Sync.Restore.FetchInstallableData.AppType"
+    enum="WebApkAppType" expires_after="2025-03-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
+  <summary>
+    When user selected to restore a WebAPK from sync data, we will try to fetch
+    the installable data from the website. Record the type of the app from the
+    installable check result.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Sync.Restore.FetchInstallableData.NotWebApkStatusCode"
+    enum="InstallableStatusCode" expires_after="2025-03-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
+  <summary>
+    When user selected to restore a WebAPK from sync data, we will try to fetch
+    the installable data from the website. If the fetched result is not a valid
+    WebAPK, record the status code from the installable check.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Sync.Restore.InstallEvent"
+    enum="WebApkRestoreFallbackReason" expires_after="2025-03-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
+  <summary>
+    When user selected to restore a WebAPK from sync data, we will try to fetch
+    the installable data from the website. If the fetched result is not
+    installable, we will use the sync data as fallback. Records whether a
+    fallback is used and the reason for using fallback.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Sync.Restore.InstallResult.{RestoreType}"
+    enum="WebApkInstallResult" expires_after="2025-03-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
+  <summary>
+    When installing the sync restored WebAPK finished, records a enum for the
+    install result.
+  </summary>
+  <token key="RestoreType">
+    <variant name="Fallback"/>
+    <variant name="Fetched"/>
+  </token>
+</histogram>
+
 <histogram name="WebApk.Sync.SyncedWebApkAddition"
     enum="WebApkSyncAddOrModifyType" expires_after="2025-03-01">
   <owner>hartmanng@chromium.org</owner>
@@ -277,7 +325,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Uninstall{WebApkDistributorType}" enum="BooleanHit"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
   <summary>
@@ -304,7 +352,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records which app type the Universal Install dialog was shown. Recorded once
     per dialog shown, after we've figured out which type app it is. Note: In
-    versions prior to 124 this metric overcounted app types in scenarios where
+    versions prior to 125 this metric overcounted app types in scenarios where
     the dialog redirects to the install dialog (instead of showing) because we
     detect that only one action was meaningful to the user.
   </summary>

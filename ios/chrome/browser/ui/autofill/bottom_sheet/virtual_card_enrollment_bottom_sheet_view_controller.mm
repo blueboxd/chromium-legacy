@@ -192,6 +192,7 @@ CGFloat const kCreditCardCellHeight = 64;
 
 - (UILabel*)createTitleLabel {
   UILabel* titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
   titleLabel.text = _bottomSheetData.title;
   titleLabel.numberOfLines = 0;  // Allow multiple lines.
   UIFontDescriptor* title2FontDescriptor =
@@ -228,6 +229,8 @@ CGFloat const kCreditCardCellHeight = 64;
   NSMutableAttributedString* attributedText = [[NSMutableAttributedString alloc]
       initWithString:_bottomSheetData.explanatoryMessage
           attributes:@{
+            NSForegroundColorAttributeName :
+                [UIColor colorNamed:kTextPrimaryColor],
             NSFontAttributeName :
                 [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
             NSParagraphStyleAttributeName : centeredTextStyle,

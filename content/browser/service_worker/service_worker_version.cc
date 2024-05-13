@@ -249,6 +249,22 @@ std::optional<std::string> MergeResourceRecordSHA256ScriptChecksum(
   return encoded;
 }
 
+storage::mojom::CacheStorageControl* GetCacheStorageControl(
+    ServiceWorkerVersion& version) {
+  if (!version.context()) {
+    return nullptr;
+  }
+  auto* storage_partition = version.context()->wrapper()->storage_partition();
+  if (!storage_partition) {
+    return nullptr;
+  }
+  auto* control = storage_partition->GetCacheStorageControl();
+  if (!control) {
+    return nullptr;
+  }
+  return control;
+}
+
 }  // namespace
 
 constexpr base::TimeDelta ServiceWorkerVersion::kTimeoutTimerDelay;
@@ -272,10 +288,11 @@ void ServiceWorkerVersion::RestartTick(base::TimeTicks* time) const {
 }
 
 bool ServiceWorkerVersion::RequestExpired(
-    const base::TimeTicks& expiration) const {
-  if (expiration.is_null())
+    const base::TimeTicks& expiration_time) const {
+  if (expiration_time.is_null()) {
     return false;
-  return tick_clock_->NowTicks() >= expiration;
+  }
+  return tick_clock_->NowTicks() >= expiration_time;
 }
 
 base::TimeDelta ServiceWorkerVersion::GetTickDuration(
@@ -461,9 +478,9 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
       embedded_worker()->worker_devtools_agent_route_id(), ukm_source_id(),
       ancestor_frame_type_, router_rules);
   for (const auto& controllee : controllee_map_) {
-    ServiceWorkerContainerHost* container_host = controllee.second.get();
-    info.clients.emplace(container_host->client_uuid(),
-                         container_host->GetServiceWorkerClientInfo());
+    ServiceWorkerClient* service_worker_client = controllee.second.get();
+    info.clients.emplace(service_worker_client->client_uuid(),
+                         service_worker_client->GetServiceWorkerClientInfo());
   }
 
   info.script_response_time = script_response_time_for_devtools_;
@@ -904,18 +921,18 @@ void ServiceWorkerVersion::RunAfterStartWorker(
 }
 
 void ServiceWorkerVersion::AddControllee(
-    ServiceWorkerContainerHost* container_host) {
+    ServiceWorkerClient* service_worker_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(crbug.com/40657227): Remove this CHECK once we figure out the cause of
   // crash.
-  CHECK(container_host);
-  const std::string& uuid = container_host->client_uuid();
-  CHECK(!container_host->client_uuid().empty());
+  CHECK(service_worker_client);
+  const std::string& uuid = service_worker_client->client_uuid();
+  CHECK(!service_worker_client->client_uuid().empty());
   // TODO(crbug.com/40657227): Change to DCHECK once we figure out the cause of
   // crash.
   CHECK(!base::Contains(controllee_map_, uuid));
 
-  controllee_map_[uuid] = container_host->AsWeakPtr();
+  controllee_map_[uuid] = service_worker_client->AsWeakPtr();
   embedded_worker_->UpdateForegroundPriority();
   ClearTick(&no_controllees_time_);
 
@@ -927,15 +944,17 @@ void ServiceWorkerVersion::AddControllee(
 
   // Notify observers asynchronously for consistency with RemoveControllee.
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
-                                weak_factory_.GetWeakPtr(), uuid,
-                                container_host->GetServiceWorkerClientInfo()));
+      FROM_HERE,
+      base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
+                     weak_factory_.GetWeakPtr(), uuid,
+                     service_worker_client->GetServiceWorkerClientInfo()));
 
   // Also send a notification if OnEndNavigationCommit() was already invoked for
   // this container.
-  if (container_host->navigation_commit_ended()) {
-    OnControlleeNavigationCommitted(container_host->client_uuid(),
-                                    container_host->GetRenderFrameHostId());
+  if (service_worker_client->navigation_commit_ended()) {
+    OnControlleeNavigationCommitted(
+        service_worker_client->client_uuid(),
+        service_worker_client->GetRenderFrameHostId());
   }
 }
 
@@ -1056,7 +1075,7 @@ void ServiceWorkerVersion::EvictBackForwardCachedControllees(
 }
 
 void ServiceWorkerVersion::EvictBackForwardCachedControllee(
-    ServiceWorkerContainerHost* controllee,
+    ServiceWorkerClient* controllee,
     BackForwardCacheMetrics::NotRestoredReason reason) {
   controllee->EvictFromBackForwardCache(reason);
   controllees_to_be_evicted_[controllee->client_uuid()] = reason;
@@ -1101,9 +1120,9 @@ void ServiceWorkerVersion::Doom() {
   // ServiceWorkerVersion::RemoveControllee(), so be careful with iterators.
   auto iter = controllee_map_.begin();
   while (iter != controllee_map_.end()) {
-    ServiceWorkerContainerHost* container_host = iter->second.get();
+    ServiceWorkerClient* service_worker_client = iter->second.get();
     ++iter;
-    container_host->NotifyControllerLost();
+    service_worker_client->NotifyControllerLost();
   }
   // Tell the bfcached controllees that this version is dead. Each controllee
   // will call ServiceWorkerContainerHost:EvictFromBackForwardCache().
@@ -1118,9 +1137,9 @@ void ServiceWorkerVersion::Doom() {
   // count as true controllees for service worker lifecycle purposes.
   auto bf_iter = bfcached_controllee_map_.begin();
   while (bf_iter != bfcached_controllee_map_.end()) {
-    ServiceWorkerContainerHost* bf_container_host = bf_iter->second.get();
+    ServiceWorkerClient* bf_service_worker_client = bf_iter->second.get();
     ++bf_iter;
-    bf_container_host->NotifyControllerLost();
+    bf_service_worker_client->NotifyControllerLost();
   }
 
   // Any controllee this version had should have removed itself.
@@ -1338,11 +1357,11 @@ ServiceWorkerVersion::GetMainScriptResponse() {
 ServiceWorkerVersion::InflightRequestTimeoutInfo::InflightRequestTimeoutInfo(
     int id,
     ServiceWorkerMetrics::EventType event_type,
-    const base::TimeTicks& expiration,
+    const base::TimeTicks& expiration_time,
     TimeoutBehavior timeout_behavior)
     : id(id),
       event_type(event_type),
-      expiration(expiration),
+      expiration_time(expiration_time),
       timeout_behavior(timeout_behavior) {}
 
 ServiceWorkerVersion::InflightRequestTimeoutInfo::
@@ -1350,9 +1369,10 @@ ServiceWorkerVersion::InflightRequestTimeoutInfo::
 
 bool ServiceWorkerVersion::InflightRequestTimeoutInfo::operator<(
     const InflightRequestTimeoutInfo& other) const {
-  if (expiration == other.expiration)
+  if (expiration_time == other.expiration_time) {
     return id < other.id;
-  return expiration < other.expiration;
+  }
+  return expiration_time < other.expiration_time;
 }
 
 ServiceWorkerVersion::InflightRequest::InflightRequest(
@@ -1620,10 +1640,11 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr);
     return;
   }
-  ServiceWorkerContainerHost* container_host =
-      context_->GetContainerHostByClientID(client_uuid);
-  if (!container_host || container_host->url().DeprecatedGetOriginAsURL() !=
-                             script_url_.DeprecatedGetOriginAsURL()) {
+  ServiceWorkerClient* service_worker_client =
+      context_->GetServiceWorkerClientByClientID(client_uuid);
+  if (!service_worker_client ||
+      service_worker_client->url().DeprecatedGetOriginAsURL() !=
+          script_url_.DeprecatedGetOriginAsURL()) {
     // The promise will be resolved to 'undefined'.
     // Note that we don't BadMessage here since Clients#get() can be passed an
     // arbitrary UUID. The BadMessages for the origin mismatches below are
@@ -1632,13 +1653,14 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr);
     return;
   }
-  if (!container_host->is_execution_ready()) {
-    container_host->AddExecutionReadyCallback(
+  if (!service_worker_client->is_execution_ready()) {
+    service_worker_client->AddExecutionReadyCallback(
         base::BindOnce(&ServiceWorkerVersion::GetClientInternal, this,
                        client_uuid, std::move(callback)));
     return;
   }
-  service_worker_client_utils::GetClient(container_host, std::move(callback));
+  service_worker_client_utils::GetClient(service_worker_client,
+                                         std::move(callback));
 }
 
 void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
@@ -1649,13 +1671,14 @@ void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
     return;
   }
 
-  ServiceWorkerContainerHost* container_host =
-      context_->GetContainerHostByClientID(client_uuid);
-  if (!container_host || !container_host->is_execution_ready()) {
+  ServiceWorkerClient* service_worker_client =
+      context_->GetServiceWorkerClientByClientID(client_uuid);
+  if (!service_worker_client || !service_worker_client->is_execution_ready()) {
     std::move(callback).Run(nullptr);
     return;
   }
-  service_worker_client_utils::GetClient(container_host, std::move(callback));
+  service_worker_client_utils::GetClient(service_worker_client,
+                                         std::move(callback));
 }
 
 void ServiceWorkerVersion::OpenNewTab(const GURL& url,
@@ -1699,9 +1722,9 @@ void ServiceWorkerVersion::PostMessageToClient(
     blink::TransferableMessage message) {
   if (!context_)
     return;
-  ServiceWorkerContainerHost* container_host =
-      context_->GetContainerHostByClientID(client_uuid);
-  if (!container_host) {
+  ServiceWorkerClient* service_worker_client =
+      context_->GetServiceWorkerClientByClientID(client_uuid);
+  if (!service_worker_client) {
     // The client may already have been closed, just ignore.
     return;
   }
@@ -1709,15 +1732,15 @@ void ServiceWorkerVersion::PostMessageToClient(
   if (IsBackForwardCacheEnabled()) {
     // When |PostMessageToClient| is called on a client that is in bfcache,
     // evict the bfcache entry.
-    if (container_host->IsInBackForwardCache()) {
+    if (service_worker_client->IsInBackForwardCache()) {
       EvictBackForwardCachedControllee(
-          container_host, BackForwardCacheMetrics::NotRestoredReason::
-                              kServiceWorkerPostMessage);
+          service_worker_client, BackForwardCacheMetrics::NotRestoredReason::
+                                     kServiceWorkerPostMessage);
       return;
     }
   }
 
-  if (container_host->url().DeprecatedGetOriginAsURL() !=
+  if (service_worker_client->url().DeprecatedGetOriginAsURL() !=
       script_url_.DeprecatedGetOriginAsURL()) {
     associated_interface_receiver_.ReportBadMessage(
         "Received Client#postMessage() request for a cross-origin client.");
@@ -1725,8 +1748,8 @@ void ServiceWorkerVersion::PostMessageToClient(
     return;
   }
   base::UmaHistogramBoolean("ServiceWorker.PostMessage.IsExecutionReady",
-                            container_host->is_execution_ready());
-  if (!container_host->is_execution_ready()) {
+                            service_worker_client->is_execution_ready());
+  if (!service_worker_client->is_execution_ready()) {
     // It's subtle why this ReportBadMessage is correct. Consider the
     // sequence:
     // 1. Page does ServiceWorker.postMessage().
@@ -1757,7 +1780,7 @@ void ServiceWorkerVersion::PostMessageToClient(
   // As we don't track tasks between workers and renderers, we can nullify the
   // message's parent task ID.
   message.parent_task_id = std::nullopt;
-  container_host->PostMessageToClient(this, std::move(message));
+  service_worker_client->PostMessageToClient(this, std::move(message));
 }
 
 void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
@@ -1766,21 +1789,21 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr /* client */);
     return;
   }
-  ServiceWorkerContainerHost* container_host =
-      context_->GetContainerHostByClientID(client_uuid);
-  if (!container_host) {
+  ServiceWorkerClient* service_worker_client =
+      context_->GetServiceWorkerClientByClientID(client_uuid);
+  if (!service_worker_client) {
     // The client may already have been closed, just fail.
     std::move(callback).Run(nullptr /* client */);
     return;
   }
-  if (container_host->url().DeprecatedGetOriginAsURL() !=
+  if (service_worker_client->url().DeprecatedGetOriginAsURL() !=
       script_url_.DeprecatedGetOriginAsURL()) {
     associated_interface_receiver_.ReportBadMessage(
         "Received WindowClient#focus() request for a cross-origin client.");
     receiver_.reset();
     return;
   }
-  if (!container_host->IsContainerForWindowClient()) {
+  if (!service_worker_client->IsContainerForWindowClient()) {
     // focus() should be called only for WindowClient.
     associated_interface_receiver_.ReportBadMessage(
         "Received WindowClient#focus() request for a non-window client.");
@@ -1788,7 +1811,7 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     return;
   }
 
-  service_worker_client_utils::FocusWindowClient(container_host,
+  service_worker_client_utils::FocusWindowClient(service_worker_client,
                                                  std::move(callback));
 }
 
@@ -1822,28 +1845,28 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
     return;
   }
 
-  ServiceWorkerContainerHost* container_host =
-      context_->GetContainerHostByClientID(client_uuid);
-  if (!container_host) {
+  ServiceWorkerClient* service_worker_client =
+      context_->GetServiceWorkerClientByClientID(client_uuid);
+  if (!service_worker_client) {
     std::move(callback).Run(false /* success */, nullptr /* client */,
                             std::string("The client was not found."));
     return;
   }
-  if (container_host->url().DeprecatedGetOriginAsURL() !=
+  if (service_worker_client->url().DeprecatedGetOriginAsURL() !=
       script_url_.DeprecatedGetOriginAsURL()) {
     associated_interface_receiver_.ReportBadMessage(
         "Received WindowClient#navigate() request for a cross-origin client.");
     receiver_.reset();
     return;
   }
-  if (!container_host->IsContainerForWindowClient()) {
+  if (!service_worker_client->IsContainerForWindowClient()) {
     // navigate() should be called only for WindowClient.
     associated_interface_receiver_.ReportBadMessage(
         "Received WindowClient#navigate() request for a non-window client.");
     receiver_.reset();
     return;
   }
-  if (container_host->controller() != this) {
+  if (service_worker_client->controller() != this) {
     std::move(callback).Run(
         false /* success */, nullptr /* client */,
         std::string(
@@ -1852,8 +1875,8 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   }
 
   service_worker_client_utils::NavigateClient(
-      url, script_url_, key_, container_host->GetRenderFrameHostId(), context_,
-      base::BindOnce(&DidNavigateClient, std::move(callback), url));
+      url, script_url_, key_, service_worker_client->GetRenderFrameHostId(),
+      context_, base::BindOnce(&DidNavigateClient, std::move(callback), url));
 
   NotifyClientNavigated(script_url_, url);
 }
@@ -2011,14 +2034,15 @@ void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
   // Take snapshot of the `controllee_map_` instead of iterating on it directly.
   // This is to rule out the possibility of `controllee_map_` being modified
   // while we call `CountFeature`.
-  std::vector<base::WeakPtr<ServiceWorkerContainerHost>> hosts_snapshot;
-  hosts_snapshot.reserve(controllee_map_.size());
-  for (auto container_host_by_uuid : controllee_map_) {
-    hosts_snapshot.push_back(container_host_by_uuid.second);
+  std::vector<base::WeakPtr<ServiceWorkerClient>> snapshot;
+  snapshot.reserve(controllee_map_.size());
+  for (auto service_worker_client_by_uuid : controllee_map_) {
+    snapshot.push_back(service_worker_client_by_uuid.second);
   }
-  for (auto container_host : hosts_snapshot) {
-    if (container_host)
-      container_host->CountFeature(feature);
+  for (auto service_worker_client : snapshot) {
+    if (service_worker_client) {
+      service_worker_client->CountFeature(feature);
+    }
   }
 }
 
@@ -2458,7 +2482,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   auto timeout_iter = request_timeouts.begin();
   while (timeout_iter != request_timeouts.end()) {
     const InflightRequestTimeoutInfo& info = *timeout_iter;
-    if (!RequestExpired(info.expiration)) {
+    if (!RequestExpired(info.expiration_time)) {
       break;
     }
     if (MaybeTimeoutRequest(info)) {
@@ -2587,14 +2611,14 @@ bool ServiceWorkerVersion::MaybeTimeoutRequest(
 }
 
 void ServiceWorkerVersion::SetAllRequestExpirations(
-    const base::TimeTicks& expiration) {
+    const base::TimeTicks& expiration_time) {
   std::set<InflightRequestTimeoutInfo> new_timeouts;
   for (const auto& info : request_timeouts_) {
     auto [iter, is_inserted] = new_timeouts.emplace(
         info.id, info.event_type,
         // Keep expiration that has `Max` value to avoid stop the worker after
-        // `expiration`.
-        info.expiration.is_max() ? info.expiration : expiration,
+        // `expiration_time`.
+        info.expiration_time.is_max() ? info.expiration_time : expiration_time,
         info.timeout_behavior);
     DCHECK(is_inserted);
     InflightRequest* request = inflight_requests_.Lookup(info.id);
@@ -3101,4 +3125,45 @@ bool ServiceWorkerVersion::BFCacheContainsControllee(
 base::WeakPtr<ServiceWorkerVersion> ServiceWorkerVersion::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
+
+mojo::PendingRemote<blink::mojom::CacheStorage>
+ServiceWorkerVersion::GetRemoteCacheStorage() {
+  auto* control = GetCacheStorageControl(*this);
+  if (!control) {
+    return mojo::NullRemote();
+  }
+
+  // Since this is offloading the cache storage API access in ServiceWorker,
+  // we need to follow COEP used there.
+  // The reason why COEP is enforced to the cache storage API can be seen in:
+  // crbug.com/991428.
+  const network::CrossOriginEmbedderPolicy* coep =
+      cross_origin_embedder_policy();
+  if (!coep) {
+    return mojo::NullRemote();
+  }
+
+  mojo::PendingRemote<blink::mojom::CacheStorage> remote;
+  control->AddReceiver(*coep, embedded_worker()->GetCoepReporter(),
+                       storage::BucketLocator::ForDefaultBucket(key()),
+                       storage::mojom::CacheStorageOwner::kCacheAPI,
+                       remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerVersion::GetControllerMode() const {
+  switch (fetch_handler_existence()) {
+    case ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST:
+      return blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler;
+    case ServiceWorkerVersion::FetchHandlerExistence::EXISTS:
+      return blink::mojom::ControllerServiceWorkerMode::kControlled;
+    case ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN:
+      // UNKNOWN means the controller is still installing. It's not possible to
+      // have a controller that hasn't finished installing.
+      NOTREACHED();
+      return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  }
+}
+
 }  // namespace content

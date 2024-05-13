@@ -44,14 +44,12 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
                    const std::vector<FormGlobalId>& removed_forms) override;
   void OnTextFieldDidChange(const FormData& form,
                             const FormFieldData& field,
-                            const gfx::RectF& bounding_box,
                             const base::TimeTicks timestamp) override;
   void OnDidFillAutofillFormData(const FormData& form,
                                  const base::TimeTicks timestamp) override;
   void OnAskForValuesToFill(
       const FormData& form,
       const FormFieldData& field,
-      const gfx::RectF& bounding_box,
       AutofillSuggestionTriggerSource trigger_source) override;
   void OnJavaScriptChangedAutofilledValue(const FormData& form,
                                           const FormFieldData& field,
@@ -109,7 +107,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
   void OnAskForValuesToFillTest(
       const FormData& form,
       const FormFieldData& field,
-      const gfx::RectF& bounding_box = {},
       AutofillSuggestionTriggerSource trigger_source =
           AutofillSuggestionTriggerSource::kTextFieldDidChange);
 

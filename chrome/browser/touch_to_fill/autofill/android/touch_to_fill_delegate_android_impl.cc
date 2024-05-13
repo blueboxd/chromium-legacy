@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -37,6 +38,18 @@ bool IsFieldFocusableAndEmpty(const FormData& received_form,
   const FormFieldData* form_field = received_form.FindFieldByGlobalId(field_id);
   return form_field && form_field->IsFocusable() &&
          SanitizedFieldIsEmpty(form_field->value());
+}
+
+bool IsTriggeredOnIbanField(const FormStructure* form_field,
+                            const FormFieldData& field) {
+  if (!form_field) {
+    return false;
+  }
+
+  const autofill::AutofillField* autofill_field =
+      form_field->GetFieldById(field.global_id());
+  return autofill_field &&
+         autofill_field->Type().group() == FieldTypeGroup::kIban;
 }
 
 }  // namespace
@@ -116,7 +129,8 @@ TouchToFillDelegateAndroidImpl::DryRunForIban() {
   CHECK(pdm);
   std::vector<Iban> ibans_to_suggest =
       pdm->payments_data_manager().GetOrderedIbansToSuggest();
-  return ibans_to_suggest.empty()
+  return ibans_to_suggest.empty() || !base::FeatureList::IsEnabled(
+                                         features::kAutofillEnableLocalIban)
              ? DryRunResult(TriggerOutcome::kNoValidPaymentMethods, {})
              : DryRunResult(TriggerOutcome::kShown,
                             std::move(ibans_to_suggest));
@@ -184,15 +198,20 @@ bool TouchToFillDelegateAndroidImpl::TryToShowTouchToFill(
       dry_run.outcome = TriggerOutcome::kFailedToDisplayBottomSheet;
     } else if (std::vector<Iban>* ibans_to_suggest =
                    absl::get_if<std::vector<Iban>>(&dry_run.items_to_suggest);
-               ibans_to_suggest) {
-      // TODO(b/309163844): Handle dry_run.ibans_to_suggest case.
+               ibans_to_suggest &&
+               !manager_->client().ShowTouchToFillIban(
+                   GetWeakPtr(), std::move(*ibans_to_suggest))) {
+      dry_run.outcome = TriggerOutcome::kFailedToDisplayBottomSheet;
     }
   }
 
-  // TODO(b/309163888): Revisit how to log IBAN related metrics.
-  if (dry_run.outcome != TriggerOutcome::kUnsupportedFieldType) {
-    base::UmaHistogramEnumeration(kUmaTouchToFillCreditCardTriggerOutcome,
-                                  dry_run.outcome);
+  if (!IsTriggeredOnIbanField(manager_->FindCachedFormById(form.global_id()),
+                              field)) {
+    // TODO(b/309163888): Revisit how to log IBAN related metrics.
+    if (dry_run.outcome != TriggerOutcome::kUnsupportedFieldType) {
+      base::UmaHistogramEnumeration(kUmaTouchToFillCreditCardTriggerOutcome,
+                                    dry_run.outcome);
+    }
   }
   LOG_AF(manager_->client().GetLogManager())
       << LoggingScope::kTouchToFill << LogMessage::kTouchToFill
@@ -279,7 +298,8 @@ void TouchToFillDelegateAndroidImpl::CreditCardSuggestionSelected(
 
   PersonalDataManager* pdm = manager_->client().GetPersonalDataManager();
   CHECK(pdm);
-  CreditCard* card = pdm->GetCreditCardByGUID(unique_id);
+  CreditCard* card =
+      pdm->payments_data_manager().GetCreditCardByGUID(unique_id);
   // TODO(crbug.com/40071928): Figure out why `card` is sometimes nullptr.
   if (!card) {
     return;

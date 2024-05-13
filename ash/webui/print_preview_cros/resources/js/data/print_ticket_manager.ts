@@ -7,7 +7,7 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 
 import {createCustomEvent} from '../utils/event_utils.js';
 import {getPrintPreviewPageHandler} from '../utils/mojo_data_providers.js';
-import {type PrintPreviewPageHandler, PrintTicket, SessionContext} from '../utils/print_preview_cros_app_types.js';
+import {PrinterStatusReason, type PrintPreviewPageHandler, PrintTicket, SessionContext} from '../utils/print_preview_cros_app_types.js';
 
 import {DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, DestinationManager} from './destination_manager.js';
 import {DEFAULT_PARTIAL_PRINT_TICKET} from './ticket_constants.js';
@@ -69,16 +69,24 @@ export class PrintTicketManager extends EventTarget {
       // Set print ticket defaults.
       ...DEFAULT_PARTIAL_PRINT_TICKET,
       printPreviewId: this.sessionContext.printPreviewId,
-      destination: this.destinationManager.getActiveDestination()?.id ?? '',
       previewModifiable: this.sessionContext.isModifiable,
       shouldPrintSelectionOnly: this.sessionContext.hasSelection,
     } as PrintTicket;
 
-    if (this.printTicket.destination === '') {
+    const activeDest = this.destinationManager.getActiveDestination();
+    if (activeDest === null) {
+      this.printTicket.destination = '';
       this.eventTracker.add(
           this.destinationManager,
           DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED,
           (event: Event): void => this.onActiveDestinationChanged(event));
+    } else {
+      this.printTicket.destination = activeDest.id;
+      this.printTicket.printerType = activeDest.printerType;
+      this.printTicket.printerManuallySelected =
+          activeDest.printerManuallySelected;
+      this.printTicket.printerStatusReason =
+          activeDest.printerStatusReason || PrinterStatusReason.UNKNOWN_REASON;
     }
 
     // TODO(b/323421684): Apply default settings from destination capabilities
@@ -88,9 +96,10 @@ export class PrintTicketManager extends EventTarget {
         createCustomEvent(PRINT_TICKET_MANAGER_SESSION_INITIALIZED));
   }
 
-  // Handles notifying start and finish print request.
-  // TODO(b/323421684): Takes current print ticket uses PrintPreviewPageHandler
-  // to initiate actual print request.
+  // Handles notifying start and finish print request. Sends latest print ticket
+  // state along with request.
+  // TODO(b/323421684): Update print ticket prior to sending to set
+  // headerFooterEnabled to false to align with Chrome preview behavior.
   sendPrintRequest(): void {
     assert(this.printPreviewPageHandler);
 
@@ -151,6 +160,11 @@ export class PrintTicketManager extends EventTarget {
 
     if (this.printTicket!.destination === '') {
       this.printTicket!.destination = activeDest.id;
+      this.printTicket!.printerType = activeDest.printerType;
+      this.printTicket!.printerManuallySelected =
+          activeDest.printerManuallySelected;
+      this.printTicket!.printerStatusReason =
+          activeDest.printerStatusReason || PrinterStatusReason.UNKNOWN_REASON;
     }
 
     this.eventTracker.remove(

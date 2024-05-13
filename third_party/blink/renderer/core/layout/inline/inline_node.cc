@@ -1368,7 +1368,6 @@ void InlineNode::ShapeText(InlineItemsData* data,
         .is_line_start = is_next_start_of_paragraph,
         .han_kerning_start =
             is_next_start_of_paragraph &&
-            RuntimeEnabledFeatures::CSSTextSpacingTrimEnabled() &&
             ShouldTrimStartOfParagraph(
                 font.GetFontDescription().GetTextSpacingTrim()) &&
             Character::MaybeHanKerningOpen(
@@ -1914,7 +1913,7 @@ static LayoutUnit ComputeContentSize(InlineNode node,
             continue;
           }
         }
-        if (item.Type() == InlineItem::kOpenRubyColumn && result.ruby_column) {
+        if (result.IsRubyColumn()) {
           ComputeFromMinSizeInternal(result.ruby_column->base_line);
           continue;
         }

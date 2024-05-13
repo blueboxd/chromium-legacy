@@ -97,8 +97,11 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder_builder.h"
@@ -1187,10 +1190,6 @@ void DocumentLoader::DecodedBodyDataReceived(
     base::span<const char> encoded_data) {
   // Decoding has already happened, we don't need the decoder anymore.
   parser_->SetDecoder(nullptr);
-  if (response_.WasFetchedViaServiceWorker()) {
-    total_body_size_from_service_worker_ += data.length();
-  }
-
   DecodedBodyData body_data(data, DocumentEncodingData(encoding_data),
                             encoded_data);
   BodyDataReceivedImpl(body_data);
@@ -1213,6 +1212,9 @@ void DocumentLoader::BodyDataReceivedImpl(BodyData& data) {
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   base::span<const char> encoded_data = data.EncodedData();
   if (encoded_data.size()) {
+    if (response_.WasFetchedViaServiceWorker()) {
+      total_body_size_from_service_worker_ += encoded_data.size();
+    }
     GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
                                                   encoded_data.size());
     probe::DidReceiveData(probe::ToCoreProbeSink(GetFrame()),
@@ -1933,6 +1935,23 @@ void DocumentLoader::StartLoadingResponse() {
   if (!frame_)
     return;
 
+  // TODO(crbug.com/332706093): See if this optimization can be enabled for
+  // non-main frames after fixing failing tests.
+  if (base::FeatureList::IsEnabled(features::kStreamlineRendererInit) &&
+      frame_->IsMainFrame() && loading_url_as_empty_document_ &&
+      commit_reason_ == CommitReason::kInitialization) {
+    // We know this is an empty document, so explicitly set empty content
+    // without going through the parser, which has a lot of overhead.
+    Document* document = frame_->GetDocument();
+    auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
+    html->AppendChild(MakeGarbageCollected<HTMLHeadElement>(*document));
+    document->AppendChild(html);
+    html->AppendChild(MakeGarbageCollected<HTMLBodyElement>(*document));
+
+    FinishedLoading(base::TimeTicks::Now());
+    return;
+  }
+
   CHECK_GE(state_, kCommitted);
 
   CreateParserPostCommit();
@@ -2234,20 +2253,20 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     debug_info_builder.Append(owner_document->Url().BaseAsString());
     debug_info_builder.Append(")");
   } else if (url_.IsAboutSrcdocURL()) {
-    // If there's no owner_document and this is a srcdoc load, then get the
-    // origin from the remote parent. A srcdoc navigation with no owner_document
-    // can only happen if the iframe is sandboxed and isolated sandboxed frames
-    // is enabled In that case, copy the origin from the remote parent
-    // here—though this origin will only be used to derive the actual opaque
-    // origin later.
+    // If there's no owner_document and this is a sandboxed srcdoc load, then
+    // get the origin from the remote parent. In general, a srcdoc navigation
+    // with no owner_document can only currently happen  if the iframe is
+    // sandboxed and isolated sandboxed frames is enabled, in which case, copy
+    // the origin from the remote parent here (though this origin will only be
+    // used to derive the actual opaque origin later),
     // TODO(https://crbug.com/328279696): this block can be removed once the
     // about:srcdoc navigation blocking finishes rolling out, as then the
     // initiator can never be cross-origin to the parent.
+    bool is_sandboxed = (policy_container_->GetPolicies().sandbox_flags &
+                         network::mojom::blink::WebSandboxFlags::kOrigin) !=
+                        network::mojom::blink::WebSandboxFlags::kNone;
+    CHECK(is_sandboxed);
     debug_info_builder.Append("about_srcdoc_with_remote_parent[origin=");
-    // Verify this is a sandboxed srcdoc frame.
-    CHECK((policy_container_->GetPolicies().sandbox_flags &
-           network::mojom::blink::WebSandboxFlags::kOrigin) !=
-          network::mojom::blink::WebSandboxFlags::kNone);
     origin = frame_->Tree()
                  .Parent()
                  ->GetSecurityContext()
@@ -3168,6 +3187,10 @@ void DocumentLoader::CountUse(mojom::WebFeature feature) {
 
 void DocumentLoader::CountDeprecation(mojom::WebFeature feature) {
   return use_counter_.Count(feature, GetFrame());
+}
+
+void DocumentLoader::CountWebDXFeature(mojom::blink::WebDXFeature feature) {
+  return use_counter_.CountWebDXFeature(feature, GetFrame());
 }
 
 void DocumentLoader::RecordAcceptLanguageAndContentLanguageMetric() {

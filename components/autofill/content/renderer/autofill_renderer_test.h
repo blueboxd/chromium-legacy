@@ -51,20 +51,15 @@ class MockAutofillDriver : public mojom::AutofillDriver {
               TextFieldDidChange,
               (const FormData& form,
                const FormFieldData& field,
-               const gfx::RectF& bounding_box,
                base::TimeTicks timestamp),
               (override));
   MOCK_METHOD(void,
               TextFieldDidScroll,
-              (const FormData& form,
-               const FormFieldData& field,
-               const gfx::RectF& bounding_box),
+              (const FormData& form, const FormFieldData& field),
               (override));
   MOCK_METHOD(void,
               SelectControlDidChange,
-              (const FormData& form,
-               const FormFieldData& field,
-               const gfx::RectF& bounding_box),
+              (const FormData& form, const FormFieldData& field),
               (override));
   MOCK_METHOD(void,
               SelectOrSelectListFieldOptionsDidChange,
@@ -81,19 +76,16 @@ class MockAutofillDriver : public mojom::AutofillDriver {
               AskForValuesToFill,
               (const FormData& form,
                const FormFieldData& field,
-               const gfx::RectF& bounding_box,
                AutofillSuggestionTriggerSource trigger_source),
               (override));
   MOCK_METHOD(void, HidePopup, (), (override));
   MOCK_METHOD(void,
-              FocusNoLongerOnForm,
+              FocusOnNonFormField,
               (bool had_interacted_form),
               (override));
   MOCK_METHOD(void,
               FocusOnFormField,
-              (const FormData& form,
-               const FormFieldData& field,
-               const gfx::RectF& bounding_box),
+              (const FormData& form, const FormFieldData& field),
               (override));
   MOCK_METHOD(void,
               DidFillAutofillFormData,

@@ -25,11 +25,10 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   ~TestAutofillExternalDelegate() override;
 
   // AutofillExternalDelegate overrides.
-  void OnPopupShown() override;
-  void OnPopupHidden() override;
+  void OnSuggestionsShown() override;
+  void OnSuggestionsHidden() override;
   void OnQuery(const FormData& form,
                const FormFieldData& field,
-               const gfx::RectF& bounds,
                AutofillSuggestionTriggerSource trigger_source) override;
   void OnSuggestionsReturned(
       FieldGlobalId field_id,

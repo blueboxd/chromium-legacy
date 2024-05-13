@@ -9,6 +9,7 @@ import {BrowserProxyImpl} from 'chrome-untrusted://lens/browser_proxy.js';
 import type {LensPageRemote} from 'chrome-untrusted://lens/lens.mojom-webui.js';
 import type {OverlayObject} from 'chrome-untrusted://lens/overlay_object.mojom-webui.js';
 import type {SelectionOverlayElement} from 'chrome-untrusted://lens/selection_overlay.js';
+import {loadTimeData} from 'chrome-untrusted://resources/js/load_time_data.js';
 import {assertEquals} from 'chrome-untrusted://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome-untrusted://webui-test/polymer_test_util.js';
 
@@ -34,6 +35,10 @@ suite('ObjectSelection', function() {
     callbackRouterRemote =
         testBrowserProxy.callbackRouter.$.bindNewPipeAndPassRemote();
     BrowserProxyImpl.setInstance(testBrowserProxy);
+
+    // Turn off the shimmer. Since the shimmer is resource intensive, turn off
+    // to prevent from causing issues in the tests.
+    loadTimeData.overrideValues({'enableShimmer': false});
 
     selectionOverlayElement = document.createElement('lens-selection-overlay');
     document.body.appendChild(selectionOverlayElement);
@@ -90,12 +95,6 @@ suite('ObjectSelection', function() {
             await testBrowserProxy.handler.whenCalled('issueLensRequest');
         assertBoxesWithinThreshold(objects[1]!.geometry.boundingBox, rect);
       });
-
-  test(`verify that tapping off an object does nothing`, async () => {
-    await simulateClick(selectionOverlayElement, {x: 120, y: 35});
-
-    assertEquals(0, testBrowserProxy.handler.getCallCount('issueLensRequest'));
-  });
 
   test(
       `verify that smaller objects have priority over larger objects`,

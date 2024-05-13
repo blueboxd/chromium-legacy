@@ -62,7 +62,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_drop_target.h"
-#include "ash/wm/overview/overview_focus_cycler.h"
+#include "ash/wm/overview/overview_focus_cycler_old.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_grid_test_api.h"
@@ -895,10 +895,10 @@ TEST_P(OverviewSessionTest, DraggingOnMultipleDisplay) {
       gfx::ToRoundedPoint(normal_item->target_bounds().CenterPoint()));
   generator->PressLeftButton();
   generator->MoveMouseBy(20, 20);
-  EXPECT_TRUE(normal_item->item_mirror_for_dragging_);
-  EXPECT_TRUE(normal_item->window_mirror_for_dragging_);
-  EXPECT_FALSE(minimized_item->item_mirror_for_dragging_);
-  EXPECT_FALSE(minimized_item->window_mirror_for_dragging_);
+  EXPECT_TRUE(normal_item->item_mirror_for_dragging_for_testing());
+  EXPECT_TRUE(normal_item->window_mirror_for_dragging_for_testing());
+  EXPECT_FALSE(minimized_item->item_mirror_for_dragging_for_testing());
+  EXPECT_FALSE(minimized_item->window_mirror_for_dragging_for_testing());
 
   // Start dragging the minimzed window. We don't mirror the original window,
   // since the overview item widget already contains a mirror.
@@ -907,10 +907,10 @@ TEST_P(OverviewSessionTest, DraggingOnMultipleDisplay) {
       gfx::ToRoundedPoint(minimized_item->target_bounds().CenterPoint()));
   generator->PressLeftButton();
   generator->MoveMouseBy(20, 20);
-  EXPECT_FALSE(normal_item->item_mirror_for_dragging_);
-  EXPECT_FALSE(normal_item->window_mirror_for_dragging_);
-  EXPECT_TRUE(minimized_item->item_mirror_for_dragging_);
-  EXPECT_FALSE(minimized_item->window_mirror_for_dragging_);
+  EXPECT_FALSE(normal_item->item_mirror_for_dragging_for_testing());
+  EXPECT_FALSE(normal_item->window_mirror_for_dragging_for_testing());
+  EXPECT_TRUE(minimized_item->item_mirror_for_dragging_for_testing());
+  EXPECT_FALSE(minimized_item->window_mirror_for_dragging_for_testing());
 }
 
 // Tests that dragging an overview item with multiple displays and then exiting
@@ -1875,8 +1875,8 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
 
   display::Screen* screen = display::Screen::GetScreen();
 
-  // The expected y of the label will be the screen minus the shelf, desks bar
-  // and maybe some extra padding for forest.
+  // The expected y of the label will be the screen minus the shelf and desks
+  // bar.
   auto get_expected_y = [&screen]() -> int {
     const int display_height = screen->GetPrimaryDisplay().bounds().height();
     const int grid_y = kDeskBarZeroStateHeight;
@@ -1885,9 +1885,21 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
     return grid_y + grid_height / 2;
   };
 
-  // Verify that originally the label is in the center of the workspace.
-  EXPECT_EQ(gfx::Point(200, get_expected_y()),
-            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+  // Verify that originally the label is in the center of the workspace. For
+  // forest, the padding calculations are much more complicated and we need to
+  // account for the birch bar, so we just check that the widget is roughly
+  // centered vertically.
+  gfx::Point no_windows_centerpoint =
+      no_windows_widget->GetWindowBoundsInScreen().CenterPoint();
+  if (IsForestFeatureEnabled()) {
+    EXPECT_EQ(200, no_windows_centerpoint.x());
+    EXPECT_GT(no_windows_centerpoint.y(), kDeskBarZeroStateHeight);
+    EXPECT_LT(no_windows_centerpoint.y(),
+              screen->GetPrimaryDisplay().bounds().height() -
+                  ShelfConfig::Get()->shelf_size());
+  } else {
+    EXPECT_EQ(gfx::Point(200, get_expected_y()), no_windows_centerpoint);
+  }
 
   // Verify that after rotating the display, the label is centered in the
   // workspace.
@@ -1895,8 +1907,17 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
       display::Display::RotationSource::ACTIVE);
-  EXPECT_EQ(gfx::Point(150, get_expected_y()),
-            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+  no_windows_centerpoint =
+      no_windows_widget->GetWindowBoundsInScreen().CenterPoint();
+  if (IsForestFeatureEnabled()) {
+    EXPECT_EQ(150, no_windows_centerpoint.x());
+    EXPECT_GT(no_windows_centerpoint.y(), kDeskBarZeroStateHeight);
+    EXPECT_LT(no_windows_centerpoint.y(),
+              screen->GetPrimaryDisplay().bounds().height() -
+                  ShelfConfig::Get()->shelf_size());
+  } else {
+    EXPECT_EQ(gfx::Point(150, get_expected_y()), no_windows_centerpoint);
+  }
 }
 
 // Tests that toggling overview on removes any resize shadows that may have been
@@ -1946,10 +1967,13 @@ TEST_P(OverviewSessionTest, OverviewGridBounds) {
 
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
   const gfx::Rect shelf_bounds = shelf->GetIdealBounds();
-  const gfx::Rect hotseat_bounds =
-      shelf->hotseat_widget()->GetWindowBoundsInScreen();
   EXPECT_FALSE(GetGridBounds().Intersects(shelf_bounds));
-  EXPECT_FALSE(GetGridBounds().Intersects(hotseat_bounds));
+
+  if (!IsForestFeatureEnabled()) {
+    const gfx::Rect hotseat_bounds =
+        shelf->hotseat_widget()->GetWindowBoundsInScreen();
+    EXPECT_FALSE(GetGridBounds().Intersects(hotseat_bounds));
+  }
 }
 
 TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
@@ -1977,15 +2001,33 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
                                     shelf_config->system_shelf_size() +
                                     shelf_config->hotseat_bottom_padding();
   const int expected_y = (300 - workarea_bottom_inset) / 2;
-  EXPECT_EQ(gfx::Point(expected_x, expected_y),
-            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  // The x location should be in the center. The y location is roughly in the
+  // center. A lot of calculations go towards the padding and birch and desks
+  // bar for the y location.
+  gfx::Point no_windows_centerpoint =
+      no_windows_widget->GetWindowBoundsInScreen().CenterPoint();
+  if (IsForestFeatureEnabled()) {
+    EXPECT_EQ(expected_x, no_windows_centerpoint.x());
+    EXPECT_GT(no_windows_centerpoint.y(), kDeskBarZeroStateHeight);
+    EXPECT_LT(no_windows_centerpoint.y(), 300 - workarea_bottom_inset);
+  } else {
+    EXPECT_EQ(gfx::Point(expected_x, expected_y), no_windows_centerpoint);
+  }
 
   // Tests that when snapping a window to the right in splitview, the no windows
   // indicator shows up in the middle of the left side of the screen.
   GetSplitViewController()->SnapWindow(window.get(), SnapPosition::kSecondary);
+  no_windows_centerpoint =
+      no_windows_widget->GetWindowBoundsInScreen().CenterPoint();
   expected_x = /*bounds_right=*/(200 - 4) / 2;
-  EXPECT_EQ(gfx::Point(expected_x, expected_y),
-            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+  if (IsForestFeatureEnabled()) {
+    EXPECT_EQ(expected_x, no_windows_centerpoint.x());
+    EXPECT_GT(no_windows_centerpoint.y(), kDeskBarZeroStateHeight);
+    EXPECT_LT(no_windows_centerpoint.y(), 300 - workarea_bottom_inset);
+  } else {
+    EXPECT_EQ(gfx::Point(expected_x, expected_y), no_windows_centerpoint);
+  }
 }
 
 // Tests that the no windows indicator shows properly after adding an item.
@@ -5736,7 +5778,7 @@ TEST_F(TabletModeOverviewSessionTest, CheckNoOverviewItemShift) {
 // Tests to see if windows are shifted if at least one window is
 // partially/completely positioned offscreen.
 TEST_F(TabletModeOverviewSessionTest, CheckOverviewItemShift) {
-  auto windows = CreateAppWindows(7);
+  auto windows = CreateAppWindows(9);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
@@ -5927,7 +5969,7 @@ TEST_F(TabletModeOverviewSessionTest, StackingOrderAfterGestureEvent) {
 // Test that scrolling occurs if started on top of a window using the window's
 // center-point as a start.
 TEST_F(TabletModeOverviewSessionTest, HorizontalScrollingOnOverviewItem) {
-  auto windows = CreateAppWindows(8);
+  auto windows = CreateAppWindows(9);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
@@ -6364,7 +6406,7 @@ TEST_F(TabletModeOverviewSessionTest, VerticalScrollingOnOverviewItem) {
 
 // Test that scrolling occurs if we hit the associated keyboard shortcut.
 TEST_F(TabletModeOverviewSessionTest, CheckScrollingWithKeyboardShortcut) {
-  auto windows = CreateAppWindows(8);
+  auto windows = CreateAppWindows(9);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
@@ -6403,7 +6445,7 @@ TEST_F(TabletModeOverviewSessionTest, LayoutValidAfterRotation) {
   display::test::ScopedSetInternalDisplayId set_internal(
       Shell::Get()->display_manager(),
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  auto windows = CreateAppWindows(7);
+  auto windows = CreateAppWindows(9);
 
   // Helper to determine whether a grid layout is valid. It is considered valid
   // if the left edge of the first item is close enough to the left edge of the

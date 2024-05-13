@@ -47,6 +47,9 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.Promise;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.base.task.test.ShadowPostTask;
+import org.chromium.base.task.test.ShadowPostTask.TestImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
@@ -108,7 +111,7 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(
         manifest = Config.NONE,
-        shadows = {ShadowDeviceConditions.class})
+        shadows = {ShadowDeviceConditions.class, ShadowPostTask.class})
 @EnableFeatures({
     ChromeFeatureList.READALOUD,
     ChromeFeatureList.READALOUD_PLAYBACK,
@@ -187,6 +190,14 @@ public class ReadAloudControllerUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        ShadowPostTask.setTestImpl(
+                new TestImpl() {
+                    @Override
+                    public void postDelayedTask(
+                            @TaskTraits int taskTraits, Runnable task, long delay) {
+                        task.run();
+                    }
+                });
         mProfileSupplier = new ObservableSupplierImpl<>();
         mProfileSupplier.set(mMockProfile);
         doReturn(true).when(mMockProfile).isNativeInitialized();
@@ -326,6 +337,40 @@ public class ReadAloudControllerUnitTest {
     }
 
     @Test
+    public void testOnLoadStarted_differentDocument() {
+        // start a successful playback
+        mController.playTab(mTab, ReadAloudController.Entrypoint.MAGIC_TOOLBAR);
+        resolvePromises();
+        verify(mPlaybackHooks).createPlayback(Mockito.any(), mPlaybackCallbackCaptor.capture());
+        onPlaybackSuccess(mPlayback);
+        resolvePromises();
+
+        // Load new url
+        when(mTab.getUrl()).thenReturn(new GURL("https://en.wikipedia.org/wiki/Alphabet_Inc."));
+        mController.getTabModelTabObserverforTests().onLoadStarted(mTab, true);
+
+        verify(mHighlighter).handleTabReloaded(eq(mTab));
+        verify(mPlayerCoordinator).dismissPlayers();
+    }
+
+    @Test
+    public void testOnLoadStarted_sameDocument() {
+        // start a successful playback
+        mController.playTab(mTab, ReadAloudController.Entrypoint.MAGIC_TOOLBAR);
+        resolvePromises();
+        verify(mPlaybackHooks).createPlayback(Mockito.any(), mPlaybackCallbackCaptor.capture());
+        onPlaybackSuccess(mPlayback);
+        resolvePromises();
+
+        // Load the same document
+        mController.getTabModelTabObserverforTests().onLoadStarted(mTab, false);
+
+        // nothing should happen
+        verify(mHighlighter, never()).handleTabReloaded(eq(mTab));
+        verify(mPlayerCoordinator, never()).dismissPlayers();
+    }
+
+    @Test
     public void testReloadingPage() {
         // Reload tab before any playback starts - tests null checks
         mController.getTabModelTabObserverforTests().onPageLoadStarted(mTab, mTab.getUrl());
@@ -344,21 +389,11 @@ public class ReadAloudControllerUnitTest {
         verify(mPlayerCoordinator, never()).dismissPlayers();
         verify(mPlayback, never()).release();
 
-        // now reload the playing tab
+        // now reload the playing tab, playback should still keep going
         mController.getTabModelTabObserverforTests().onUrlUpdated(mTab);
 
-        verify(mPlayerCoordinator).dismissPlayers();
-        verify(mPlayback).release();
-    }
-
-    @Test
-    public void testOnUrlUpdated() {
-        GURL gurl = new GURL("https://en.wikipedia.org/wiki/Alphabet_Inc.");
-        when(mTab.getUrl()).thenReturn(gurl);
-        mController.getTabModelTabObserverforTests().onUrlUpdated(mTab);
-
-        // check readability for new url
-        verify(mHooksImpl).isPageReadable(eq(gurl.getPossiblyInvalidSpec()), any());
+        verify(mPlayerCoordinator, never()).dismissPlayers();
+        verify(mPlayback, never()).release();
     }
 
     @Test
@@ -459,23 +494,6 @@ public class ReadAloudControllerUnitTest {
         // Mini player finishes showing, done restoring player
         mController.onMiniPlayerShown();
         assertFalse(mController.isRestoringPlayer());
-    }
-
-    @Test
-    public void testReloadPage_errorUiDismissed() {
-        // start a playback with an error
-        mController.playTab(mTab, ReadAloudController.Entrypoint.MAGIC_TOOLBAR);
-        resolvePromises();
-        verify(mPlaybackHooks, times(1))
-                .createPlayback(Mockito.any(), mPlaybackCallbackCaptor.capture());
-        mPlaybackCallbackCaptor.getValue().onFailure(new Exception("Very bad error"));
-        resolvePromises();
-
-        // Reload this url
-        mController.getTabModelTabObserverforTests().onUrlUpdated(mTab);
-
-        // No playback but error UI should get dismissed
-        verify(mPlayerCoordinator).dismissPlayers();
     }
 
     @Test
@@ -687,7 +705,8 @@ public class ReadAloudControllerUnitTest {
         // advance by 1s - we're past the 1h limit, the record should be deleted
         mClock.advanceCurrentTimeMillis(1000);
         assertFalse(mController.isReadable(mTab));
-        verify(mHooksImpl, times(2))
+        // make sure readability isn't called again
+        verify(mHooksImpl, times(1))
                 .isPageReadable(eq(sTestGURL.getSpec()), mCallbackCaptor.capture());
     }
 
@@ -1058,23 +1077,6 @@ public class ReadAloudControllerUnitTest {
         mController.onPhraseChanged(mPhraseTiming);
         verify(mHighlighter, times(1))
                 .highlightText(eq(mGlobalRenderFrameHostId), eq(mTab), eq(mPhraseTiming));
-    }
-
-    @Test
-    public void testReloadingTab_highlightsCleared() {
-        // set up the highlighter
-        mController.setTimepointsSupportedForTest(mTab.getUrl().getSpec(), true);
-        mController.playTab(mTab, ReadAloudController.Entrypoint.MAGIC_TOOLBAR);
-        resolvePromises();
-        verify(mPlaybackHooks, times(1))
-                .createPlayback(Mockito.any(), mPlaybackCallbackCaptor.capture());
-        onPlaybackSuccess(mPlayback);
-        verify(mHighlighter).initializeJs(eq(mTab), eq(mMetadata), any(Highlighter.Config.class));
-
-        // Reload this url
-        mController.getTabModelTabObserverforTests().onUrlUpdated(mTab);
-
-        verify(mHighlighter).handleTabReloaded(eq(mTab));
     }
 
     @Test
@@ -2376,6 +2378,14 @@ public class ReadAloudControllerUnitTest {
         // shouldn't seek
         mController.tapToSeek("the quick brown fox", 4, 9);
         verify(mPlayback, never()).seekToWord(0, 8);
+    }
+
+    @Test
+    public void testDidFirstVisuallyNonEmptyPaint() {
+        GURL gurl = new GURL("https://en.wikipedia.org/wiki/Alphabet_Inc.");
+        when(mTab.getUrl()).thenReturn(gurl);
+        mController.getTabModelTabObserverforTests().didFirstVisuallyNonEmptyPaint(mTab);
+        verify(mHooksImpl).isPageReadable(eq(gurl.getPossiblyInvalidSpec()), any());
     }
 
     private void requestAndStartPlayback() {

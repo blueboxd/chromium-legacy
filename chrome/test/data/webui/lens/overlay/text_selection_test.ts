@@ -55,6 +55,10 @@ suite('TextSelection', function() {
     loadTimeData.overrideValues(
         {'verticalTextMarginPx': 0, 'horizontalTextMarginPx': 0});
 
+    // Turn off the shimmer. Since the shimmer is resource intensive, turn off
+    // to prevent from causing issues in the tests.
+    loadTimeData.overrideValues({'enableShimmer': false});
+
     selectionOverlayElement = document.createElement('lens-selection-overlay');
     document.body.appendChild(selectionOverlayElement);
     // Since the size of the Selection Overlay is based on the screenshot which
@@ -308,28 +312,84 @@ suite('TextSelection', function() {
         0, testBrowserProxy.handler.getCallCount('issueTextSelectionRequest'));
   });
 
-  test('verify that clicking on a word unhighlights words', async () => {
-    const wordsOnPage = getRenderedWords();
-    const firstWord = wordsOnPage[0]!.getBoundingClientRect();
-    const secondWord = wordsOnPage[1]!.getBoundingClientRect();
+  test(
+    'verify that clicking on a word highlights the clicked word',
+    async () => {
+      const wordsOnPage = getRenderedWords();
+      const word = wordsOnPage[0]!.getBoundingClientRect();
 
-    // Highlight some words.
-    await simulateDrag(
-        selectionOverlayElement,
-        {x: getCenterX(firstWord), y: getCenterY(firstWord)},
-        {x: getCenterX(secondWord), y: getCenterY(secondWord)});
-    let highlightedLines = getHighlightedLines();
-    assertEquals(1, highlightedLines.length);
+      let highlightedLines = getHighlightedLines();
+      assertEquals(0, highlightedLines.length);
 
-    // Click on a word.
-    await simulateClick(
-        selectionOverlayElement,
-        {x: getCenterX(firstWord), y: getCenterY(firstWord)});
+      // Click on a word.
+      await simulateClick(
+          selectionOverlayElement,
+          {x: getCenterX(word), y: getCenterY(word)});
 
-    // Verify words unhighlight.
-    highlightedLines = getHighlightedLines();
-    assertEquals(0, highlightedLines.length);
-  });
+      // Verify words unhighlight, except for the tapped word.
+      highlightedLines = getHighlightedLines();
+      assertEquals(1, highlightedLines.length);
+
+      const highlightedLineBoundingBox =
+          highlightedLines[0]!.getBoundingClientRect();
+      assertSameRenderedPixel(
+        word.left, highlightedLineBoundingBox.left);
+      assertSameRenderedPixel(
+        word.top, highlightedLineBoundingBox.top);
+      assertSameRenderedPixel(
+        word.right, highlightedLineBoundingBox.right);
+      assertSameRenderedPixel(
+        word.bottom, highlightedLineBoundingBox.bottom);
+    });
+
+  test(
+    `verify that clicking on a word unhighlights words except
+    for the clicked word`,
+    async () => {
+      const wordsOnPage = getRenderedWords();
+      const firstWord = wordsOnPage[0]!.getBoundingClientRect();
+      const secondWord = wordsOnPage[1]!.getBoundingClientRect();
+
+      // Highlight some words.
+      await simulateDrag(
+          selectionOverlayElement,
+          {x: getCenterX(firstWord), y: getCenterY(firstWord)},
+          {x: getCenterX(secondWord), y: getCenterY(secondWord)});
+      let highlightedLines = getHighlightedLines();
+      assertEquals(1, highlightedLines.length);
+
+      let highlightedLineBoundingBox =
+          highlightedLines[0]!.getBoundingClientRect();
+      assertSameRenderedPixel(
+        firstWord.left, highlightedLineBoundingBox.left);
+      assertSameRenderedPixel(
+        firstWord.top, highlightedLineBoundingBox.top);
+      assertSameRenderedPixel(
+        secondWord.right, highlightedLineBoundingBox.right);
+      assertSameRenderedPixel(
+        secondWord.bottom, highlightedLineBoundingBox.bottom);
+
+      // Click on a word.
+      await simulateClick(
+          selectionOverlayElement,
+          {x: getCenterX(firstWord), y: getCenterY(firstWord)});
+
+      // Verify words unhighlight, except for the clicked word.
+      highlightedLines = getHighlightedLines();
+      assertEquals(1, highlightedLines.length);
+
+      highlightedLineBoundingBox =
+          highlightedLines[0]!.getBoundingClientRect();
+      assertEquals(1, highlightedLines.length);
+      assertSameRenderedPixel(
+        firstWord.left, highlightedLineBoundingBox.left);
+      assertSameRenderedPixel(
+        firstWord.top, highlightedLineBoundingBox.top);
+      assertSameRenderedPixel(
+        firstWord.right, highlightedLineBoundingBox.right);
+      assertSameRenderedPixel(
+        firstWord.bottom, highlightedLineBoundingBox.bottom);
+    });
 
   test('verify that clicking off a word unhighlights words', async () => {
     const wordsOnPage = getRenderedWords();
@@ -350,6 +410,42 @@ suite('TextSelection', function() {
     // Verify words unhighlight.
     highlightedLines = getHighlightedLines();
     assertEquals(0, highlightedLines.length);
+  });
+
+  test('TextLayerClearAllSelectionsCallback', async () => {
+    const wordsOnPage = getRenderedWords();
+    const firstWord = wordsOnPage[0]!.getBoundingClientRect();
+    const secondWord = wordsOnPage[1]!.getBoundingClientRect();
+
+    // Highlight some words.
+    await simulateDrag(
+        selectionOverlayElement,
+        {x: getCenterX(firstWord), y: getCenterY(firstWord)},
+        {x: getCenterX(secondWord), y: getCenterY(secondWord)});
+    let highlightedLines = getHighlightedLines();
+    assertEquals(1, highlightedLines.length);
+
+    // Mojo call to clear all selections.
+    callbackRouterRemote.clearAllSelections();
+    await flushTasks();
+
+    // Verify words unhighlight.
+    highlightedLines = getHighlightedLines();
+    assertEquals(0, highlightedLines.length);
+  });
+
+  test('TextLayerSetTextSelectionCallback', async () => {
+    // Verify no words are highlighted.
+    let highlightedLines = getHighlightedLines();
+    assertEquals(0, highlightedLines.length);
+
+    // Mojo call to clear all selections.
+    callbackRouterRemote.setTextSelection(0, 1);
+    await flushTasks();
+
+    // Verify words are now highlighted.
+    highlightedLines = getHighlightedLines();
+    assertEquals(1, highlightedLines.length);
   });
 
   // TODO(b/336797761): Add tests that test rotated bounding boxes and top to

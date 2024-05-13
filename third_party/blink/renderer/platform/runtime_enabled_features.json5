@@ -631,7 +631,7 @@
     {
       // https://html.spec.whatwg.org/multipage/interaction.html#close-requests-and-close-watchers
       name: "CloseWatcher",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CoepReflection",
@@ -685,9 +685,8 @@
       status: "stable",
     },
     {
-      name: "ConcurrentViewTransitions",
+      name: "ConcurrentViewTransitionsSPA",
       status: "test",
-      implied_by: ["ViewTransitionOnNavigation"],
     },
     {
       name: "ContactsManager",
@@ -703,6 +702,10 @@
     },
     {
       name: "ContextMenu",
+      status: "experimental",
+    },
+    {
+      name: "ContinueEventTimingRecordingWhenBufferIsFull",
       status: "experimental",
     },
     {
@@ -956,7 +959,7 @@
       // for CSS reading of grid and flex layout.
       // https://drafts.csswg.org/css-display-4/#reading-order-items
       name: "CSSReadingOrderItems",
-      status: "test",
+      status: "experimental",
     },
     {
       // https://drafts.csswg.org/css-color-5/#relative-colors
@@ -1053,12 +1056,7 @@
     {
       // crbug.com/1463890, crbug.com/1463891: CSS `text-spacing` shorthand
       name: "CSSTextSpacing",
-      depends_on: ["CSSTextAutoSpace", "CSSTextSpacingTrim"],
-    },
-    {
-      // crbug.com/1463891: CSS `text-spacing-trim` property
-      name: "CSSTextSpacingTrim",
-      status: "stable",
+      depends_on: ["CSSTextAutoSpace"],
     },
     {
       // Support for tree-scoped [1] timeline names (e.g. produced by
@@ -1106,13 +1104,6 @@
       origin_trial_feature_name: "WebSQL",
       origin_trial_allows_third_party: true,
       origin_trial_type: "deprecation",
-    },
-    {
-      // Makes the default display value of date type <input> elements
-      // inline-block for cross-browser compatibility. Enabled in M122, should
-      // be safe to remove in M126.
-      name: "DateInputInlineBlock",
-      status: "stable",
     },
     {
       // This is a killswitch for the `serializable` attribute on declarative
@@ -1354,7 +1345,11 @@
     // IncludeJSCallStacksInCrashReports. https://chromestatus.com/feature/4731248572628992
     {
       name: "DocumentPolicyIncludeJSCallStacksInCrashReports",
+      origin_trial_feature_name: "DocumentPolicyIncludeJSCallStacksInCrashReports",
       status: "experimental",
+      base_feature_status: "enabled",
+      browser_process_read_access: true,
+      copied_from_base_feature_if: "overridden",
     },
     {
       name: "DocumentPolicyNegotiation",
@@ -1373,7 +1368,6 @@
       // https://chromestatus.com/feature/5113053598711808
       name: "DocumentRenderBlocking",
       status: "stable",
-      implied_by: ["ViewTransitionOnNavigation"],
     },
     {
       name: "DocumentWrite",
@@ -1494,10 +1488,6 @@
     {
       name: "FaceDetector",
       status: "experimental",
-    },
-    {
-      name: "FakeNoAllocDirectCallForTesting",
-      status: "test",
     },
     {
       // crbug.com/333630754
@@ -1726,6 +1716,14 @@
       status: "experimental",
     },
     {
+      name: "FillScrollingContentsLayer",
+      status: "experimental",
+    },
+    {
+      name: "FindTextInReadonlyTextInput",
+      status: "experimental",
+    },
+    {
       name: "Fledge",
       base_feature: "none",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
@@ -1758,6 +1756,15 @@
     {
       name: "FledgeDirectFromSellerSignalsHeaderAdSlot",
       status: "stable",
+    },
+    {
+      name: "FledgeFeatureDetectAll",
+      // FledgeFeatureDetectAll should be enabled by any feature-detectable
+      // experiment that enters trials after it got created; this makes it easy
+      // to polyfill by only checking older things, and makes it serve its
+      // purpose of modularly advertising new things.
+      implied_by: ["FledgePermitCrossOriginTrustedSignals"],
+      base_feature: "none",
     },
     {
       name: "FledgeFeatureDetection",
@@ -2072,6 +2079,10 @@
       status: "stable"
     },
     {
+      name: "ImportMapIntegrity",
+      status: "experimental"
+    },
+    {
       // ImprovedXMLErrors tweaks the way that we emit XML parsing errors in
       // some cases in order to comply with upstream changes to libxml.
       // Shipping in M123, so should be safe to remove in M126.
@@ -2186,10 +2197,25 @@
       base_feature: "none",
     },
     {
-      // TODO(crbug.com/40113891): This feature allow scrollers to be
+      // TODO(crbug.com/40113891): This feature allows scrollers to be
       // keyboard focusable by default.
       name: "KeyboardFocusableScrollers",
       status: "experimental",
+    },
+    {
+      // TODO(crbug.com/40113891): Disables KeyboardFocusableScrollers.
+      // This feature only takes effect if KeyboardFocusableScrollers is
+      // enabled. It will overwrite the behavior and not allow scrollers to be
+      // keyboard focusable by default.
+      name: "KeyboardFocusableScrollersOptOut",
+      origin_trial_feature_name: "KeyboardFocusableScrollersOptOut",
+      // This is not a deprecation feature, but we need this type to set the
+      // origin trial. This feature will allow sites to have time to adjust to
+      // the breaking change by opting out.
+      origin_trial_type: "deprecation",
+      origin_trial_allows_insecure: true,
+      origin_trial_allows_third_party: true,
+      public: true,
     },
     {
       // This feature makes HTMLLabelElement::DefaultEventHandler always call
@@ -2868,17 +2894,15 @@
     {
       name: "PageRevealEvent",
       status: "stable",
-      implied_by: ["ViewTransitionOnNavigation"],
     },
     {
       name: "PageSwapEvent",
       status: "stable",
-      implied_by: ["ViewTransitionOnNavigation"],
     },
     {
       name: "PaintHoldingForIframes",
       status: "test",
-      implied_by: ["ViewTransitionOnNavigation"],
+      implied_by: ["ViewTransitionOnNavigationForIframes"],
     },
     {
       name: "PaintHoldingForLocalIframes",
@@ -2958,8 +2982,12 @@
     {
       // Tracking bug for the implementation: https://crbug.com/1462930
       name: "PermissionElement",
+      origin_trial_feature_name: "PermissionElement",
+      origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
       status: "experimental",
-      base_feature: "none",
+      public: true,
+      base_feature_status: "enabled",
+      copied_from_base_feature_if: "overridden",
     },
     {
       name: "Permissions",
@@ -3063,6 +3091,12 @@
       base_feature: "none",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
+    },
+    {
+      // Controls whether filtering IDs can be specified for Private Aggregation
+      // contributions. If disabled, any IDs will be ignored.
+      name: "PrivateAggregationApiFilteringIds",
+      status: "experimental",
     },
     {
       name: "PrivateAggregationAuctionReportBuyerDebugModeConfig",
@@ -3352,7 +3386,7 @@
     {
       // crbug.com/324111880
       name: "RubyLineBreakable",
-      status: "test",
+      status: "experimental",
     },
     {
       // Runs a microtask checkpoint before creating custom elements in
@@ -3519,6 +3553,11 @@
       // See crbug.com/1510466: this is the shadow root clonable implementation.
       // This shipped in M124, and should be safe to remove in M126 or so.
       name: "ShadowRootClonable",
+      status: "stable",
+    },
+    {
+      // crbug.com/329677645
+      name: "ShapeResultCachedPreviousSafeToBreakOffset",
       status: "stable",
     },
     {
@@ -4124,6 +4163,11 @@
       // cross-document transitions.
       // See https://drafts.csswg.org/css-view-transitions-1/.
       name: "ViewTransitionOnNavigation",
+      status: "stable",
+    },
+    {
+      name: "ViewTransitionOnNavigationForIframes",
+      status: "test",
     },
     {
       // https://chromestatus.com/feature/5089552511533056
@@ -4193,21 +4237,25 @@
     },
     {
       name: "WebAppTabStrip",
-      status: "experimental",
+      status: {
+        "ChromeOS_Ash": "stable",
+        "ChromeOS_Lacros": "stable",
+        "default": "experimental"
+      },
       base_feature: "DesktopPWAsTabStrip",
       base_feature_status: "enabled",
       copied_from_base_feature_if: "overridden",
-      origin_trial_feature_name: "WebAppTabStrip",
-      origin_trial_os: ["chromeos"],
     },
     {
       name: "WebAppTabStripCustomizations",
-      status: "experimental",
+      status: {
+        "ChromeOS_Ash": "stable",
+        "ChromeOS_Lacros": "stable",
+        "default": "experimental"
+      },
       base_feature: "DesktopPWAsTabStripCustomizations",
       base_feature_status: "enabled",
       copied_from_base_feature_if: "overridden",
-      origin_trial_feature_name: "WebAppTabStrip",
-      origin_trial_os: ["chromeos"],
     },
     {
       name: "WebAppTranslations",

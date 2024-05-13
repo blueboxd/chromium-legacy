@@ -59,13 +59,15 @@ struct PopupViewSearchBarConfig {
   // the search bar won't be displayed, and other settings become irrelevant.
   bool enabled = false;
   std::u16string placeholder;
+  std::u16string no_results_message;
 };
 
 // Views implementation for the autofill and password suggestion.
 class PopupViewViews : public PopupBaseView,
                        public AutofillPopupView,
                        public PopupRowView::SelectionDelegate,
-                       public ExpandablePopupParentView {
+                       public ExpandablePopupParentView,
+                       public PopupSearchBarView::Delegate {
   METADATA_HEADER(PopupViewViews, PopupBaseView)
 
  public:
@@ -125,6 +127,11 @@ class PopupViewViews : public PopupBaseView,
   // PopupBaseView:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
+  // PopupSearchBarView::Delegate:
+  void SearchBarOnInputChanged(const std::u16string& text) override;
+  void SearchBarOnFocusLost() override;
+  bool SearchBarHandleKeyPressed(const ui::KeyEvent& event) override;
+
  private:
   friend class PopupViewViewsTestApi;
 
@@ -158,7 +165,7 @@ class PopupViewViews : public PopupBaseView,
   bool HasPopupRowViewAt(size_t index) const;
 
   // Instantiates the content of the popup.
-  void InitViews(PopupViewSearchBarConfig search_bar_config);
+  void InitViews();
 
   // Creates child views based on the suggestions given by |controller_|.
   // This method expects that all non-footer suggestions precede footer
@@ -233,12 +240,10 @@ class PopupViewViews : public PopupBaseView,
   // fallback suggestion.
   bool CanOpenSubPopupSuggestion(const Suggestion& suggestion);
 
-  // Callback passed to the search bar (if enabled). Hides the popup.
-  void OnSearchBarFocusLost();
-
-  // Callback passed to the search bar (if enabled). Updates the controller
-  // filter with the `query` argument.
-  void OnSearchBarInputChanged(const std::u16string& query);
+  // Attempts to select the content cell of the row with the currently open
+  // sub-popup. This closes the sub-popup and has the effect of going one menu
+  // level up. Returns whether this was successful.
+  bool SelectParentPopupContentCell();
 
   // Controller for this view.
   base::WeakPtr<AutofillPopupController> controller_ = nullptr;
@@ -254,6 +259,7 @@ class PopupViewViews : public PopupBaseView,
   std::optional<size_t> row_with_open_sub_popup_;
 
   std::vector<RowPointer> rows_;
+  const PopupViewSearchBarConfig search_bar_config_;
   raw_ptr<PopupSearchBarView> search_bar_ = nullptr;
   raw_ptr<views::BoxLayoutView> suggestions_container_ = nullptr;
   raw_ptr<views::ScrollView> scroll_view_ = nullptr;

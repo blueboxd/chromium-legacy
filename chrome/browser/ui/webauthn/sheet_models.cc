@@ -23,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "device/fido/discoverable_credential_metadata.h"
+#include "device/fido/enclave/metrics.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_types.h"
@@ -35,6 +36,19 @@
 #endif
 
 namespace {
+
+using CredentialMech = AuthenticatorRequestDialogModel::Mechanism::Credential;
+using EnclaveMech = AuthenticatorRequestDialogModel::Mechanism::Enclave;
+using ICloudKeychainMech =
+    AuthenticatorRequestDialogModel::Mechanism::ICloudKeychain;
+
+bool IsLocalPasskeyOrEnclaveAuthenticator(
+    const AuthenticatorRequestDialogModel::Mechanism& mech) {
+  return (absl::holds_alternative<CredentialMech>(mech.type) &&
+          absl::get<CredentialMech>(mech.type).value().source !=
+              device::AuthenticatorType::kPhone) ||
+         absl::holds_alternative<EnclaveMech>(mech.type);
+}
 
 // Possibly returns a resident key warning if the model indicates that it's
 // needed.
@@ -566,7 +580,9 @@ void AuthenticatorBlePermissionMacSheetModel::OnAccept() {
 AuthenticatorTouchIdSheetModel::AuthenticatorTouchIdSheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model,
-                                  OtherMechanismButtonVisibility::kVisible) {}
+                                  OtherMechanismButtonVisibility::kVisible) {
+  has_gpm_banner_ = true;
+}
 
 std::u16string AuthenticatorTouchIdSheetModel::GetStepTitle() const {
   const std::u16string rp_id = GetRelyingPartyIdString(dialog_model());
@@ -1576,24 +1592,14 @@ AuthenticatorMultiSourcePickerSheetModel::
   lottie_illustrations_.emplace(IDR_WEBAUTHN_PASSKEY_LIGHT,
                                 IDR_WEBAUTHN_PASSKEY_DARK);
 
-  using CredentialMech = AuthenticatorRequestDialogModel::Mechanism::Credential;
-  using ICloudKeychainMech =
-      AuthenticatorRequestDialogModel::Mechanism::ICloudKeychain;
-  bool has_local_passkeys =
-      base::ranges::any_of(dialog_model->mechanisms, [](const auto& mech) {
-        return absl::holds_alternative<CredentialMech>(mech.type) &&
-               absl::get<CredentialMech>(mech.type).value().source !=
-                   device::AuthenticatorType::kPhone;
-      });
-  if (has_local_passkeys) {
+  if (base::ranges::any_of(dialog_model->mechanisms,
+                           &IsLocalPasskeyOrEnclaveAuthenticator)) {
     primary_passkeys_label_ =
         l10n_util::GetStringUTF16(IDS_WEBAUTHN_THIS_DEVICE_LABEL);
     for (size_t i = 0; i < dialog_model->mechanisms.size(); ++i) {
       const AuthenticatorRequestDialogModel::Mechanism& mech =
           dialog_model->mechanisms[i];
-      if ((absl::holds_alternative<CredentialMech>(mech.type) &&
-           absl::get<CredentialMech>(mech.type).value().source !=
-               device::AuthenticatorType::kPhone) ||
+      if (IsLocalPasskeyOrEnclaveAuthenticator(mech) ||
           // iCloud Keychain appears in the primary list if present. This
           // happens when Chrome does not have permission to enumerate
           // credentials from iCloud Keychain. Thus this generic option is the
@@ -2042,6 +2048,58 @@ void AuthenticatorCreateGpmPasskeySheetModel::OnAccept() {
   dialog_model()->OnGPMCreatePasskey();
 }
 
+// AuthenticatorGpmIncognitoCreateSheetModel ---------------------------------
+AuthenticatorGpmIncognitoCreateSheetModel::
+    AuthenticatorGpmIncognitoCreateSheetModel(
+        AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model,
+                                  OtherMechanismButtonVisibility::kHidden) {
+  // TODO(enclave): Add the new incognito illustration to use instead.
+  lottie_illustrations_.emplace(IDR_WEBAUTHN_GPM_PASSKEY_LIGHT,
+                                IDR_WEBAUTHN_GPM_PASSKEY_DARK);
+}
+
+AuthenticatorGpmIncognitoCreateSheetModel::
+    ~AuthenticatorGpmIncognitoCreateSheetModel() = default;
+
+std::u16string AuthenticatorGpmIncognitoCreateSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_GPM_INCOGNITO_CREATE_TITLE);
+}
+
+std::u16string AuthenticatorGpmIncognitoCreateSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_GPM_INCOGNITO_CREATE_DESC);
+}
+
+bool AuthenticatorGpmIncognitoCreateSheetModel::IsCancelButtonVisible() const {
+  return true;
+}
+
+std::u16string AuthenticatorGpmIncognitoCreateSheetModel::GetCancelButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
+}
+
+void AuthenticatorGpmIncognitoCreateSheetModel::OnCancel() {
+  dialog_model()->CancelAuthenticatorRequest();
+}
+
+bool AuthenticatorGpmIncognitoCreateSheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+bool AuthenticatorGpmIncognitoCreateSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+std::u16string AuthenticatorGpmIncognitoCreateSheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CONTINUE);
+}
+void AuthenticatorGpmIncognitoCreateSheetModel::OnAccept() {
+  dialog_model()->OnGPMConfirmOffTheRecordCreate();
+}
+
 // AuthenticatorGpmOnboardingSheetModel -------------------------------------
 
 AuthenticatorGpmOnboardingSheetModel::AuthenticatorGpmOnboardingSheetModel(
@@ -2050,6 +2108,7 @@ AuthenticatorGpmOnboardingSheetModel::AuthenticatorGpmOnboardingSheetModel(
                                   OtherMechanismButtonVisibility::kVisible) {
   lottie_illustrations_.emplace(IDR_WEBAUTHN_GPM_PASSKEY_LIGHT,
                                 IDR_WEBAUTHN_GPM_PASSKEY_DARK);
+  device::enclave::RecordEvent(device::enclave::Event::kOnboarding);
 }
 
 AuthenticatorGpmOnboardingSheetModel::~AuthenticatorGpmOnboardingSheetModel() =
@@ -2098,7 +2157,13 @@ std::u16string AuthenticatorGpmOnboardingSheetModel::GetAcceptButtonLabel()
 }
 
 void AuthenticatorGpmOnboardingSheetModel::OnAccept() {
+  device::enclave::RecordEvent(device::enclave::Event::kOnboardingAccepted);
   dialog_model()->OnGPMOnboardingAccepted();
+}
+
+void AuthenticatorGpmOnboardingSheetModel::OnBack() {
+  device::enclave::RecordEvent(device::enclave::Event::kOnboardingRejected);
+  AuthenticatorSheetModelBase::OnBack();
 }
 
 // AuthenticatorTrustThisComputerCreationSheetModel ---------------------

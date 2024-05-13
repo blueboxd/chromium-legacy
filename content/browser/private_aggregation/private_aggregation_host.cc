@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <bit>
 #include <iterator>
 #include <map>
 #include <optional>
@@ -32,6 +33,7 @@
 #include "components/aggregation_service/aggregation_coordinator_utils.h"
 #include "components/aggregation_service/features.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
+#include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/private_aggregation/private_aggregation_budget_key.h"
 #include "content/browser/private_aggregation/private_aggregation_budgeter.h"
 #include "content/browser/private_aggregation/private_aggregation_features.h"
@@ -71,6 +73,31 @@ void RecordTimeoutResultHistogram(
       "PrivacySandbox.PrivateAggregation.Host.TimeoutResult", result);
 }
 
+void RecordFilteringIdStatusHistogram(bool has_filtering_id,
+                                      bool has_custom_max_bytes) {
+  PrivateAggregationHost::FilteringIdStatus status;
+
+  if (has_filtering_id) {
+    if (has_custom_max_bytes) {
+      status = PrivateAggregationHost::FilteringIdStatus::
+          kFilteringIdProvidedWithCustomMaxBytes;
+    } else {
+      status = PrivateAggregationHost::FilteringIdStatus::
+          kFilteringIdProvidedWithDefaultMaxBytes;
+    }
+  } else {
+    if (has_custom_max_bytes) {
+      status = PrivateAggregationHost::FilteringIdStatus::
+          kNoFilteringIdWithCustomMaxBytes;
+    } else {
+      status = PrivateAggregationHost::FilteringIdStatus::
+          kNoFilteringIdWithDefaultMaxBytes;
+    }
+  }
+  base::UmaHistogramEnumeration(
+      "PrivacySandbox.PrivateAggregation.Host.FilteringIdStatus", status);
+}
+
 }  // namespace
 
 struct PrivateAggregationHost::ReceiverContext {
@@ -79,6 +106,7 @@ struct PrivateAggregationHost::ReceiverContext {
   PrivateAggregationBudgetKey::Api api_for_budgeting;
   std::optional<std::string> context_id;
   std::optional<url::Origin> aggregation_coordinator_origin;
+  size_t filtering_id_max_bytes;
 
   // If contributions have been truncated, tracks this for triggering the right
   // histogram value.
@@ -145,6 +173,7 @@ bool PrivateAggregationHost::BindNewReceiver(
     std::optional<std::string> context_id,
     std::optional<base::TimeDelta> timeout,
     std::optional<url::Origin> aggregation_coordinator_origin,
+    size_t filtering_id_max_bytes,
     mojo::PendingReceiver<blink::mojom::PrivateAggregationHost>
         pending_receiver) {
   // If rejected, let the pending receiver be destroyed as it goes out of scope
@@ -172,7 +201,20 @@ bool PrivateAggregationHost::BindNewReceiver(
     return false;
   }
 
-  if (timeout.has_value() && !context_id.has_value()) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kPrivateAggregationApiFilteringIds)) {
+    filtering_id_max_bytes = kDefaultFilteringIdMaxBytes;
+  }
+  if (filtering_id_max_bytes < 1 ||
+      filtering_id_max_bytes >
+          AggregationServicePayloadContents::kMaximumFilteringIdMaxBytes) {
+    return false;
+  }
+
+  // Timeouts should only be set for deterministic reports.
+  // TODO(alexmt): Consider requiring timeouts for deterministic reports.
+  if (timeout.has_value() && !context_id.has_value() &&
+      filtering_id_max_bytes == kDefaultFilteringIdMaxBytes) {
     return false;
   }
 
@@ -182,7 +224,8 @@ bool PrivateAggregationHost::BindNewReceiver(
                           .api_for_budgeting = api_for_budgeting,
                           .context_id = std::move(context_id),
                           .aggregation_coordinator_origin =
-                              std::move(aggregation_coordinator_origin)});
+                              std::move(aggregation_coordinator_origin),
+                          .filtering_id_max_bytes = filtering_id_max_bytes});
 
   ReceiverContext* receiver_context_raw_ptr = receiver_context.get();
 
@@ -218,7 +261,7 @@ bool PrivateAggregationHost::IsDebugModeAllowed(
   }
 
   if (!base::FeatureList::IsEnabled(
-          kPrivateAggregationApiBundledEnhancements)) {
+          kPrivateAggregationApiDebugModeRequires3pcEligibility)) {
     return true;
   }
 
@@ -236,7 +279,7 @@ void PrivateAggregationHost::ContributeToHistogram(
 
   if (!GetContentClient()->browser()->IsPrivateAggregationAllowed(
           &*browser_context_, receiver_set_.current_context()->top_frame_origin,
-          reporting_origin)) {
+          reporting_origin, /*out_block_is_site_setting_specific=*/nullptr)) {
     CloseCurrentPipe(PipeResult::kApiDisabledInSettings);
     return;
   }
@@ -262,12 +305,15 @@ void PrivateAggregationHost::ContributeToHistogram(
     return;
   }
 
-  // TODO(crbug.com/330744610): Allow filtering ID to be set.
-  if (base::ranges::any_of(incoming_ptrs,
-                           [&](const ContributionPtr& contribution) {
-                             return contribution->filtering_id.has_value();
-                           })) {
-    mojo::ReportBadMessage("Filtering ID set inappropriately");
+  if (base::FeatureList::IsEnabled(
+          blink::features::kPrivateAggregationApiFilteringIds) &&
+      base::ranges::any_of(
+          incoming_ptrs, [&](const ContributionPtr& contribution) {
+            return static_cast<size_t>(
+                       std::bit_width(contribution->filtering_id.value_or(0))) >
+                   8 * receiver_set_.current_context()->filtering_id_max_bytes;
+          })) {
+    mojo::ReportBadMessage("Filtering ID too big for max bytes");
     CloseCurrentPipe(PipeResult::kFilteringIdInvalid);
     return;
   }
@@ -297,9 +343,37 @@ AggregatableReportRequest PrivateAggregationHost::GenerateReportRequest(
     PrivateAggregationBudgetKey::Api api_for_budgeting,
     std::optional<std::string> context_id,
     std::optional<url::Origin> aggregation_coordinator_origin,
+    size_t specified_filtering_id_max_bytes,
     std::vector<blink::mojom::AggregatableReportHistogramContribution>
         contributions) {
   CHECK(context_id.has_value() || !contributions.empty());
+  CHECK(debug_mode_details);
+
+  bool use_new_report_version =
+      base::FeatureList::IsEnabled(
+          blink::features::kPrivateAggregationApiFilteringIds) &&
+      base::FeatureList::IsEnabled(
+          kPrivacySandboxAggregationServiceFilteringIds);
+
+  std::optional<size_t> applied_filtering_id_max_bytes =
+      specified_filtering_id_max_bytes;
+  if (use_new_report_version) {
+    RecordFilteringIdStatusHistogram(
+        /*has_filtering_id=*/base::ranges::any_of(
+            contributions,
+            [](blink::mojom::AggregatableReportHistogramContribution&
+                   contribution) {
+              return contribution.filtering_id.has_value();
+            }),
+        /*has_custom_max_bytes=*/specified_filtering_id_max_bytes !=
+            kDefaultFilteringIdMaxBytes);
+  } else {
+    applied_filtering_id_max_bytes.reset();
+    base::ranges::for_each(
+        contributions,
+        [](blink::mojom::AggregatableReportHistogramContribution&
+               contribution) { contribution.filtering_id.reset(); });
+  }
 
   AggregationServicePayloadContents payload_contents(
       AggregationServicePayloadContents::Operation::kHistogram,
@@ -307,17 +381,17 @@ AggregatableReportRequest PrivateAggregationHost::GenerateReportRequest(
       // TODO(alexmt): Consider allowing this to be set.
       blink::mojom::AggregationServiceMode::kDefault,
       std::move(aggregation_coordinator_origin), kMaxNumberOfContributions,
-      // TODO(crbug.com/330744610): Allow this to be set.
-      /*filtering_id_byte_size=*/std::nullopt);
+      applied_filtering_id_max_bytes);
 
-  CHECK(debug_mode_details);
   AggregatableReportSharedInfo shared_info(
       scheduled_report_time, std::move(report_id), reporting_origin,
       debug_mode_details->is_enabled
           ? AggregatableReportSharedInfo::DebugMode::kEnabled
           : AggregatableReportSharedInfo::DebugMode::kDisabled,
       /*additional_fields=*/base::Value::Dict(),
-      /*api_version=*/kApiReportVersion,
+      /*api_version=*/
+      use_new_report_version ? kApiReportVersionWithFilteringId
+                             : kApiReportVersionWithoutFilteringId,
       /*api_identifier=*/
       private_aggregation::GetApiIdentifier(api_for_budgeting));
 
@@ -435,7 +509,7 @@ void PrivateAggregationHost::SendReportOnTimeoutOrDisconnect(
 
   if (!GetContentClient()->browser()->IsPrivateAggregationAllowed(
           &*browser_context_, receiver_context.top_frame_origin,
-          reporting_origin)) {
+          reporting_origin, /*out_block_is_site_setting_specific=*/nullptr)) {
     // No need to remove the pipe from `receiver_set_` as it's already
     // disconnected or will get disconnected synchronously.
     RecordPipeResultHistogram(PipeResult::kApiDisabledInSettings);
@@ -474,7 +548,7 @@ void PrivateAggregationHost::SendReportOnTimeoutOrDisconnect(
   bool should_not_delay_this_report =
       should_not_delay_reports_ ||
       (base::FeatureList::IsEnabled(
-           kPrivateAggregationApiBundledEnhancements) &&
+           kPrivateAggregationApiContextIdEnhancements) &&
        receiver_context.timeout_enabled);
 
   ReportRequestGenerator report_request_generator = base::BindOnce(
@@ -486,7 +560,8 @@ void PrivateAggregationHost::SendReportOnTimeoutOrDisconnect(
       /*report_id=*/base::Uuid::GenerateRandomV4(), reporting_origin,
       receiver_context.api_for_budgeting,
       std::move(receiver_context.context_id),
-      std::move(receiver_context.aggregation_coordinator_origin));
+      std::move(receiver_context.aggregation_coordinator_origin),
+      receiver_context.filtering_id_max_bytes);
 
   RecordPipeResultHistogram(
       receiver_context.too_many_contributions

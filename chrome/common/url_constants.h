@@ -317,10 +317,6 @@ inline constexpr char16_t kMemorySaverModeTabDiscardingHelpUrl[] =
 inline constexpr char16_t kIncognitoHelpCenterURL[] =
     u"https://support.google.com/chrome?p=incognito";
 
-// The URL for the Help Center page about IP Protection.
-inline constexpr char kIpProtectionHelpCenterURL[] =
-    "https://support.google.com/chrome?p=ip_protection";
-
 // The URL for "Learn more" page for Isolated Web Apps.
 // TODO(crbug.com/40281470): Update this URL with proper user-facing explainer.
 inline constexpr char16_t kIsolatedWebAppsLearnMoreUrl[] =
@@ -509,6 +505,10 @@ inline constexpr char kSyncGoogleDashboardURL[] =
 // The URL for the "Learn more" page for sync setup on the personal stuff page.
 inline constexpr char16_t kSyncLearnMoreURL[] =
     u"https://support.google.com/chrome?p=settings_sign_in";
+
+// The URL for the "Learn more" page for Help me Write.
+inline constexpr char kComposeLearnMorePageURL[] =
+    "https://support.google.com/chrome?p=help_me_write";
 
 // The URL for the "Learn more" link in the enterprise disclaimer for managed
 // profile in the Signin Intercept bubble.

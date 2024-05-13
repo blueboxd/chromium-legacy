@@ -11,6 +11,7 @@
 #import "base/uuid.h"
 #import "components/autofill/core/browser/address_data_manager.h"
 #import "components/autofill/core/browser/data_model/credit_card.h"
+#import "components/autofill/core/browser/geo/alternative_state_name_map_updater.h"
 #import "components/autofill/core/browser/payments_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager_test_utils.h"
@@ -157,8 +158,6 @@ TEST_F(AutofillCreditCardTableViewControllerTest,
 // appears.
 TEST_F(AutofillCreditCardTableViewControllerTest,
        TestMandatoryReauthSwitchExists) {
-  base::test::ScopedFeatureList feature_list_{
-      autofill::features::kAutofillEnablePaymentsMandatoryReauth};
   autofill::PersonalDataManager* personal_data_manager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(
           chrome_browser_state_.get());

@@ -210,6 +210,9 @@ BASE_FEATURE(kKioskHeartbeatsViaERP,
 BASE_FEATURE(kMahi, "Mahi", base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Controls enabling / disabling the sparky feature.
+BASE_FEATURE(kSparky, "Sparky", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls enabling / disabling the mahi debugging.
 BASE_FEATURE(kMahiDebugging,
              "MahiDebugging",
@@ -220,6 +223,11 @@ BASE_FEATURE(kOrca, "Orca", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls enabling / disabling the orca feature for dogfood population.
 BASE_FEATURE(kOrcaDogfood, "OrcaDogfood", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables Orca internationalization.
+BASE_FEATURE(kOrcaInternationalize,
+             "OrcaInternationalize",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls enabling / disabling orca l10n strings.
 BASE_FEATURE(kOrcaUseL10nStrings,
@@ -473,6 +481,10 @@ bool IsMahiEnabled() {
 #endif
 }
 
+bool IsSparkyEnabled() {
+  return base::FeatureList::IsEnabled(kSparky);
+}
+
 bool IsMahiDebuggingEnabled() {
   return base::FeatureList::IsEnabled(kMahiDebugging);
 }
@@ -492,6 +504,15 @@ bool IsOrcaUseL10nStringsEnabled() {
   return chromeos::BrowserParamsProxy::Get()->IsOrcaUseL10nStringsEnabled();
 #else
   return base::FeatureList::IsEnabled(chromeos::features::kOrcaUseL10nStrings);
+#endif
+}
+
+bool IsOrcaInternationalizeEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()->IsOrcaInternationalizeEnabled();
+#else
+  return base::FeatureList::IsEnabled(
+      chromeos::features::kOrcaInternationalize);
 #endif
 }
 

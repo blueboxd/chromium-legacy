@@ -158,13 +158,12 @@ class TestAndroidAutofillManager : public AndroidAutofillManager {
   void SimulateOnAskForValuesToFill(const FormData& form,
                                     const FormFieldData& field) {
     OnAskForValuesToFillImpl(
-        form, field, gfx::RectF(),
-        AutofillSuggestionTriggerSource::kTextFieldDidChange);
+        form, field, AutofillSuggestionTriggerSource::kTextFieldDidChange);
   }
 
   void SimulateOnFocusOnFormField(const FormData& form,
                                   const FormFieldData& field) {
-    OnFocusOnFormFieldImpl(form, field, gfx::RectF());
+    OnFocusOnFormFieldImpl(form, field);
   }
 
   void SimulateOnFormSubmitted(const FormData& form,
@@ -175,12 +174,12 @@ class TestAndroidAutofillManager : public AndroidAutofillManager {
 
   void SimulateOnTextFieldDidChange(const FormData& form,
                                     const FormFieldData& field) {
-    OnTextFieldDidChangeImpl(form, field, gfx::RectF(), base::TimeTicks::Now());
+    OnTextFieldDidChangeImpl(form, field, base::TimeTicks::Now());
   }
 
   void SimulateOnTextFieldDidScroll(const FormData& form,
                                     const FormFieldData& field) {
-    OnTextFieldDidScrollImpl(form, field, gfx::RectF());
+    OnTextFieldDidScrollImpl(form, field);
   }
 };
 
@@ -369,7 +368,7 @@ TEST_F(AndroidAutofillProviderTest, OnFocusChangeInsideCurrentAutofillForm) {
 
   android_autofill_manager().SimulateOnFocusOnFormField(form, form.fields[1]);
   check.Call(1);
-  android_autofill_manager().OnFocusNoLongerOnFormImpl(
+  android_autofill_manager().OnFocusOnNonFormFieldImpl(
       /*had_interacted_form=*/true);
   check.Call(2);
 

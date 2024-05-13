@@ -313,6 +313,10 @@ const AcceleratorData kAcceleratorData[] = {
     // Projector shortcuts.
     {true, ui::VKEY_OEM_3, ui::EF_COMMAND_DOWN,
      AcceleratorAction::kToggleProjectorMarker},
+
+    // Accessibility key.
+    {true, ui::VKEY_ACCESSIBILITY, ui::EF_NONE,
+     AcceleratorAction::kAccessibilityAction},
 };
 
 const size_t kAcceleratorDataLength = std::size(kAcceleratorData);
@@ -398,7 +402,7 @@ const size_t kToggleGameDashboardAcceleratorDataLength =
 
 const AcceleratorData kTogglePickerAcceleratorData[] = {
     {true, ui::VKEY_RIGHT_ALT, ui::EF_NONE, AcceleratorAction::kTogglePicker},
-    {true, ui::VKEY_S, ui::EF_COMMAND_DOWN, AcceleratorAction::kTogglePicker},
+    {true, ui::VKEY_F, ui::EF_COMMAND_DOWN, AcceleratorAction::kTogglePicker},
 };
 
 const size_t kTogglePickerAcceleratorDataLength =
@@ -406,7 +410,7 @@ const size_t kTogglePickerAcceleratorDataLength =
 
 const AcceleratorData kTogglePickerFlipAcceleratorData[] = {
     {false, ui::VKEY_RIGHT_ALT, ui::EF_NONE, AcceleratorAction::kTogglePicker},
-    {true, ui::VKEY_S, ui::EF_COMMAND_DOWN, AcceleratorAction::kTogglePicker},
+    {true, ui::VKEY_F, ui::EF_COMMAND_DOWN, AcceleratorAction::kTogglePicker},
 };
 
 const size_t kTogglePickerFlipAcceleratorDataLength =

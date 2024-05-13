@@ -11,6 +11,7 @@ import type {CenterRotatedBox} from 'chrome-untrusted://lens/geometry.mojom-webu
 import type {LensPageRemote} from 'chrome-untrusted://lens/lens.mojom-webui.js';
 import type {OverlayObject} from 'chrome-untrusted://lens/overlay_object.mojom-webui.js';
 import type {SelectionOverlayElement} from 'chrome-untrusted://lens/selection_overlay.js';
+import {loadTimeData} from 'chrome-untrusted://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertNotEquals, assertNull, assertStringContains} from 'chrome-untrusted://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome-untrusted://webui-test/polymer_test_util.js';
 
@@ -36,6 +37,10 @@ suite('SelectionOverlay', function() {
     callbackRouterRemote =
         testBrowserProxy.callbackRouter.$.bindNewPipeAndPassRemote();
     BrowserProxyImpl.setInstance(testBrowserProxy);
+
+    // Turn off the shimmer. Since the shimmer is resource intensive, turn off
+    // to prevent from causing issues in the tests.
+    loadTimeData.overrideValues({'enableShimmer': false});
 
     selectionOverlayElement = document.createElement('lens-selection-overlay');
     document.body.appendChild(selectionOverlayElement);
@@ -201,15 +206,16 @@ suite('SelectionOverlay', function() {
       });
 
     test(
-      `verify that only objects respond to taps, even when text overlaps`,
+      `verify that text respond to taps, even when an object is underneath`,
       async () => {
         await Promise.all([addWords(), addObjects()]);
 
         await simulateClick(selectionOverlayElement, {x: 80, y: 20});
 
-        const rect =
-            await testBrowserProxy.handler.whenCalled('issueLensRequest');
-        assertBoxesWithinThreshold(objects[0]!.geometry.boundingBox, rect);
+        const textQuery =
+            await testBrowserProxy.handler.whenCalled('issueTextSelectionRequest');
+        assertDeepEquals('test', textQuery);
+        assertEquals(0, testBrowserProxy.handler.getCallCount('issueLensRequest'));
       });
 
   test(

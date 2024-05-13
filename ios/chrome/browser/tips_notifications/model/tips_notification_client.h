@@ -59,14 +59,18 @@ class TipsNotificationClient : public PushNotificationClient {
 
   // Request a new tips notification, if the conditions are right (i.e. the
   // user has opted-in, etc).
-  void MaybeRequestNotification();
+  void MaybeRequestNotification(base::OnceClosure completion);
 
   // Request a notification of the given `type`.
-  void RequestNotification(TipsNotificationType type);
+  void RequestNotification(TipsNotificationType type,
+                           base::OnceClosure completion);
   void OnNotificationRequested(TipsNotificationType type, NSError* error);
 
   // Returns true if a notification of the given `type` should be sent.
   bool ShouldSendNotification(TipsNotificationType type);
+
+  // Returns true if a Default Browser notification should be sent.
+  bool ShouldSendDefaultBrowser();
 
   // Returns true if a Signin notification should be sent.
   bool ShouldSendSignin();
@@ -85,6 +89,15 @@ class TipsNotificationClient : public PushNotificationClient {
   // Helpers to store state in local state prefs.
   void MarkNotificationTypeSent(TipsNotificationType type);
   void MarkNotificationTypeNotSent(TipsNotificationType type);
+
+  // Logs to a histogram if a notification that was requested has been
+  // triggered.
+  void MaybeLogTriggeredNotification();
+
+  // Logs to a histogram if a notification that was triggered has been
+  // dismissed.
+  void MaybeLogDismissedNotification();
+  void OnGetDeliveredNotifications(NSArray<UNNotification*>* notifications);
 
   // Returns true if Tips notifications are permitted.
   bool IsPermitted();

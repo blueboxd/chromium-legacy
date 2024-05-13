@@ -170,6 +170,14 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
     }
 
     @Override
+    public void closeMultipleTabs(List<Tab> tabs, boolean canUndo, boolean canRestore) {
+        mCountOfAddingOrClosingTabs++;
+        mDelegateModel.closeMultipleTabs(tabs, canUndo, canRestore);
+        mCountOfAddingOrClosingTabs--;
+        destroyIncognitoIfNecessary();
+    }
+
+    @Override
     public void closeAllTabs() {
         mCountOfAddingOrClosingTabs++;
         mDelegateModel.closeAllTabs();
@@ -309,6 +317,17 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
         if (active) ensureTabModelImpl();
         mDelegateModel.setActive(active);
         if (!active) destroyIncognitoIfNecessary();
+    }
+
+    @Override
+    public int getTabCountNavigatedInTimeWindow(long beginTimeMs, long endTimeMs) {
+        assert false : "Not reached.";
+        return 0;
+    }
+
+    @Override
+    public void closeTabsNavigatedInTimeWindow(long beginTimeMs, long endTimeMs) {
+        assert false : "Not reached.";
     }
 
     @Override

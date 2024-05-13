@@ -258,6 +258,14 @@ void ShoppingService::HandleDidNavigatePrimaryMainFrameForProductInfo(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (IsProductInfoApiEnabled()) {
     commerce_info_cache_.AddRef(web->GetLastCommittedURL());
+
+    CommerceInfoCache::CacheEntry* entry =
+        commerce_info_cache_.GetEntryForUrl(web->GetLastCommittedURL());
+    CHECK(entry);
+
+    // When info is loaded as the result of a navigation, there's no reason to
+    // require it be loaded on-demand.
+    entry->run_product_info_on_demand = false;
   }
 
   opt_guide_->CanApplyOptimization(
@@ -873,6 +881,9 @@ const std::vector<UrlInfo>
 ShoppingService::GetUrlInfosForRecentlyViewedWebWrappers() {
   std::vector<UrlInfo> info_list;
   for (auto info : recently_visited_tabs_) {
+    if (!info.url.SchemeIsHTTPOrHTTPS()) {
+      continue;
+    }
     info_list.push_back(info);
   }
   return info_list;
@@ -884,16 +895,20 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
     ProductInfoCallback callback,
     optimization_guide::OptimizationGuideDecision decision,
     const optimization_guide::OptimizationMetadata& metadata) {
+  CommerceInfoCache::CacheEntry* entry =
+      commerce_info_cache_.GetEntryForUrl(url);
+
   // If optimization guide returns negative, return a negative signal with an
   // empty data object.
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue) {
-    // Receiving a negative signal could simply mean that opt guide no longer
-    // has the information available, it doesn't mean the backend doesn't know.
-    // We may be allowed to fetch information on-demand if we're referencing
-    // the URL in the cache. Only do this for explicit requests from a feature
-    // rather than populating as a result of navigation (signified by the lack
-    // of a web wrapper).
-    if (commerce_info_cache_.IsUrlReferenced(url) && !web) {
+    // Receiving a negative signal could simply mean that opt guide doesn't have
+    // the information available, it doesn't mean the backend doesn't know. If
+    // the cache wasn't populated by a page load event, we should be allowed to
+    // fetch on demand (assuming the URL is referenced by some other feature).
+    if (commerce_info_cache_.IsUrlReferenced(url) && entry &&
+        entry->run_product_info_on_demand) {
+      entry->run_product_info_on_demand = false;
+
       // We're wrapping this in a repeating callback but it should only ever be
       // called once. This is necessary because the on-demand api requires a
       // repeating callback but we primarily use once callbacks in the shopping
@@ -1754,6 +1769,15 @@ ShoppingService::GetAllProductSpecificationSets() {
 
 base::WeakPtr<ShoppingService> ShoppingService::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+std::optional<EntryPointInfo> ShoppingService::GetEntryPointInfoForSelection(
+    GURL old_url,
+    GURL new_url) {
+  if (!cluster_manager_) {
+    return std::nullopt;
+  }
+  return cluster_manager_->GetEntryPointInfoForSelection(old_url, new_url);
 }
 
 void ShoppingService::Shutdown() {

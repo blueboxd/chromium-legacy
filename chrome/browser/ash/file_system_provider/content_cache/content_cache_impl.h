@@ -13,6 +13,7 @@
 #include "chrome/browser/ash/file_system_provider/content_cache/content_cache.h"
 #include "chrome/browser/ash/file_system_provider/content_cache/content_lru_cache.h"
 #include "chrome/browser/ash/file_system_provider/content_cache/context_database.h"
+#include "chrome/browser/ash/file_system_provider/content_cache/local_fd.h"
 #include "chrome/browser/ash/file_system_provider/opened_cloud_file.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 
@@ -38,24 +39,29 @@ class ContentCacheImpl : public ContentCache {
 
   void SetMaxCacheItems(size_t max_cache_items) override;
 
-  bool StartReadBytes(
+  void ReadBytes(
       const OpenedCloudFile& file,
-      net::IOBuffer* buffer,
+      scoped_refptr<net::IOBuffer> buffer,
       int64_t offset,
       int length,
       ProvidedFileSystemInterface::ReadChunkReceivedCallback callback) override;
 
-  bool StartWriteBytes(const OpenedCloudFile& file,
-                       net::IOBuffer* buffer,
-                       int64_t offset,
-                       int length,
-                       FileErrorCallback callback) override;
+  void WriteBytes(const OpenedCloudFile& file,
+                  scoped_refptr<net::IOBuffer> buffer,
+                  int64_t offset,
+                  int length,
+                  FileErrorCallback callback) override;
+
+  void CloseFile(const OpenedCloudFile& file) override;
 
   void LoadFromDisk(base::OnceClosure callback) override;
 
   std::vector<base::FilePath> GetCachedFilePaths() override;
 
   void Evict(const base::FilePath& file_path) override;
+
+  void SetOnItemEvictedCallback(
+      OnItemEvictedCallback on_item_evicted_callback) override;
 
   void RemoveItems(RemovedItemStatsCallback callback) override;
 
@@ -67,12 +73,13 @@ class ContentCacheImpl : public ContentCache {
 
   // Called when the database returns an ID that will be used as the file name
   // to write the bytes to disk.
-  void OnFileIdGenerated(
-      base::OnceCallback<base::File::Error(const base::FilePath& path)>
-          write_bytes_callback,
-      FileErrorCallback on_bytes_written_callback,
-      int64_t* inserted_id,
-      bool item_add_success);
+  void OnFileIdGenerated(const OpenedCloudFile& file,
+                         scoped_refptr<net::IOBuffer> buffer,
+                         int64_t offset,
+                         int length,
+                         FileErrorCallback on_bytes_written_callback,
+                         std::unique_ptr<int64_t> inserted_id,
+                         bool item_add_success);
 
   void OnBytesWritten(const base::FilePath& file_path,
                       int64_t offset,
@@ -85,12 +92,12 @@ class ContentCacheImpl : public ContentCache {
   // by the id (i.e. the file name on disk) with a corresponding
   // `CacheFileContext` containing the total bytes on disk populated.
   void GotFilesFromDisk(base::OnceClosure callback,
-                        std::map<int, CacheFileContext> contexts);
+                        std::map<int, int64_t> files_on_disk);
 
   // Invoked in the flow of `LoadFromDisk` once all the items from the database
   // have been retrieved.
   void GotItemsFromContextDatabase(base::OnceClosure callback,
-                                   std::map<int, CacheFileContext> contexts,
+                                   std::map<int, int64_t> files_on_disk,
                                    ContextDatabase::IdToItemMap items);
 
   // Invoked in the flow of `LoadFromDisk` once all the orphaned files (from
@@ -138,6 +145,7 @@ class ContentCacheImpl : public ContentCache {
   size_t max_cache_items_;
   // Number of evicted items that will be removed on the next removal cycle.
   size_t evicted_cache_items_ GUARDED_BY_CONTEXT(sequence_checker_) = 0;
+  OnItemEvictedCallback on_item_evicted_callback_;
   base::OnceCallbackList<void(RemovedItemStats)> on_removed_callbacks_;
 
   base::WeakPtrFactory<ContentCacheImpl> weak_ptr_factory_{this};

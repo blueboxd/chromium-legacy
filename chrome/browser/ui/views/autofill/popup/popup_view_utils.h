@@ -124,18 +124,9 @@ bool BoundsOverlapWithPictureInPictureWindow(const gfx::Rect& screen_bounds);
 // extension popup) and stays within the bounds of the browser window.
 bool PopupMayExceedContentAreaBounds(content::WebContents* web_contents);
 
-// Returns whether the suggestion with this `type` belongs into
-// the footer section of the popup. Returns `false` for separators, which may
-// belong either to the main or the footer section.
-bool IsFooterSuggestionType(SuggestionType type);
-
 // Returns whether the suggestion with this `type` can have child
 // suggestions.
 bool IsExpandableSuggestionType(SuggestionType type);
-
-// Returns styles for primary and secondary texts.
-views::style::TextStyle GetPrimaryTextStyle();
-views::style::TextStyle GetSecondaryTextStyle();
 
 }  // namespace autofill
 

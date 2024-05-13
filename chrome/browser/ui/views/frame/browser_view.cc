@@ -341,6 +341,11 @@
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
+#if BUILDFLAG(ENTERPRISE_WATERMARK)
+#include "chrome/browser/enterprise/data_protection/data_protection_navigation_observer.h"
+#include "chrome/browser/enterprise/watermark/watermark_view.h"
+#endif
+
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
@@ -2407,6 +2412,7 @@ void BrowserView::SetWindowManagementPermissionSubscriptionForBorderlessMode(
   window_management_subscription_id_ =
       controller->SubscribeToPermissionStatusChange(
           blink::PermissionType::WINDOW_MANAGEMENT, rfh->GetProcess(), origin,
+          /*should_include_device_status=*/false,
           base::BindRepeating(&BrowserView::UpdateWindowManagementPermission,
                               base::Unretained(this)));
 }
@@ -5349,17 +5355,6 @@ gfx::Rect BrowserView::GetTopContainerBoundsInScreen() {
 
 void BrowserView::DestroyAnyExclusiveAccessBubble() {
   exclusive_access_bubble_.reset();
-}
-
-bool BrowserView::CanTriggerOnMousePointer() const {
-  // Returning false here can prevent the exclusive access bubble from showing
-  // in certain situations in macOS immersive fullscreen. This check only
-  // exists for Chrome running on ChromeOS in a Public Session.
-#if BUILDFLAG(IS_MAC)
-  return true;
-#else
-  return !IsImmersiveModeEnabled();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -180,7 +180,8 @@ class ASH_EXPORT AppListControllerImpl
   void ViewClosing() override;
   void ActivateItem(const std::string& id,
                     int event_flags,
-                    AppListLaunchedFrom launched_from) override;
+                    AppListLaunchedFrom launched_from,
+                    bool is_app_above_the_fold) override;
   void GetContextMenuModel(const std::string& id,
                            AppListItemContext item_context,
                            GetContextMenuModelCallback callback) override;
@@ -214,6 +215,10 @@ class ASH_EXPORT AppListControllerImpl
   int GetShelfSize() override;
   int GetSystemShelfInsetsInTabletMode() override;
   bool IsInTabletMode() const override;
+  void RecordAppsDefaultVisibility(
+      const std::vector<std::string>& apps_above_the_fold,
+      const std::vector<std::string>& apps_below_the_fold,
+      bool is_apps_collections_page) override;
 
   // Notifies observers of AppList visibility changes.
   void OnVisibilityChanged(bool visible, int64_t display_id);

@@ -85,6 +85,7 @@
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/compose/buildflags.h"
+#include "components/compose/core/browser/compose_features.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -397,6 +398,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableLinkedServicesSetting",
       base::FeatureList::IsEnabled(features::kLinkedServicesSetting));
 
+  html_source->AddBoolean("enableComposeProactiveNudge",
+                          base::FeatureList::IsEnabled(
+                              compose::features::kEnableComposeProactiveNudge));
+
   html_source->AddBoolean(
       "enablePageContentSetting",
       base::FeatureList::IsEnabled(features::kPageContentOptIn) ||
@@ -476,7 +481,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::make_span(kSettingsSharedResources, kSettingsSharedResourcesSize));
 #endif
 
-  webui::SetupChromeRefresh2023(html_source);
   AddLocalizedStrings(html_source, profile, web_ui->GetWebContents());
 
   ManagedUIHandler::Initialize(web_ui, html_source);
@@ -553,9 +557,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(
           performance_manager::features::kDiscardRingImprovements));
   html_source->AddBoolean(
-      "isMemorySaverMultistateModeEnabled",
+      "isMemorySaverModeAggressivenessEnabled",
       base::FeatureList::IsEnabled(
-          performance_manager::features::kMemorySaverMultistateMode));
+          performance_manager::features::kMemorySaverModeAggressiveness));
   html_source->AddBoolean(
       "isBatterySaverModeManagedByOS",
       performance_manager::user_tuning::IsBatterySaverModeManagedByOS());
@@ -772,7 +776,8 @@ void SettingsUI::CreateCertificateManagerPageHandler(
         certificate_manager_v2::mojom::CertificateManagerPageHandler> handler) {
   certificate_manager_page_handler_ =
       std::make_unique<CertificateManagerPageHandler>(
-          std::move(client), std::move(handler), Profile::FromWebUI(web_ui()));
+          std::move(client), std::move(handler), Profile::FromWebUI(web_ui()),
+          web_ui()->GetWebContents());
 }
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_CERT_MANAGEMENT_UI)
 

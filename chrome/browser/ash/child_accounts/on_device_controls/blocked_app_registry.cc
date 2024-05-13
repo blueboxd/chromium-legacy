@@ -4,11 +4,25 @@
 
 #include "chrome/browser/ash/child_accounts/on_device_controls/blocked_app_registry.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/app_update.h"
 
 namespace ash::on_device_controls {
+
+namespace {
+
+bool ShouldIncludeApp(apps::AppType app_type) {
+  return app_type == apps::AppType::kArc;
+}
+
+}  // namespace
 
 BlockedAppRegistry::AppDetails::AppDetails()
     : AppDetails(base::TimeTicks::Now()) {}
@@ -18,7 +32,19 @@ BlockedAppRegistry::AppDetails::AppDetails(base::TimeTicks block_timestamp)
 
 BlockedAppRegistry::AppDetails::~AppDetails() = default;
 
-BlockedAppRegistry::BlockedAppRegistry() = default;
+// static
+void BlockedAppRegistry::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kOnDeviceAppControlsBlockedApps);
+}
+
+BlockedAppRegistry::BlockedAppRegistry(apps::AppServiceProxy* app_service,
+                                       PrefService* pref_service)
+    : app_service_(app_service), pref_service_(pref_service) {
+  CHECK(app_service_);
+  CHECK(pref_service_);
+
+  app_registry_cache_observer_.Observe(&GetAppCache());
+}
 
 BlockedAppRegistry::~BlockedAppRegistry() = default;
 
@@ -61,4 +87,61 @@ LocalAppState BlockedAppRegistry::GetAppState(const std::string& app_id) const {
 
   return LocalAppState::kBlocked;
 }
+
+void BlockedAppRegistry::OnAppUpdate(const apps::AppUpdate& update) {
+  if (!update.ReadinessChanged()) {
+    return;
+  }
+
+  if (!ShouldIncludeApp(update.AppType())) {
+    return;
+  }
+
+  const std::string app_id = update.AppId();
+  switch (update.Readiness()) {
+    case apps::Readiness::kReady:
+      OnAppReady(app_id);
+      break;
+    case apps::Readiness::kUninstalledByUser:
+    case apps::Readiness::kUninstalledByNonUser:
+      OnAppUninstalled(app_id);
+      break;
+    default:
+      break;
+  }
+}
+void BlockedAppRegistry::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  app_registry_cache_observer_.Reset();
+}
+
+apps::AppRegistryCache& BlockedAppRegistry::GetAppCache() {
+  return app_service_->AppRegistryCache();
+}
+
+void BlockedAppRegistry::OnAppReady(const std::string& app_id) {
+  if (GetAppState(app_id) == LocalAppState::kAvailable) {
+    return;
+  }
+
+  if (GetAppState(app_id) == LocalAppState::kBlockedUninstalled) {
+    // Clear the uninstall timestamp, but keep the initial blocked timestamp.
+    registry_[app_id].uninstall_timestamp.reset();
+    return;
+  }
+
+  // TODO(b/332963662): Call block app in AppService.
+  // TODO(b/338247185): Update pref state.
+}
+
+void BlockedAppRegistry::OnAppUninstalled(const std::string& app_id) {
+  if (GetAppState(app_id) == LocalAppState::kAvailable) {
+    return;
+  }
+
+  registry_[app_id].uninstall_timestamp = base::TimeTicks::Now();
+
+  // TODO(b/338247185): Update pref state.
+}
+
 }  // namespace ash::on_device_controls

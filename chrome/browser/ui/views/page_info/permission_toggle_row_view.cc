@@ -214,9 +214,11 @@ void PermissionToggleRowView::InitForUserSource(
           features::kFileSystemAccessPersistentPermissions) &&
       base::FeatureList::IsEnabled(
           features::kFileSystemAccessPersistentPermissionsUpdatedPageInfo);
-  if (permissions::PermissionUtil::CanPermissionBeAllowedOnce(
-          permission_.type) ||
-      show_updated_page_info_file_system) {
+  if ((base::FeatureList::IsEnabled(
+           permissions::features::kOneTimePermission) &&
+       permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+           permission_.type)) ||
+      permission_.is_one_time || show_updated_page_info_file_system) {
     auto subpage_button = views::CreateVectorImageButtonWithNativeTheme(
         base::BindRepeating(
             [=](PermissionToggleRowView* row) {
@@ -254,11 +256,8 @@ void PermissionToggleRowView::InitForManagedSource(
       views::DISTANCE_RELATED_LABEL_HORIZONTAL);
   auto state_label = std::make_unique<views::Label>(
       PageInfoUI::PermissionStateToUIString(delegate, permission_),
-      views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
-  if (features::IsChromeRefresh2023()) {
-    state_label->SetTextStyle(views::style::STYLE_BODY_5);
-    state_label->SetEnabledColorId(ui::kColorLabelForegroundSecondary);
-  }
+      views::style::CONTEXT_LABEL, views::style::STYLE_BODY_5);
+  state_label->SetEnabledColorId(ui::kColorLabelForegroundSecondary);
   state_label->SetProperty(views::kMarginsKey,
                            gfx::Insets::VH(0, icon_label_spacing));
   row_view_->AddControl(std::move(state_label));

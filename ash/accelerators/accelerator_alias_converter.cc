@@ -12,6 +12,7 @@
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
+#include "ash/system/input_device_settings/input_device_settings_utils.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/functional/bind.h"
@@ -383,7 +384,19 @@ AcceleratorAliasConverter::CreateFunctionKeyAliases(
   }
 
   const bool top_row_are_fkeys = AreTopRowFKeys(keyboard);
-  if (IsChromeOSKeyboard(keyboard)) {
+  if (IsSplitModifierKeyboard(keyboard.id)) {
+    // If its a split modifier Keyboard, the UI should show the Action Key
+    // glyph. If `top_row_are_fkeys` is false, function key must be added so
+    // convert the "F-Key" into the action key.
+    if (top_row_are_fkeys) {
+      return {ui::Accelerator(*action_vkey, accelerator.modifiers(),
+                              accelerator.key_state())};
+    } else {
+      return {ui::Accelerator(*action_vkey,
+                              accelerator.modifiers() | ui::EF_FUNCTION_DOWN,
+                              accelerator.key_state())};
+    }
+  } else if (IsChromeOSKeyboard(keyboard)) {
     // If `priority_keyboard` is a ChromeOS keyboard, the UI should show the
     // corresponding action key, the the F-Key glyph.
     if (top_row_are_fkeys) {
@@ -485,7 +498,20 @@ std::optional<ui::Accelerator> AcceleratorAliasConverter::CreateTopRowAliases(
   }
 
   const bool top_row_are_fkeys = AreTopRowFKeys(keyboard);
-  if (IsChromeOSKeyboard(keyboard)) {
+  if (IsSplitModifierKeyboard(keyboard.id)) {
+    // If its a split modifier Keyboard, the UI should show the Action Key
+    // glyph. If `top_row_are_fkeys` is true, function key must be added so
+    // convert the "F-Key" into the action key.
+    if (top_row_are_fkeys) {
+      return {ui::Accelerator(accelerator.key_code(),
+                              accelerator.modifiers() | ui::EF_FUNCTION_DOWN,
+                              accelerator.key_state())};
+    } else {
+      // Otherwise if `top_row_are_fkeys` is false, the identity accelerator
+      // should be returned.
+      return {accelerator};
+    }
+  } else if (IsChromeOSKeyboard(keyboard)) {
     // If its a ChromeOS Keyboard, the UI should show the Action Key glyph. If
     // `top_row_are_fkeys` is true, Search must be added so convert the "F-Key"
     // into the action key.
@@ -524,6 +550,20 @@ std::vector<ui::Accelerator> AcceleratorAliasConverter::CreateSixPackAliases(
   if (features::IsAltClickAndSixPackCustomizationEnabled() &&
       !device_id.has_value()) {
     return std::vector<ui::Accelerator>();
+  }
+
+  if (features::IsModifierSplitEnabled() &&
+      IsSplitModifierKeyboard(device_id.value())) {
+    const auto iter = ui::kSixPackKeyToFnKeyMap.find(accelerator.key_code());
+    // [Insert] is technically a six pack key but has no Fn based rewrite. Need
+    // to make sure we return no aliased accelerator for this case.
+    if (iter == ui::kSixPackKeyToFnKeyMap.end()) {
+      return std::vector<ui::Accelerator>();
+    }
+
+    return {ui::Accelerator(iter->second,
+                            accelerator.modifiers() | ui::EF_FUNCTION_DOWN,
+                            accelerator.key_state())};
   }
 
   // Edge cases:

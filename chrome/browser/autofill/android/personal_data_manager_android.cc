@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -250,9 +251,9 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
       g_browser_process->GetApplicationLocale());
 
   if (guid.empty()) {
-    personal_data_manager_->AddProfile(profile);
+    personal_data_manager_->address_data_manager().AddProfile(profile);
   } else {
-    personal_data_manager_->UpdateProfile(profile);
+    personal_data_manager_->address_data_manager().UpdateProfile(profile);
   }
 
   return ConvertUTF8ToJavaString(env, profile.guid());
@@ -269,9 +270,9 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfileToLocal(
       jprofile, target_profile, g_browser_process->GetApplicationLocale());
 
   if (target_profile != nullptr) {
-    personal_data_manager_->UpdateProfile(profile);
+    personal_data_manager_->address_data_manager().UpdateProfile(profile);
   } else {
-    personal_data_manager_->AddProfile(profile);
+    personal_data_manager_->address_data_manager().AddProfile(profile);
   }
 
   return ConvertUTF8ToJavaString(env, profile.guid());
@@ -331,20 +332,22 @@ PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
 
 base::android::ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetCreditCardGUIDsForSettings(JNIEnv* env) {
-  return GetCreditCardGUIDs(env, personal_data_manager_->GetCreditCards());
+  return GetCreditCardGUIDs(
+      env, personal_data_manager_->payments_data_manager().GetCreditCards());
 }
 
 base::android::ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetCreditCardGUIDsToSuggest(JNIEnv* env) {
-  return GetCreditCardGUIDs(env,
-                            personal_data_manager_->GetCreditCardsToSuggest());
+  return GetCreditCardGUIDs(env, personal_data_manager_->payments_data_manager()
+                                     .GetCreditCardsToSuggest());
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByGUID(
     JNIEnv* env,
     const JavaParamRef<jstring>& jguid) {
-  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
-      ConvertJavaStringToUTF8(env, jguid));
+  CreditCard* card =
+      personal_data_manager_->payments_data_manager().GetCreditCardByGUID(
+          ConvertJavaStringToUTF8(env, jguid));
   if (!card)
     return ScopedJavaLocalRef<jobject>();
 
@@ -370,10 +373,10 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
   PopulateNativeCreditCardFromJava(jcard, env, &card);
 
   if (guid.empty()) {
-    personal_data_manager_->AddCreditCard(card);
+    personal_data_manager_->payments_data_manager().AddCreditCard(card);
   } else {
     card.set_guid(guid);
-    personal_data_manager_->UpdateCreditCard(card);
+    personal_data_manager_->payments_data_manager().UpdateCreditCard(card);
   }
   return ConvertUTF8ToJavaString(env, card.guid());
 }
@@ -394,7 +397,8 @@ void PersonalDataManagerAndroid::AddServerCreditCardForTest(
   std::unique_ptr<CreditCard> card = std::make_unique<CreditCard>();
   PopulateNativeCreditCardFromJava(jcard, env, card.get());
   card->set_record_type(CreditCard::RecordType::kMaskedServerCard);
-  personal_data_manager_->AddServerCreditCardForTest(std::move(card));
+  personal_data_manager_->payments_data_manager().AddServerCreditCardForTest(
+      std::move(card));
   personal_data_manager_->NotifyPersonalDataObserver();
 }
 
@@ -408,7 +412,8 @@ void PersonalDataManagerAndroid::AddServerCreditCardForTestWithAdditionalFields(
   card->set_record_type(CreditCard::RecordType::kMaskedServerCard);
   card->SetNickname(ConvertJavaStringToUTF16(jnickname));
   card->set_card_issuer(static_cast<CreditCard::Issuer>(jcard_issuer));
-  personal_data_manager_->AddServerCreditCardForTest(std::move(card));
+  personal_data_manager_->payments_data_manager().AddServerCreditCardForTest(
+      std::move(card));
   personal_data_manager_->NotifyPersonalDataObserver();
 }
 
@@ -480,8 +485,9 @@ jlong PersonalDataManagerAndroid::GetProfileUseDateForTesting(
 void PersonalDataManagerAndroid::RecordAndLogCreditCardUse(
     JNIEnv* env,
     const JavaParamRef<jstring>& jguid) {
-  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
-      ConvertJavaStringToUTF8(env, jguid));
+  CreditCard* card =
+      personal_data_manager_->payments_data_manager().GetCreditCardByGUID(
+          ConvertJavaStringToUTF8(env, jguid));
   if (card) {
     personal_data_manager_->payments_data_manager().RecordUseOfCard(card);
   }
@@ -494,8 +500,9 @@ void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
     jint days_since_last_used) {
   DCHECK(count >= 0 && days_since_last_used >= 0);
 
-  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
-      ConvertJavaStringToUTF8(env, jguid));
+  CreditCard* card =
+      personal_data_manager_->payments_data_manager().GetCreditCardByGUID(
+          ConvertJavaStringToUTF8(env, jguid));
   card->set_use_count(static_cast<size_t>(count));
   card->set_use_date(AutofillClock::Now() - base::Days(days_since_last_used));
 
@@ -505,16 +512,18 @@ void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
 jint PersonalDataManagerAndroid::GetCreditCardUseCountForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jguid) {
-  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
-      ConvertJavaStringToUTF8(env, jguid));
+  CreditCard* card =
+      personal_data_manager_->payments_data_manager().GetCreditCardByGUID(
+          ConvertJavaStringToUTF8(env, jguid));
   return card->use_count();
 }
 
 jlong PersonalDataManagerAndroid::GetCreditCardUseDateForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jguid) {
-  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
-      ConvertJavaStringToUTF8(env, jguid));
+  CreditCard* card =
+      personal_data_manager_->payments_data_manager().GetCreditCardByGUID(
+          ConvertJavaStringToUTF8(env, jguid));
   return card->use_date().ToTimeT();
 }
 
@@ -530,16 +539,19 @@ jlong PersonalDataManagerAndroid::GetDateNDaysAgoForTesting(
 }
 
 void PersonalDataManagerAndroid::ClearServerDataForTesting(JNIEnv* env) {
-  personal_data_manager_->ClearAllServerDataForTesting();  // IN-TEST
+  personal_data_manager_->payments_data_manager()
+      .ClearAllServerDataForTesting();  // IN-TEST
   personal_data_manager_->NotifyPersonalDataObserver();
 }
 
 jboolean PersonalDataManagerAndroid::HasProfiles(JNIEnv* env) {
-  return !personal_data_manager_->GetProfiles().empty();
+  return !personal_data_manager_->address_data_manager().GetProfiles().empty();
 }
 
 jboolean PersonalDataManagerAndroid::HasCreditCards(JNIEnv* env) {
-  return !personal_data_manager_->GetCreditCards().empty();
+  return !personal_data_manager_->payments_data_manager()
+              .GetCreditCards()
+              .empty();
 }
 
 jboolean PersonalDataManagerAndroid::IsFidoAuthenticationAvailable(
@@ -554,7 +566,8 @@ jboolean PersonalDataManagerAndroid::IsFidoAuthenticationAvailable(
 }
 
 void PersonalDataManagerAndroid::SetSyncServiceForTesting(JNIEnv* env) {
-  personal_data_manager_->SetSyncingForTest(true);
+  personal_data_manager_->payments_data_manager().SetSyncingForTest(
+      true);  // IN-TEST
 }
 
 base::android::ScopedJavaLocalRef<jobject>

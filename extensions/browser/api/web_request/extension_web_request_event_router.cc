@@ -215,23 +215,10 @@ bool IsRequestFromExtension(const WebRequestInfo& request,
     return false;
   }
 
-  const std::set<std::string> extension_ids =
-      ProcessMap::Get(context)->GetExtensionsInProcess(
+  const Extension* extension =
+      ProcessMap::Get(context)->GetEnabledExtensionByProcessID(
           request.render_process_id);
-  if (extension_ids.empty()) {
-    return false;
-  }
-
-  // Treat hosted apps as normal web pages (crbug.com/526413).
-  for (const ExtensionId& extension_id : extension_ids) {
-    const Extension* extension =
-        ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
-            extension_id);
-    if (extension && !extension->is_hosted_app()) {
-      return true;
-    }
-  }
-  return false;
+  return extension && !extension->is_hosted_app();
 }
 
 // Sends an event to subscribers of chrome.declarativeWebRequest.onMessage or
@@ -993,6 +980,14 @@ int WebRequestEventRouter::OnBeforeRequest(
           DCHECK(action.redirect_url);
           OnDNRActionMatched(browser_context, *request, action);
           *new_url = action.redirect_url.value();
+          // Collect redirect action data for the Extension Telemetry Service.
+          if (action.type == DNRRequestAction::Type::REDIRECT) {
+            ExtensionsBrowserClient::Get()
+                ->NotifyExtensionDeclarativeNetRequestRedirectAction(
+                    browser_context, action.extension_id, request->url,
+                    action.redirect_url.value());
+          }
+
           return net::OK;
         case DNRRequestAction::Type::MODIFY_HEADERS:
           // Unlike other actions, allow web request extensions to intercept
@@ -1117,7 +1112,7 @@ void WebRequestEventRouter::OnSendHeaders(
 
 int WebRequestEventRouter::OnHeadersReceived(
     content::BrowserContext* browser_context,
-    const WebRequestInfo* request,
+    WebRequestInfo* request,
     net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
@@ -1133,11 +1128,6 @@ int WebRequestEventRouter::OnHeadersReceived(
   const bool is_incognito_context = browser_context->IsOffTheRecord();
 
   CHECK(request->dnr_actions);
-  initialize_blocked_requests |= base::ranges::any_of(
-      *request->dnr_actions, [](const DNRRequestAction& action) {
-        return action.type == DNRRequestAction::Type::MODIFY_HEADERS &&
-               !action.response_headers_to_modify.empty();
-      });
 
   initialize_blocked_requests |= ProcessDeclarativeRules(
       browser_context, keys::kOnHeadersReceivedEvent, request,
@@ -1187,35 +1177,12 @@ int WebRequestEventRouter::OnHeadersReceived(
         case DNRRequestAction::Type::ALLOW:
         case DNRRequestAction::Type::ALLOW_ALL_REQUESTS:
           DCHECK_EQ(1u, actions.size());
-
           // Prune any actions matched during previous request stages that are
           // outprioritized by allow rules matched during this request stage.
-          std::erase_if(
-              *request->dnr_actions,
-              [request](const DNRRequestAction& before_request_action) {
-                return before_request_action.index_priority <
-                       request
-                           ->allow_rule_max_priority[before_request_action
-                                                         .extension_id]
-                           .value_or(0);
-              });
+          request->EraseOutprioritizedDNRActions();
 
-          // Only record a rule match if no other actions will be taken on the
-          // request, based on examining actions matched in the onBeforeRequest
-          // stage.
-          // TODO(crbug,com/336589260): The proper logic to determine if an
-          // allow rule should be matched at this stage is quite complex: Record
-          // a match if any of the following applies:
-          // - There are no actions from onBeforeRequest.
-          // - There are only modifyHeaders actions for request headers matched
-          //   in onBeforeRequest.
-          // - This action outprioritizes all modify headers actions from this
-          //   extension, and there are no modify header actions to be taken on
-          //   this request based on priority.
-          // - If an allow rule "A" is matched in OnBeforeRequest, record a
-          //   match here if this action is from a different extension than "A"
-          //   or it has a higher priority than "A".
-          if (request->dnr_actions->empty()) {
+          if (request->ShouldRecordMatchedAllowRuleInOnHeadersReceived(
+                  action)) {
             OnDNRActionMatched(browser_context, *request, action);
           }
 
@@ -1239,13 +1206,55 @@ int WebRequestEventRouter::OnHeadersReceived(
                   preserve_fragment_on_redirect_url);
           return net::OK;
         case DNRRequestAction::Type::MODIFY_HEADERS:
-          // TODO(crbug.com/40727004): Implement support for modify header rules
-          // that match on response headers.
-          NOTREACHED();
+          // Modify header actions can only combine with actions of the same
+          // type, see RulesetManager::EvaluateRequestInternal for the
+          // implementation.
+          DCHECK(base::ranges::all_of(actions, [](const auto& action) {
+            return action.type == DNRRequestAction::Type::MODIFY_HEADERS;
+          }));
+
+          // Prune any actions matched during previous request stages that are
+          // outprioritized by allow rules matched during this request stage.
+          request->EraseOutprioritizedDNRActions();
+
+          // For other action types, actions matched here don't need to be saved
+          // to `request->dnr_actions` since said action(s) can be taken on the
+          // request now. Modify header actions need to be saved since they will
+          // take effect later.
+
+          // If no modify header actions were matched in previous request
+          // stages, then `request->dnr_actions` can simply be overwritten by
+          // actions matched at this stage.
+          if (request->dnr_actions->empty() ||
+              (*request->dnr_actions)[0].type !=
+                  DNRRequestAction::Type::MODIFY_HEADERS) {
+            request->dnr_actions = std::move(actions);
+          } else {
+            // Otherwise, modify header actions from all request stages will
+            // need to be merged. MergeModifyHeaderActions will also sort these
+            // actions by descending order of priority.
+            request->dnr_actions = ruleset_manager->MergeModifyHeaderActions(
+                std::move(*request->dnr_actions), std::move(actions));
+
+            // Verify that if `request->dnr_actions` contains any modify headers
+            // actions, then all actions in `request->dnr_actions` must be
+            // modify headers actions.
+            DCHECK(base::ranges::all_of(
+                *request->dnr_actions, [](const auto& action) {
+                  return action.type == DNRRequestAction::Type::MODIFY_HEADERS;
+                }));
+          }
+
           break;
       }
     }
   }
+
+  initialize_blocked_requests |= base::ranges::any_of(
+      *request->dnr_actions, [](const DNRRequestAction& action) {
+        return action.type == DNRRequestAction::Type::MODIFY_HEADERS &&
+               !action.response_headers_to_modify.empty();
+      });
 
   if (!initialize_blocked_requests) {
     return net::OK;  // Nobody saw a reason for modifying the request.

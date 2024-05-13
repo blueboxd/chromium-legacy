@@ -244,8 +244,21 @@ class GraphBuilder {
       const mojom::Gemm& operation,
       CoreML::Specification::MILSpec::Block& block);
   [[nodiscard]] base::expected<void, mojom::ErrorPtr>
+  AddOperationForHardSigmoid(uint64_t input_operand_id,
+                             float alpha,
+                             float beta,
+                             uint64_t output_operand_id,
+                             CoreML::Specification::MILSpec::Block& block);
+  [[nodiscard]] base::expected<void, mojom::ErrorPtr>
   AddOperationForHardSigmoid(const mojom::HardSigmoid& operation,
                              CoreML::Specification::MILSpec::Block& block);
+  [[nodiscard]] base::expected<void, mojom::ErrorPtr> AddOperationForHardSwish(
+      const mojom::HardSwish& operation,
+      CoreML::Specification::MILSpec::Block& block);
+  [[nodiscard]] base::expected<void, mojom::ErrorPtr>
+  AddOperationForInstanceNormalization(
+      const mojom::InstanceNormalization& operation,
+      CoreML::Specification::MILSpec::Block& block);
   [[nodiscard]] base::expected<void, mojom::ErrorPtr> AddOperationForLeakyRelu(
       uint64_t input_operand_id,
       float alpha,
@@ -253,6 +266,9 @@ class GraphBuilder {
       CoreML::Specification::MILSpec::Block& block);
   [[nodiscard]] base::expected<void, mojom::ErrorPtr> AddOperationForLeakyRelu(
       const mojom::LeakyRelu& operation,
+      CoreML::Specification::MILSpec::Block& block);
+  [[nodiscard]] base::expected<void, mojom::ErrorPtr> AddOperationForLinear(
+      const mojom::Linear& operation,
       CoreML::Specification::MILSpec::Block& block);
   [[nodiscard]] base::expected<void, mojom::ErrorPtr> AddOperationForMatmul(
       uint64_t input_x_operand_id,

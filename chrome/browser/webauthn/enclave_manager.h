@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/webauthn/enclave_manager_interface.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/trusted_vault/trusted_vault_connection.h"
 #include "device/fido/enclave/types.h"
@@ -76,14 +77,8 @@ class TrustedVaultAccessTokenFetcherFrontend;
 // When `is_ready` is true then this class can produce wrapped security domain
 // secrets and signing callbacks to use to perform passkey operations with the
 // enclave, which is the ultimate point of this class.
-class EnclaveManager : public KeyedService {
+class EnclaveManager : public EnclaveManagerInterface {
  public:
-  // Many actions report results using a `Callback`. The boolean argument
-  // is true if the operation is successful and false otherwise.
-  // These callbacks never hairpin. (I.e. are never called before the function
-  // that they were passed to returns.)
-  using Callback = base::OnceCallback<void(bool)>;
-
   struct StoreKeysArgs;
   class Observer : public base::CheckedObserver {
    public:
@@ -115,13 +110,16 @@ class EnclaveManager : public KeyedService {
   EnclaveManager(const EnclaveManager&) = delete;
   EnclaveManager(const EnclaveManager&&) = delete;
 
+  // Returns `this`.
+  EnclaveManager* GetEnclaveManager() override;
+
   // Returns true if there are no current operations pending.
   bool is_idle() const;
   // Returns true if the persistent state has been loaded from the disk. (Or
   // else the loading failed and an empty state is being used.)
   bool is_loaded() const;
   // Returns true if the current user has been registered with the enclave.
-  bool is_registered() const;
+  bool is_registered() const override;
   // Returns true if `StoreKeys` has been called and thus `AddDeviceToAccount`
   // or `AddDeviceAndPINToAccount` can be called.
   bool has_pending_keys() const;
@@ -172,7 +170,7 @@ class EnclaveManager : public KeyedService {
   // Send a request to the enclave to delete the registration for the current
   // user, erase local keys, and erase local state for the user. Safe to call in
   // any state and is a no-op if no registration exists.
-  void Unenroll(Callback callback);
+  void Unenroll(Callback callback) override;
 
   // Get a callback to sign with the registered "hw" key. Only valid to call if
   // `is_ready`.

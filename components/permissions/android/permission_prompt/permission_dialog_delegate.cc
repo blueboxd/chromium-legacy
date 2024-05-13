@@ -39,8 +39,10 @@ void PermissionDialogJavaDelegate::CreateJavaDelegate(
   // PermissionDialogDelegate.
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  bool isOneTime = PermissionUtil::CanPermissionBeAllowedOnce(
-      permission_prompt_->GetContentSettingType(0));
+  bool isOneTime =
+      base::FeatureList::IsEnabled(permissions::features::kOneTimePermission) &&
+      PermissionUtil::CanPermissionBeAllowedOnce(
+          permission_prompt_->GetContentSettingType(0));
 
   base::android::ScopedJavaLocalRef<jstring> positiveButtonText;
   base::android::ScopedJavaLocalRef<jstring> negativeButtonText;
@@ -49,7 +51,10 @@ void PermissionDialogJavaDelegate::CreateJavaDelegate(
   bool showPositiveNonEphemeralAsFirstButton = false;
   if (isOneTime) {
     positiveButtonText = ConvertUTF16ToJavaString(
-        env, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW_EVERY_VISIT));
+        env, l10n_util::GetStringUTF16(
+                 permissions::feature_params::kUseWhileVisitingLanguage.Get()
+                     ? IDS_PERMISSION_ALLOW_WHILE_VISITING
+                     : IDS_PERMISSION_ALLOW_EVERY_VISIT));
     negativeButtonText = ConvertUTF16ToJavaString(
         env, l10n_util::GetStringUTF16(
                  permissions::feature_params::kUseStrongerPromptLanguage.Get()

@@ -18,6 +18,16 @@ export interface Destination {
 
   // Display name from printer.
   displayName: string;
+
+  // Type of destination.
+  printerType: PrinterType;
+
+  // Used for metrics, true when destination manually selected during CrOS
+  // preview session.
+  printerManuallySelected: boolean;
+
+  // The printer status reason for a local Chrome OS printer.
+  printerStatusReason: PrinterStatusReason|null;
 }
 
 export interface PrintRequestOutcome {
@@ -76,6 +86,52 @@ export interface MediaSize {
 // understanding the expectations of the n-up service/engine.
 export type PagesPerSheetValue = 1|2|4|6|9|16;
 
+/**
+ * Printer types for capabilities and printer list requests.
+ * Must match PrinterType in printing/mojom/print.mojom
+ */
+export enum PrinterType {
+  PRIVET_PRINTER_DEPRECATED = 0,
+  EXTENSION_PRINTER = 1,
+  PDF_PRINTER = 2,
+  LOCAL_PRINTER = 3,
+  CLOUD_PRINTER_DEPRECATED = 4
+}
+
+/**
+ * Must be kept in sync with the C++ ScalingType enum in
+ * printing/print_job_constants.h.
+ */
+export enum ScalingType {
+  DEFAULT = 0,
+  FIT_TO_PAGE = 1,
+  FIT_TO_PAPER = 2,
+  CUSTOM = 3,
+}
+
+/**
+ *  These values must be kept in sync with the Reason enum in
+ *  /chromeos/printing/cups_printer_status.h
+ */
+export enum PrinterStatusReason {
+  UNKNOWN_REASON = 0,
+  DEVICE_ERROR = 1,
+  DOOR_OPEN = 2,
+  LOW_ON_INK = 3,
+  LOW_ON_PAPER = 4,
+  NO_ERROR = 5,
+  OUT_OF_INK = 6,
+  OUT_OF_PAPER = 7,
+  OUTPUT_ALMOST_FULL = 8,
+  OUTPUT_FULL = 9,
+  PAPER_JAM = 10,
+  PAUSED = 11,
+  PRINTER_QUEUE_FULL = 12,
+  PRINTER_UNREACHABLE = 13,
+  STOPPED = 14,
+  TRAY_MISSING = 15,
+}
+
 // PrintTicket represents the data required to start print job. Ticket will be
 // used to create a settings dictionary with fields matching the existing Chrome
 // preview print settings for reusability.
@@ -93,6 +149,12 @@ export interface PrintTicket {
 
   // Whether to print full document or selected section.
   shouldPrintSelectionOnly: boolean;
+
+  // Additional vendor/advance job configuration such as 'job-sheet'.
+  advancedSettings?: Map<string, any>;
+
+  // Whether media should use borderless variant.
+  borderless: boolean;
 
   // Used when printing multiple copies. When true, prints a full set of the
   // document before printing the next copy. When false, prints N-copies of page
@@ -118,6 +180,9 @@ export interface PrintTicket {
   // of the media.
   duplex: DuplexMode;
 
+  // Whether the header and footer content will be added to generated PDF.
+  headerFooterEnabled: boolean;
+
   // Whether orientation should be in landscape or portrait mode.
   landscape: boolean;
 
@@ -140,6 +205,40 @@ export interface PrintTicket {
 
   // For n-up, number of pages to print on a single sheet.
   pagesPerSheet: PagesPerSheetValue;
+
+  // Height of page from generated PDF summing content, top margin, and bottom
+  // margin.
+  pageHeight: number;
+
+  // Width of page from generated PDF summing content, left margin, and right
+  // margin.
+  pageWidth: number;
+
+  // String containing a four digit numeric code when set.
+  pinValue?: string;
+
+  // Used for metrics. True when user updates the destination in the preview UI;
+  // otherwise false.
+  printerManuallySelected: boolean;
+
+  // Used for metrics. Destination's PrinterStatus when launching print job.
+  printerStatusReason: PrinterStatusReason;
+
+  // Printer type used determine correct logic and handler for print job
+  // destination.
+  printerType: PrinterType;
+
+  // Whether to treat source as an image when generating PDF.
+  rasterizePDF: boolean;
+
+  // Percent to scale source as integer.
+  scaleFactor: number;
+
+  // Whether to use custom scale or presets.
+  scalingType: ScalingType;
+
+  // Whether to generate PDF with CSS backgrounds included.
+  shouldPrintBackgrounds: boolean;
 }
 
 // Immutable session configuration details for the current CrOS preview request.

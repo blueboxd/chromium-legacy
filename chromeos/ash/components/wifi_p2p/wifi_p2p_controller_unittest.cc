@@ -13,16 +13,27 @@
 #include "chromeos/ash/components/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_clients.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/wifi_p2p/wifi_p2p_group.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace ash {
 
+namespace {
+
+constexpr char kDefaultIpv4Address[] = "100.0.0.1";
+constexpr char kDefaultSSID[] = "DIRECT-A0";
+constexpr char kDefaultPassphrase[] = "direct-passphrase";
+constexpr char kAssignedSSID[] = "DIRECT-A0";
+constexpr char kAssignedPassphrase[] = "assigned-passphrase";
+
+}  // namespace
+
 class WifiP2PControllerTest : public ::testing::Test {
  public:
   struct WifiP2POperationTestResult {
     WifiP2PController::OperationResult result;
-    std::optional<WifiP2PController::WifiDirectConnectionMetadata> metadata;
+    std::optional<WifiP2PGroup> group_metadata;
   };
 
   void SetUp() override {
@@ -64,18 +75,18 @@ class WifiP2PControllerTest : public ::testing::Test {
     EXPECT_EQ(expected_value, *actual_value);
   }
 
-  WifiP2POperationTestResult CreateP2PGroup(const std::string& ssid,
-                                            const std::string& passphrase) {
+  WifiP2POperationTestResult CreateP2PGroup(
+      std::optional<std::string> ssid,
+      std::optional<std::string> passphrase) {
     WifiP2POperationTestResult test_result;
     base::RunLoop run_loop;
     WifiP2PController::Get()->CreateWifiP2PGroup(
         ssid, passphrase,
         base::BindLambdaForTesting(
             [&](WifiP2PController::OperationResult result,
-                std::optional<WifiP2PController::WifiDirectConnectionMetadata>
-                    metadata) {
+                std::optional<WifiP2PGroup> group_metadata) {
               test_result.result = result;
-              test_result.metadata = metadata;
+              test_result.group_metadata = group_metadata;
               run_loop.Quit();
             }));
     base::RunLoop().RunUntilIdle();
@@ -104,10 +115,9 @@ class WifiP2PControllerTest : public ::testing::Test {
         ssid, passphrase, frequency,
         base::BindLambdaForTesting(
             [&](WifiP2PController::OperationResult result,
-                std::optional<WifiP2PController::WifiDirectConnectionMetadata>
-                    metadata) {
+                std::optional<WifiP2PGroup> group_metadata) {
               test_result.result = result;
-              test_result.metadata = metadata;
+              test_result.group_metadata = group_metadata;
               run_loop.Quit();
             }));
     base::RunLoop().RunUntilIdle();
@@ -162,7 +172,7 @@ TEST_F(WifiP2PControllerTest, FeatureDisabled) {
                      /*expected_value=*/false));
 }
 
-TEST_F(WifiP2PControllerTest, CreateP2PGroupSuccess) {
+TEST_F(WifiP2PControllerTest, CreateP2PGroupWithCredentials_Success) {
   Init();
 
   ShillManagerClient::Get()
@@ -170,13 +180,38 @@ TEST_F(WifiP2PControllerTest, CreateP2PGroupSuccess) {
       ->SetSimulateCreateP2PGroupResult(FakeShillSimulatedResult::kSuccess,
                                         shill::kCreateP2PGroupResultSuccess);
   const WifiP2POperationTestResult& result_arguments =
-      CreateP2PGroup("DIRECT-1a", "passphrase");
+      CreateP2PGroup(kAssignedSSID, kAssignedPassphrase);
   EXPECT_EQ(result_arguments.result,
             WifiP2PController::OperationResult::kSuccess);
-  ASSERT_TRUE(result_arguments.metadata);
-  EXPECT_EQ(result_arguments.metadata->shill_id, 0);
-  EXPECT_EQ(result_arguments.metadata->frequency, 1000u);
-  EXPECT_EQ(result_arguments.metadata->network_id, 1);
+  ASSERT_TRUE(result_arguments.group_metadata);
+  EXPECT_EQ(result_arguments.group_metadata->shill_id(), 0);
+  EXPECT_EQ(result_arguments.group_metadata->frequency(), 1000u);
+  EXPECT_EQ(result_arguments.group_metadata->network_id(), 1);
+  EXPECT_EQ(result_arguments.group_metadata->ipv4_address(),
+            kDefaultIpv4Address);
+  EXPECT_EQ(result_arguments.group_metadata->ssid(), kAssignedSSID);
+  EXPECT_EQ(result_arguments.group_metadata->passphrase(), kAssignedPassphrase);
+}
+
+TEST_F(WifiP2PControllerTest, CreateP2PGroupWithoutCredentials_Success) {
+  Init();
+
+  ShillManagerClient::Get()
+      ->GetTestInterface()
+      ->SetSimulateCreateP2PGroupResult(FakeShillSimulatedResult::kSuccess,
+                                        shill::kCreateP2PGroupResultSuccess);
+  const WifiP2POperationTestResult& result_arguments =
+      CreateP2PGroup(/*ssid=*/std::nullopt, /*passphrase=*/std::nullopt);
+  EXPECT_EQ(result_arguments.result,
+            WifiP2PController::OperationResult::kSuccess);
+  ASSERT_TRUE(result_arguments.group_metadata);
+  EXPECT_EQ(result_arguments.group_metadata->shill_id(), 0);
+  EXPECT_EQ(result_arguments.group_metadata->frequency(), 1000u);
+  EXPECT_EQ(result_arguments.group_metadata->network_id(), 1);
+  EXPECT_EQ(result_arguments.group_metadata->ipv4_address(),
+            kDefaultIpv4Address);
+  EXPECT_EQ(result_arguments.group_metadata->ssid(), kDefaultSSID);
+  EXPECT_EQ(result_arguments.group_metadata->passphrase(), kDefaultPassphrase);
 }
 
 TEST_F(WifiP2PControllerTest, CreateP2PGroupFailure_InvalidArguments) {
@@ -191,7 +226,7 @@ TEST_F(WifiP2PControllerTest, CreateP2PGroupFailure_InvalidArguments) {
       CreateP2PGroup("ssid", "passphrase");
   EXPECT_EQ(result_arguments.result,
             WifiP2PController::OperationResult::kInvalidArguments);
-  EXPECT_FALSE(result_arguments.metadata);
+  EXPECT_FALSE(result_arguments.group_metadata);
 }
 
 TEST_F(WifiP2PControllerTest, CreateP2PGroupFailure_DBusError) {
@@ -205,7 +240,7 @@ TEST_F(WifiP2PControllerTest, CreateP2PGroupFailure_DBusError) {
       CreateP2PGroup("DIRECT-1a", "passphrase");
   EXPECT_EQ(result_arguments.result,
             WifiP2PController::OperationResult::kDBusError);
-  EXPECT_FALSE(result_arguments.metadata);
+  EXPECT_FALSE(result_arguments.group_metadata);
 }
 
 TEST_F(WifiP2PControllerTest, DestroyP2PGroupSuccess) {
@@ -241,13 +276,17 @@ TEST_F(WifiP2PControllerTest, ConnectToP2PGroupSuccess) {
           FakeShillSimulatedResult::kSuccess,
           shill::kConnectToP2PGroupResultSuccess);
   const WifiP2POperationTestResult& result_arguments =
-      ConnectP2PGroup("DIRECT-1a", "passphrase", /*frequency=*/5200u);
+      ConnectP2PGroup(kAssignedSSID, kAssignedPassphrase, /*frequency=*/5200u);
   EXPECT_EQ(result_arguments.result,
             WifiP2PController::OperationResult::kSuccess);
-  ASSERT_TRUE(result_arguments.metadata);
-  EXPECT_EQ(result_arguments.metadata->shill_id, 0);
-  EXPECT_EQ(result_arguments.metadata->frequency, 5200u);
-  EXPECT_EQ(result_arguments.metadata->network_id, 1);
+  ASSERT_TRUE(result_arguments.group_metadata);
+  EXPECT_EQ(result_arguments.group_metadata->shill_id(), 0);
+  EXPECT_EQ(result_arguments.group_metadata->frequency(), 5200u);
+  EXPECT_EQ(result_arguments.group_metadata->network_id(), 1);
+  EXPECT_EQ(result_arguments.group_metadata->ipv4_address(),
+            kDefaultIpv4Address);
+  EXPECT_EQ(result_arguments.group_metadata->ssid(), kAssignedSSID);
+  EXPECT_EQ(result_arguments.group_metadata->passphrase(), kAssignedPassphrase);
 }
 
 TEST_F(WifiP2PControllerTest, DisconnectFromP2PGroupSuccess) {
@@ -263,7 +302,7 @@ TEST_F(WifiP2PControllerTest, DisconnectFromP2PGroupSuccess) {
   EXPECT_EQ(result, WifiP2PController::OperationResult::kSuccess);
 }
 
-TEST_F(WifiP2PControllerTest, DisconnectFromP2PGroupSuccess_NotConnected) {
+TEST_F(WifiP2PControllerTest, DisconnectFromP2PGroupFailure_NotConnected) {
   Init();
 
   ShillManagerClient::Get()
@@ -289,7 +328,7 @@ TEST_F(WifiP2PControllerTest,
       ConnectP2PGroup("DIRECT-1a", "passphrase", /*frequency=*/5200u);
   EXPECT_EQ(result_arguments.result,
             WifiP2PController::OperationResult::kConcurrencyNotSupported);
-  EXPECT_FALSE(result_arguments.metadata);
+  EXPECT_FALSE(result_arguments.group_metadata);
 }
 
 TEST_F(WifiP2PControllerTest, GetP2PCapabilities) {

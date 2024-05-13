@@ -29,6 +29,7 @@ MlEmbedder::~MlEmbedder() {
 }
 
 void MlEmbedder::ComputePassagesEmbeddings(
+    PassageKind kind,
     std::vector<std::string> passages,
     ComputePassagesEmbeddingsCallback callback) {
   service_controller_->GetEmbeddings(std::move(passages), std::move(callback));
@@ -42,9 +43,16 @@ void MlEmbedder::OnModelUpdated(
     return;
   }
 
-  if (service_controller_) {
-    service_controller_->MaybeUpdateModelPaths(model_info);
+  if (service_controller_ &&
+      service_controller_->MaybeUpdateModelPaths(model_info) &&
+      on_embedder_ready_) {
+    std::move(on_embedder_ready_)
+        .Run(service_controller_->GetEmbedderMetadata());
   }
+}
+
+void MlEmbedder::SetOnEmbedderReady(OnEmbedderReadyCallback callback) {
+  on_embedder_ready_ = std::move(callback);
 }
 
 }  // namespace history_embeddings

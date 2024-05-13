@@ -8,15 +8,17 @@ import("//third_party/jni_zero/jni_zero.gni")
 android_library("java") {
   srcjar_deps = [ ":jni_headers" ]
   sources = [
-    "java/src/org/chromium/chrome/browser/tab_resumption/ForeignSessionTabResumptionDataProvider.java",
-    "java/src/org/chromium/chrome/browser/tab_resumption/ForeignSessionTabResumptionDataSource.java",
+    "java/src/org/chromium/chrome/browser/tab_resumption/ForeignSessionSuggestionBackend.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/LocalTabSuggestionEntry.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/LocalTabTabResumptionDataProvider.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/LocalTileView.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/MixedTabResumptionDataProvider.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/SmartTabResumptionDataProvider.java",
+    "java/src/org/chromium/chrome/browser/tab_resumption/SuggestionBackend.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/SuggestionBundle.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/SuggestionEntry.java",
+    "java/src/org/chromium/chrome/browser/tab_resumption/SyncDerivedSuggestionEntrySource.java",
+    "java/src/org/chromium/chrome/browser/tab_resumption/SyncDerivedTabResumptionDataProvider.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/TabResumptionBridge.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/TabResumptionDataProvider.java",
     "java/src/org/chromium/chrome/browser/tab_resumption/TabResumptionModuleBuilder.java",
@@ -91,12 +93,14 @@ robolectric_library("junit") {
   resources_package = "org.chromium.chrome.browser.tab_resumption"
 
   sources = [
-    "junit/src/org/chromium/chrome/browser/tab_resumption/ForeignSessionTabResumptionDataProviderTest.java",
-    "junit/src/org/chromium/chrome/browser/tab_resumption/ForeignSessionTabResumptionDataSourceTest.java",
+    "junit/src/org/chromium/chrome/browser/tab_resumption/ForeignSessionSuggestionBackendTest.java",
     "junit/src/org/chromium/chrome/browser/tab_resumption/LocalTabTabResumptionDataProviderTest.java",
     "junit/src/org/chromium/chrome/browser/tab_resumption/MixedTabResumptionDataProviderTest.java",
+    "junit/src/org/chromium/chrome/browser/tab_resumption/SyncDerivedSuggestionEntrySourceTest.java",
+    "junit/src/org/chromium/chrome/browser/tab_resumption/SyncDerivedTabResumptionDataProviderTest.java",
     "junit/src/org/chromium/chrome/browser/tab_resumption/TabResumptionModuleEnablementUnitTest.java",
     "junit/src/org/chromium/chrome/browser/tab_resumption/TabResumptionModuleMediatorUnitTest.java",
+    "junit/src/org/chromium/chrome/browser/tab_resumption/TabResumptionModuleMetricsUtilsUnitTest.java",
     "junit/src/org/chromium/chrome/browser/tab_resumption/TabResumptionModuleSuggestionsUnitTest.java",
     "junit/src/org/chromium/chrome/browser/tab_resumption/TabResumptionModuleUtilsUnitTest.java",
     "junit/src/org/chromium/chrome/browser/tab_resumption/TabResumptionModuleViewUnitTest.java",
@@ -111,6 +115,7 @@ robolectric_library("junit") {
     "//base:base_junit_test_support",
     "//chrome/browser/flags:java",
     "//chrome/browser/magic_stack/android:java",
+    "//chrome/browser/page_image_service/android:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/recent_tabs:java",
     "//chrome/browser/signin/services/android:java",

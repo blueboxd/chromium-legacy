@@ -2030,7 +2030,7 @@ void StoragePartitionImpl::OnAuthRequired(
     // is valid here.
     if (service_worker_context_->context()) {
       auto* container_host =
-          service_worker_context_->context()->GetContainerHostByWindowId(
+          service_worker_context_->context()->GetServiceWorkerClientByWindowId(
               *window_id);
       if (container_host) {
         if (container_host->GetRenderFrameHostId()) {
@@ -2204,7 +2204,7 @@ void StoragePartitionImpl::OnCertificateRequested(
     // is valid here.
     if (service_worker_context_->context()) {
       auto* container_host =
-          service_worker_context_->context()->GetContainerHostByWindowId(
+          service_worker_context_->context()->GetServiceWorkerClientByWindowId(
               *window_id);
       if (container_host) {
         if (container_host->GetRenderFrameHostId()) {
@@ -3225,10 +3225,9 @@ void StoragePartitionImpl::BindIndexedDB(
     const storage::BucketLocator& bucket_locator,
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote,
-    const base::UnguessableToken& client_token,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
   indexed_db_control_wrapper_->BindIndexedDB(
-      bucket_locator, std::move(client_state_checker_remote), client_token,
+      bucket_locator, std::move(client_state_checker_remote),
       std::move(receiver));
 }
 

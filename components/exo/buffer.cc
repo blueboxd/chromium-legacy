@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -671,7 +672,7 @@ std::unique_ptr<Buffer> Buffer::CreateBuffer(
     gfx::Size buffer_size,
     gfx::BufferFormat buffer_format,
     gfx::BufferUsage buffer_usage,
-    base::StringPiece debug_label,
+    std::string_view debug_label,
     gpu::SurfaceHandle surface_handle,
     base::WaitableEvent* shutdown_event,
     bool is_overlay_candidate) {
@@ -843,13 +844,13 @@ bool Buffer::ProduceTransferableResource(
     // raster/composite when the fence already signaled at this stage.
 
     if (acquire_fence && !acquire_fence->GetGpuFenceHandle().is_null()) {
-      resource->mailbox_holder.sync_token =
-          contents_texture->UpdateSharedImage(std::move(acquire_fence));
+      resource->set_sync_token(
+          contents_texture->UpdateSharedImage(std::move(acquire_fence)));
     }
     uint32_t texture_target =
         contents_texture->shared_image()->GetTextureTarget(GetFormat());
-    resource->mailbox_holder = gpu::MailboxHolder(
-        contents_texture->mailbox(), resource->sync_token(), texture_target);
+    resource->set_mailbox(contents_texture->mailbox());
+    resource->set_texture_target(texture_target);
     resource->is_overlay_candidate = is_overlay_candidate_;
     resource->format = GetSharedImageFormat(buffer_format_);
 
@@ -889,8 +890,9 @@ bool Buffer::ProduceTransferableResource(
                      std::move(contents_texture_),
                      release_contents_callback_.callback(), next_commit_id_,
                      /*release_fence=*/gfx::GpuFenceHandle()));
-  resource->mailbox_holder =
-      gpu::MailboxHolder(texture->mailbox(), sync_token, GL_TEXTURE_2D);
+  resource->set_mailbox(texture->mailbox());
+  resource->set_sync_token(sync_token);
+  resource->set_texture_target(GL_TEXTURE_2D);
   resource->is_overlay_candidate = false;
 
   // The mailbox texture will be released when no longer used by the

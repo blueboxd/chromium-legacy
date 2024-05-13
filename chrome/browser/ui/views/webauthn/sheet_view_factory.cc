@@ -391,6 +391,11 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorCreateGpmPasskeySheetModel>(
               dialog_model));
       break;
+    case Step::kGPMConfirmOffTheRecordCreate:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorGpmIncognitoCreateSheetModel>(
+              dialog_model));
+      break;
     case Step::kGPMOnboarding:
       sheet_view = std::make_unique<AuthenticatorGpmOnboardingSheetView>(
           std::make_unique<AuthenticatorGpmOnboardingSheetModel>(dialog_model));
@@ -414,7 +419,7 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
     case Step::kClosed:
     case Step::kRecoverSecurityDomain:
     case Step::kGPMPasskeySaved:
-    case Step::kGPMReauthAccount:
+    case Step::kGPMReauthForPinReset:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<PlaceholderSheetModel>(dialog_model));
       break;

@@ -72,7 +72,7 @@
 
 namespace content {
 
-class ServiceWorkerContainerHost;
+class ServiceWorkerClient;
 class ServiceWorkerContextCore;
 class ServiceWorkerHost;
 class ServiceWorkerInstalledScriptsSender;
@@ -423,7 +423,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   // Adds and removes the specified host as a controllee of this service worker.
-  void AddControllee(ServiceWorkerContainerHost* container_host);
+  void AddControllee(ServiceWorkerClient* service_worker_client);
   void RemoveControllee(const std::string& client_uuid);
 
   // Called when the navigation for a window client commits to a render frame
@@ -448,7 +448,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Note regarding BackForwardCache:
   // Clients in back-forward cache don't count as controllees.
   bool HasControllee() const { return !controllee_map_.empty(); }
-  const std::map<std::string, base::WeakPtr<ServiceWorkerContainerHost>>&
+  const std::map<std::string, base::WeakPtr<ServiceWorkerClient>>&
   controllee_map() const {
     return controllee_map_;
   }
@@ -462,7 +462,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void EvictBackForwardCachedControllees(
       BackForwardCacheMetrics::NotRestoredReason reason);
   void EvictBackForwardCachedControllee(
-      ServiceWorkerContainerHost* controllee,
+      ServiceWorkerClient* controllee,
       BackForwardCacheMetrics::NotRestoredReason reason);
 
   // The worker host hosting this version. Only valid while the version is
@@ -721,6 +721,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Check if the static router should be evaluated.
   bool NeedRouterEvaluate() const;
 
+  // Get an associated cache storage interface.
+  mojo::PendingRemote<blink::mojom::CacheStorage> GetRemoteCacheStorage();
+
+  // Describes whether the client has a controller and if it has a fetch event
+  // handler.
+  blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
+
   // Timeout for a request to be handled.
   static constexpr base::TimeDelta kRequestTimeout = base::Minutes(5);
 
@@ -825,15 +832,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
   struct InflightRequestTimeoutInfo {
     InflightRequestTimeoutInfo(int id,
                                ServiceWorkerMetrics::EventType event_type,
-                               const base::TimeTicks& expiration,
+                               const base::TimeTicks& expiration_time,
                                TimeoutBehavior timeout_behavior);
     ~InflightRequestTimeoutInfo();
-    // Compares |expiration|, or |id| if |expiration| is the same.
+    // Compares |expiration_time|, or |id| if |expiration_time| is the same.
     bool operator<(const InflightRequestTimeoutInfo& other) const;
 
     const int id;
     const ServiceWorkerMetrics::EventType event_type;
-    const base::TimeTicks expiration;
+    const base::TimeTicks expiration_time;
     const TimeoutBehavior timeout_behavior;
   };
 
@@ -866,7 +873,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // The following methods all rely on the internal |tick_clock_| for the
   // current time.
   void RestartTick(base::TimeTicks* time) const;
-  bool RequestExpired(const base::TimeTicks& expiration) const;
+  bool RequestExpired(const base::TimeTicks& expiration_time) const;
   base::TimeDelta GetTickDuration(const base::TimeTicks& time) const;
 
   // EmbeddedWorkerInstance::Listener overrides:
@@ -984,7 +991,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // The caller of MaybeTimeoutRequest must increase reference count of |this|
   // to avoid it deleted during the execution.
   bool MaybeTimeoutRequest(const InflightRequestTimeoutInfo& info);
-  void SetAllRequestExpirations(const base::TimeTicks& expiration);
+  void SetAllRequestExpirations(const base::TimeTicks& expiration_time);
 
   // Sets |stale_time_| if this worker is stale, causing an update to eventually
   // occur once the worker stops or is running too long.
@@ -1156,18 +1163,17 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::unique_ptr<content::ServiceWorkerHost> worker_host_;
 
   // |controllee_map_| and |bfcached_controllee_map_| should not share the same
-  // controllee.  ServiceWorkerContainerHost in the controllee maps should be
+  // controllee.  ServiceWorkerClient in the controllee maps should be
   // non-null.
   // TODO(crbug.com/40199210): Fix cases where hosts can become nullptr while
   //                          stored in the maps.
-  std::map<std::string, base::WeakPtr<ServiceWorkerContainerHost>>
-      controllee_map_;
-  std::map<std::string, base::WeakPtr<ServiceWorkerContainerHost>>
+  std::map<std::string, base::WeakPtr<ServiceWorkerClient>> controllee_map_;
+  std::map<std::string, base::WeakPtr<ServiceWorkerClient>>
       bfcached_controllee_map_;
 
-  // Keeps track of the |client_uuid| of ContainerHost that is being evicted,
-  // and the reason why it is evicted. Once eviction is complete, the entry will
-  // be removed.
+  // Keeps track of the |client_uuid| of ServiceWorkerClient that is being
+  // evicted, and the reason why it is evicted. Once eviction is complete, the
+  // entry will be removed.
   // TODO(crbug.com/40657227): Remove this once we fix the crash.
   std::map<std::string, BackForwardCacheMetrics::NotRestoredReason>
       controllees_to_be_evicted_;

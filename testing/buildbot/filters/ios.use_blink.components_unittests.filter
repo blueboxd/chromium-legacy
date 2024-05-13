@@ -26,6 +26,15 @@
 -AutofillAgentTests.showAutofillPopup_ShowIconForCreditCardSuggestionsOnly
 -AutofillAgentTests.showAutofillPopup_ShowVirtualCards
 
+# TODO(crbug.com/339492594): The below tests have been failing since
+# https://crrev.com/c/5496051. It looks like it's missing a
+# content::BrowserTaskEnvironment member in your fixture.
+-AutofillAgentTests.DidSelectSuggestion_AutocompleteEntry
+-AutofillAgentTests.DidSelectSuggestion_ClearFormEntry
+-AutofillAgentTests.FillData_UnknowFieldIdInResults
+-AutofillAgentTests.FillData_UpdateWithResults
+-SharedPasswordControllerTest.DidFillField
+
 # TODO(crbug.com/332933545): Test currently fails on iOS Blink.
 -LanguageDetectionJavascriptTest.DetectLanguageWithNoTranslateMeta
 -LanguageDetectionJavascriptTest.DetectLanguageWithoutNoTranslateMeta
@@ -147,6 +156,16 @@
 -PasswordFormHelperTest.HandleFormSubmittedMessage_NoFormMatchingId
 -PasswordFormHelperTest.HandleFormSubmittedMessage_NoTrustedUrl
 -PasswordFormHelperTest.HandleFormSubmittedMessage_NoWebState
+
+# TODO(crbug.com/339074797): PasswordFormHelperTest have been failing since
+# https://crrev.com/c/5494354. Currently they fail with use_blink due to
+# spinning up on an unexpected thread.
+-PasswordFormHelperTest.FillPasswordFormWithFillData_Failure
+-PasswordFormHelperTest.FillPasswordFormWithFillData_Success
+-PasswordFormHelperTest.FillPasswordFormWithFillData_Success_NoFill
+-PasswordFormHelperTest.FillPasswordIntoForm_UserTypedUsername_FillFromPassword
+-PasswordFormHelperTest.FillPasswordIntoForm_UserTypedUsername_FillFromUsername
+-PasswordFormHelperTest.FillUsernameAndPassword_MissingFillResultField
 
 # TODO(crbug.com/40281649): Test currently fails on iOS blink.
 -SharedPasswordControllerTest.PasswordManagerIsNotNotifiedAboutHeuristicsPredictions

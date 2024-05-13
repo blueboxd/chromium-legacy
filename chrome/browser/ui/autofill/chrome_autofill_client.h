@@ -29,7 +29,6 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
-#include "components/autofill/core/browser/ui/payments/card_unmask_authentication_selection_dialog_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -137,12 +136,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
   std::unique_ptr<webauthn::InternalAuthenticator>
   CreateCreditCardInternalAuthenticator(AutofillDriver* driver) override;
   void ShowAutofillSettings(FillingProduct main_filling_product) override;
-  void ShowUnmaskAuthenticatorSelectionDialog(
-      const std::vector<CardUnmaskChallengeOption>& challenge_options,
-      base::OnceCallback<void(const std::string&)>
-          confirm_unmask_challenge_option_callback,
-      base::OnceClosure cancel_unmasking_closure) override;
-  void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
   void ShowVirtualCardEnrollDialog(
       const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
@@ -162,9 +155,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
       WebauthnDialogCallback verify_pending_dialog_callback) override;
   void UpdateWebauthnOfferDialogWithError() override;
   bool CloseWebauthnDialog() override;
-  void OfferVirtualCardOptions(
-      const std::vector<raw_ptr<CreditCard, VectorExperimental>>& candidates,
-      base::OnceCallback<void(const std::string&)> callback) override;
 #else  // !BUILDFLAG(IS_ANDROID)
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const std::u16string&)> callback) override;
@@ -182,13 +172,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
       const LegalMessageLines& legal_message_lines,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
-  void ConfirmSaveIbanLocally(const Iban& iban,
-                              bool should_show_prompt,
-                              SaveIbanPromptCallback callback) override;
-  void ConfirmUploadIbanToCloud(const Iban& iban,
-                                LegalMessageLines legal_message_lines,
-                                bool should_show_prompt,
-                                SaveIbanPromptCallback callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
   void ShowEditAddressProfileDialog(
@@ -207,10 +190,13 @@ class ChromeAutofillClient : public ContentAutofillClient,
   bool ShowTouchToFillCreditCard(
       base::WeakPtr<TouchToFillDelegate> delegate,
       base::span<const autofill::CreditCard> cards_to_suggest) override;
+  bool ShowTouchToFillIban(
+      base::WeakPtr<TouchToFillDelegate> delegate,
+      base::span<const autofill::Iban> ibans_to_suggest) override;
   void HideTouchToFillCreditCard() override;
   void ShowAutofillSuggestions(
       const PopupOpenArgs& open_args,
-      base::WeakPtr<AutofillPopupDelegate> delegate) override;
+      base::WeakPtr<AutofillSuggestionDelegate> delegate) override;
   void UpdateAutofillDataListValues(
       base::span<const SelectOption> datalist) override;
   base::span<const Suggestion> GetAutofillSuggestions() const override;
@@ -284,7 +270,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
   bool SupportsConsentlessExecution(const url::Origin& origin);
   void ShowAutofillSuggestionsImpl(
       const PopupOpenArgs& open_args,
-      base::WeakPtr<AutofillPopupDelegate> delegate);
+      base::WeakPtr<AutofillSuggestionDelegate> delegate);
   base::WeakPtr<ChromeAutofillClient> GetWeakPtr();
 
   std::unique_ptr<LogManager> log_manager_;
@@ -295,8 +281,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
   std::unique_ptr<payments::ChromePaymentsAutofillClient>
       payments_autofill_client_;
   std::unique_ptr<CreditCardRiskBasedAuthenticator> risk_based_authenticator_;
-  std::unique_ptr<CardUnmaskAuthenticationSelectionDialogControllerImpl>
-      card_unmask_authentication_selection_controller_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   std::unique_ptr<payments::MandatoryReauthManager>
       payments_mandatory_reauth_manager_;

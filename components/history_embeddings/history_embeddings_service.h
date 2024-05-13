@@ -26,7 +26,9 @@
 #include "components/history_embeddings/sql_database.h"
 #include "components/history_embeddings/vector_database.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/optimization_guide/core/model_quality/model_quality_log_entry.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/weak_document_ptr.h"
 
 namespace optimization_guide {
 class OptimizationGuideModelProvider;
@@ -53,6 +55,9 @@ struct ScoredUrlRow {
 using SearchResult = std::vector<ScoredUrlRow>;
 using SearchResultCallback = base::OnceCallback<void(SearchResult)>;
 
+using QualityLogEntry =
+    std::unique_ptr<optimization_guide::ModelQualityLogEntry>;
+
 class HistoryEmbeddingsService : public KeyedService,
                                  public history::HistoryServiceObserver {
  public:
@@ -71,8 +76,9 @@ class HistoryEmbeddingsService : public KeyedService,
   // Initiate async passage extraction from given host's main frame.
   // When extraction completes, the passages will be stored in the database
   // and then given to the callback.
+  // Note: A `WeakDocumentPtr` is essentially a `WeakPtr<RenderFrameHost>`.
   void RetrievePassages(const history::VisitRow& visit_row,
-                        content::RenderFrameHost& host);
+                        content::WeakDocumentPtr weak_render_frame_host);
 
   // Find top `count` URL visit info entries nearest given `query`. Pass
   // results to given `callback` when search completes. Search will be narrowed
@@ -86,6 +92,14 @@ class HistoryEmbeddingsService : public KeyedService,
 
   // Weak `this` provider method.
   base::WeakPtr<HistoryEmbeddingsService> AsWeakPtr();
+
+  // Submit quality logging data after user selects an item from search result.
+  void SendQualityLog(const std::string& query,
+                      const SearchResult& result,
+                      size_t selection,
+                      size_t num_days,
+                      size_t num_entered_characters,
+                      bool from_omnibox_history_scope);
 
   // KeyedService:
   void Shutdown() override;
@@ -103,6 +117,10 @@ class HistoryEmbeddingsService : public KeyedService,
   // the separate storage worker sequence.
   struct Storage {
     explicit Storage(const base::FilePath& storage_dir);
+
+    // Associate the given metadata with this Storage instance. The storage is
+    // not considered initialized until this metadata is supplied.
+    void SetEmbedderMetadata(EmbedderMetadata metadata);
 
     // Called on the worker sequence to persist passages and embeddings.
     void ProcessAndStorePassages(UrlPassages url_passages,
@@ -127,6 +145,14 @@ class HistoryEmbeddingsService : public KeyedService,
     // The underlying SQL database for persistent storage.
     SqlDatabase sql_database;
   };
+
+  // Called when the embedder metadata is available. Passes the metadata to
+  // the internal storage.
+  void OnEmbedderMetadataReady(EmbedderMetadata metadata);
+
+  // This can be overridden to prepare a log entry that will then be filled
+  // with data and sent on destruction. Default implementation returns null.
+  virtual QualityLogEntry PrepareQualityLogEntry();
 
   // Called indirectly via RetrievePassages when passage extraction completes.
   void OnPassagesRetrieved(UrlPassages url_passages,
@@ -166,21 +192,6 @@ class HistoryEmbeddingsService : public KeyedService,
       const std::vector<page_content_annotations::BatchAnnotationResult>&
           annotation_results);
 
-  // Requests the embedder to embed the next query if one is pending.
-  void SubmitQueryToEmbedder();
-
-  // Time when last query was submitted, if awaiting an embedder response;
-  // or nullopt if no query is currently submitted.
-  std::optional<base::Time> query_submission_time_;
-
-  // The next query to submit for embedding. Empty query strings are allowed,
-  // so optional is used to determine whether a query is pending.
-  std::optional<std::string> next_query_;
-
-  // The callback associated with `next_query_` is also saved until it's
-  // submitted to the embedder.
-  ComputePassagesEmbeddingsCallback next_query_callback_;
-
   // The history service is used to fill in details about URLs and visits
   // found via search. It strictly outlives this due to the dependency
   // specified in HistoryEmbeddingsServiceFactory.
@@ -200,6 +211,9 @@ class HistoryEmbeddingsService : public KeyedService,
 
   // The embedder used to compute embeddings.
   std::unique_ptr<Embedder> embedder_;
+
+  // Metadata about the embedder.
+  std::optional<EmbedderMetadata> embedder_metadata_;
 
   // Storage is bound to a separate sequence.
   // This will be null if the feature flag is disabled.

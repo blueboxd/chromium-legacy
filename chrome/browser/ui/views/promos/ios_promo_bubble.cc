@@ -7,16 +7,17 @@
 #include <memory>
 
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/not_fatal_until.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/promos/promos_pref_names.h"
+#include "chrome/browser/promos/promos_types.h"
 #include "chrome/browser/promos/promos_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/promos/ios_promo_constants.h"
-#include "chrome/browser/ui/views/promos/ios_promo_types.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -24,7 +25,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/qr_code_generator/bitmap_generator.h"
 #include "content/public/browser/page_navigator.h"
-#include "ios_promo_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/page_transition_types.h"
@@ -44,20 +44,63 @@ views::BubbleDialogDelegate* ios_promo_delegate_ = nullptr;
 
 class IOSPromoBubbleDelegate : public ui::DialogModelDelegate {
  public:
-  explicit IOSPromoBubbleDelegate(Browser* browser) : browser_(browser) {}
+  IOSPromoBubbleDelegate(Browser* browser, IOSPromoType promo_type)
+      : browser_(browser),
+        impression_histogram_already_recorded_(false),
+        promo_type_(promo_type),
+        ios_promo_prefs_config_(SetUpIOSPromoConfig(promo_type)) {}
 
   // Handler for when the window closes.
   void OnWindowClosing() { ios_promo_delegate_ = nullptr; }
 
   // Callback for when the bubble is dismissed.
-  void OnDismissal() {}
+  void OnDismissal() {
+    feature_engagement::Tracker* tracker =
+        feature_engagement::TrackerFactory::GetForBrowserContext(
+            browser_->profile());
+    if (tracker && ios_promo_prefs_config_.promo_feature_) {
+      tracker->Dismissed(*ios_promo_prefs_config_.promo_feature_);
+    }
+    // Don't record a histogram if either of the buttons' callbacks have run
+    // and a histogram has already been recorded.
+    if (!impression_histogram_already_recorded_) {
+      RecordIOSPromoUserInteractionHistogram(
+          promo_type_,
+          browser_->profile()->GetPrefs()->GetInteger(
+              ios_promo_prefs_config_.promo_impressions_counter_pref_name),
+          promos_utils::DesktopIOSPromoAction::kDismissed);
+    }
+  }
 
   // Callback for when the "No thanks" button is clicked.
-  void OnNoThanksButtonClicked() { ios_promo_delegate_->GetWidget()->Close(); }
+  void OnNoThanksButtonClicked() {
+    impression_histogram_already_recorded_ = true;
+
+    browser_->profile()->GetPrefs()->SetBoolean(
+        ios_promo_prefs_config_.promo_opt_out_pref_name, true);
+
+    promos_utils::RecordIOSPromoUserInteractionHistogram(
+        promo_type_,
+        browser_->profile()->GetPrefs()->GetInteger(
+            ios_promo_prefs_config_.promo_impressions_counter_pref_name),
+        promos_utils::DesktopIOSPromoAction::kNoThanksClicked);
+
+    ios_promo_delegate_->GetWidget()->Close();
+  }
 
  private:
   // Pointer to the current Browser.
-  raw_ptr<Browser> browser_;
+  const raw_ptr<Browser> browser_;
+
+  // Flag tracking whether the impression histogram has already been
+  // recorded.
+  bool impression_histogram_already_recorded_;
+
+  // Promo type for the current promo bubble.
+  const IOSPromoType promo_type_;
+
+  // The structure that holds the configurations of the current promo type.
+  const IOSPromoPrefsConfig ios_promo_prefs_config_;
 };
 
 // CreateFooter creates the view that is inserted as footer to the bubble.
@@ -162,7 +205,7 @@ std::unique_ptr<views::View> CreateFooter(
 
   // Note that the absence of a quiet zone may interfere with decoding
   // of QR codes even for small codes.
-  auto qr_image = qr_code_generator::GenerateBitmap(
+  auto qr_image = qr_code_generator::GenerateImage(
       base::as_byte_span(std::string_view(IOSPromoConfig.kPromoQRCodeURL)),
       qr_code_generator::ModuleStyle::kCircles,
       qr_code_generator::LocatorStyle::kRounded,
@@ -173,7 +216,7 @@ std::unique_ptr<views::View> CreateFooter(
   // can't result in input-too-long error or other errors).
   CHECK(qr_image.has_value());
 
-  image_view->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(qr_image.value()));
+  image_view->SetImage(qr_image.value());
 
   return built_footer_view;
 }
@@ -183,17 +226,20 @@ IOSPromoConstants::IOSPromoTypeConfigs IOSPromoBubble::SetUpBubble(
     IOSPromoType promo_type) {
   IOSPromoConstants::IOSPromoTypeConfigs IOSPromoConfig;
   switch (promo_type) {
-    case IOSPromoType::kIOSPasswordPromo:
+    case IOSPromoType::kPassword:
       // Set up iOS Password Promo Bubble.
       IOSPromoConfig.kPromoQRCodeURL =
           IOSPromoConstants::kPasswordBubbleQRCodeURL;
-      IOSPromoConfig.kBubbleTitleID = IDS_IOS_PASSWORD_PROMO_BUBBLE_TITLE;
-      IOSPromoConfig.kBubbleSubtitleID = IDS_IOS_PASSWORD_PROMO_BUBBLE_SUBTITLE;
-      IOSPromoConfig.kPromoTitleID = IDS_IOS_PASSWORD_PROMO_BUBBLE_FOOTER_TITLE;
+      IOSPromoConfig.kBubbleTitleID =
+          IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_TITLE;
+      IOSPromoConfig.kBubbleSubtitleID =
+          IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_SUBTITLE;
+      IOSPromoConfig.kPromoTitleID =
+          IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_FOOTER_TITLE;
       IOSPromoConfig.kPromoDescriptionID =
-          IDS_IOS_PASSWORD_PROMO_BUBBLE_FOOTER_DESCRIPTION_QR;
+          IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_FOOTER_DESCRIPTION_QR;
       IOSPromoConfig.kDeclineButtonTextID =
-          IDS_IOS_PASSWORD_PROMO_BUBBLE_BUTTON_DECLINE;
+          IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_BUTTON_DECLINE;
       break;
     default:
       NOTREACHED_NORETURN();
@@ -214,7 +260,7 @@ void IOSPromoBubble::ShowPromoBubble(views::View* anchor_view,
   }
 
   auto bubble_delegate_unique =
-      std::make_unique<IOSPromoBubbleDelegate>(browser);
+      std::make_unique<IOSPromoBubbleDelegate>(browser, promo_type);
   IOSPromoBubbleDelegate* bubble_delegate = bubble_delegate_unique.get();
 
   auto dialog_model_builder =

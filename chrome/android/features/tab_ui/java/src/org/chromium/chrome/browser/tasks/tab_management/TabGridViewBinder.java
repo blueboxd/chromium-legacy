@@ -28,6 +28,8 @@ import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider;
 import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
 import org.chromium.chrome.browser.tab_ui.TabUiThemeUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabListMediator.TabGroupInfo;
+import org.chromium.chrome.browser.tasks.tab_management.TabProperties.TabActionState;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -43,41 +45,40 @@ class TabGridViewBinder {
     private static final String SHOPPING_METRICS_IDENTIFIER = "EnterTabSwitcher";
 
     /**
-     * Bind a closable tab to a view.
-     * @param model The model to bind.
+     * Main entrypoint for binding TabGridView
+     *
      * @param view The view to bind to.
-     * @param propertyKey The property that changed.
+     * @param model The model to bind.
+     * @param viewType The view type to bind.
      */
-    public static void bindClosableTab(
+    public static void bindTab(
             PropertyModel model, ViewGroup view, @Nullable PropertyKey propertyKey) {
         assert view instanceof ViewLookupCachingFrameLayout;
-        if (propertyKey == null) {
-            onBindAll((ViewLookupCachingFrameLayout) view, model, TabProperties.UiType.CLOSABLE);
+        @TabActionState Integer tabActionState = model.get(TabProperties.TAB_ACTION_STATE);
+        if (tabActionState == null) {
+            assert false : "TAB_ACTION_STATE must be set before initial bindTab call.";
             return;
         }
-        bindCommonProperties(model, (ViewLookupCachingFrameLayout) view, propertyKey);
-        bindClosableTabProperties(model, (ViewLookupCachingFrameLayout) view, propertyKey);
-    }
 
-    /**
-     * Bind a selectable tab to a view.
-     * @param model The model to bind.
-     * @param view The view to bind to.
-     * @param propertyKey The property that changed.
-     */
-    public static void bindSelectableTab(
-            PropertyModel model, ViewGroup view, @Nullable PropertyKey propertyKey) {
-        assert view instanceof ViewLookupCachingFrameLayout;
+        ((TabGridView) view).setTabActionState(tabActionState);
         if (propertyKey == null) {
-            onBindAll((ViewLookupCachingFrameLayout) view, model, TabProperties.UiType.SELECTABLE);
+            onBindAll((ViewLookupCachingFrameLayout) view, model, tabActionState);
             return;
         }
+
         bindCommonProperties(model, (ViewLookupCachingFrameLayout) view, propertyKey);
-        bindSelectableTabProperties(model, (ViewLookupCachingFrameLayout) view, propertyKey);
+        if (tabActionState == TabActionState.CLOSABLE) {
+            bindClosableTabProperties(model, (ViewLookupCachingFrameLayout) view, propertyKey);
+        } else if (tabActionState == TabActionState.SELECTABLE) {
+            bindSelectableTabProperties(model, (ViewLookupCachingFrameLayout) view, propertyKey);
+        } else {
+            assert false : "Unsupported TabActionState provided to bindTab.";
+        }
     }
 
     /**
      * Rebind all properties on a model to the view.
+     *
      * @param view The view to bind to.
      * @param model The model to bind.
      * @param viewType The view type to bind.
@@ -85,14 +86,14 @@ class TabGridViewBinder {
     private static void onBindAll(
             ViewLookupCachingFrameLayout view,
             PropertyModel model,
-            @TabProperties.UiType int viewType) {
+            @TabActionState int tabActionState) {
         for (PropertyKey propertyKey : TabProperties.ALL_KEYS_TAB_GRID) {
             bindCommonProperties(model, view, propertyKey);
-            switch (viewType) {
-                case TabProperties.UiType.SELECTABLE:
+            switch (tabActionState) {
+                case TabProperties.TabActionState.SELECTABLE:
                     bindSelectableTabProperties(model, view, propertyKey);
                     break;
-                case TabProperties.UiType.CLOSABLE:
+                case TabProperties.TabActionState.CLOSABLE:
                     bindClosableTabProperties(model, view, propertyKey);
                     break;
                 default:
@@ -148,6 +149,8 @@ class TabGridViewBinder {
                                 });
             }
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
+            // Stub out the long click listener to avoid selection for closable tabs.
+            view.setOnLongClickListener(v -> true);
             if (model.get(TabProperties.TAB_SELECTED_LISTENER) == null) {
                 view.setOnClickListener(null);
             } else {
@@ -163,7 +166,7 @@ class TabGridViewBinder {
             TabListMediator.IphProvider provider = model.get(TabProperties.IPH_PROVIDER);
             if (provider != null) provider.showIPH(view.fastFindViewById(R.id.tab_thumbnail));
         } else if (TabProperties.CARD_ANIMATION_STATUS == propertyKey) {
-            ((ClosableTabGridView) view)
+            ((TabGridView) view)
                     .scaleTabGridCardView(model.get(TabProperties.CARD_ANIMATION_STATUS));
         } else if (TabProperties.IS_INCOGNITO == propertyKey) {
             updateColor(
@@ -210,32 +213,35 @@ class TabGridViewBinder {
                     view,
                     model.get(TabProperties.IS_INCOGNITO),
                     model.get(TabProperties.IS_SELECTED));
-        } else if (TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING == propertyKey) {
+        } else if (TabProperties.ACTION_BUTTON_DESCRIPTION_STRING == propertyKey) {
             view.fastFindViewById(R.id.action_button)
                     .setContentDescription(
-                            model.get(TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING));
+                            model.get(TabProperties.ACTION_BUTTON_DESCRIPTION_STRING));
         } else if (TabProperties.QUICK_DELETE_ANIMATION_STATUS == propertyKey) {
-            ((ClosableTabGridView) view)
+            ((TabGridView) view)
                     .hideTabGridCardViewForQuickDelete(
                             model.get(TabProperties.QUICK_DELETE_ANIMATION_STATUS));
-        } else if (TabProperties.IS_TAB_GROUP == propertyKey
+        } else if (TabProperties.TAB_GROUP_INFO == propertyKey
                 || TabProperties.TAB_ID == propertyKey) {
+            @Nullable TabGroupInfo tabGroupInfo = model.get(TabProperties.TAB_GROUP_INFO);
+
             // Only change the drawable if the property key in question is for tab groups.
-            if (TabProperties.IS_TAB_GROUP == propertyKey) {
-                ((ClosableTabGridView) view)
-                        .setTabActionButtonDrawable(model.get(TabProperties.IS_TAB_GROUP));
+            if (TabProperties.TAB_GROUP_INFO == propertyKey) {
+                ((TabGridView) view).setTabActionButtonDrawable(tabGroupInfo.getIsTabGroup());
             }
 
-            // Note: TAB_ID changes are NOT flag guarded, so this code block will be used.
-            // However, IS_TAB_GROUP will never be set since it is flag guarded and will be
-            // defaulted to false so in theory this should never cause problems.
-            if (model.get(TabProperties.IS_TAB_GROUP)) {
+            // Note: TAB_ID changes are NOT flag guarded, so this code will still be used.
+            // However, TAB_GROUP_INFO will never be set since it is flag guarded and will be
+            // defaulted to null so in theory this should never cause problems. If the flag is
+            // set ensure that this specific click listener is only set for tab groups.
+            if (tabGroupInfo != null && tabGroupInfo.getIsTabGroup()) {
                 ImageView actionButton = (ImageView) view.fastFindViewById(R.id.action_button);
                 actionButton.setOnClickListener(
                         TabListGroupMenuCoordinator.getTabListGroupMenuOnClickListener(
                                 model.get(TabProperties.ON_MENU_ITEM_CLICKED_CALLBACK),
                                 model.get(TabProperties.TAB_ID),
-                                model.get(TabProperties.IS_INCOGNITO)));
+                                model.get(TabProperties.IS_INCOGNITO),
+                                tabGroupInfo.getShouldShowDeleteTabGroup()));
             } else {
                 if (model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER) == null) {
                     view.fastFindViewById(R.id.action_button).setOnClickListener(null);
@@ -265,19 +271,19 @@ class TabGridViewBinder {
             view.setOnClickListener(
                     v -> {
                         model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);
-                        ((SelectableTabGridView) view).onClick();
+                        ((TabGridView) view).onClick(view);
                     });
             view.setOnLongClickListener(
                     v -> {
                         model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);
-                        return ((SelectableTabGridView) view).onLongClick(view);
+                        return ((TabGridView) view).onLongClick(view);
                     });
         } else if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
             assert model.get(TabProperties.TAB_SELECTION_DELEGATE) != null;
 
-            ((SelectableTabGridView) view)
+            ((TabGridView) view)
                     .setSelectionDelegate(model.get(TabProperties.TAB_SELECTION_DELEGATE));
-            ((SelectableTabGridView) view).setItem(tabId);
+            ((TabGridView) view).setItem(tabId);
         } else if (TabProperties.IS_INCOGNITO == propertyKey) {
             updateColor(
                     view,

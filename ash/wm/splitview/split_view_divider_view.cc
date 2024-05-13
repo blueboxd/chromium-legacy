@@ -29,14 +29,6 @@ namespace ash {
 
 namespace {
 
-// The divider handler's default / enlarged short side length.
-constexpr int kDividerHandlerShortSideLength = 2;
-constexpr int kDividerHandlerEnlargedShortSideLength = 4;
-
-// The divider handler's default / enlarged long side length.
-constexpr int kDividerHandlerLongSideLength = 16;
-constexpr int kDividerHandlerEnlargedLongSideLength = 48;
-
 // The divider handler's default / enlarged corner radius.
 constexpr int kDividerHandlerCornerRadius = 1;
 constexpr int kDividerHandlerEnlargedCornerRadius = 2;
@@ -228,11 +220,16 @@ void SplitViewDividerView::OnGestureEvent(ui::GestureEvent* event) {
       divider_->EnlargeOrShrinkDivider(/*should_enlarge=*/false);
       RefreshFeedbackButton(/*visible=*/false);
       break;
-    case ui::ET_GESTURE_END:
+    case ui::ET_GESTURE_END: {
       EndResizing(location, /*swap_windows=*/false);
-      divider_->EnlargeOrShrinkDivider(/*should_enlarge=*/false);
+
+      // `EndResizing()` may set `divider_` to nullptr and causing crash.
+      if (divider_) {
+        divider_->EnlargeOrShrinkDivider(/*should_enlarge=*/false);
+      }
       RefreshFeedbackButton(/*visible=*/true);
       break;
+    }
 
     default:
       break;
@@ -250,6 +247,10 @@ bool SplitViewDividerView::DoesIntersectRect(const views::View* target,
                                              const gfx::Rect& rect) const {
   DCHECK_EQ(target, this);
   return true;
+}
+
+gfx::Rect SplitViewDividerView::GetHandlerViewBoundsInScreenForTesting() const {
+  return handler_view_->GetBoundsInScreen();
 }
 
 void SplitViewDividerView::SwapWindows() {

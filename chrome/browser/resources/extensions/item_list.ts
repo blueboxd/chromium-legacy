@@ -4,6 +4,7 @@
 
 import 'chrome://resources/cr_components/managed_footnote/managed_footnote.js';
 import './item.js';
+import './mv2_deprecation_panel.js';
 import './shared_style.css.js';
 import './review_panel.js';
 
@@ -54,6 +55,15 @@ export class ExtensionsItemListElement extends ExtensionsItemListElementBase {
         value: 3,
       },
 
+      /**
+       * List of extensions that are affected by the mv2 deprecation and should
+       * be visible in the mv2 deprecation panel.
+       */
+      mv2DeprecatedExtensions_: {
+        type: Array,
+        computed: 'computeMv2DeprecatedExtensions_(extensions.*)',
+      },
+
       shownAppsCount_: {
         type: Number,
         value: 0,
@@ -70,6 +80,14 @@ export class ExtensionsItemListElement extends ExtensionsItemListElementBase {
             loadTimeData.getBoolean('safetyHubShowReviewPanel'),
       },
 
+      /*
+       * Indicates whether the mv2 deprecation panel is shown.
+       */
+      showMv2DeprecationPanel_: {
+        type: Boolean,
+        computed: 'computeShowMv2DeprecationPanel_(mv2DeprecatedExtensions_)',
+      },
+
       hasSafetyCheckTriggeringExtension_: {
         type: Boolean,
         computed: 'computeHasSafetyCheckTriggeringExtension_(extensions)',
@@ -84,8 +102,10 @@ export class ExtensionsItemListElement extends ExtensionsItemListElementBase {
   filter: string;
   private computedFilter_: string;
   private maxColumns_: number;
+  private mv2DeprecatedExtensions_: chrome.developerPrivate.ExtensionInfo[];
   private shownAppsCount_: number;
   private shownExtensionsCount_: number;
+  private showMv2DeprecationPanel_: boolean;
   private showSafetyCheckReviewPanel_: boolean;
   private hasSafetyCheckTriggeringExtension_: boolean;
 
@@ -145,6 +165,16 @@ export class ExtensionsItemListElement extends ExtensionsItemListElementBase {
     return i => [i.name, i.id].some(
                s => s.toLowerCase().includes(formattedFilter));
   }
+
+  /**
+   * Computes the extensions that are affected by the manifest v2 deprecation.
+   */
+  private computeMv2DeprecatedExtensions_():
+      chrome.developerPrivate.ExtensionInfo[] {
+    return this.extensions.filter(
+        extension => extension.isAffectedByMV2Deprecation);
+  }
+
   private computeShowSafetyCheckReviewPanel_(): boolean {
     return (
         loadTimeData.getBoolean('safetyCheckShowReviewPanel') ||
@@ -163,6 +193,16 @@ export class ExtensionsItemListElement extends ExtensionsItemListElementBase {
       }
     }
     return false;
+  }
+
+  /**
+   * Returns whether the manifest v2 deprecation panel should be visible.
+   */
+  private computeShowMv2DeprecationPanel_(): boolean {
+    // Panel is visible iff it should be enabled and at least one extension is
+    // affected by the MV2 deprecation.
+    return loadTimeData.getBoolean('MV2DeprecationPanelEnabled') &&
+        this.mv2DeprecatedExtensions_.length !== 0;
   }
 
   private shouldShowEmptyItemsMessage_() {

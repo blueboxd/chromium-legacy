@@ -47,7 +47,8 @@ class AttributionDataHostManager {
   virtual void RegisterDataHost(
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
       AttributionSuitableContext,
-      attribution_reporting::mojom::RegistrationEligibility) = 0;
+      attribution_reporting::mojom::RegistrationEligibility,
+      bool is_for_background_requests) = 0;
 
   // Registers a new data host which is associated with a navigation. The
   // context origin will be provided at a later time in
@@ -128,7 +129,7 @@ class AttributionDataHostManager {
       const net::HttpResponseHeaders* headers,
       GURL reporting_url,
       network::AttributionReportingRuntimeFeatures,
-      std::vector<network::TriggerVerification>) = 0;
+      const std::vector<network::TriggerVerification>&) = 0;
 
   // Notifies the manager that a background attribution request has completed.
   virtual void NotifyBackgroundRegistrationCompleted(

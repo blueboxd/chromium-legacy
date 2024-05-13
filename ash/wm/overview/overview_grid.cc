@@ -56,7 +56,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_drop_target.h"
-#include "ash/wm/overview/overview_focus_cycler.h"
+#include "ash/wm/overview/overview_focus_cycler_old.h"
 #include "ash/wm/overview/overview_focusable_view.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_item.h"
@@ -95,6 +95,8 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/app_restore/full_restore_utils.h"
+#include "overview_focus_cycler_old.h"
+#include "overview_session.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor_observer.h"
@@ -987,9 +989,11 @@ void OverviewGrid::RemoveItem(OverviewItemBase* overview_item,
   // will be cleaned up and its associated view may be nullptr. `overview_item`
   // still needs to be in `item_list_` to compute the corresponding index.
   if (overview_session_) {
-    for (auto* focusable_view : overview_item->GetFocusableViews()) {
-      overview_session_->focus_cycler()->OnViewDestroyingOrDisabling(
-          focusable_view);
+    if (OverviewFocusCyclerOld* focus_cycler_old =
+            overview_session_->focus_cycler_old()) {
+      for (auto* focusable_view : overview_item->GetFocusableViews()) {
+        focus_cycler_old->OnViewDestroyingOrDisabling(focusable_view);
+      }
     }
   }
 
@@ -1135,14 +1139,16 @@ void OverviewGrid::RearrangeDuringDrag(
 
 void OverviewGrid::SetSplitViewDragIndicatorsDraggedWindow(
     aura::Window* dragged_window) {
-  DCHECK(split_view_drag_indicators_);
-  split_view_drag_indicators_->SetDraggedWindow(dragged_window);
+  if (split_view_drag_indicators_) {
+    split_view_drag_indicators_->SetDraggedWindow(dragged_window);
+  }
 }
 
 void OverviewGrid::SetSplitViewDragIndicatorsWindowDraggingState(
     SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
-  DCHECK(split_view_drag_indicators_);
-  split_view_drag_indicators_->SetWindowDraggingState(window_dragging_state);
+  if (split_view_drag_indicators_) {
+    split_view_drag_indicators_->SetWindowDraggingState(window_dragging_state);
+  }
 }
 
 bool OverviewGrid::MaybeUpdateDesksWidgetBounds() {
@@ -1278,11 +1284,20 @@ void OverviewGrid::SetVisibleDuringWindowDragging(bool visible, bool animate) {
   }
 }
 
-void OverviewGrid::OnDisplayMetricsChanged() {
+void OverviewGrid::OnDisplayMetricsChanged(uint32_t changed_metrics) {
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
 
   UpdateCannotSnapWarningVisibility(/*animate=*/true);
+
+  // The `PineContentsView` may need to be updated to match the primary display
+  // orientation. If the pine widget exists, then this overview grid is on the
+  // primary display, so we can tell the contents view to update on rotation.
+  if (pine_widget_ &&
+      (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)) {
+    views::AsViewClass<PineContentsView>(pine_widget_->GetContentsView())
+        ->UpdateOrientation();
+  }
 
   // In case of split view mode, the grid bounds and item positions will be
   // updated in |OnSplitViewDividerPositionChanged|.
@@ -2224,7 +2239,7 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
   if (!no_items || IsShowingSavedDeskLibrary() ||
       ShouldShowPineDialog(root_window_)) {
     no_windows_widget_.reset();
-    faster_splitview_widget_.reset();
+    UpdateFasterSplitViewWidget();
     return;
   }
 
@@ -3315,6 +3330,13 @@ void OverviewGrid::OnSettingsButtonPressed() {
 void OverviewGrid::UpdateFasterSplitViewWidget() {
   if (!window_util::IsInFasterSplitScreenSetupSession(root_window_)) {
     // If we weren't started by faster splitview, don't show the widget.
+    if (auto* faster_split_view = GetFasterSplitView()) {
+      auto* focus_cycler_old = overview_session_->focus_cycler_old();
+      focus_cycler_old->OnViewDestroyingOrDisabling(
+          faster_split_view->GetToast());
+      focus_cycler_old->OnViewDestroyingOrDisabling(
+          faster_split_view->settings_button());
+    }
     faster_splitview_widget_.reset();
     return;
   }

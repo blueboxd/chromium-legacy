@@ -6,43 +6,37 @@
 
 #include <windows.h>
 
+#include <winnt.h>
+
+#include <map>
+#include <memory>
+#include <tuple>
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "base/types/id_type.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_types.h"
 
 namespace base {
 namespace {
-class NotificationHandleTraits {
- public:
-  using Handle = HANDLE;
-
-  NotificationHandleTraits() = delete;
-  NotificationHandleTraits(const NotificationHandleTraits&) = delete;
-  NotificationHandleTraits& operator=(const NotificationHandleTraits&) = delete;
-
-  static bool CloseHandle(HANDLE handle) {
-    return FindCloseChangeNotification(handle) != 0;
-  }
-  static bool IsHandleValid(HANDLE handle) {
-    return handle != INVALID_HANDLE_VALUE;
-  }
-  static HANDLE NullHandle() { return INVALID_HANDLE_VALUE; }
-};
-
-using ScopedNotificationHandle =
-    win::GenericScopedHandle<NotificationHandleTraits,
-                             win::DummyVerifierTraits>;
 
 enum class CreateFileHandleError {
   // When watching a path, the path (or some of its ancestor directories) might
@@ -53,28 +47,32 @@ enum class CreateFileHandleError {
   kFatal,
 };
 
-base::expected<ScopedNotificationHandle, CreateFileHandleError>
-CreateNotificationHandle(const FilePath& dir, FilePathWatcher::Type type) {
+base::expected<base::win::ScopedHandle, CreateFileHandleError>
+CreateDirectoryHandle(const FilePath& dir) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
-  ScopedNotificationHandle handle(FindFirstChangeNotification(
-      dir.value().c_str(), type == FilePathWatcher::Type::kRecursive,
-      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE |
-          FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_DIR_NAME |
-          FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SECURITY));
+  base::win::ScopedHandle handle(::CreateFileW(
+      dir.value().c_str(), FILE_LIST_DIRECTORY,
+      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+      nullptr));
 
   if (handle.is_valid()) {
-    // Make sure the handle we got points to an existing directory. It seems
-    // that windows sometimes hands out watches to directories that are about to
-    // go away, but doesn't send notifications if that happens.
-    if (!DirectoryExists(dir)) {
+    File::Info file_info;
+    if (!GetFileInfo(dir, &file_info)) {
+      // Windows sometimes hands out handles to files that are about to go away.
+      return base::unexpected(CreateFileHandleError::kNonFatal);
+    }
+
+    // Only return the handle if its a directory.
+    if (!file_info.is_directory) {
       return base::unexpected(CreateFileHandleError::kNonFatal);
     }
 
     return handle;
   }
 
-  switch (GetLastError()) {
+  switch (::GetLastError()) {
     case ERROR_FILE_NOT_FOUND:
     case ERROR_PATH_NOT_FOUND:
     case ERROR_ACCESS_DENIED:
@@ -90,8 +88,94 @@ CreateNotificationHandle(const FilePath& dir, FilePathWatcher::Type type) {
   }
 }
 
-class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
-                            public base::win::ObjectWatcher::Delegate {
+class FilePathWatcherImpl;
+
+class CompletionIOPortThread final : public PlatformThread::Delegate {
+ public:
+  using WatcherEntryId = base::IdTypeU64<class WatcherEntryIdTag>;
+
+  CompletionIOPortThread(const CompletionIOPortThread&) = delete;
+  CompletionIOPortThread& operator=(const CompletionIOPortThread&) = delete;
+
+  static CompletionIOPortThread* Get() {
+    static NoDestructor<CompletionIOPortThread> io_thread;
+    return io_thread.get();
+  }
+
+  // Thread safe.
+  std::optional<WatcherEntryId> AddWatcher(
+      FilePathWatcherImpl& watcher,
+      base::win::ScopedHandle watched_handle);
+
+  // Thread safe.
+  void RemoveWatcher(WatcherEntryId watcher_id);
+
+ private:
+  friend NoDestructor<CompletionIOPortThread>;
+
+  // Choose something small since we won't actually be processing the buffer.
+  static constexpr size_t kWatchBufferSizeBytes = sizeof(DWORD);
+
+  // Must be DWORD aligned.
+  static_assert(kWatchBufferSizeBytes % sizeof(DWORD) == 0);
+  // Must be less than the max network packet size for network drives. See
+  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readdirectorychangesw#remarks.
+  static_assert(kWatchBufferSizeBytes <= 64 * 1024);
+
+  struct WatcherEntry {
+    WatcherEntry(base::WeakPtr<FilePathWatcherImpl> watcher_weak_ptr,
+                 scoped_refptr<SequencedTaskRunner> task_runner,
+                 base::win::ScopedHandle watched_handle)
+        : watcher_weak_ptr(std::move(watcher_weak_ptr)),
+          task_runner(std::move(task_runner)),
+          watched_handle(std::move(watched_handle)) {}
+    ~WatcherEntry() = default;
+
+    // Delete copy and move constructors since `buffer` should not be copied or
+    // moved.
+    WatcherEntry(const WatcherEntry&) = delete;
+    WatcherEntry& operator=(const WatcherEntry&) = delete;
+    WatcherEntry(WatcherEntry&&) = delete;
+    WatcherEntry& operator=(WatcherEntry&&) = delete;
+
+    base::WeakPtr<FilePathWatcherImpl> watcher_weak_ptr;
+    scoped_refptr<SequencedTaskRunner> task_runner;
+
+    base::win::ScopedHandle watched_handle;
+
+    alignas(DWORD) uint8_t buffer[kWatchBufferSizeBytes];
+  };
+
+  OVERLAPPED overlapped = {};
+
+  CompletionIOPortThread();
+
+  ~CompletionIOPortThread() override = default;
+
+  void ThreadMain() override;
+
+  [[nodiscard]] DWORD SetupWatch(WatcherEntry& watcher_entry);
+
+  Lock watchers_lock_;
+
+  WatcherEntryId::Generator watcher_id_generator_ GUARDED_BY(watchers_lock_);
+
+  std::map<WatcherEntryId, WatcherEntry> watcher_entries_
+      GUARDED_BY(watchers_lock_);
+
+  // It is safe to access `io_completion_port_` on any thread without locks
+  // since:
+  //   - Windows Handles are thread safe
+  //   - `io_completion_port_` is set once in the constructor of this class
+  //   - This class is never destroyed.
+  win::ScopedHandle io_completion_port_{
+      ::CreateIoCompletionPort(INVALID_HANDLE_VALUE,
+                               nullptr,
+                               reinterpret_cast<ULONG_PTR>(nullptr),
+                               1)};
+};
+
+class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
  public:
   FilePathWatcherImpl() = default;
   FilePathWatcherImpl(const FilePathWatcherImpl&) = delete;
@@ -102,29 +186,38 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   bool Watch(const FilePath& path,
              Type type,
              const FilePathWatcher::Callback& callback) override;
+
+  // FilePathWatcher::PlatformDelegate implementation:
+  bool WatchWithOptions(const FilePath& path,
+                        const WatchOptions& flags,
+                        const FilePathWatcher::Callback& callback) override;
+
+  // FilePathWatcher::PlatformDelegate implementation:
+  bool WatchWithChangeInfo(
+      const FilePath& path,
+      const WatchOptions& options,
+      const FilePathWatcher::CallbackWithChangeInfo& callback) override;
+
   void Cancel() override;
 
-  // base::win::ObjectWatcher::Delegate implementation:
-  void OnObjectSignaled(HANDLE object) override;
-
  private:
-  // Sets up a watch handle in `watched_handle_` for either `target_` or one of
-  // its ancestors. Returns true on success.
+  friend CompletionIOPortThread;
+
+  // Sets up a watch handle for either `target_` or one of its ancestors.
+  // Returns true on success.
   [[nodiscard]] bool SetupWatchHandleForTarget();
 
   void CloseWatchHandle();
 
+  void OnObjectSignaled();
+
   // Callback to notify upon changes.
-  FilePathWatcher::Callback callback_;
+  FilePathWatcher::CallbackWithChangeInfo callback_;
 
   // Path we're supposed to watch (passed to callback).
   FilePath target_;
 
-  // Handle for FindFirstChangeNotification.
-  ScopedNotificationHandle watched_handle_;
-
-  // ObjectWatcher to watch handle_ for events.
-  base::win::ObjectWatcher watcher_;
+  std::optional<CompletionIOPortThread::WatcherEntryId> watcher_id_;
 
   // The type of watch requested.
   Type type_ = Type::kNonRecursive;
@@ -140,6 +233,127 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   WeakPtrFactory<FilePathWatcherImpl> weak_factory_{this};
 };
 
+CompletionIOPortThread::CompletionIOPortThread() {
+  PlatformThread::CreateNonJoinable(0, this);
+}
+
+DWORD CompletionIOPortThread::SetupWatch(WatcherEntry& watcher_entry) {
+  bool success = ::ReadDirectoryChangesW(
+      watcher_entry.watched_handle.get(), &watcher_entry.buffer,
+      static_cast<DWORD>(kWatchBufferSizeBytes), /*bWatchSubtree =*/true,
+      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE |
+          FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_DIR_NAME |
+          FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SECURITY,
+      nullptr, &overlapped, nullptr);
+  if (!success) {
+    return ::GetLastError();
+  }
+  return ERROR_SUCCESS;
+}
+
+std::optional<CompletionIOPortThread::WatcherEntryId>
+CompletionIOPortThread::AddWatcher(FilePathWatcherImpl& watcher,
+                                   base::win::ScopedHandle watched_handle) {
+  AutoLock auto_lock(watchers_lock_);
+
+  WatcherEntryId watcher_id = watcher_id_generator_.GenerateNextId();
+  HANDLE port = ::CreateIoCompletionPort(
+      watched_handle.get(), io_completion_port_.get(),
+      static_cast<ULONG_PTR>(watcher_id.GetUnsafeValue()), 1);
+  if (port == nullptr) {
+    return std::nullopt;
+  }
+
+  auto [it, inserted] = watcher_entries_.emplace(
+      std::piecewise_construct, std::forward_as_tuple(watcher_id),
+      std::forward_as_tuple(watcher.weak_factory_.GetWeakPtr(),
+                            watcher.task_runner(), std::move(watched_handle)));
+
+  CHECK(inserted);
+
+  DWORD result = SetupWatch(it->second);
+
+  if (result != ERROR_SUCCESS) {
+    watcher_entries_.erase(it);
+    return std::nullopt;
+  }
+
+  return watcher_id;
+}
+
+void CompletionIOPortThread::RemoveWatcher(WatcherEntryId watcher_id) {
+  HANDLE raw_watched_handle;
+  {
+    AutoLock auto_lock(watchers_lock_);
+
+    auto it = watcher_entries_.find(watcher_id);
+    CHECK(it != watcher_entries_.end());
+
+    auto& watched_handle = it->second.watched_handle;
+    CHECK(watched_handle.is_valid());
+    raw_watched_handle = watched_handle.release();
+  }
+
+  {
+    ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+
+    // `raw_watched_handle` being closed indicates to `ThreadMain` that this
+    // entry needs to be removed from `watcher_entries_` once the kernel
+    // indicates it is safe too.
+    ::CloseHandle(raw_watched_handle);
+  }
+}
+
+void CompletionIOPortThread::ThreadMain() {
+  while (true) {
+    DWORD bytes_transferred;
+    ULONG_PTR key = reinterpret_cast<ULONG_PTR>(nullptr);
+    OVERLAPPED* overlapped_out = nullptr;
+
+    BOOL io_port_result = ::GetQueuedCompletionStatus(
+        io_completion_port_.get(), &bytes_transferred, &key, &overlapped_out,
+        INFINITE);
+    CHECK(&overlapped == overlapped_out);
+
+    if (io_port_result == FALSE) {
+      DWORD io_port_error = ::GetLastError();
+      // `ERROR_ACCESS_DENIED` should be the only error we can receive.
+      DCHECK_EQ(io_port_error, static_cast<DWORD>(ERROR_ACCESS_DENIED));
+    }
+
+    AutoLock auto_lock(watchers_lock_);
+
+    WatcherEntryId watcher_id = WatcherEntryId::FromUnsafeValue(key);
+
+    auto watcher_entry_it = watcher_entries_.find(watcher_id);
+
+    if (watcher_entry_it == watcher_entries_.end()) {
+      NOTREACHED() << "!watcher_entries_.contains(watcher_id)";
+      continue;
+    }
+
+    auto& watcher_entry = watcher_entry_it->second;
+    auto& [watcher_weak_ptr, task_runner, watched_handle, buffer] =
+        watcher_entry;
+
+    if (!watched_handle.is_valid()) {
+      // After the handle has been closed, a final notification will be sent
+      // with `bytes_transferred` equal to 0. It is safe to destroy the watcher
+      // now.
+      if (bytes_transferred == 0) {
+        // `watcher_entry` and all the local refs to its members will be
+        // dangling after this call.
+        watcher_entries_.erase(watcher_entry_it);
+      }
+      continue;
+    }
+
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(&FilePathWatcherImpl::OnObjectSignaled,
+                                         watcher_weak_ptr));
+  }
+}
+
 FilePathWatcherImpl::~FilePathWatcherImpl() {
   DCHECK(!task_runner() || task_runner()->RunsTasksInCurrentSequence());
 }
@@ -147,12 +361,32 @@ FilePathWatcherImpl::~FilePathWatcherImpl() {
 bool FilePathWatcherImpl::Watch(const FilePath& path,
                                 Type type,
                                 const FilePathWatcher::Callback& callback) {
+  return WatchWithChangeInfo(
+      path, WatchOptions{.type = type},
+      base::IgnoreArgs<const FilePathWatcher::ChangeInfo&>(
+          base::BindRepeating(std::move(callback))));
+}
+
+bool FilePathWatcherImpl::WatchWithOptions(
+    const FilePath& path,
+    const WatchOptions& options,
+    const FilePathWatcher::Callback& callback) {
+  return WatchWithChangeInfo(
+      path, options,
+      base::IgnoreArgs<const FilePathWatcher::ChangeInfo&>(
+          base::BindRepeating(std::move(callback))));
+}
+
+bool FilePathWatcherImpl::WatchWithChangeInfo(
+    const FilePath& path,
+    const WatchOptions& options,
+    const FilePathWatcher::CallbackWithChangeInfo& callback) {
   DCHECK(target_.empty());  // Can only watch one path.
 
   set_task_runner(SequencedTaskRunner::GetCurrentDefault());
   callback_ = callback;
   target_ = path;
-  type_ = type;
+  type_ = options.type;
 
   File::Info file_info;
   if (GetFileInfo(target_, &file_info)) {
@@ -160,13 +394,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
     first_notification_ = Time::Now();
   }
 
-  if (!SetupWatchHandleForTarget()) {
-    return false;
-  }
-
-  watcher_.StartWatchingOnce(watched_handle_.get(), this);
-
-  return true;
+  return SetupWatchHandleForTarget();
 }
 
 void FilePathWatcherImpl::Cancel() {
@@ -184,15 +412,14 @@ void FilePathWatcherImpl::Cancel() {
   callback_.Reset();
 }
 
-void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
+void FilePathWatcherImpl::OnObjectSignaled() {
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
-  DCHECK_EQ(object, watched_handle_.get());
 
   auto self = weak_factory_.GetWeakPtr();
 
   if (!SetupWatchHandleForTarget()) {
     // `this` may be deleted after `callback_` is run.
-    callback_.Run(target_, /*error=*/true);
+    callback_.Run(FilePathWatcher::ChangeInfo(), target_, /*error=*/true);
     return;
   }
 
@@ -212,14 +439,14 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
     // http://qualapps.blogspot.com/2010/05/understanding-readdirectorychangesw.html
 
     // `this` may be deleted after `callback_` is run.
-    callback_.Run(target_, /*error=*/false);
+    callback_.Run(FilePathWatcher::ChangeInfo(), target_, /*error=*/false);
   } else if (file_exists && (last_modified_.is_null() ||
                              last_modified_ != file_info.last_modified)) {
     last_modified_ = file_info.last_modified;
     first_notification_ = Time::Now();
 
     // `this` may be deleted after `callback_` is run.
-    callback_.Run(target_, /*error=*/false);
+    callback_.Run(FilePathWatcher::ChangeInfo(), target_, /*error=*/false);
   } else if (file_exists && last_modified_ == file_info.last_modified &&
              !first_notification_.is_null()) {
     // The target's last modification time is equal to what's on record. This
@@ -242,17 +469,12 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
     }
 
     // `this` may be deleted after `callback_` is run.
-    callback_.Run(target_, /*error=*/false);
+    callback_.Run(FilePathWatcher::ChangeInfo(), target_, /*error=*/false);
   } else if (!file_exists && !last_modified_.is_null()) {
     last_modified_ = Time();
 
     // `this` may be deleted after `callback_` is run.
-    callback_.Run(target_, /*error=*/false);
-  }
-
-  // The watch may have been cancelled by the callback.
-  if (self) {
-    watcher_.StartWatchingOnce(watched_handle_.get(), this);
+    callback_.Run(FilePathWatcher::ChangeInfo(), target_, /*error=*/false);
   }
 }
 
@@ -262,21 +484,22 @@ bool FilePathWatcherImpl::SetupWatchHandleForTarget() {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   // Start at the target and walk up the directory chain until we successfully
-  // create a watch handle in `watched_handle_`. `child_dirs` keeps a stack of
+  // create a file handle in `watched_handle_`. `child_dirs` keeps a stack of
   // child directories stripped from target, in reverse order.
   std::vector<FilePath> child_dirs;
   FilePath path_to_watch(target_);
+  base::win::ScopedHandle watched_handle;
   while (true) {
-    auto result = CreateNotificationHandle(path_to_watch, type_);
+    auto result = CreateDirectoryHandle(path_to_watch);
 
     // Break if a valid handle is returned.
     if (result.has_value()) {
-      watched_handle_ = std::move(result.value());
+      watched_handle = std::move(result.value());
       break;
     }
 
-    // We're in an unknown state if `CreateNotificationHandle` returns an
-    // `kFatal` error, so return failure.
+    // We're in an unknown state if `CreateDirectoryHandle` returns an `kFatal`
+    // error, so return failure.
     if (result.error() == CreateFileHandleError::kFatal) {
       return false;
     }
@@ -291,15 +514,15 @@ bool FilePathWatcherImpl::SetupWatchHandleForTarget() {
     path_to_watch = parent;
   }
 
-  // At this point, `watched_handle_` is valid. However, the bottom-up search
+  // At this point, `watched_handle` is valid. However, the bottom-up search
   // that the above code performs races against directory creation. So try to
   // walk back down and see whether any children appeared in the mean time.
   while (!child_dirs.empty()) {
     path_to_watch = path_to_watch.Append(child_dirs.back());
     child_dirs.pop_back();
-    auto result = CreateNotificationHandle(path_to_watch, type_);
+    auto result = CreateDirectoryHandle(path_to_watch);
     if (!result.has_value()) {
-      // We're in an unknown state if `CreateNotificationHandle` returns an
+      // We're in an unknown state if `CreateDirectoryHandle` returns an
       // `kFatal` error, so return failure.
       if (result.error() == CreateFileHandleError::kFatal) {
         return false;
@@ -307,18 +530,19 @@ bool FilePathWatcherImpl::SetupWatchHandleForTarget() {
       // Otherwise go with the current `watched_handle`.
       break;
     }
-    watched_handle_ = std::move(result.value());
+    watched_handle = std::move(result.value());
   }
 
-  return true;
+  watcher_id_ = CompletionIOPortThread::Get()->AddWatcher(
+      *this, std::move(watched_handle));
+
+  return watcher_id_.has_value();
 }
 
 void FilePathWatcherImpl::CloseWatchHandle() {
-  if (watched_handle_.is_valid()) {
-    watcher_.StopWatching();
-
-    ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-    watched_handle_.Close();
+  if (watcher_id_.has_value()) {
+    CompletionIOPortThread::Get()->RemoveWatcher(watcher_id_.value());
+    watcher_id_.reset();
   }
 }
 

@@ -662,7 +662,7 @@ void AddCreditCardExpiryDateChildSuggestion(const CreditCard& credit_card,
 // `last_targeted_fields` specified the last set of fields target by the user.
 // When not present, we default to full form.
 // This function is called only for first-level popup.
-SuggestionType GetProfileSuggestionSuggestionType(
+SuggestionType GetProfileSuggestionType(
     std::optional<FieldTypeSet> last_targeted_fields,
     FieldType trigger_field_type) {
   if (!base::FeatureList::IsEnabled(
@@ -940,11 +940,18 @@ bool IsValidPaymentsSuggestionForFieldContents(
   if (trigger_field_type != CREDIT_CARD_NUMBER) {
     return suggestion_canon.starts_with(field_contents_canon);
   }
-  // For card number fields, suggest the card if:
+  // If `kAutofillDontPrefixMatchCreditCardNumbers` is enabled, we do not apply
+  // prefix matching to credit cards. If the feature is disabled, we suggest a
+  // card iff
   // - the number matches any part of the card, or
   // - it's a masked card and there are 6 or fewer typed so far.
   // - it's a masked card, field is autofilled, and the last 4 digits in the
   // field match the last 4 digits of the card.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillDontPrefixMatchCreditCardNumbers)) {
+    return true;
+  }
+
   if (suggestion_canon.find(field_contents_canon) != std::u16string::npos) {
     return true;
   }
@@ -1158,8 +1165,8 @@ AutofillSuggestionGenerator::CreateSuggestionsFromProfiles(
     const AutofillProfile* const profile = profiles[i];
     // Name fields should have `NAME_FULL` as main text, unless in field by
     // field filling mode.
-    const SuggestionType type = GetProfileSuggestionSuggestionType(
-        last_targeted_fields, trigger_field_type);
+    const SuggestionType type =
+        GetProfileSuggestionType(last_targeted_fields, trigger_field_type);
     FieldType main_text_field_type =
         GroupTypeOfFieldType(trigger_field_type) == FieldTypeGroup::kName &&
                 type != SuggestionType::kAddressFieldByFieldFilling &&
@@ -2078,6 +2085,13 @@ void AutofillSuggestionGenerator::AdjustVirtualCardSuggestionContent(
   suggestion.apply_deactivated_style = !suggestion.is_acceptable;
   suggestion.feature_for_iph =
       &feature_engagement::kIPHAutofillVirtualCardSuggestionFeature;
+
+  // If ShouldFormatForLargeKeyboardAccessory() is true, `suggestion` has been
+  // properly formatted by `SetSuggestionLabelsForCard` and does not need further
+  // changes.
+  if (autofill_client_->ShouldFormatForLargeKeyboardAccessory()) {
+    return;
+  }
 
   // Add virtual card labelling to suggestions. For keyboard accessory, it is
   // prefixed to the suggestion, and for the dropdown, it is shown as a label on

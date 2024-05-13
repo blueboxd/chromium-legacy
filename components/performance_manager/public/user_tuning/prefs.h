@@ -40,6 +40,16 @@ inline constexpr char kMemorySaverModeTimeBeforeDiscardInMinutes[] =
 
 constexpr int kDefaultMemorySaverModeTimeBeforeDiscardInMinutes = 120;
 
+enum class MemorySaverModeAggressiveness {
+  kConservative = 0,
+  kMedium = 1,
+  kAggressive = 2,
+  kMaxValue = kAggressive,
+};
+
+inline constexpr char kMemorySaverModeAggressiveness[] =
+    "performance_tuning.high_efficiency_mode.aggressiveness";
+
 enum class BatterySaverModeState {
   kDisabled = 0,
   kEnabledBelowThreshold = 1,
@@ -80,6 +90,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 MemorySaverModeState GetCurrentMemorySaverModeState(PrefService* pref_service);
+
+MemorySaverModeAggressiveness GetCurrentMemorySaverMode(
+    PrefService* pref_service);
 
 base::TimeDelta GetCurrentMemorySaverModeTimeBeforeDiscard(
     PrefService* pref_service);

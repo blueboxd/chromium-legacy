@@ -59,7 +59,7 @@ BASE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard,
 // autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
 BASE_FEATURE(kGroupingFrameworkForNonZPS,
              "OmniboxGroupingFrameworkForNonZPS",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_android_only);
 
 // Demotes the relevance scores when comparing suggestions based on the
 // suggestion's |AutocompleteMatchType| and the user's |PageClassification|.
@@ -476,10 +476,6 @@ BASE_FEATURE(kCategoricalSuggestions,
 // effects beyond the categorical suggestions.
 BASE_FEATURE(kMergeSubtypes, "MergeSubtypes", base::FEATURE_ENABLED_BY_DEFAULT);
 
-bool IsOmniboxCr23CustomizeGuardedFeatureEnabled(const base::Feature& feature) {
-  return features::CustomizeChromeSupportsChromeRefresh2023();
-}
-
 // If enabled, sends a signal when a user touches down on a search suggestion to
 // |SearchPrefetchService|. |SearchPrefetchService| will then prefetch
 // suggestion iff the SearchNavigationPrefetch feature and "touch_down" param
@@ -538,6 +534,11 @@ BASE_FEATURE(kOmniboxAsyncViewInflation,
              "OmniboxAsyncViewInflation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Use FusedLocationProvider on Android to fetch device location.
+BASE_FEATURE(kUseFusedLocationProvider,
+             "UseFusedLocationProvider",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_ANDROID)
 namespace android {
 static jlong JNI_OmniboxFeatureMap_GetNativeMap(JNIEnv* env) {
@@ -551,6 +552,7 @@ static jlong JNI_OmniboxFeatureMap_GetNativeMap(JNIEnv* env) {
           &kOmniboxMatchToolbarAndStatusBarColor,
           &kOmniboxTouchDownTriggerForPrefetch,
           &kOmniboxAsyncViewInflation,
+          &kUseFusedLocationProvider,
       }});
 
   return reinterpret_cast<jlong>(kFeatureMap.get());

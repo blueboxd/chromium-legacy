@@ -299,7 +299,7 @@ BASE_FEATURE(kOnlyAccessClipboardAsync,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kDefaultBrowserVideoInSettings,
              "DefaultBrowserVideoInSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThemeColorInTopToolbar,
              "ThemeColorInTopToolbar",
@@ -647,6 +647,21 @@ bool IsContentPushNotificationsProvisionalBypass() {
           NotificationsExperimentTypeProvisionalBypass);
 }
 
+bool IsContentPushNotificationsPromoRegistrationOnly() {
+  return (ContentNotificationsExperimentTypeEnabled() ==
+          NotificationsExperimentTypePromoRegistrationOnly);
+}
+
+bool IsContentPushNotificationsProvisionalRegistrationOnly() {
+  return (ContentNotificationsExperimentTypeEnabled() ==
+          NotificationsExperimentTypeProvisionalRegistrationOnly);
+}
+
+bool IsContentPushNotificationsSetUpListRegistrationOnly() {
+  return (ContentNotificationsExperimentTypeEnabled() ==
+          NotificationsExperimentTypeSetUpListsRegistrationOnly);
+}
+
 bool IsIOSLargeFakeboxEnabled() {
   return base::FeatureList::IsEnabled(kIOSLargeFakebox);
 }
@@ -776,3 +791,7 @@ BASE_FEATURE(kPrefetchSystemCapabilitiesOnFirstRun,
 bool IsPrefetchingSystemCapabilitiesOnFirstRun() {
   return base::FeatureList::IsEnabled(kPrefetchSystemCapabilitiesOnFirstRun);
 }
+
+BASE_FEATURE(kSegmentationPlatformIosModuleRankerCaching,
+             "SegmentationPlatformIosModuleRankerCaching",
+             base::FEATURE_DISABLED_BY_DEFAULT);

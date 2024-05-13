@@ -30,14 +30,16 @@ namespace ash::input_method {
 EditorMediator::EditorMediator(Profile* profile, std::string_view country_code)
     : profile_(profile),
       panel_manager_(this),
+      editor_context_(this, this, country_code),
       editor_switch_(
-          std::make_unique<EditorSwitch>(this, profile, country_code)),
+          std::make_unique<EditorSwitch>(this, profile, &editor_context_)),
       metrics_recorder_(
-          std::make_unique<EditorMetricsRecorder>(GetEditorOpportunityMode())),
+          std::make_unique<EditorMetricsRecorder>(&editor_context_,
+                                                  GetEditorOpportunityMode())),
       consent_store_(
           std::make_unique<EditorConsentStore>(profile->GetPrefs(),
                                                metrics_recorder_.get())) {
-  editor_switch_->OnTabletModeUpdated(
+  editor_context_.OnTabletModeUpdated(
       display::Screen::GetScreen()->InTabletMode());
 }
 
@@ -94,6 +96,23 @@ void EditorMediator::BindEditorPanelManager(
   panel_manager_.BindReceiver(std::move(pending_receiver));
 }
 
+void EditorMediator::OnContextUpdated() {
+  editor_switch_->OnContextUpdated();
+}
+
+std::optional<ukm::SourceId> EditorMediator::GetUkmSourceId() {
+  TextInputTarget* text_input = IMEBridge::Get()->GetInputContextHandler();
+  if (!text_input) {
+    return std::nullopt;
+  }
+
+  ukm::SourceId source_id = text_input->GetClientSourceForMetrics();
+  if (source_id == ukm::kInvalidSourceId) {
+    return std::nullopt;
+  }
+  return source_id;
+}
+
 void EditorMediator::OnFocus(int context_id) {
   if (mako_bubble_coordinator_.IsShowingUI() ||
       panel_manager_.IsEditorMenuVisible()) {
@@ -120,16 +139,16 @@ void EditorMediator::OnBlur() {
 }
 
 void EditorMediator::OnActivateIme(std::string_view engine_id) {
-  editor_switch_->OnActivateIme(engine_id);
+  editor_context_.OnActivateIme(engine_id);
 }
 
 void EditorMediator::OnDisplayTabletStateChanged(display::TabletState state) {
   switch (state) {
     case display::TabletState::kInClamshellMode:
-      editor_switch_->OnTabletModeUpdated(/*tablet_mode_enabled=*/false);
+      editor_context_.OnTabletModeUpdated(/*tablet_mode_enabled=*/false);
       break;
     case display::TabletState::kEnteringTabletMode:
-      editor_switch_->OnTabletModeUpdated(/*tablet_mode_enabled=*/true);
+      editor_context_.OnTabletModeUpdated(/*tablet_mode_enabled=*/true);
       if (mako_bubble_coordinator_.IsShowingUI()) {
         mako_bubble_coordinator_.CloseUI();
       }
@@ -209,7 +228,7 @@ void EditorMediator::CacheContext() {
 
   size_t selected_length = NonWhitespaceAndSymbolsLength(
       surrounding_text_.text, surrounding_text_.selection_range);
-  editor_switch_->OnTextSelectionLengthChanged(selected_length);
+  editor_context_.OnTextSelectionLengthChanged(selected_length);
 
   if (editor_event_proxy_ != nullptr) {
     editor_event_proxy_->OnSurroundingTextChanged(
@@ -225,7 +244,7 @@ void EditorMediator::FetchAndUpdateInputContext() {
 
 void EditorMediator::OnTextFieldContextualInfoChanged(
     const TextFieldContextualInfo& info) {
-  editor_switch_->OnInputContextUpdated(
+  editor_context_.OnInputContextUpdated(
       IMEBridge::Get()->GetCurrentInputContext(), info);
 
   if (system_actuator_ != nullptr) {

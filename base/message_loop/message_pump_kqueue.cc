@@ -573,7 +573,8 @@ bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, size_t count) {
         controller->watcher()->OnMachMessageReceived(port);
       }
     } else {
-      NOTREACHED() << "Unexpected event for filter " << event->filter;
+      NOTREACHED_IN_MIGRATION()
+          << "Unexpected event for filter " << event->filter;
     }
   }
 

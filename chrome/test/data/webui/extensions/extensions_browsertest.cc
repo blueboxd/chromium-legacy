@@ -60,6 +60,10 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsTest, HostPermissionsToggleList) {
   RunTest("extensions/host_permissions_toggle_list_test.js", "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(CrExtensionsTest, ExtensionsMV2DeprecationPanel) {
+  RunTest("extensions/mv2_deprecation_panel_test.js", "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(CrExtensionsTest, SafetyCheckReviewPanel) {
   RunTest("extensions/review_panel_test.js", "mocha.run()");
 }
@@ -316,12 +320,26 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest, NoSearchResults) {
   RunTestCase("NoSearchResults");
 }
 
+IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest, SectionsVisibility) {
+  RunTestCase("SectionsVisibility");
+}
+
 IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest, LoadTimeData) {
   RunTestCase("LoadTimeData");
 }
 
 IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest, SafetyCheckPanel) {
   RunTestCase("SafetyCheckPanel");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
+                       ManifestV2DeprecationPanel_Disabled) {
+  RunTestCase("ManifestV2DeprecationPanel_Disabled");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
+                       ManifestV2DeprecationPanel_Enabled) {
+  RunTestCase("ManifestV2DeprecationPanel_Enabled");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

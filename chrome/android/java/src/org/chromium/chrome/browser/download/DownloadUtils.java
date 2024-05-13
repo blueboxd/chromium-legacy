@@ -256,9 +256,15 @@ public class DownloadUtils {
 
     /**
      * Trigger the download of an Offline Page.
+     *
      * @param context Context to pull resources from.
+     * @param tab Tab triggering the download.
      */
     public static void downloadOfflinePage(Context context, Tab tab) {
+        if (tab.isNativePage() && tab.getNativePage().isPdf()) {
+            DownloadController.downloadUrl(tab.getUrl().getSpec(), tab);
+            return;
+        }
         OfflinePageOrigin origin = new OfflinePageOrigin(context, tab);
 
         if (tab.isShowingErrorPage()) {
@@ -498,8 +504,16 @@ public class DownloadUtils {
         }
         // TODO(https://crbug.com/327680567): Ensure the pdf page is opened in the intended window.
         if (PdfUtils.shouldOpenPdfInline() && newMimeType.equals(MimeTypeUtils.PDF_MIME_TYPE)) {
+            Tab tab = null;
+            if (activity instanceof ChromeTabbedActivity chromeActivity) {
+                tab = chromeActivity.getActivityTab();
+            }
+            if (otrProfileID == null && tab != null) {
+                otrProfileID = tab.getProfile().getOTRProfileID();
+            }
             LoadUrlParams params = new LoadUrlParams(filePath);
-            ChromeAsyncTabLauncher delegate = new ChromeAsyncTabLauncher(/* incognito= */ false);
+            ChromeAsyncTabLauncher delegate =
+                    new ChromeAsyncTabLauncher(OTRProfileID.isOffTheRecord(otrProfileID));
             delegate.launchNewTab(params, TabLaunchType.FROM_CHROME_UI, /* parent= */ null);
             return;
         }

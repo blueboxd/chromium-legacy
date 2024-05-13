@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_window_features.h"
 #include "chrome/browser/ui/frame/window_frame_util.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -118,6 +119,8 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip)
     product_specifications_button =
         std::make_unique<ProductSpecificationsButton>(
             tab_strip_->controller(), browser->tab_strip_model(),
+            browser->browser_window_features()
+                ->product_specifications_entry_point_controller(),
             render_tab_search_before_tab_strip_, this);
     product_specifications_button->SetProperty(views::kCrossAxisAlignmentKey,
                                                views::LayoutAlignment::kCenter);
@@ -172,50 +175,16 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip)
   }
 
   if (ShouldShowNewTabButton(browser)) {
-    features::ChromeRefresh2023NTBVariation ntb_variation =
-        features::GetChromeRefresh2023NTB();
-    if (ntb_variation == features::ChromeRefresh2023NTBVariation::kGM2Full) {
-      std::unique_ptr<NewTabButton> new_tab_button =
-          std::make_unique<NewTabButton>(
-              tab_strip_, base::BindRepeating(&TabStrip::NewTabButtonPressed,
-                                              base::Unretained(tab_strip_)));
-      new_tab_button->SetImageVerticalAlignment(
-          views::ImageButton::ALIGN_BOTTOM);
-      new_tab_button->SetEventTargeter(
-          std::make_unique<views::ViewTargeter>(new_tab_button.get()));
+    std::unique_ptr<TabStripControlButton> tab_strip_control_button =
+        std::make_unique<TabStripControlButton>(
+            tab_strip_->controller(),
+            base::BindRepeating(&TabStrip::NewTabButtonPressed,
+                                base::Unretained(tab_strip_)),
+            vector_icons::kAddChromeRefreshIcon);
+    tab_strip_control_button->SetProperty(views::kElementIdentifierKey,
+                                          kNewTabButtonElementId);
 
-      new_tab_button_ = AddChildView(std::move(new_tab_button));
-    } else {
-      // Use the old or new ChromeRefresh icon.
-      const gfx::VectorIcon& icon =
-          (ntb_variation == features::ChromeRefresh2023NTBVariation::
-                                kGM3OldIconNoBackground ||
-           ntb_variation == features::ChromeRefresh2023NTBVariation::
-                                kGM3OldIconWithBackground)
-              ? kAddIcon
-              : vector_icons::kAddChromeRefreshIcon;
-      std::unique_ptr<TabStripControlButton> tab_strip_control_button =
-          std::make_unique<TabStripControlButton>(
-              tab_strip_->controller(),
-              base::BindRepeating(&TabStrip::NewTabButtonPressed,
-                                  base::Unretained(tab_strip_)),
-              icon);
-      tab_strip_control_button->SetProperty(views::kElementIdentifierKey,
-                                            kNewTabButtonElementId);
-      // If the variation is one of the settings that requires an opaque
-      // background, add it.
-      if (ntb_variation == features::ChromeRefresh2023NTBVariation::
-                               kGM3OldIconWithBackground ||
-          ntb_variation == features::ChromeRefresh2023NTBVariation::
-                               kGM3NewIconWithBackground) {
-        tab_strip_control_button->SetBackgroundFrameActiveColorId(
-            kColorNewTabButtonCRBackgroundFrameActive);
-        tab_strip_control_button->SetBackgroundFrameInactiveColorId(
-            kColorNewTabButtonCRBackgroundFrameInactive);
-      }
-
-      new_tab_button_ = AddChildView(std::move(tab_strip_control_button));
-    }
+    new_tab_button_ = AddChildView(std::move(tab_strip_control_button));
 
     new_tab_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
@@ -241,11 +210,6 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip)
           .WithOrder(3));
 
   SetProperty(views::kElementIdentifierKey, kTabStripRegionElementId);
-
-#if BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(features::kChromeOSTabSearchCaptionButton))
-    return;
-#endif
 
   if (browser && tab_search_container &&
       !WindowFrameUtil::IsWindowsTabSearchCaptionButtonEnabled(browser) &&

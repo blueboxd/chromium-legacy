@@ -7,12 +7,14 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
 #include "ash/system/mahi/mahi_panel_widget.h"
+#include "ash/system/mahi/mahi_ui_controller.h"
 #include "base/functional/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -21,10 +23,12 @@
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/mahi/mahi_browser_delegate_ash.h"
+#include "chrome/browser/ash/sparky/sparky_delegate_impl.h"
 #include "chromeos/components/mahi/public/cpp/mahi_manager.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/manta/features.h"
 #include "components/manta/manta_service.h"
+#include "components/manta/proto/sparky.pb.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -48,20 +52,13 @@ namespace ash {
 
 SparkyManagerImpl::SparkyManagerImpl(Profile* profile,
                                      manta::MantaService* manta_service)
-    : profile_(profile), mahi_provider_(manta_service->CreateMahiProvider()) {
+    : profile_(profile),
+      sparky_provider_(manta_service->CreateSparkyProvider(
+          std::make_unique<SparkyDelegateImpl>(profile))) {
   CHECK(manta::features::IsMantaServiceEnabled());
 }
 
 SparkyManagerImpl::~SparkyManagerImpl() = default;
-
-void SparkyManagerImpl::OpenMahiPanel(int64_t display_id) {
-  if (!IsEnabled()) {
-    return;
-  }
-
-  mahi_panel_widget_ = MahiPanelWidget::CreatePanelWidget(display_id);
-  mahi_panel_widget_->Show();
-}
 
 std::u16string SparkyManagerImpl::GetContentTitle() {
   return u"";
@@ -93,9 +90,10 @@ void SparkyManagerImpl::AnswerQuestion(const std::u16string& question,
                                        bool current_panel_content,
                                        MahiAnswerQuestionCallback callback) {
   if (current_panel_content) {
-    mahi_provider_->QuestionAndAnswer(
+    sparky_provider_->QuestionAndAnswer(
         base::UTF16ToUTF8(current_panel_content_->page_content),
         current_panel_qa_, base::UTF16ToUTF8(question),
+        manta::proto::Task::TASK_PLANNER,
         base::BindOnce(&SparkyManagerImpl::OnSparkyProviderQAResponse,
                        weak_ptr_factory_.GetWeakPtr(), question,
                        std::move(callback)));
@@ -130,25 +128,21 @@ void SparkyManagerImpl::OnContextMenuClicked(
     case MahiContextMenuActionType::kSummary:
     case MahiContextMenuActionType::kOutline:
       // TODO(b/318565610): Update the behaviour of kOutline.
-      OpenMahiPanel(context_menu_request->display_id);
+      ui_controller_.OpenMahiPanel(context_menu_request->display_id);
       return;
     case MahiContextMenuActionType::kQA:
-      OpenMahiPanel(context_menu_request->display_id);
+      ui_controller_.OpenMahiPanel(context_menu_request->display_id);
 
       // Ask question.
-      // TODO(b/331837721): `SparkyManagerImpl` should own an instance of
-      // `MahiUiController` and use it to answer question here. This
-      // functionality shouldn't need to be routed through the widget. We also
-      // need to add unit test logic for this after the refactor.
       if (!context_menu_request->question) {
         return;
       }
 
       // When the user sends a question from the context menu, we treat it as
       // the start of a new journey, so we set `current_panel_content` false.
-      static_cast<MahiPanelWidget*>(mahi_panel_widget_.get())
-          ->SendQuestion(context_menu_request->question.value(),
-                         /*current_panel_content=*/false);
+      ui_controller_.SendQuestion(context_menu_request->question.value(),
+                                  /*current_panel_content=*/false,
+                                  MahiUiController::QuestionSource::kMenuView);
       return;
     case MahiContextMenuActionType::kSettings:
       // TODO(b/318565610): Update the behaviour of kSettings
@@ -166,9 +160,8 @@ bool SparkyManagerImpl::IsEnabled() {
 }
 
 void SparkyManagerImpl::NotifyRefreshAvailability(bool available) {
-  auto* mahi_widget = static_cast<MahiPanelWidget*>(mahi_panel_widget_.get());
-  if (mahi_widget) {
-    mahi_widget->NotifyRefreshAvailabilityChanged(available);
+  if (ui_controller_.IsMahiPanelOpen()) {
+    ui_controller_.NotifyRefreshAvailabilityChanged(available);
   }
 }
 
@@ -193,7 +186,7 @@ void SparkyManagerImpl::OnGetPageContentForSummary(
 void SparkyManagerImpl::OnSparkyProviderQAResponse(
     const std::u16string& question,
     MahiAnswerQuestionCallback callback,
-    base::Value::Dict dict,
+    const std::string& response,
     manta::MantaStatus status) {
   if (status.status_code != manta::MantaStatusCode::kOk) {
     latest_response_status_ = MahiResponseStatus::kUnknownError;
@@ -202,7 +195,15 @@ void SparkyManagerImpl::OnSparkyProviderQAResponse(
     return;
   }
 
-  // TODO (b/333479467): Handle response returned once new provider is built.
+  if (!response.empty()) {
+    latest_response_status_ = MahiResponseStatus::kSuccess;
+    current_panel_qa_.emplace_back(base::UTF16ToUTF8(question), response);
+    std::move(callback).Run(base::UTF8ToUTF16(response),
+                            latest_response_status_);
+  } else {
+    latest_response_status_ = MahiResponseStatus::kCantFindOutputData;
+    std::move(callback).Run(std::nullopt, latest_response_status_);
+  }
 }
 
 void SparkyManagerImpl::OnGetPageContentForQA(
@@ -219,9 +220,10 @@ void SparkyManagerImpl::OnGetPageContentForQA(
   current_panel_content_ = std::move(mahi_content_ptr);
   current_panel_qa_.clear();
 
-  mahi_provider_->QuestionAndAnswer(
+  sparky_provider_->QuestionAndAnswer(
       base::UTF16ToUTF8(current_panel_content_->page_content),
       current_panel_qa_, base::UTF16ToUTF8(question),
+      manta::proto::Task::TASK_PLANNER,
       base::BindOnce(&SparkyManagerImpl::OnSparkyProviderQAResponse,
                      weak_ptr_factory_.GetWeakPtr(), question,
                      std::move(callback)));

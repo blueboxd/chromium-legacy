@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#include "chrome/browser/ui/tabs/tab_group_deletion_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -32,6 +33,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+namespace {
+static constexpr int kOldIconSize = 20;
+static constexpr int kUIUpdateIconSize = 16;
+}  // namespace
+
 namespace tab_groups {
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SavedTabGroupUtils, kDeleteGroupMenuItem);
@@ -40,6 +46,110 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SavedTabGroupUtils,
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SavedTabGroupUtils,
                                       kToggleGroupPinStateMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SavedTabGroupUtils, kTabsTitleItem);
+
+// static
+void SavedTabGroupUtils::RemoveGroupFromTabstrip(
+    const Browser* browser,
+    const tab_groups::TabGroupId& local_group) {
+  TabStripModel* const tab_strip_model = browser->tab_strip_model();
+  const int num_tabs_in_group =
+      tab_strip_model->group_model()->GetTabGroup(local_group)->tab_count();
+  if (tab_strip_model->count() == num_tabs_in_group) {
+    // If the group about to be closed has all of the tabs in the browser, add a
+    // new tab outside the group to prevent the browser from closing.
+    tab_strip_model->delegate()->AddTabAt(GURL(), -1, true);
+  }
+
+  tab_strip_model->CloseAllTabsInGroup(local_group);
+}
+
+// static
+void SavedTabGroupUtils::UngroupSavedGroup(const Browser* browser,
+                                           const base::Uuid& saved_group_guid) {
+  tab_groups::SavedTabGroupKeyedService* const saved_tab_group_service =
+      tab_groups::SavedTabGroupServiceFactory::GetForProfile(
+          browser->profile());
+  if (!saved_tab_group_service) {
+    return;
+  }
+
+  // The group must exist and be in the tabstrip for ungrouping.
+  const SavedTabGroup* group =
+      saved_tab_group_service->model()->Get(saved_group_guid);
+  if (!group || !group->local_group_id().has_value()) {
+    return;
+  }
+
+  base::OnceCallback<void()> ungroup_callback = base::BindOnce(
+      [](const Browser* browser, const tab_groups::TabGroupId& local_group) {
+        TabStripModel* const model = browser->tab_strip_model();
+        const gfx::Range tab_range =
+            model->group_model()->GetTabGroup(local_group)->ListTabs();
+
+        std::vector<int> tabs;
+        tabs.reserve(tab_range.length());
+        for (auto i = tab_range.start(); i < tab_range.end(); ++i) {
+          tabs.push_back(i);
+        }
+
+        model->RemoveFromGroup(tabs);
+      },
+      browser, group->local_group_id().value());
+
+  if (tab_groups::IsTabGroupsSaveV2Enabled()) {
+    browser->tab_group_deletion_dialog_controller()->MaybeShowDialog(
+        tab_groups::DeletionDialogController::DialogType::UngroupSingle,
+        std::move(ungroup_callback));
+  } else {
+    std::move(ungroup_callback).Run();
+  }
+}
+
+// static
+void SavedTabGroupUtils::DeleteSavedGroup(const Browser* browser,
+                                          const base::Uuid& saved_group_guid) {
+  tab_groups::SavedTabGroupKeyedService* const saved_tab_group_service =
+      tab_groups::SavedTabGroupServiceFactory::GetForProfile(
+          browser->profile());
+  if (!saved_tab_group_service) {
+    return;
+  }
+
+  if (!saved_tab_group_service->model()->Contains(saved_group_guid)) {
+    return;
+  }
+
+  base::OnceCallback<void()> close_callback = base::BindOnce(
+      [](const Browser* browser, const base::Uuid& saved_group_guid) {
+        tab_groups::SavedTabGroupKeyedService* const saved_tab_group_service =
+            tab_groups::SavedTabGroupServiceFactory::GetForProfile(
+                browser->profile());
+        if (!saved_tab_group_service) {
+          return;
+        }
+
+        const SavedTabGroup* group =
+            saved_tab_group_service->model()->Get(saved_group_guid);
+        if (!group) {
+          return;
+        }
+
+        if (group->local_group_id().has_value()) {
+          SavedTabGroupUtils::RemoveGroupFromTabstrip(
+              browser, group->local_group_id().value());
+        }
+        saved_tab_group_service->model()->Remove(group->saved_guid());
+      },
+      browser, saved_group_guid);
+
+  if (tab_groups::IsTabGroupsSaveV2Enabled()) {
+    browser->tab_group_deletion_dialog_controller()->MaybeShowDialog(
+        tab_groups::DeletionDialogController::DialogType::DeleteSingle,
+        std::move(close_callback));
+  } else {
+    std::move(close_callback).Run();
+  }
+}
 
 void SavedTabGroupUtils::OpenUrlToBrowser(Browser* browser,
                                           const GURL& url,
@@ -151,8 +261,11 @@ SavedTabGroupUtils::CreateSavedTabGroupContextMenuModel(
                                         ->tab_count();
   }
 
+  bool is_ui_update = tab_groups::IsTabGroupsSaveUIUpdateEnabled();
   dialog_model.AddMenuItem(
-      ui::ImageModel::FromVectorIcon(kMoveGroupToNewWindowRefreshIcon),
+      ui::ImageModel::FromVectorIcon(
+          kMoveGroupToNewWindowRefreshIcon, ui::kColorMenuIcon,
+          is_ui_update ? kUIUpdateIconSize : kOldIconSize),
       move_or_open_group_text,
       base::BindRepeating(&SavedTabGroupUtils::OpenOrMoveSavedGroupToNewWindow,
                           browser, saved_group),
@@ -160,11 +273,13 @@ SavedTabGroupUtils::CreateSavedTabGroupContextMenuModel(
           .SetId(kMoveGroupToNewWindowMenuItem)
           .SetIsEnabled(should_enable_move_menu_item));
 
-  if (tab_groups::IsTabGroupsSaveUIUpdateEnabled() && show_pin_unpin_option) {
+  if (is_ui_update && show_pin_unpin_option) {
     dialog_model.AddMenuItem(
-        ui::ImageModel::FromVectorIcon(saved_group->is_pinned()
-                                           ? kKeepPinFilledChromeRefreshIcon
-                                           : kKeepPinChromeRefreshIcon),
+        ui::ImageModel::FromVectorIcon(
+            saved_group->is_pinned() ? kKeepPinFilledChromeRefreshIcon
+                                     : kKeepPinChromeRefreshIcon,
+            ui::kColorMenuIcon,
+            is_ui_update ? kUIUpdateIconSize : kOldIconSize),
         l10n_util::GetStringUTF16(saved_group->is_pinned()
                                       ? IDS_TAB_GROUP_HEADER_CXMENU_UNPIN_GROUP
                                       : IDS_TAB_GROUP_HEADER_CXMENU_PIN_GROUP),
@@ -175,14 +290,20 @@ SavedTabGroupUtils::CreateSavedTabGroupContextMenuModel(
 
   dialog_model
       .AddMenuItem(
-          ui::ImageModel::FromVectorIcon(kCloseGroupRefreshIcon),
+          ui::ImageModel::FromVectorIcon(
+              kCloseGroupRefreshIcon, ui::kColorMenuIcon,
+              is_ui_update ? kUIUpdateIconSize : kOldIconSize),
           l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_DELETE_GROUP),
-          base::BindRepeating(&SavedTabGroupUtils::DeleteSavedTabGroup, browser,
-                              saved_group),
+          base::BindRepeating(
+              [](const Browser* browser, const base::Uuid& saved_group_guid,
+                 int event_flags) {
+                SavedTabGroupUtils::DeleteSavedGroup(browser, saved_group_guid);
+              },
+              browser, saved_group->saved_guid()),
           ui::DialogModelMenuItem::Params().SetId(kDeleteGroupMenuItem))
       .AddSeparator();
 
-  if (tab_groups::IsTabGroupsSaveUIUpdateEnabled()) {
+  if (is_ui_update) {
     dialog_model.AddTitleItem(l10n_util::GetStringUTF16(IDS_TABS_TITLE_CXMENU),
                               kTabsTitleItem);
   }
@@ -222,7 +343,7 @@ SavedTabGroupTab SavedTabGroupUtils::CreateSavedTabGroupTabFromWebContents(
   return tab;
 }
 
-content::WebContents* SavedTabGroupUtils::OpenTabInBrowser(
+content::NavigationHandle* SavedTabGroupUtils::OpenTabInBrowser(
     const GURL& url,
     Browser* browser,
     Profile* profile,
@@ -235,7 +356,7 @@ content::WebContents* SavedTabGroupUtils::OpenTabInBrowser(
   params.tabstrip_index = tabstrip_index.value_or(params.tabstrip_index);
   params.group = local_group_id;
   base::WeakPtr<content::NavigationHandle> handle = Navigate(&params);
-  return handle ? handle->GetWebContents() : nullptr;
+  return handle.get();
 }
 
 // static

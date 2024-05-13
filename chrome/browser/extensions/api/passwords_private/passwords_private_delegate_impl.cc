@@ -45,6 +45,8 @@
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/webauthn/change_pin_controller.h"
+#include "chrome/browser/webauthn/enclave_manager.h"
+#include "chrome/browser/webauthn/enclave_manager_factory.h"
 #include "chrome/browser/webauthn/passkey_model_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -954,6 +956,30 @@ bool PasswordsPrivateDelegateImpl::IsPasswordManagerPinAvailable(
   return controller->IsChangePinFlowAvailable();
 }
 
+void PasswordsPrivateDelegateImpl::DisconnectCloudAuthenticator(
+    content::WebContents* web_contents,
+    base::OnceCallback<void(bool)> success_callback) {
+  EnclaveManagerInterface* enclave_manager =
+      EnclaveManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (enclave_manager) {
+    enclave_manager->Unenroll(std::move(success_callback));
+  }
+}
+
+bool PasswordsPrivateDelegateImpl::IsConnectedToCloudAuthenticator(
+    content::WebContents* web_contents) {
+  EnclaveManagerInterface* enclave_manager =
+      EnclaveManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+  if (!enclave_manager) {
+    return false;
+  }
+
+  return enclave_manager->is_registered();
+}
+
 base::WeakPtr<PasswordsPrivateDelegate>
 PasswordsPrivateDelegateImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -1246,6 +1272,10 @@ PasswordsPrivateDelegateImpl::CreatePasswordUiEntryFromCredentialUiEntry(
   entry.username = base::UTF16ToUTF8(credential.username);
   if (entry.is_passkey) {
     entry.display_name = base::UTF16ToUTF8(credential.user_display_name);
+  }
+  if (credential.creation_time.has_value()) {
+    entry.creation_time =
+        credential.creation_time->InMillisecondsSinceUnixEpoch();
   }
   entry.stored_in = extensions::StoreSetFromCredential(credential);
   if (!credential.federation_origin.opaque()) {

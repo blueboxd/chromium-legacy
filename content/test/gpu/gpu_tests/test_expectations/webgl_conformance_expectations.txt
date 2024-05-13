@@ -250,6 +250,7 @@ crbug.com/1473838 [ linux intel passthrough display-server-wayland ] WebglExtens
 # Extensions not available on Fuchsia
 [ fuchsia ] WebglExtension_EXT_shader_texture_lod [ Skip ]
 [ fuchsia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ fuchsia ] WebglExtension_EXT_float_blend [ Skip ]
 [ fuchsia web-engine-shell ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 [ fuchsia web-engine-shell ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 [ fuchsia web-engine-shell passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
@@ -257,6 +258,7 @@ crbug.com/1473838 [ linux intel passthrough display-server-wayland ] WebglExtens
 [ fuchsia web-engine-shell passthrough angle-vulkan ] WebglExtension_WEBGL_blend_func_extended [ Skip ]
 
 # Disabling as they cannot pass with protected memory.
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Skip ]
 crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
 crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
 crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
@@ -397,6 +399,32 @@ crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] 
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_polygon_offset_clamp [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough angle-opengles ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough angle-opengles ] WebglExtension_WEBGL_blend_func_extended [ Skip ]
+
+# Android Graphite/Dawn/Vulkan video isn't implemented yet.
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/misc/image-decoder-to-texture.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/misc/texture-corner-case-videos.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/misc/texture-npot-video.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/misc/texture-upload-size.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/misc/video-rotation.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/41488897 [ android android-pixel-6 passthrough renderer-skia-gl graphite-enabled ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
 
 ###############################
 # Permanent Slow Expectations #
@@ -626,8 +654,8 @@ crbug.com/1288590 [ android android-pixel-6 ] conformance/misc/shader-precision-
 crbug.com/1288603 [ android android-pixel-6 passthrough angle-opengles ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1357064 [ android android-pixel-6 no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
-crbug.com/1495573 [ android-pixel-6 arm passthrough ] conformance/extensions/oes-texture-half-float-with-image.html [ RetryOnFailure ]
-crbug.com/1495573 [ android-pixel-6 arm passthrough ] conformance/extensions/oes-vertex-array-object.html [ RetryOnFailure ]
+crbug.com/1495573 [ android-pixel-6 arm graphite-disabled passthrough renderer-skia-vulkan ] conformance/extensions/oes-texture-half-float-with-image.html [ RetryOnFailure ]
+crbug.com/1495573 [ android-pixel-6 arm graphite-disabled passthrough renderer-skia-vulkan ] conformance/extensions/oes-vertex-array-object.html [ RetryOnFailure ]
 
 ## Misc failures ##
 

@@ -175,11 +175,6 @@ BASE_FEATURE(kEnableMSAAOnNewIntelGPUs,
              "EnableMSAAOnNewIntelGPUs",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the use of ANGLE validation for non-WebGL contexts.
-BASE_FEATURE(kDefaultEnableANGLEValidation,
-             "DefaultEnableANGLEValidation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables canvas to free its resources by default when it's running in
 // the background.
 BASE_FEATURE(kCanvasContextLostInBackground,
@@ -511,12 +506,6 @@ bool IsDrDcEnabled() {
     return false;
   }
 
-  // DrDc is not supported with Graphite-Dawn yet.
-  // TODO(crbug.com/40945609): Add DrDc support with Graphite
-  if (IsSkiaGraphiteEnabled(base::CommandLine::ForCurrentProcess())) {
-    return false;
-  }
-
   // DrDc is supported on android MediaPlayer and MCVD path only when
   // AImageReader is enabled. Also DrDc requires AImageReader max size to be
   // at least 2 for each gpu thread. Hence DrDc is disabled on devices which has
@@ -582,11 +571,6 @@ bool IsUsingThreadSafeMediaForWebView() {
 // This should be fixed/updated later to account for disabled gpus.
 bool NeedThreadSafeAndroidMedia() {
   return IsDrDcEnabled() || IsUsingThreadSafeMediaForWebView();
-}
-
-bool IsANGLEValidationEnabled() {
-  return base::FeatureList::IsEnabled(kDefaultEnableANGLEValidation) &&
-         UsePassthroughCommandDecoder();
 }
 
 namespace {

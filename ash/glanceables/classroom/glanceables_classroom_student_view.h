@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/unified/glanceable_tray_child_bubble.h"
+#include "ash/glanceables/common/glanceables_time_management_bubble_view.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -38,6 +38,7 @@ class ViewObserver;
 namespace ash {
 
 class Combobox;
+class CounterExpandButton;
 class GlanceablesListFooterView;
 class GlanceablesProgressBarView;
 struct GlanceablesClassroomAssignment;
@@ -54,9 +55,10 @@ enum class StudentAssignmentsListType {
 };
 
 class ASH_EXPORT GlanceablesClassroomStudentView
-    : public GlanceableTrayChildBubble,
+    : public GlanceablesTimeManagementBubbleView,
       public views::ViewObserver {
-  METADATA_HEADER(GlanceablesClassroomStudentView, GlanceableTrayChildBubble)
+  METADATA_HEADER(GlanceablesClassroomStudentView,
+                  GlanceablesTimeManagementBubbleView)
 
  public:
   GlanceablesClassroomStudentView();
@@ -79,7 +81,16 @@ class ASH_EXPORT GlanceablesClassroomStudentView
   // glanceables bubble widget starts closing to avoid unnecessary UI updates.
   void CancelUpdates();
 
+  // Creates `this` view's own background and updates layout accordingly.
+  void CreateElevatedBackground();
+
+  void SetExpandState(bool is_expanded);
+  bool is_expanded() const { return is_expanded_; }
+
  private:
+  // Toggles `is_expanded_` and updates the layout.
+  void ToggleExpandState();
+
   // Handles press on the "See all" button in `GlanceablesListFooterView`. Opens
   // classroom web UI based on the selected menu option.
   void OnSeeAllPressed();
@@ -110,10 +121,18 @@ class ASH_EXPORT GlanceablesClassroomStudentView
   // Owned by views hierarchy.
   raw_ptr<views::FlexLayoutView> header_view_ = nullptr;
   raw_ptr<Combobox> combo_box_view_ = nullptr;
+  // This is a simple label that copies the label style on `combo_box_view_` so
+  // that it can visually replace it when `combo_box_view_` is hidden.
+  raw_ptr<views::Label> combobox_replacement_label_ = nullptr;
+  raw_ptr<views::FlexLayoutView> body_container_ = nullptr;
   raw_ptr<views::BoxLayoutView> list_container_view_ = nullptr;
   raw_ptr<GlanceablesListFooterView> list_footer_view_ = nullptr;
   raw_ptr<GlanceablesProgressBarView> progress_bar_ = nullptr;
   raw_ptr<views::Label> empty_list_label_ = nullptr;
+  raw_ptr<CounterExpandButton> expand_button_ = nullptr;
+
+  // Whether the view is expanded and showing the contents in `body_container_`.
+  bool is_expanded_ = true;
 
   // Total number of assignments in the selected assignment list.
   size_t total_assignments_ = 0u;
@@ -134,6 +153,9 @@ class ASH_EXPORT GlanceablesClassroomStudentView
   // The number of times that the selected list has changed during the lifetime
   // of this view.
   int selected_list_change_count_ = 0;
+
+  // If true, always sets `list_footer_view_` to invisible.
+  bool force_hide_footer_view_ = false;
 
   // The currently selected assignment list.
   StudentAssignmentsListType selected_list_type_ =

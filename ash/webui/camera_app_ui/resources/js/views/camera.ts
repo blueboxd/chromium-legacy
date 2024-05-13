@@ -70,7 +70,10 @@ import {ScanOptions} from './camera/scan_options.js';
 import * as timertick from './camera/timertick.js';
 import {VideoEncoderOptions} from './camera/video_encoder_options.js';
 import {Dialog} from './dialog.js';
-import {DocumentReview} from './document_review.js';
+import {
+  DocumentReview,
+  initializeInstance as initializeDocumentReview,
+} from './document_review.js';
 import {Flash} from './flash.js';
 import {OptionPanel} from './option_panel.js';
 import {PTZPanel} from './ptz_panel.js';
@@ -157,7 +160,7 @@ export class Camera extends View implements CameraViewUI {
       readonly perfLogger: PerfLogger,
   ) {
     super(ViewName.CAMERA);
-    this.documentReview = new DocumentReview(resultSaver);
+    this.documentReview = initializeDocumentReview(resultSaver);
     this.lowStorageDialogView = new Dialog(ViewName.LOW_STORAGE_DIALOG, {
       onNegativeButtonClicked: () => this.openStorageManagement(),
     });
@@ -479,6 +482,7 @@ export class Camera extends View implements CameraViewUI {
       isVideoSnapshot: true,
       resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
       aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
+      zoomRatio: this.cameraManager.getZoomRatio(),
     });
     try {
       const name = (new Filenamer(timestamp)).newImageName();
@@ -528,6 +532,7 @@ export class Camera extends View implements CameraViewUI {
         isVideoSnapshot: false,
         resolutionLevel: this.cameraManager.getPhotoResolutionLevel(resolution),
         aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
+        zoomRatio: this.cameraManager.getZoomRatio(),
       });
 
       try {
@@ -571,6 +576,7 @@ export class Camera extends View implements CameraViewUI {
           resolutionLevel:
               this.cameraManager.getPhotoResolutionLevel(resolution),
           aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
+          zoomRatio: this.cameraManager.getZoomRatio(),
         });
 
         filenamer = filenamer ?? new Filenamer(timestamp);
@@ -648,6 +654,7 @@ export class Camera extends View implements CameraViewUI {
         shutterType: this.shutterType,
         resolutionLevel: this.cameraManager.getPhotoResolutionLevel(resolution),
         aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
+        zoomRatio: this.cameraManager.getZoomRatio(),
       });
     } finally {
       nav.close(ViewName.FLASH);
@@ -754,6 +761,7 @@ export class Camera extends View implements CameraViewUI {
         gifResult,
         resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
         aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
+        zoomRatio: this.cameraManager.getZoomRatio(),
       });
     };
 
@@ -809,6 +817,7 @@ export class Camera extends View implements CameraViewUI {
         everPaused,
         resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
         aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
+        zoomRatio: this.cameraManager.getZoomRatio(),
       });
       const file = assertExists(await videoSaver.endWrite());
       await this.resultSaver.saveVideo(file);
@@ -842,6 +851,7 @@ export class Camera extends View implements CameraViewUI {
         resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
         aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
         timeLapseSpeed: speed,
+        zoomRatio: this.cameraManager.getZoomRatio(),
       });
       const file = assertExists(await timeLapseSaver.endWrite());
       await this.resultSaver.saveVideo(file);

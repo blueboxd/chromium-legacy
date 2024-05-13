@@ -36,9 +36,11 @@
 #include "components/sync/base/sync_util.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
+#include "components/sync/engine/sync_status.h"
 #include "components/sync/service/data_type_manager_impl.h"
 #include "components/sync/service/sync_service_observer.h"
 #include "components/sync/service/sync_token_status.h"
+#include "components/sync/service/trusted_vault_synthetic_field_trial.h"
 #include "components/sync/test/fake_model_type_controller.h"
 #include "components/sync/test/fake_sync_api_component_factory.h"
 #include "components/sync/test/fake_sync_engine.h"
@@ -59,17 +61,22 @@ using testing::Invoke;
 using testing::IsEmpty;
 using testing::IsNull;
 using testing::Not;
+using testing::NotNull;
 using testing::Return;
 
 namespace syncer {
 
 namespace {
 
+constexpr char kTestUser[] = "test_user@gmail.com";
+
 MATCHER_P(ContainsDataType, type, "") {
   return arg.Has(type);
 }
 
-constexpr char kTestUser[] = "test_user@gmail.com";
+MATCHER_P(IsValidFieldTrialGroupWithName, expected_name, "") {
+  return arg.is_valid() && arg.name() == expected_name;
+}
 
 SyncCycleSnapshot MakeDefaultSyncCycleSnapshot() {
   // It doesn't matter what exactly we set here, it's only relevant that the
@@ -2315,6 +2322,89 @@ TEST_F(SyncServiceImplTest, ShouldNotifyOnManagedPrefDisabled) {
   prefs()->SetManagedPref(prefs::internal::kSyncManaged, base::Value(false));
 
   service()->RemoveObserver(&mock_sync_service_observer);
+}
+
+TEST_F(SyncServiceImplTest, ShouldCacheTrustedVaultAutoUpgradeDebugInfo) {
+  const int kTestCohortId1 = 11;
+  const int kTestCohortId2 = 22;
+
+  component_factory()->AllowFakeEngineInitCompletion(false);
+  InitializeService();
+  base::RunLoop().RunUntilIdle();
+  SignInWithSyncConsent();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ASSERT_TRUE(
+      service()->GetUserSettings()->IsInitialSyncFeatureSetupComplete());
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
+  service()->GetUserSettings()->SetInitialSyncFeatureSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(SyncService::TransportState::INITIALIZING,
+            service()->GetTransportState());
+  ASSERT_THAT(engine(), NotNull());
+
+  {
+    SyncStatus sync_status;
+    sync_status.trusted_vault_debug_info.mutable_auto_upgrade_debug_info()
+        ->set_auto_upgrade_cohort_id(kTestCohortId1);
+    sync_status.trusted_vault_debug_info.mutable_auto_upgrade_debug_info()
+        ->set_auto_upgrade_experiment_group(
+            sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo::CONTROL);
+    engine()->SetDetailedStatus(sync_status);
+  }
+
+  // Completing initialization should exercise SyncClient's field trial
+  // registration.
+  EXPECT_CALL(*sync_client(),
+              RegisterTrustedVaultAutoUpgradeSyntheticFieldTrial(
+                  IsValidFieldTrialGroupWithName("Control_11")));
+
+  base::RunLoop().RunUntilIdle();
+  engine()->TriggerInitializationCompletion(/*success=*/true);
+
+  ASSERT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+
+  testing::Mock::VerifyAndClearExpectations(sync_client());
+
+  // Verify that the debug info has been cached in prefs.
+  SyncPrefs sync_prefs(prefs());
+  EXPECT_TRUE(
+      sync_prefs.GetCachedTrustedVaultAutoUpgradeDebugInfo().has_value());
+  EXPECT_EQ(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo::CONTROL,
+            sync_prefs.GetCachedTrustedVaultAutoUpgradeDebugInfo()
+                .value_or(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo())
+                .auto_upgrade_experiment_group());
+  EXPECT_EQ(kTestCohortId1,
+            sync_prefs.GetCachedTrustedVaultAutoUpgradeDebugInfo()
+                .value_or(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo())
+                .auto_upgrade_cohort_id());
+
+  // The SyncClient API should not be invoked for the second time.
+  EXPECT_CALL(*sync_client(),
+              RegisterTrustedVaultAutoUpgradeSyntheticFieldTrial)
+      .Times(0);
+
+  // Mimic another sync cycle that mutates the debug info.
+  {
+    SyncStatus sync_status;
+    sync_status.trusted_vault_debug_info.mutable_auto_upgrade_debug_info()
+        ->set_auto_upgrade_cohort_id(kTestCohortId2);
+    sync_status.trusted_vault_debug_info.mutable_auto_upgrade_debug_info()
+        ->set_auto_upgrade_experiment_group(
+            sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo::CONTROL);
+    engine()->SetDetailedStatus(sync_status);
+    service()->OnSyncCycleCompleted(MakeDefaultSyncCycleSnapshot());
+  }
+
+  EXPECT_EQ(kTestCohortId2,
+            sync_prefs.GetCachedTrustedVaultAutoUpgradeDebugInfo()
+                .value_or(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo())
+                .auto_upgrade_cohort_id());
 }
 
 }  // namespace

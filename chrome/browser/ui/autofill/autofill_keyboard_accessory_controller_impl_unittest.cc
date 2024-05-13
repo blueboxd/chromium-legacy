@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/autofill_suggestion_controller_test_base.h"
 #include "chrome/browser/ui/autofill/test_autofill_keyboard_accessory_controller_autofill_client.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -53,7 +54,7 @@ class AutofillKeyboardAccessoryControllerImplTest
  protected:
   AutofillProfile ShowAutofillProfileSuggestion() {
     AutofillProfile complete_profile = test::GetFullProfile();
-    personal_data().AddProfile(complete_profile);
+    personal_data().address_data_manager().AddProfile(complete_profile);
     ShowSuggestions(manager(), {test::CreateAutofillSuggestion(
                                    SuggestionType::kAddressEntry,
                                    u"Complete autofill profile",
@@ -63,7 +64,7 @@ class AutofillKeyboardAccessoryControllerImplTest
 
   CreditCard ShowLocalCardSuggestion() {
     CreditCard local_card = test::GetCreditCard();
-    personal_data().AddCreditCard(local_card);
+    personal_data().payments_data_manager().AddCreditCard(local_card);
     ShowSuggestions(manager(),
                     {test::CreateAutofillSuggestion(
                         SuggestionType::kCreditCardEntry, u"Local credit card",
@@ -182,7 +183,7 @@ TEST_F(AutofillKeyboardAccessoryControllerImplTest,
        GetRemovalConfirmationText_AutofillProfile_EmptyCity) {
   AutofillProfile profile = test::GetFullProfile();
   profile.ClearFields({ADDRESS_HOME_CITY});
-  personal_data().AddProfile(profile);
+  personal_data().address_data_manager().AddProfile(profile);
 
   std::u16string title;
   std::u16string body;

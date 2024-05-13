@@ -1209,46 +1209,60 @@ public class StripLayoutHelperTest {
 
     @Test
     @EnableFeatures(ChromeFeatureList.TAB_STRIP_GROUP_INDICATORS)
-    public void testInReorderMode_SkipTabGroupMarginAndAutoScroll_TabGroupIndicators() {
+    public void testInReorderMode_StripStartMargin_TabGroupIndicators() {
         // Initialize.
         initializeTest(false, false, 5);
         groupTabs(0, 2);
         mStripLayoutHelper.onSizeChanged(
                 SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP, PADDING_LEFT, PADDING_RIGHT);
-        StripLayoutView[] views = mStripLayoutHelper.getStripLayoutViewsForTesting();
 
         // Update layout.
         mStripLayoutHelper.updateLayout(TIMESTAMP);
 
         // Start reorder mode on the third tab.
+        mStripLayoutHelper.disableAnimationsForTesting();
         mStripLayoutHelper.startReorderModeAtIndexForTesting(2);
 
         // Verify that we enter reorder mode.
         assertTrue("Should in reorder mode.", mStripLayoutHelper.getInReorderModeForTesting());
 
-        // offsetXLeft(10) + groupTitle(46) + deltaOffset(-4)
-        float initialPosition = 52.f;
-        float delta = views[1].getWidth() - TAB_OVERLAP_WIDTH;
-
-        // Assert: tab position should not changed.
-        for (int i = 1; i < views.length; i++) {
-            if (views[i] instanceof StripLayoutTab tab) {
-                assertEquals(
-                        "Tab position should not changed.", initialPosition, tab.getIdealX(), 0.f);
-            }
-            initialPosition += delta;
-        }
-
-        // Assert: ScrollOffset should not changed.
+        // Assert: StripStartMargin is about 1/4 tab width to create space for dragging first tab
+        // out of group on strip.
+        // tabWidth(159.2) - tabOverlap(28) * (0.53(ReorderOverlapSwitchPercentage) * 2) = 36.8f
         assertEquals(
-                "scrollOffset should not changed.", 0.f, mStripLayoutHelper.getScrollOffset(), 0.f);
-
-        // Assert: StripStartMargin should not changed.
-        assertEquals(
-                "StripStartMargin should not changed.",
-                0.f,
+                "StripStartMargin is incorrect",
+                36.8f,
                 mStripLayoutHelper.getStripStartMarginForReorderForTesting(),
-                0.f);
+                0.1f);
+
+        // Assert: There should be a scroll offset equal to counter the stripStartMargin, so that
+        // the interacting tab would remain visually stationary.
+        assertEquals(
+                "scrollOffset is incorrect", -36.8f, mStripLayoutHelper.getScrollOffset(), 0.1f);
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.TAB_STRIP_GROUP_INDICATORS)
+    public void testInReorderMode_StripEndMargin_TabGroupIndicators() {
+        // Initialize.
+        initializeTest(false, false, 4);
+        StripLayoutTab[] tabs = mStripLayoutHelper.getStripLayoutTabsForTesting();
+        groupTabs(3, 5);
+        mStripLayoutHelper.onSizeChanged(
+                SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP, PADDING_LEFT, PADDING_RIGHT);
+
+        // Update layout.
+        mStripLayoutHelper.updateLayout(TIMESTAMP);
+
+        // Start reorder mode on the fourth tab.
+        mStripLayoutHelper.startReorderModeAtIndexForTesting(3);
+
+        // Verify that we enter reorder mode.
+        assertTrue("Should in reorder mode.", mStripLayoutHelper.getInReorderModeForTesting());
+
+        // Assert: Last tab's trailingMargin should be about 1/4 tab width to create space for
+        // dragging last tab out of group on strip.
+        assertEquals("Strip end margin is incorrect", 36.8f, tabs[4].getTrailingMargin(), 0.1f);
     }
 
     @Test
@@ -3419,6 +3433,10 @@ public class StripLayoutHelperTest {
         // Flush UI updated
     }
 
+    private void initializeTest(int tabIndex) {
+        initializeTest(false, false, tabIndex);
+    }
+
     private void initializeTest(boolean rtl, boolean incognito, int tabIndex) {
         initializeTest(rtl, incognito, false, tabIndex, 5);
     }
@@ -4113,7 +4131,35 @@ public class StripLayoutHelperTest {
         ChromeFeatureList.TAB_STRIP_GROUP_INDICATORS,
         ChromeFeatureList.TAB_STRIP_GROUP_COLLAPSE
     })
-    public void testCollapseSelectedTab_NextTabSelected() {
+    public void testSelectedTabCollapse_MiddleGroup_PrevTabSelected() {
+        // Initialize with 5 tabs. Group last two tabs.
+        initializeTest(false, false, true, 3, 5);
+        mStripLayoutHelper.onSizeChanged(
+                SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP, PADDING_LEFT, PADDING_RIGHT);
+        groupTabs(3, 4);
+
+        // Assert: the 4th tab is selected.
+        assertEquals(
+                "The tab selected is incorrect.", 3, mStripLayoutHelper.getSelectedStripTabIndex());
+
+        // Assert: the fourth view should be group title.
+        StripLayoutView[] views = mStripLayoutHelper.getStripLayoutViewsForTesting();
+        assertTrue(EXPECTED_TITLE, views[3] instanceof StripLayoutGroupTitle);
+
+        // Click to collapse the first tab group.
+        mStripLayoutHelper.collapseTabGroupForTesting((StripLayoutGroupTitle) views[3], true);
+
+        // Assert: the previous tab is selected as there is no expanded tab towards the end.
+        assertEquals(
+                "The tab selected is incorrect.", 2, mStripLayoutHelper.getSelectedStripTabIndex());
+    }
+
+    @Test
+    @EnableFeatures({
+        ChromeFeatureList.TAB_STRIP_GROUP_INDICATORS,
+        ChromeFeatureList.TAB_STRIP_GROUP_COLLAPSE
+    })
+    public void testSelectedTabCollapse_StartGroup_NextTabSelected() {
         // Initialize with 5 tabs. Group first three tabs.
         initializeTest(false, false, true, 1, 5);
         mStripLayoutHelper.onSizeChanged(
@@ -4141,7 +4187,7 @@ public class StripLayoutHelperTest {
         ChromeFeatureList.TAB_STRIP_GROUP_INDICATORS,
         ChromeFeatureList.TAB_STRIP_GROUP_COLLAPSE
     })
-    public void testCollapseSelectedTab_PrevTabSelected() {
+    public void testCollapseSelectedTab_EndGroup_PrevTabSelected() {
         // Initialize with 5 tabs. Group last two tabs.
         initializeTest(false, false, true, 3, 5);
         mStripLayoutHelper.onSizeChanged(
@@ -4191,6 +4237,67 @@ public class StripLayoutHelperTest {
 
         // Verify: Ntp opened since there is no expanded tab on strip.
         verify(tabCreator).launchNtp();
+    }
+
+    @Test
+    @EnableFeatures({
+        ChromeFeatureList.TAB_STRIP_GROUP_INDICATORS,
+        ChromeFeatureList.TAB_STRIP_GROUP_COLLAPSE
+    })
+    public void testTabSelected_ExpandsGroup() {
+        // Group first two tabs and collapse.
+        int startIndex = 3;
+        int groupId = 0;
+        initializeTest(startIndex);
+        groupTabs(groupId, 2);
+        when(mTabGroupModelFilter.getTabGroupCollapsed(groupId)).thenReturn(true);
+
+        // Select the first tab.
+        mStripLayoutHelper.tabSelected(TIMESTAMP, groupId, startIndex, /* skipAutoScroll= */ false);
+
+        // Verify we auto-expand.
+        verify(mTabGroupModelFilter).deleteTabGroupCollapsed(groupId);
+    }
+
+    private void testTabCreated_InCollapsedGroup(boolean selected) {
+        // Group first two tabs and collapse.
+        int groupId = 0;
+        initializeTest(/* tabIndex= */ 3);
+        groupTabs(groupId, 2);
+        when(mTabGroupModelFilter.getTabGroupCollapsed(groupId)).thenReturn(true);
+
+        // Create a tab in the collapsed group.
+        int tabId = 5;
+        mModel.addTab("new tab");
+        mModel.getTabById(tabId).setRootId(groupId);
+        mStripLayoutHelper.tabCreated(
+                TIMESTAMP,
+                tabId,
+                tabId,
+                selected,
+                /* closureCancelled */ false,
+                /* onStartup= */ false);
+
+        // Verify we only auto-expand if selected.
+        verify(mTabGroupModelFilter, times(selected ? 1 : 0)).deleteTabGroupCollapsed(groupId);
+    }
+
+    @Test
+    @EnableFeatures({
+        ChromeFeatureList.TAB_STRIP_GROUP_INDICATORS,
+        ChromeFeatureList.TAB_STRIP_GROUP_COLLAPSE
+    })
+    public void testTabCreated_InCollapsedGroup_Selected() {
+        testTabCreated_InCollapsedGroup(/* selected= */ true);
+    }
+
+    @Test
+    @EnableFeatures({
+        ChromeFeatureList.TAB_STRIP_GROUP_INDICATORS,
+        ChromeFeatureList.TAB_STRIP_GROUP_COLLAPSE
+    })
+    public void testTabCreated_InCollapsedGroup_NotSelected() {
+        testTabCreated_InCollapsedGroup(/* selected= */ false);
     }
 
     @Test

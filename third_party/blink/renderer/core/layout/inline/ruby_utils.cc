@@ -187,7 +187,7 @@ PhysicalRect AdjustTextRectForEmHeight(const PhysicalRect& rect,
 
 AnnotationOverhang GetOverhang(const InlineItemResult& item) {
   AnnotationOverhang overhang;
-  if (item.item->Type() == InlineItem::kOpenRubyColumn && item.ruby_column) {
+  if (item.IsRubyColumn()) {
     DCHECK(RuntimeEnabledFeatures::RubyLineBreakableEnabled());
     const InlineItemResultRubyColumn& column = *item.ruby_column;
     LayoutUnit half_width_of_annotation_font;
@@ -314,8 +314,7 @@ LayoutUnit CommitPendingEndOverhang(const InlineItem& text_item,
   DCHECK_EQ(text_item.Type(), InlineItem::kText);
   wtf_size_t i = items->size() - 1;
   if (RuntimeEnabledFeatures::RubyLineBreakableEnabled()) {
-    while ((*items)[i].item->Type() != InlineItem::kOpenRubyColumn ||
-           !(*items)[i].ruby_column) {
+    while (!(*items)[i].IsRubyColumn()) {
       const auto type = (*items)[i].item->Type();
       if (type != InlineItem::kOpenTag && type != InlineItem::kCloseTag &&
           type != InlineItem::kCloseRubyColumn &&
@@ -989,8 +988,9 @@ void UpdateRubyColumnInlinePositions(
     }
     // TODO(crbug.com/324111880): Handle overhang.
     column->annotation_items->MoveInInlineDirection(inline_offset);
+    column->state_stack.MoveBoxDataInInlineDirection(inline_offset);
     UpdateRubyColumnInlinePositions(*column->annotation_items, inline_size,
-                                    column->ruby_column_list);
+                                    column->RubyColumnList());
   }
 }
 
@@ -1068,7 +1068,7 @@ void RubyBlockPositionCalculator::HandleRubyLine(
           create_level_and_update_depth(current_level, depth_stack.back());
       RubyLine& annotation_line = EnsureRubyLine(annotation_level);
       annotation_line.Append(*closing_depth.column);
-      HandleRubyLine(annotation_line, closing_depth.column->ruby_column_list);
+      HandleRubyLine(annotation_line, closing_depth.column->RubyColumnList());
       annotation_line.MaybeRecordBaseIndexes(*closing_depth.column);
 
       depth_stack.pop_back();

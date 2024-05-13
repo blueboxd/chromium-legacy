@@ -94,11 +94,10 @@ std::string ComputeUrlEncodedTokenPostData(
     const std::string& client_id,
     const std::string& nonce,
     const std::string& account_id,
-    bool is_sign_in,
+    bool disclosure_text_shown,
     bool is_auto_reauthn,
     const RpMode& rp_mode,
     const std::vector<std::string>& scope,
-    const std::vector<std::string>& responseType,
     const base::flat_map<std::string, std::string>& params) {
   std::string query;
   if (!client_id.empty()) {
@@ -124,11 +123,12 @@ std::string ComputeUrlEncodedTokenPostData(
   // data sharing between IDP and RP. For returning users signing in, such
   // disclosure text is not necessary. This field indicates in the request
   // whether the user has been shown such disclosure text.
-  std::string disclosure_text_shown = is_sign_in ? "false" : "true";
+  std::string disclosure_text_shown_param =
+      disclosure_text_shown ? "true" : "false";
   if (!query.empty()) {
     query += "&";
   }
-  query += "disclosure_text_shown=" + disclosure_text_shown;
+  query += "disclosure_text_shown=" + disclosure_text_shown_param;
 
   // Shares with IdP that whether the identity credential was automatically
   // selected. This could help developers to better comprehend the token
@@ -169,16 +169,10 @@ std::string ComputeUrlEncodedTokenPostData(
       query += "&scope=" + base::EscapeUrlEncodedData(
                                base::JoinString(scope, " "), /*use_plus=*/true);
     }
-    if (!responseType.empty()) {
-      query += "&response_type=" +
-               base::EscapeUrlEncodedData(base::JoinString(responseType, " "),
-                                          /*use_plus=*/true);
-    }
     for (const auto& pair : params) {
-      // TODO(crbug.com/40262526): Should we use a prefix with these custom
-      // parameters so that they don't collide with the standard ones?
-      query += "&" + base::EscapeUrlEncodedData(pair.first, /*use_plus=*/true) +
-               "=" + base::EscapeUrlEncodedData(pair.second, /*use_plus=*/true);
+      query += "&param_" +
+               base::EscapeUrlEncodedData(pair.first, /*use_plus=*/true) + "=" +
+               base::EscapeUrlEncodedData(pair.second, /*use_plus=*/true);
     }
   }
 
@@ -2171,14 +2165,15 @@ void FederatedAuthRequestImpl::OnAccountSelected(const GURL& idp_config_url,
         weak_ptr_factory_.GetWeakPtr(), idp_info.provider->Clone());
   }
 
+  CHECK(idp_info.data);
   network_manager_->SendTokenRequest(
       idp_info.endpoints.token, account_id_,
       ComputeUrlEncodedTokenPostData(
           render_frame_host(), idp_origin, idp_info.provider->config->client_id,
-          idp_info.provider->nonce, account_id, is_sign_in,
+          idp_info.provider->nonce, account_id,
+          !is_sign_in && idp_info.data->request_permission,
           identity_selection_type_ != kExplicit, rp_mode_,
-          idp_info.provider->scope, idp_info.provider->responseType,
-          idp_info.provider->params),
+          idp_info.provider->scope, idp_info.provider->params),
       base::BindOnce(&FederatedAuthRequestImpl::OnTokenResponseReceived,
                      weak_ptr_factory_.GetWeakPtr(),
                      idp_info.provider->Clone()),
@@ -2541,7 +2536,7 @@ void FederatedAuthRequestImpl::CompleteTokenRequest(
             account_id_);
       }
 
-      SetRequiresUserMediation(false);
+      SetRequiresUserMediation(false, base::DoNothing());
 
       fedcm_metrics_->RecordTokenResponseAndTurnaroundTime(
           idp_config_url, id_assertion_response_time_ - select_account_time_,
@@ -2855,6 +2850,20 @@ void FederatedAuthRequestImpl::OnClose() {
 #endif  // BUILDFLAG(IS_ANDROID)
   CHECK(request_dialog_controller_);
   request_dialog_controller_->CloseModalDialog();
+
+  // When IdentityProvider.close is called in the continuation popup, we
+  // should abort the flow.
+  if (dialog_type_ == kContinueOnPopup) {
+    fedcm_metrics_->RecordContinueOnPopupResult(
+        FedCmContinueOnPopupResult::kClosedByIdentityProviderClose);
+    // Popups always get dismissed with reason kOther, so we never embargo.
+    CompleteRequestWithError(
+        FederatedAuthRequestResult::kError,
+        TokenStatus::kContinuationPopupClosedByIdentityProviderClose,
+        /*token_error=*/std::nullopt,
+        /*should_delay_callback=*/false);
+    return;
+  }
 }
 
 bool FederatedAuthRequestImpl::OnResolve(
@@ -2862,7 +2871,11 @@ bool FederatedAuthRequestImpl::OnResolve(
     const std::optional<std::string>& account_id,
     const std::string& token) {
   // Close the pop-up window post user permission.
-  OnClose();
+  // TODO(crbug.com/339481286): Make this work on Android.
+  if (!request_dialog_controller_) {
+    return false;
+  }
+  request_dialog_controller_->CloseModalDialog();
 
   permission_delegate_->GrantSharingPermission(
       origin(), GetEmbeddingOrigin(), url::Origin::Create(idp_config_url),
@@ -3080,9 +3093,16 @@ bool FederatedAuthRequestImpl::RequiresUserMediation() {
 }
 
 void FederatedAuthRequestImpl::SetRequiresUserMediation(
-    bool requires_user_mediation) {
+    bool requires_user_mediation,
+    base::OnceClosure callback) {
   auto_reauthn_permission_delegate_->SetRequiresUserMediation(
       origin(), requires_user_mediation);
+  if (permission_delegate_) {
+    permission_delegate_->OnSetRequiresUserMediation(origin(),
+                                                     std::move(callback));
+  } else {
+    std::move(callback).Run();
+  }
 }
 
 void FederatedAuthRequestImpl::LoginToIdP(bool can_append_hints,
@@ -3137,14 +3157,11 @@ void FederatedAuthRequestImpl::MaybeShowButtonModeModalDialog(
 
 void FederatedAuthRequestImpl::PreventSilentAccess(
     PreventSilentAccessCallback callback) {
-  SetRequiresUserMediation(true);
+  SetRequiresUserMediation(true, std::move(callback));
   if (permission_delegate_->HasSharingPermission(GetEmbeddingOrigin())) {
     RecordPreventSilentAccess(render_frame_host(), origin(),
                               GetEmbeddingOrigin());
   }
-
-  // Send acknowledge response back.
-  std::move(callback).Run();
 }
 
 void FederatedAuthRequestImpl::Disconnect(

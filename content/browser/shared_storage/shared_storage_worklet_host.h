@@ -206,17 +206,21 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   blink::mojom::SharedStorageWorkletService*
   GetAndConnectToSharedStorageWorkletService();
 
-  // Binds a receiver to the `PrivateAggregationManager` and returns the
-  // `PendingRemote`. If there is no `PrivateAggregationManger`, returns an
-  // invalid `PendingRemote`.
-  mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
-  MaybeBindPrivateAggregationHost(
+  // Constructs a `PrivateAggregationOperationDetails` object, including binding
+  // a receiver to the `PrivateAggregationManager` and returning the
+  // `PendingRemote`. If there is no `PrivateAggregationManger`, returns a null
+  // pointer.
+  blink::mojom::PrivateAggregationOperationDetailsPtr
+  MaybeConstructPrivateAggregationOperationDetails(
       const blink::mojom::PrivateAggregationConfigPtr&
           private_aggregation_config);
 
-  bool IsSharedStorageAllowed(std::string* out_debug_message = nullptr);
+  bool IsSharedStorageAllowed(
+      std::string* out_debug_message,
+      bool* out_block_is_site_setting_specific = nullptr);
   bool IsSharedStorageSelectURLAllowed(
-      std::string* out_debug_message = nullptr);
+      std::string* out_debug_message,
+      bool* out_block_is_site_setting_specific);
 
   // RAII helper object for talking to `SharedStorageWorkletDevToolsManager`.
   std::unique_ptr<ScopedDevToolsHandle> devtools_handle_;
@@ -261,7 +265,7 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   // `IsSharedStorageAllowed()`, and to get the global URLLoaderFactory.
   raw_ptr<BrowserContext> browser_context_;
 
-  // The shared storage owner document's origin and site.
+  // The shared storage script's origin and site.
   url::Origin shared_storage_origin_;
   net::SchemefulSite shared_storage_site_;
 

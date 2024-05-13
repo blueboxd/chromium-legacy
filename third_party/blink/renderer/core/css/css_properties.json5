@@ -5202,6 +5202,18 @@
       runtime_flag: "CSSTextAutoSpace",
     },
     {
+      name: "text-box-edge",
+      property_methods: ["ParseSingleValueFromRange", "CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      field_group: "box",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/style/text_box_edge.h"],
+      default_value: "TextBoxEdge()",
+      type_name: "TextBoxEdge",
+      converter: "ConvertTextBoxEdge",
+      runtime_flag: "CSSTextBoxTrim",
+    },
+    {
       name: "text-box-trim",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "box",
@@ -5209,17 +5221,6 @@
       default_value: "none",
       keywords: ["none", "start", "end", "both"],
       typedom_types: ["Keyword"],
-      runtime_flag: "CSSTextBoxTrim",
-    },
-    {
-      name: "text-box-edge",
-      property_methods: ["ParseSingleValueFromRange", "CSSValueFromComputedStyleInternal"],
-      field_group: "box",
-      field_template: "external",
-      include_paths: ["third_party/blink/renderer/core/style/text_box_edge.h"],
-      default_value: "TextBoxEdge(TextBoxEdge::TextBoxEdgeType::kLeading)",
-      type_name: "TextBoxEdge",
-      converter: "ConvertTextBoxEdge",
       runtime_flag: "CSSTextBoxTrim",
     },
     {
@@ -5415,7 +5416,6 @@
       keywords: ["normal", "space-all", "space-first", "trim-start"],
       default_value: "TextSpacingTrim::kInitial",
       typedom_types: ["Keyword"],
-      runtime_flag: "CSSTextSpacingTrim",
       valid_for_permission_element: true,
     },
     {
@@ -6265,6 +6265,7 @@
       default_value: "over",
       type_name: "RubyPosition",
       converter: "ConvertRubyPosition",
+      valid_for_first_line: true,
       valid_for_permission_element: true,
     },
     {

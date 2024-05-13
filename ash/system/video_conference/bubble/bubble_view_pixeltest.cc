@@ -25,6 +25,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom-shared.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom.h"
@@ -67,8 +68,8 @@ class BubbleViewPixelTest
   void SetUp() override {
     std::vector<base::test::FeatureRef> enabled_features{
         features::kFeatureManagementVideoConference,
-        ::features::kChromeRefresh2023, ::features::kChromeRefreshSecondary2023,
-        ::features::kChromeRefresh2023NTB};
+        ::features::kChromeRefresh2023,
+        ::features::kChromeRefreshSecondary2023};
     // TODO(b/334375880): Add a specific pixel test for the feature
     // VcBackgroundReplace.
     std::vector<base::test::FeatureRef> disabled_features{
@@ -77,6 +78,10 @@ class BubbleViewPixelTest
       enabled_features.push_back(features::kVcDlcUi);
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+
+    if (IsVcDlcUiEnabled()) {
+      DlcserviceClient::InitializeFake();
+    }
 
     office_bunny_ =
         std::make_unique<fake_video_conference::OfficeBunnyEffect>();
@@ -117,6 +122,9 @@ class BubbleViewPixelTest
     long_text_effect_.reset();
     cat_ears_.reset();
     office_bunny_.reset();
+    if (IsVcDlcUiEnabled()) {
+      DlcserviceClient::Shutdown();
+    }
   }
 
   std::optional<pixel_test::InitParams> CreatePixelTestInitParams()

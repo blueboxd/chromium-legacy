@@ -75,9 +75,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="MagicStack.Clank.TabResumption.IsSalientImageAvailable"
+    enum="Boolean" expires_after="2024-10-28">
+  <owner>hanxi@google.com</owner>
+  <owner>huangs@google.com</owner>
+  <summary>
+    Records whether a salient image is fetched successfully. The histogram is
+    logged when a tile is shown and a image is fetched for the tile.
+    Android-only.
+  </summary>
+</histogram>
+
 <histogram name="MagicStack.Clank.TabResumption.ModuleNotShownReason"
     enum="MagicStack.Clank.TabResumption.ModuleNotShownReason"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>huangs@google.com</owner>
   <owner>hanxi@google.com</owner>
   <summary>
@@ -92,7 +103,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="MagicStack.Clank.TabResumption.ModuleShowConfig"
     enum="MagicStack.Clank.TabResumption.ModuleShowConfig"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>huangs@google.com</owner>
   <owner>hanxi@google.com</owner>
   <summary>
@@ -103,8 +114,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="MagicStack.Clank.TabResumption.SeeMoreLinkClicked"
+    enum="MagicStack.Clank.TabResumption.ModuleShowConfig"
+    expires_after="2024-11-03">
+  <owner>hanxi@google.com</owner>
+  <owner>huangs@google.com</owner>
+  <summary>
+    Records the configuration of the Tab Resumption Module when the &quot;See
+    more&quot; link is clicked, Android-only.
+  </summary>
+</histogram>
+
 <histogram name="MagicStack.Clank.TabResumption.StabilityDelay" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2024-11-03">
   <owner>huangs@google.com</owner>
   <owner>hanxi@google.com</owner>
   <summary>
@@ -321,7 +343,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="MagicStack.Clank.{ModuleDelegateHost}.Module.ProfileReadyDelayMs"
-    units="ms" expires_after="2024-06-20">
+    units="ms" expires_after="2024-10-28">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>

@@ -72,6 +72,9 @@ public class EmptyTabModel implements IncognitoTabModel {
     public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {}
 
     @Override
+    public void closeMultipleTabs(List<Tab> tabs, boolean canUndo, boolean canRestore) {}
+
+    @Override
     public void closeAllTabs() {}
 
     @Override
@@ -180,6 +183,14 @@ public class EmptyTabModel implements IncognitoTabModel {
 
     @Override
     public void setActive(boolean active) {}
+
+    @Override
+    public int getTabCountNavigatedInTimeWindow(long beginTimeMs, long endTimeMs) {
+        return 0;
+    }
+
+    @Override
+    public void closeTabsNavigatedInTimeWindow(long beginTimeMs, long endTimeMs) {}
 
     @Override
     public void removeTab(Tab tab) {}

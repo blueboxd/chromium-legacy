@@ -689,7 +689,8 @@ RenderWidgetHostViewBase::GetDevicePosturePlatformProvider() {
   }
 
   DevicePostureProviderImpl* posture_provider =
-      host()->delegate()->GetDevicePostureProvider();
+      static_cast<DevicePostureProviderImpl*>(
+          host()->delegate()->GetDevicePostureProvider());
   if (!posture_provider) {
     return nullptr;
   }
@@ -970,7 +971,7 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
   if (!root_frame_sink_id.is_valid())
     return false;
   const auto& display_hit_test_query_map =
-      GetHostFrameSinkManager()->display_hit_test_query();
+      GetHostFrameSinkManager()->GetDisplayHitTestQuery();
   const auto iter = display_hit_test_query_map.find(root_frame_sink_id);
   if (iter == display_hit_test_query_map.end())
     return false;
@@ -1026,7 +1027,7 @@ bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
     return false;
 
   const auto& display_hit_test_query_map =
-      GetHostFrameSinkManager()->display_hit_test_query();
+      GetHostFrameSinkManager()->GetDisplayHitTestQuery();
   const auto iter = display_hit_test_query_map.find(root_frame_sink_id);
   if (iter == display_hit_test_query_map.end())
     return false;

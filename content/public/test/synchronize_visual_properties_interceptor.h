@@ -59,8 +59,6 @@ class SynchronizeVisualPropertiesInterceptor
 
   base::RunLoop run_loop_;
 
-  raw_ptr<RenderFrameProxyHost> render_frame_proxy_host_;
-
   std::unique_ptr<base::RunLoop> local_root_rect_run_loop_;
   bool local_root_rect_received_ = false;
   gfx::Rect last_rect_;
@@ -71,8 +69,7 @@ class SynchronizeVisualPropertiesInterceptor
   bool last_pinch_gesture_active_ = false;
   base::RunLoop pinch_end_run_loop_;
 
-  mojo::test::ScopedSwapImplForTesting<
-      mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>>
+  mojo::test::ScopedSwapImplForTesting<blink::mojom::RemoteFrameHost>
       swapped_impl_;
 
   base::WeakPtrFactory<SynchronizeVisualPropertiesInterceptor> weak_factory_{

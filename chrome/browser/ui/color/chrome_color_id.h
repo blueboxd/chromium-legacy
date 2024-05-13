@@ -386,6 +386,7 @@
   E_CPONLY(kColorPipWindowSkipAdButtonBorder) \
   /* Product Specifications colors */ \
   E_CPONLY(kColorProductSpecificationsButtonBackground) \
+  E_CPONLY(kColorProductSpecificationsTonalButtonBackground) \
   E_CPONLY(kColorProductSpecificationsContentBackground) \
   E_CPONLY(kColorProductSpecificationsDivider) \
   E_CPONLY(kColorProductSpecificationsPageBackground) \

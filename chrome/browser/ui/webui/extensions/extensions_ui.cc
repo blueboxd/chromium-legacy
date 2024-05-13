@@ -19,6 +19,8 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
+#include "chrome/browser/extensions/manifest_v2_experiment_manager.h"
+#include "chrome/browser/extensions/mv2_experiment_stage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extensions_hats_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -79,7 +81,6 @@ content::WebUIDataSource* CreateAndAddExtensionsSource(Profile* profile,
   webui::SetupWebUIDataSource(
       source, base::make_span(kExtensionsResources, kExtensionsResourcesSize),
       IDR_EXTENSIONS_EXTENSIONS_HTML);
-  webui::SetupChromeRefresh2023(source);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       // Add common strings.
@@ -214,6 +215,7 @@ content::WebUIDataSource* CreateAndAddExtensionsSource(Profile* profile,
       {"appIcon", IDS_EXTENSIONS_APP_ICON},
       {"extensionIcon", IDS_EXTENSIONS_EXTENSION_ICON},
       {"extensionA11yAssociation", IDS_EXTENSIONS_EXTENSION_A11Y_ASSOCIATION},
+      {"extensionsSectionHeader", IDS_EXTENSIONS_SECTION_HEADER},
       {"itemIdHeading", IDS_EXTENSIONS_ITEM_ID_HEADING},
       {"extensionEnabled", IDS_EXTENSIONS_EXTENSION_ENABLED},
       {"appEnabled", IDS_EXTENSIONS_APP_ENABLED},
@@ -332,6 +334,13 @@ content::WebUIDataSource* CreateAndAddExtensionsSource(Profile* profile,
       {"noSitesAdded", IDS_EXTENSIONS_NO_SITES_ADDED},
       {"editShortcutInputLabel", IDS_EXTENSIONS_EDIT_SHORTCUT_INPUT_LABEL},
       {"editShortcutButtonLabel", IDS_EXTENSIONS_EDIT_SHORTCUT_BUTTON_LABEL},
+      {"mv2DeprecationPanelDismissButton",
+       IDS_EXTENSIONS_MV2_DEPRECATION_PANEL_DISMISS_BUTTON},
+      {"mv2DeprecationPanelFindAlternativeButton",
+       IDS_EXTENSIONS_MV2_DEPRECATION_PANEL_FIND_ALTERNATIVE_BUTTON},
+      {"mv2DeprecationPanelKeepForNowButton",
+       IDS_EXTENSIONS_MV2_DEPRECATION_PANEL_KEEP_FOR_NOW_BUTTON},
+      {"mv2DeprecationPanelRemoveExtensionButton", IDS_EXTENSIONS_UNINSTALL},
       {"shortcutNotSet", IDS_EXTENSIONS_SHORTCUT_NOT_SET},
       {"shortcutScopeGlobal", IDS_EXTENSIONS_SHORTCUT_SCOPE_GLOBAL},
       {"shortcutScopeLabel", IDS_EXTENSIONS_SHORTCUT_SCOPE_LABEL},
@@ -362,7 +371,6 @@ content::WebUIDataSource* CreateAndAddExtensionsSource(Profile* profile,
       {"viewServiceWorker", IDS_EXTENSIONS_SERVICE_WORKER_BACKGROUND},
       {"safetyCheckKeepExtension", IDS_EXTENSIONS_SC_KEEP_EXT},
       {"safetyCheckRemoveAll", IDS_EXTENSIONS_SC_REMOVE_ALL},
-      {"safetyCheckAllExtensions", IDS_EXTENSIONS_SC_ALL_EXTENSIONS},
       {"safetyHubHeader", IDS_SETTINGS_SAFETY_HUB},
       {"safetyCheckRemoveButtonA11yLabel",
        IDS_EXTENSIONS_SC_REMOVE_BUTTON_A11Y_LABEL},
@@ -444,6 +452,11 @@ content::WebUIDataSource* CreateAndAddExtensionsSource(Profile* profile,
   source->AddBoolean("safetyHubShowReviewPanel",
                      base::FeatureList::IsEnabled(features::kSafetyHub));
 
+  MV2ExperimentStage mv2_exp_stage =
+      ManifestV2ExperimentManager::Get(profile)->GetCurrentExperimentStage();
+  source->AddBoolean("MV2DeprecationPanelEnabled",
+                     mv2_exp_stage == MV2ExperimentStage::kWarning);
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   source->AddString(
       "kioskDisableBailoutWarningBody",
@@ -517,6 +530,12 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
                                             IDS_EXTENSIONS_SC_DESCRIPTION);
   plural_string_handler->AddLocalizedString("safetyCheckAllDoneForNow",
                                             IDS_EXTENSIONS_SC_ALL_DONE_FOR_NOW);
+  plural_string_handler->AddLocalizedString(
+      "mv2DeprecationPanelWarningHeader",
+      IDS_EXTENSIONS_MV2_DEPRECATION_PANEL_WARNING_HEADER);
+  plural_string_handler->AddLocalizedString(
+      "mv2DeprecationPanelWarningSubtitle",
+      IDS_EXTENSIONS_MV2_DEPRECATION_PANEL_WARNING_SUBTITLE);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 }
 

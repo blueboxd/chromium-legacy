@@ -23,6 +23,7 @@
 #include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/saved_tab_groups/saved_tab_group_model.h"
 #include "components/saved_tab_groups/saved_tab_group_tab.h"
+#include "components/sync/base/deletion_origin.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -115,12 +116,11 @@ SavedTabGroupSyncBridge::ApplyIncrementalSyncChanges(
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();
 
+  std::vector<std::string> deleted_entities;
   for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
     switch (change->type()) {
       case syncer::EntityChange::ACTION_DELETE: {
-        DeleteDataFromLocalStorage(
-            base::Uuid::ParseLowercase(change->storage_key()),
-            write_batch.get());
+        deleted_entities.push_back(change->storage_key());
         break;
       }
       case syncer::EntityChange::ACTION_ADD:
@@ -132,6 +132,17 @@ SavedTabGroupSyncBridge::ApplyIncrementalSyncChanges(
         break;
       }
     }
+  }
+
+  // Process deleted entities last. This is done for consistency. Since
+  // `entity_changes` is not guaranteed to be in order, it is possible that a
+  // user could add or remove tabs in a way that puts the group in an empty
+  // state. This will unintentionally delete the group and drop any additional
+  // add / update messages. By processing deletes last, we can give the groups
+  // an opportunity to resolve themselves before they become empty.
+  for (const std::string& entity : deleted_entities) {
+    DeleteDataFromLocalStorage(base::Uuid::ParseLowercase(entity),
+                               write_batch.get());
   }
 
   ResolveTabsMissingGroups(write_batch.get());
@@ -330,6 +341,7 @@ void SavedTabGroupSyncBridge::RemoveEntitySpecific(
     return;
 
   change_processor()->Delete(guid.AsLowercaseString(),
+                             syncer::DeletionOrigin::Unspecified(),
                              write_batch->GetMetadataChangeList());
 }
 

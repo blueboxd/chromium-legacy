@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test.transit;
 
+import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
@@ -15,6 +16,9 @@ import android.view.View;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.IdRes;
+import androidx.test.espresso.action.GeneralClickAction;
+import androidx.test.espresso.action.Press;
+import androidx.test.espresso.action.Tap;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -41,45 +45,86 @@ public abstract class AppMenuFacility<HostStationT extends Station>
         extends ScrollableFacility<HostStationT> {
 
     /** Create a new app menu item stub which throws UnsupportedOperationException if selected. */
-    public Item<Void> newStubMenuItem(@IdRes int id) {
-        return super.newStubItem(itemViewMatcher(id), itemDataMatcher(id));
+    protected Item<Void> declareStubMenuItem(ItemsBuilder items, @IdRes int id) {
+        return items.declareStubItem(itemViewMatcher(id), itemDataMatcher(id));
     }
 
     /** Create a new app menu item which runs |selectHandler| when selected. */
-    public <SelectReturnT> Item<SelectReturnT> newMenuItem(
-            @IdRes int id, Callable<SelectReturnT> selectHandler) {
-        return super.newItem(itemViewMatcher(id), itemDataMatcher(id), selectHandler);
+    protected <SelectReturnT> Item<SelectReturnT> declareMenuItem(
+            ItemsBuilder items, @IdRes int id, Callable<SelectReturnT> selectHandler) {
+        return items.declareItem(itemViewMatcher(id), itemDataMatcher(id), selectHandler);
     }
 
     /** Create a new app menu item which transitions to a |DestinationStationT| when selected. */
-    public <DestinationStationT extends Station> Item<DestinationStationT> newMenuItemToStation(
-            @IdRes int id, Callable<DestinationStationT> destinationStationFactory) {
-        return super.newItemToStation(
+    protected <DestinationStationT extends Station>
+            Item<DestinationStationT> declareMenuItemToStation(
+                    ItemsBuilder items,
+                    @IdRes int id,
+                    Callable<DestinationStationT> destinationStationFactory) {
+        return items.declareItemToStation(
                 itemViewMatcher(id), itemDataMatcher(id), destinationStationFactory);
     }
 
     /** Create a new app menu item which enters a |EnteredFacilityT| when selected. */
-    public <EnteredFacilityT extends Facility<HostStationT>>
-            Item<EnteredFacilityT> newMenuItemToFacility(
-                    @IdRes int id, Callable<EnteredFacilityT> destinationFacilityFactory) {
-        return super.newItemToFacility(
+    protected <EnteredFacilityT extends Facility<HostStationT>>
+            Item<EnteredFacilityT> declareMenuItemToFacility(
+                    ItemsBuilder items,
+                    @IdRes int id,
+                    Callable<EnteredFacilityT> destinationFacilityFactory) {
+        return items.declareItemToFacility(
                 itemViewMatcher(id), itemDataMatcher(id), destinationFacilityFactory);
     }
 
     /** Create a new disabled app menu item. */
-    public Item<Void> newDisabledMenuItem(@IdRes int id) {
-        return super.newDisabledItem(itemViewMatcher(id), itemDataMatcher(id));
+    protected Item<Void> declareDisabledMenuItem(ItemsBuilder items, @IdRes int id) {
+        return items.declareDisabledItem(itemViewMatcher(id), itemDataMatcher(id));
     }
 
     /** Create a new app menu item expected to be absent. */
-    public Item<Void> newAbsentMenuItem(@IdRes int id) {
-        return super.newAbsentItem(itemViewMatcher(id), itemDataMatcher(id));
+    protected Item<Void> declareAbsentMenuItem(ItemsBuilder items, @IdRes int id) {
+        return items.declareAbsentItem(itemViewMatcher(id), itemDataMatcher(id));
+    }
+
+    /**
+     * Placeholder for a stub menu item that may or may not exist.
+     *
+     * <p>Need to add a placeholder item so that expecting only the first n items includes possible
+     * items.
+     */
+    protected Item<Void> declarePossibleStubMenuItem(ItemsBuilder items, @IdRes int id) {
+        return items.declarePossibleStubItem();
+    }
+
+    /**
+     * Create a new app menu item which may or may not exist, which runs |selectHandler| when
+     * selected.
+     */
+    protected <SelectReturnT> Item<SelectReturnT> declarePossibleMenuItem(
+            ItemsBuilder items, @IdRes int id, Callable<SelectReturnT> selectHandler) {
+        return items.declarePossibleItem(itemViewMatcher(id), itemDataMatcher(id), selectHandler);
     }
 
     public static final Matcher<View> MENU_LIST = withId(R.id.app_menu_list);
+
     public static final @IdRes int NEW_TAB_ID = R.id.new_tab_menu_id;
     public static final @IdRes int NEW_INCOGNITO_TAB_ID = R.id.new_incognito_tab_menu_id;
+    public static final @IdRes int HISTORY_ID = R.id.open_history_menu_id;
+    public static final @IdRes int DELETE_BROWSING_DATA_ID = R.id.quick_delete_menu_id;
+    public static final @IdRes int DOWNLOADS_ID = R.id.downloads_menu_id;
+    public static final @IdRes int BOOKMARKS_ID = R.id.all_bookmarks_menu_id;
+    public static final @IdRes int RECENT_TABS_ID = R.id.recent_tabs_menu_id;
+    public static final @IdRes int SHARE_ID = R.id.share_menu_id;
+    public static final @IdRes int FIND_IN_PAGE_ID = R.id.find_in_page_id;
+    public static final @IdRes int TRANSLATE_ID = R.id.translate_id;
+    public static final @IdRes int ADD_TO_HOME_SCREEN_ID = R.id.add_to_homescreen_id;
+    public static final @IdRes int INSTALL_WEBAPP_ID = R.id.install_webapp_id;
+    public static final @IdRes int ADD_TO_HOME_SCREEN__UNIVERSAL_INSTALL__ID =
+            R.id.universal_install;
+    public static final @IdRes int OPEN_WEBAPK_ID = R.id.open_webapk_id;
+    public static final @IdRes int DESKTOP_SITE_ID = R.id.request_desktop_site_id;
     public static final @IdRes int SETTINGS_ID = R.id.preferences_id;
+    public static final @IdRes int HELP_AND_FEEDBACK_ID = R.id.help_id;
+
     protected final ChromeTabbedActivityTestRule mChromeTabbedActivityTestRule;
 
     protected AppMenuFacility(
@@ -107,8 +152,8 @@ public abstract class AppMenuFacility<HostStationT extends Station>
     protected NewTabPageStation createNewTabPageStation() {
         return NewTabPageStation.newBuilder()
                 .withActivityTestRule(mChromeTabbedActivityTestRule)
-                .withIsOpeningTab(true)
-                .withIsSelectingTab(true)
+                .withIsOpeningTabs(1)
+                .withIsSelectingTabs(1)
                 .build();
     }
 
@@ -116,8 +161,8 @@ public abstract class AppMenuFacility<HostStationT extends Station>
     protected IncognitoNewTabPageStation createIncognitoNewTabPageStation() {
         return IncognitoNewTabPageStation.newBuilder()
                 .withActivityTestRule(mChromeTabbedActivityTestRule)
-                .withIsOpeningTab(true)
-                .withIsSelectingTab(true)
+                .withIsOpeningTabs(1)
+                .withIsSelectingTabs(1)
                 .build();
     }
 
@@ -147,5 +192,22 @@ public abstract class AppMenuFacility<HostStationT extends Station>
                 return listItem.model.get(AppMenuItemProperties.MENU_ITEM_ID) == id;
             }
         };
+    }
+
+    /** Clicks outside the menu to close it. */
+    public void clickOutsideToClose() {
+        GeneralClickAction clickBetweenViewAndLeftEdge =
+                new GeneralClickAction(
+                        Tap.SINGLE,
+                        view -> {
+                            int[] menuListXy = new int[2];
+                            view.getLocationOnScreen(menuListXy);
+                            float clickX = (float) menuListXy[0] / 2;
+                            assert clickX > 0 : "No space between app menu and edge of screen";
+                            float clickY = menuListXy[1];
+                            return new float[] {clickX, clickY};
+                        },
+                        Press.FINGER);
+        Facility.exitSync(this, () -> onView(MENU_LIST).perform(clickBetweenViewAndLeftEdge));
     }
 }

@@ -43,6 +43,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/view.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 
@@ -159,7 +160,6 @@ AppListBubbleAppsCollectionsPage::AppListBubbleAppsCollectionsPage(
   discovery_chip_container->SetCrossAxisAlignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  // TODO(b/337035530): Set the showoff icon for the discovery chip.
   discovery_chip_ =
       discovery_chip_container->AddChildView(std::make_unique<ash::PillButton>(
           base::BindRepeating(
@@ -167,7 +167,7 @@ AppListBubbleAppsCollectionsPage::AppListBubbleAppsCollectionsPage(
               base::Unretained(this)),
           l10n_util::GetStringUTF16(
               IDS_ASH_LAUNCHER_APPS_COLLECTIONS_DISCOVERY_CHIP_LABEL),
-          ash::PillButton::kDefaultWithIconLeading, &kLaunchIcon));
+          ash::PillButton::kDefaultWithIconLeading, &kDiscoveryChipIcon));
 
   scroll_view_->SetContents(std::move(scroll_contents));
   toast_container_->CreateTutorialNudgeView();
@@ -195,7 +195,8 @@ AppListBubbleAppsCollectionsPage::~AppListBubbleAppsCollectionsPage() {
 void AppListBubbleAppsCollectionsPage::OnDiscoveryChipPressed() {
   view_delegate_->ActivateItem(
       kHelpAppId,
-      /*event_flags=*/0, ash::AppListLaunchedFrom::kLaunchedFromDiscoveryChip);
+      /*event_flags=*/0, ash::AppListLaunchedFrom::kLaunchedFromDiscoveryChip,
+      /*is_app_above_the_fold=*/false);
 }
 
 void AppListBubbleAppsCollectionsPage::AnimateShowPage() {
@@ -329,9 +330,86 @@ void AppListBubbleAppsCollectionsPage::OnActiveAppListModelsChanged(
   PopulateCollections(model);
 }
 
+bool AppListBubbleAppsCollectionsPage::IsInFolder() const {
+  return false;
+}
+
+void AppListBubbleAppsCollectionsPage::SetSelectedView(AppListItemView* view) {
+  selected_view_ = view;
+}
+
+void AppListBubbleAppsCollectionsPage::ClearSelectedView() {
+  selected_view_ = nullptr;
+}
+
+bool AppListBubbleAppsCollectionsPage::IsSelectedView(
+    const AppListItemView* view) const {
+  return view == selected_view_;
+}
+
+bool AppListBubbleAppsCollectionsPage::InitiateDrag(
+    AppListItemView* view,
+    const gfx::Point& location,
+    const gfx::Point& root_location,
+    base::OnceClosure drag_start_callback,
+    base::OnceClosure drag_end_callback) {
+  return false;
+}
+
+void AppListBubbleAppsCollectionsPage::
+    StartDragAndDropHostDragAfterLongPress() {}
+
+bool AppListBubbleAppsCollectionsPage::UpdateDragFromItem(
+    bool is_touch,
+    const ui::LocatedEvent& event) {
+  return false;
+}
+
+void AppListBubbleAppsCollectionsPage::EndDrag(bool cancel) {}
+
+void AppListBubbleAppsCollectionsPage::OnAppListItemViewActivated(
+    AppListItemView* pressed_item_view,
+    const ui::Event& event) {
+  const std::string id = pressed_item_view->item()->id();
+  view_delegate_->ActivateItem(
+      id, event.flags(), AppListLaunchedFrom::kLaunchedFromAppsCollections,
+      IsAboveTheFold(pressed_item_view));
+  RecordAppListByCollectionLaunched(pressed_item_view->item()->collection_id(),
+                                    /*is_apps_collections_page=*/true);
+  // `this` may be deleted.
+}
+
+bool AppListBubbleAppsCollectionsPage::IsAboveTheFold(
+    AppListItemView* item_view) {
+  gfx::Rect item_bounds_in_scroll_view = views::View::ConvertRectToTarget(
+      item_view, scroll_view_->contents(), item_view->GetLocalBounds());
+  return item_bounds_in_scroll_view.bottom() <
+         scroll_view_->GetVisibleRect().height();
+}
+
 void AppListBubbleAppsCollectionsPage::SetDialogController(
     SearchResultPageDialogController* dialog_controller) {
   dialog_controller_ = dialog_controller;
+}
+
+void AppListBubbleAppsCollectionsPage::RecordAboveTheFoldMetrics() {
+  std::vector<std::string> apps_above_the_fold = {};
+  std::vector<std::string> apps_below_the_fold = {};
+  for (views::View* child_view : sections_container_->children()) {
+    AppsCollectionSectionView* collection_view =
+        views::AsViewClass<AppsCollectionSectionView>(child_view);
+    for (size_t i = 0; i < collection_view->item_views()->view_size(); ++i) {
+      AppListItemView* app_view = collection_view->item_views()->view_at(i);
+      if (IsAboveTheFold(app_view)) {
+        apps_above_the_fold.push_back(app_view->item()->id());
+      } else {
+        apps_below_the_fold.push_back(app_view->item()->id());
+      }
+    }
+  }
+  view_delegate_->RecordAppsDefaultVisibility(
+      apps_above_the_fold, apps_below_the_fold,
+      /*is_apps_collections_page=*/true);
 }
 
 void AppListBubbleAppsCollectionsPage::PopulateCollections(
@@ -346,7 +424,7 @@ void AppListBubbleAppsCollectionsPage::PopulateCollections(
     AppsCollectionSectionView* collection_view =
         sections_container_->AddChildView(
             std::make_unique<AppsCollectionSectionView>(collection,
-                                                        view_delegate_));
+                                                        view_delegate_, this));
     collection_view->UpdateAppListConfig(app_list_config_);
     collection_view->SetModel(model);
   }

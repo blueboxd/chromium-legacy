@@ -361,7 +361,6 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
 
 void AutofillManager::OnTextFieldDidChange(const FormData& form,
                                            const FormFieldData& field,
-                                           const gfx::RectF& bounding_box,
                                            const base::TimeTicks timestamp) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
@@ -369,46 +368,42 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
                   field.global_id());
   ParseFormAsync(
       form, ParsingCallback(&AutofillManager::OnTextFieldDidChangeImpl, field,
-                            bounding_box, timestamp)
+                            timestamp)
                 .Then(NotifyObserversCallback(
                     &Observer::OnAfterTextFieldDidChange, form.global_id(),
                     field.global_id(), field.value())));
 }
 
 void AutofillManager::OnTextFieldDidScroll(const FormData& form,
-                                           const FormFieldData& field,
-                                           const gfx::RectF& bounding_box) {
+                                           const FormFieldData& field) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
   NotifyObservers(&Observer::OnBeforeTextFieldDidScroll, form.global_id(),
                   field.global_id());
   ParseFormAsync(
       form,
-      ParsingCallback(&AutofillManager::OnTextFieldDidScrollImpl, field,
-                      bounding_box)
+      ParsingCallback(&AutofillManager::OnTextFieldDidScrollImpl, field)
           .Then(NotifyObserversCallback(&Observer::OnAfterTextFieldDidScroll,
                                         form.global_id(), field.global_id())));
 }
 
 void AutofillManager::OnSelectControlDidChange(const FormData& form,
-                                               const FormFieldData& field,
-                                               const gfx::RectF& bounding_box) {
+                                               const FormFieldData& field) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
   NotifyObservers(&Observer::OnBeforeSelectControlDidChange, form.global_id(),
                   field.global_id());
   ParseFormAsync(
-      form, ParsingCallback(&AutofillManager::OnSelectControlDidChangeImpl,
-                            field, bounding_box)
-                .Then(NotifyObserversCallback(
-                    &Observer::OnAfterSelectControlDidChange, form.global_id(),
-                    field.global_id())));
+      form,
+      ParsingCallback(&AutofillManager::OnSelectControlDidChangeImpl, field)
+          .Then(
+              NotifyObserversCallback(&Observer::OnAfterSelectControlDidChange,
+                                      form.global_id(), field.global_id())));
 }
 
 void AutofillManager::OnAskForValuesToFill(
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& bounding_box,
     AutofillSuggestionTriggerSource trigger_source) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
@@ -417,27 +412,26 @@ void AutofillManager::OnAskForValuesToFill(
   ParseFormAsync(
       form,
       ParsingCallback(&AutofillManager::OnAskForValuesToFillImpl, field,
-                      bounding_box, trigger_source)
+                      trigger_source)
           .Then(NotifyObserversCallback(&Observer::OnAfterAskForValuesToFill,
                                         form.global_id(), field.global_id())));
 }
 
 void AutofillManager::OnFocusOnFormField(const FormData& form,
-                                         const FormFieldData& field,
-                                         const gfx::RectF& bounding_box) {
+                                         const FormFieldData& field) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
   NotifyObservers(&Observer::OnBeforeFocusOnFormField, form.global_id(),
                   field.global_id(), form);
-  ParseFormAsync(form, ParsingCallback(&AutofillManager::OnFocusOnFormFieldImpl,
-                                       field, bounding_box)
-                           .Then(NotifyObserversCallback(
-                               &Observer::OnAfterFocusOnFormField,
-                               form.global_id(), field.global_id())));
+  ParseFormAsync(
+      form,
+      ParsingCallback(&AutofillManager::OnFocusOnFormFieldImpl, field)
+          .Then(NotifyObserversCallback(&Observer::OnAfterFocusOnFormField,
+                                        form.global_id(), field.global_id())));
 }
 
-void AutofillManager::OnFocusNoLongerOnForm(bool had_interacted_form) {
-  OnFocusNoLongerOnFormImpl(had_interacted_form);
+void AutofillManager::OnFocusOnNonFormField(bool had_interacted_form) {
+  OnFocusOnNonFormFieldImpl(had_interacted_form);
 }
 
 void AutofillManager::OnDidEndTextFieldEditing() {
@@ -448,8 +442,12 @@ void AutofillManager::OnHidePopup() {
   OnHidePopupImpl();
 }
 
-void AutofillManager::OnPopupHidden() {
-  driver().PopupHidden();
+void AutofillManager::OnSuggestionsHidden() {
+  // If the unmask prompt is shown, keep showing the preview. The preview
+  // will be cleared when the prompt closes.
+  if (ShouldClearPreviewedForm()) {
+    driver().RendererShouldClearPreviewedForm();
+  }
   NotifyObservers(&Observer::OnSuggestionsHidden);
 }
 

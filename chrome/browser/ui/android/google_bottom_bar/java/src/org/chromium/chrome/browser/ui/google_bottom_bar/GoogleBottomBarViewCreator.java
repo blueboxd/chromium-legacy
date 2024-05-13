@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.ui.google_bottom_bar;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
+
+import org.chromium.chrome.browser.ui.google_bottom_bar.BottomBarConfig.ButtonConfig;
 
 /** Builds the GoogleBottomBar view. */
 public class GoogleBottomBarViewCreator {
@@ -26,17 +27,28 @@ public class GoogleBottomBarViewCreator {
     }
 
     /**
-     * @return empty view. TODO - replace with actual implementation
+     * @return empty view. TODO: build view dynamically based on config
      */
     public View createGoogleBottomBarView() {
-        LinearLayout parent = new LinearLayout(mContext);
+        if (mConfig.getSpotlightId() != null) {
+            return createGoogleBottomBarSpotlightLayoutView();
+        } else {
+            return createGoogleBottomBarEvenLayoutView();
+        }
+    }
 
-        parent.setLayoutParams(
-                new LinearLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT,
-                        mContext.getResources()
-                                .getDimensionPixelSize(R.dimen.google_bottom_bar_height)));
-        parent.setOrientation(LinearLayout.HORIZONTAL);
-        return parent;
+    private View createGoogleBottomBarEvenLayoutView() {
+        return
+            LayoutInflater.from(mContext)
+                .inflate(R.layout.google_bottom_bar_even, null);
+    }
+
+    private View createGoogleBottomBarSpotlightLayoutView() {
+        return LayoutInflater.from(mContext).inflate(R.layout.google_bottom_bar_spotlight, null);
+    }
+
+    public boolean updateBottomBarButton(ButtonConfig buttonConfig) {
+        // TODO Add logic to update button
+        return buttonConfig != null;
     }
 }

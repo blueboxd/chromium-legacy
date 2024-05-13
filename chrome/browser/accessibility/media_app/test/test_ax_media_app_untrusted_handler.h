@@ -25,6 +25,7 @@ class BrowserContext;
 namespace ui {
 
 class AXTreeID;
+class AXNode;
 
 }  // namespace ui
 
@@ -44,6 +45,10 @@ class TestAXMediaAppUntrustedHandler : public AXMediaAppUntrustedHandler {
   void SetMediaAppForTesting(AXMediaApp* media_app) { media_app_ = media_app; }
   std::string GetDocumentTreeToStringForTesting() const;
   void EnablePendingSerializedUpdatesForTesting();
+
+  const ui::AXNode* GetDocumentRootNodeForTesting() const {
+    return document_.GetRoot();
+  }
 
   const ui::AXTreeID& GetDocumentTreeIDForTesting() const {
     return document_.GetTreeID();
@@ -77,6 +82,8 @@ class TestAXMediaAppUntrustedHandler : public AXMediaAppUntrustedHandler {
   void SetMinPagesPerBatchForTesting(size_t min_pages) {
     min_pages_per_batch_ = min_pages;
   }
+
+  void DisableStatusNodesForTesting() { has_landmark_node_ = false; }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   void CreateFakeOpticalCharacterRecognizerForTesting(bool return_empty);

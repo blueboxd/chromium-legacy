@@ -12,6 +12,7 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/wm_metrics.h"
 #include "base/containers/flat_map.h"
+#include "base/time/time.h"
 #include "ui/display/display_observer.h"
 
 namespace aura {
@@ -48,16 +49,26 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   bool AreWindowsInSnapGroup(aura::Window* window1,
                              aura::Window* window2) const;
 
-  //  Attempts to add `window1` and `window2` as a `SnapGroup`. Returns the
-  //  `SnapGroup`, if the creation is successful. Returns nullptr, otherwise.
-  //  Currently, both windows must reside within the same parent container for
-  //  successful creation.
-  SnapGroup* AddSnapGroup(aura::Window* window1, aura::Window* window2);
+  // Attempts to add `window1` and `window2` as a `SnapGroup`. Returns the
+  // `SnapGroup`, if the creation is successful. Returns nullptr, otherwise.
+  // Currently, both windows must reside within the same parent container for
+  // successful creation. If `replace` is true, the group was snapped to replace
+  // and we shouldn't record the count change. `carry_over_creation_time`
+  // indicates the creation time of a prior Snap Group from which the current
+  // one was derived using the Snap to Replace feature.
+  // TODO(b/333772909): Remove `replace` param when snap to replace updates
+  // window in SnapGroup instead of removing and re-adding a SnapGroup.
+  SnapGroup* AddSnapGroup(
+      aura::Window* window1,
+      aura::Window* window2,
+      bool replace,
+      std::optional<base::TimeTicks> carry_over_creation_time);
 
   // Returns true if the corresponding `snap_group` has
   // been successfully removed from the `snap_groups_` and
-  // `window_to_snap_group_map_`. False otherwise.
-  bool RemoveSnapGroup(SnapGroup* snap_group);
+  // `window_to_snap_group_map_`. False otherwise. If `replace` is true, the
+  // group was snapped to replace and we shouldn't record the count change.
+  bool RemoveSnapGroup(SnapGroup* snap_group, bool replace = false);
 
   // Returns true if the corresponding snap group that contains the
   // given `window` has been removed successfully. Returns false otherwise.

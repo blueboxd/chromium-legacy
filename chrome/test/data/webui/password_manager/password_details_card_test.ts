@@ -89,9 +89,9 @@ suite('PasswordDetailsCardTest', function() {
     const card = await createCardElement(password);
 
     assertTrue(isVisible(card.$.copyPasswordButton));
-    assertFalse(card.$.toast.open);
 
     card.$.copyPasswordButton.click();
+    await eventToPromise('value-copied', card);
     await passwordManager.whenCalled('extendAuthValidity');
     const {id, reason} =
         await passwordManager.whenCalled('requestPlaintextPassword');
@@ -102,10 +102,6 @@ suite('PasswordDetailsCardTest', function() {
         await passwordManager.whenCalled('recordPasswordViewInteraction'));
 
     await flushTasks();
-    assertTrue(card.$.toast.open);
-    assertEquals(
-        loadTimeData.getString('passwordCopiedToClipboard'),
-        card.$.toast.textContent!.trim());
   });
 
   test('Links properly displayed', async function() {
@@ -496,4 +492,20 @@ suite('PasswordDetailsCardTest', function() {
         const dialog = moveDialog!.shadowRoot!.querySelector('#dialog');
         assertTrue(!!dialog);
       });
+
+  test('Password value is hidden if object was changed', async function() {
+    const password1 = createPasswordEntry(
+        {id: 1, url: 'test.com', username: 'vik', password: 'password69'});
+    password1.affiliatedDomains = [createAffiliatedDomain('test.com')];
+
+    const password2 = createPasswordEntry(
+        {id: 1, url: 'test.com', username: 'viktor', password: 'password69'});
+    password2.affiliatedDomains = [createAffiliatedDomain('test.com')];
+
+    const card = await createCardElement(password1);
+    card.isPasswordVisible = true;
+
+    card.password = password2;
+    assertFalse(card.isPasswordVisible);
+  });
 });

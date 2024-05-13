@@ -27,9 +27,11 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gpu {
 
@@ -197,6 +199,10 @@ void SharedImageInterfaceInProcess::DestroyOnGpu(
 }
 
 bool SharedImageInterfaceInProcess::MakeContextCurrent(bool needs_gl) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationDisabled) {
+    return true;
+  }
+
   if (!context_state_)
     return false;
 
@@ -342,9 +348,19 @@ SharedImageInterfaceInProcess::CreateSharedImage(
         {});
   }
 
+  auto handle_info = GetGpuMemoryBufferHandleInfo(mailbox);
+  SharedImageInfo si_info_copy = si_info;
+
+  // Clear the external sampler prefs for shared memory case if it is set.
+  // https://issues.chromium.org/339546249.
+  if (si_info_copy.meta.format.PrefersExternalSampler() &&
+      (handle_info.handle.type ==
+       gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER)) {
+    si_info_copy.meta.format.ClearPrefersExternalSampler();
+  }
   return base::MakeRefCounted<ClientSharedImage>(
-      mailbox, si_info.meta, GenUnverifiedSyncToken(),
-      GetGpuMemoryBufferHandleInfo(mailbox), holder_);
+      mailbox, si_info_copy.meta, GenUnverifiedSyncToken(),
+      std::move(handle_info), holder_);
 }
 
 void SharedImageInterfaceInProcess::CreateSharedImageWithBufferUsageOnGpuThread(
@@ -411,9 +427,7 @@ void SharedImageInterfaceInProcess::GetGpuMemoryBufferHandleInfoOnGpuThread(
     gfx::Size* size,
     gfx::BufferUsage* buffer_usage,
     base::WaitableEvent* completion) {
-  base::ScopedClosureRunner completion_runner(base::BindOnce(
-      [](base::WaitableEvent* completion) { completion->Signal(); },
-      completion));
+  absl::Cleanup completion_runner = [completion] { completion->Signal(); };
 
   DCHECK(shared_image_factory_);
   // Note that we are not making |context_state_| current here as of now since
@@ -742,11 +756,6 @@ void SharedImageInterfaceInProcess::DestroySharedImageOnGpuThread(
       !shared_image_factory_->DestroySharedImage(mailbox)) {
     context_state_->MarkContextLost();
   }
-}
-
-void SharedImageInterfaceInProcess::DestroyClientSharedImageOnGpuThread(
-    scoped_refptr<ClientSharedImage> client_shared_image) {
-  DestroySharedImageOnGpuThread(client_shared_image->mailbox());
 }
 
 void SharedImageInterfaceInProcess::WaitSyncTokenOnGpuThread(

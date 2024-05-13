@@ -8,7 +8,11 @@
 #import <Foundation/Foundation.h>
 
 @class UNNotification;
+@class UNNotificationContent;
+
 typedef NS_ENUM(NSInteger, NAUActionType);
+
+@class ContentNotificationSettingsAction;
 
 typedef void (^CompletionBlock)(BOOL success);
 
@@ -21,6 +25,14 @@ typedef void (^CompletionBlock)(BOOL success);
 
 // The action that happened on the notification.
 @property(nonatomic) NAUActionType actionType;
+
+// The Notification content object.
+@property(nonatomic, strong) UNNotificationContent* content;
+
+// The settings action that happened on the notification. If it has a value, only a settings
+// action is sent.
+// TODO(324442228): Refactor settingsAction outside of this configuration.
+@property(nonatomic, strong) ContentNotificationSettingsAction* settingsAction;
 
 // Whether the NAU has successfully been sent.
 @property(nonatomic, copy) CompletionBlock completion;

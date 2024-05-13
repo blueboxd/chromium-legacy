@@ -6,8 +6,8 @@
 #define COMPONENTS_FEEDBACK_REDACTION_TOOL_REDACTION_TOOL_METRICS_RECORDER_H_
 
 #include <memory>
+#include <string_view>
 
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/feedback/redaction_tool/pii_types.h"
 
@@ -34,11 +34,14 @@ enum class RedactionToolCaller {
   kSupportTool = 3,
   kErrorReporting = 4,
   kFeedbackTool = 5,
-  kBrowserSystemLogs = 6,
+  // Browser system logs is deprecated since it's being called only
+  // by the feedback tool.
+  // kBrowserSystemLogs = 6,
   kUnitTest = 7,
   kUndetermined = 8,
   kUnknown = 9,
-  kMaxValue = kUnknown,
+  kCrashTool = 10,
+  kMaxValue = kCrashTool,
 };
 
 inline constexpr char kPIIRedactedHistogram[] = "Feedback.RedactionTool";
@@ -77,7 +80,7 @@ class RedactionToolMetricsRecorder {
 
   // Returns the platform specific metric name used to measure how long it took
   // to redact the input.
-  static base::StringPiece GetTimeSpentRedactingHistogramNameForTesting();
+  static std::string_view GetTimeSpentRedactingHistogramNameForTesting();
 };
 
 }  // namespace redaction

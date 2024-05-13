@@ -238,24 +238,6 @@ void PlaceRelativePositionedItems(const ConstraintSpace& constraint_space,
   }
 }
 
-void FinalizeAnnotationLines(
-    const ConstraintSpace& constraint_space,
-    const HeapVector<Member<LogicalRubyColumn>>& column_list) {
-  for (auto& logical_column : column_list) {
-    LogicalLineItems* line_items = logical_column->annotation_items;
-    InlineLayoutStateStack& state_stack = logical_column->state_stack;
-    PlaceRelativePositionedItems(constraint_space, line_items);
-    state_stack.ApplyRelativePositioning(constraint_space, line_items);
-
-    if (state_stack.HasBoxFragments()) {
-      state_stack.CreateBoxFragments(constraint_space, line_items,
-                                     /* is_opaque */ false);
-    }
-
-    FinalizeAnnotationLines(constraint_space, logical_column->ruby_column_list);
-  }
-}
-
 }  // namespace
 
 InlineLayoutAlgorithm::InlineLayoutAlgorithm(
@@ -314,7 +296,9 @@ void InlineLayoutAlgorithm::PrepareBoxStates(
 
   // If not, rebuild the box states for the break token.
   box_states_ = context_->ResetBoxStates();
-  RebuildBoxStates(line_info, break_token, box_states_);
+  LogicalLineBuilder(Node(), GetConstraintSpace(), nullptr, box_states_,
+                     context_)
+      .RebuildBoxStates(line_info, 0u, break_token->StartItemIndex());
 }
 
 static LayoutUnit AdjustLineOffsetForHanging(LineInfo* line_info,
@@ -339,37 +323,14 @@ static LayoutUnit AdjustLineOffsetForHanging(LineInfo* line_info,
   return -hang_width;
 }
 
-void InlineLayoutAlgorithm::RebuildBoxStates(
-    const LineInfo& line_info,
-    const InlineBreakToken* break_token,
-    InlineLayoutStateStack* box_states) const {
-  // Compute which tags are not closed at the beginning of this line.
-  InlineItemsData::OpenTagItems open_items;
-  line_info.ItemsData().GetOpenTagItems(break_token->StartItemIndex(),
-                                        &open_items);
-
-  // Create box states for tags that are not closed yet.
-  LogicalLineItems& line_box = context_->AcquireTempLogicalLineItems();
-  box_states->OnBeginPlaceItems(Node(), line_info.LineStyle(), baseline_type_,
-                                quirks_mode_, &line_box);
-  LogicalLineBuilder line_builder(Node(), GetConstraintSpace(), box_states,
-                                  context_);
-  for (const InlineItem* item : open_items) {
-    InlineItemResult item_result;
-    LineBreaker::ComputeOpenTagResult(*item, GetConstraintSpace(),
-                                      Node().IsSvgText(), &item_result);
-    line_builder.HandleOpenTag(*item, item_result, &line_box, box_states);
-  }
-  context_->ReleaseTempLogicalLineItems(line_box);
-}
-
 #if EXPENSIVE_DCHECKS_ARE_ON()
 void InlineLayoutAlgorithm::CheckBoxStates(const LineInfo& line_info) const {
   if (!is_box_states_from_context_) {
     return;
   }
   InlineLayoutStateStack rebuilt;
-  RebuildBoxStates(line_info, GetBreakToken(), &rebuilt);
+  LogicalLineBuilder(Node(), GetConstraintSpace(), nullptr, &rebuilt, context_)
+      .RebuildBoxStates(line_info, 0u, GetBreakToken()->StartItemIndex());
   LogicalLineItems& line_box = context_->AcquireTempLogicalLineItems();
   rebuilt.OnBeginPlaceItems(Node(), line_info.LineStyle(), baseline_type_,
                             quirks_mode_, &line_box);
@@ -405,8 +366,8 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
   // Clear the current line without releasing the buffer.
   line_container->Shrink();
 
-  LogicalLineBuilder line_builder(Node(), GetConstraintSpace(), box_states_,
-                                  context_);
+  LogicalLineBuilder line_builder(Node(), GetConstraintSpace(), GetBreakToken(),
+                                  box_states_, context_);
   line_builder.CreateLine(line_info, line_box, this);
 
   const LayoutUnit hang_width = line_info->HangWidth();
@@ -482,16 +443,14 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
   if (UNLIKELY(Node().HasRuby() && !line_info->IsEmptyLine())) {
     std::optional<FontHeight> annotation_metrics;
     if (!box_states_->RubyColumnList().empty()) {
-      HeapVector<Member<LogicalRubyColumn>> column_list(
-          box_states_->TakeRubyColumnList());
+      HeapVector<Member<LogicalRubyColumn>>& column_list =
+          box_states_->RubyColumnList();
       UpdateRubyColumnInlinePositions(*line_box, inline_size, column_list);
       RubyBlockPositionCalculator calculator;
       calculator.GroupLines(column_list)
           .PlaceLines(*line_box, line_box_metrics)
           .AddLinesTo(*line_container);
       annotation_metrics = calculator.AnnotationMetrics();
-
-      FinalizeAnnotationLines(GetConstraintSpace(), column_list);
     }
     line_info->SetAnnotationBlockStartAdjustment(SetAnnotationOverflow(
         *line_info, *line_box, line_box_metrics, annotation_metrics));
@@ -552,19 +511,23 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
   if (line_builder.HasRelativePositionedItems()) {
     PlaceRelativePositionedItems(GetConstraintSpace(), line_box);
   }
+  for (auto annotation_line : line_container->AnnotationLineList()) {
+    PlaceRelativePositionedItems(GetConstraintSpace(),
+                                 annotation_line.line_items);
+  }
 
   // Apply any relative positioned offsets to any boxes (and their children).
-  box_states_->ApplyRelativePositioning(GetConstraintSpace(), line_box);
+  box_states_->ApplyRelativePositioning(GetConstraintSpace(), line_box,
+                                        nullptr);
 
   // Create box fragments if needed. After this point forward, |line_box| is a
   // tree structure.
   // The individual children don't move position within the |line_box|, rather
   // the children have their layout_result, fragment, (or similar) set to null,
   // creating a "hole" in the array.
-  if (box_states_->HasBoxFragments()) {
-    box_states_->CreateBoxFragments(GetConstraintSpace(), line_box,
-                                    line_info->IsBlockInInline());
-  }
+  box_states_->CreateBoxFragments(GetConstraintSpace(), line_box,
+                                  line_info->IsBlockInInline());
+  box_states_->ClearRubyColumnList();
 
   // Update item index of the box states in the context.
   context_->SetItemIndex(line_info->ItemsData().items,
@@ -584,28 +547,7 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
   const ConstraintSpace& space = GetConstraintSpace();
   if (UNLIKELY(space.ShouldTextBoxTrimStart() ||
                space.ShouldTextBoxTrimEnd())) {
-    // TODO(crbug.com/40254880): Just flags, trimming data isn't implemented.
-    if (space.ShouldTextBoxTrimStart() && line_info->IsFirstFormattedLine()) {
-      // Apply `text-box-trim: start` if this is the first formatted line.
-      // TODO(crbug.com/40254880): The edge should be determined by
-      // `text-box-edge` property.
-      FontHeight intrinsic_metrics =
-          Node().Style().GetFontHeight(baseline_type_);
-      LayoutUnit offset_for_trimming_box =
-          intrinsic_metrics.ascent - line_box_metrics.ascent;
-      container_builder_.SetIntrinsicMetrics(intrinsic_metrics);
-      container_builder_.SetLineBoxBfcBlockOffset(
-          container_builder_.LineBoxBfcBlockOffset()
-              ? offset_for_trimming_box +
-                    container_builder_.LineBoxBfcBlockOffset().value()
-              : offset_for_trimming_box);
-      container_builder_.SetIsTextBoxTrimApplied();
-    }
-    if (space.ShouldTextBoxTrimEnd() && !line_info->GetBreakToken()) {
-      // Apply `text-box-trim: end` if this is the last line.
-      container_builder_.SetIsTextBoxTrimApplied();
-    }
-    // TODO(crbug.com/40254880): Block-in-inline case probably needs a logic.
+    ApplyTextBoxTrim(*line_info);
   }
 
   // |container_builder_| is already set up by |PlaceBlockInInline|.
@@ -641,6 +583,32 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
   }
 
   container_builder_.SetInlineSize(inline_size);
+}
+
+void InlineLayoutAlgorithm::ApplyTextBoxTrim(const LineInfo& line_info) {
+  const ConstraintSpace& space = GetConstraintSpace();
+  DCHECK(space.ShouldTextBoxTrimStart() || space.ShouldTextBoxTrimEnd());
+  if (space.ShouldTextBoxTrimStart() && line_info.IsFirstFormattedLine()) {
+    // Apply `text-box-trim: start` if this is the first formatted line.
+    // TODO(crbug.com/40254880): The edge should be determined by
+    // `text-box-edge` property.
+    const FontHeight line_box_metrics = container_builder_.Metrics();
+    FontHeight intrinsic_metrics = Node().Style().GetFontHeight(baseline_type_);
+    LayoutUnit offset_for_trimming_box =
+        intrinsic_metrics.ascent - line_box_metrics.ascent;
+    container_builder_.SetIntrinsicMetrics(intrinsic_metrics);
+    container_builder_.SetLineBoxBfcBlockOffset(
+        container_builder_.LineBoxBfcBlockOffset()
+            ? offset_for_trimming_box +
+                  container_builder_.LineBoxBfcBlockOffset().value()
+            : offset_for_trimming_box);
+    container_builder_.SetIsTextBoxTrimApplied();
+  }
+  if (space.ShouldTextBoxTrimEnd() && !line_info.GetBreakToken()) {
+    // Apply `text-box-trim: end` if this is the last line.
+    container_builder_.SetIsTextBoxTrimApplied();
+  }
+  // TODO(crbug.com/40254880): Block-in-inline case probably needs a logic.
 }
 
 void InlineLayoutAlgorithm::PlaceBlockInInline(const InlineItem& item,

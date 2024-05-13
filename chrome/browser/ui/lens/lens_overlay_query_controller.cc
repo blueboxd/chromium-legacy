@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/lens/lens_overlay_query_controller.h"
 
+#include "base/base64url.h"
 #include "base/logging.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/thread_pool.h"
@@ -26,16 +27,19 @@
 #include "components/variations/variations_ids_provider.h"
 #include "components/version_info/channel.h"
 #include "google_apis/common/api_error_codes.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/lens_server_proto/lens_overlay_filters.pb.h"
 #include "third_party/lens_server_proto/lens_overlay_platform.pb.h"
 #include "third_party/lens_server_proto/lens_overlay_polygon.pb.h"
 #include "third_party/lens_server_proto/lens_overlay_request_id.pb.h"
 #include "third_party/lens_server_proto/lens_overlay_surface.pb.h"
+#include "third_party/lens_server_proto/lens_overlay_visual_search_interaction_data.pb.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace lens {
@@ -48,8 +52,9 @@ constexpr char kHttpMethod[] = "POST";
 constexpr char kContentType[] = "application/x-protobuf";
 constexpr char kDeveloperKey[] = "X-Developer-Key";
 constexpr char kSessionIdQueryParameterKey[] = "gsessionid";
-constexpr char kLensOAuthScope[] = "https://www.googleapis.com/auth/lens";
 constexpr char kOAuthConsumerName[] = "LensOverlayQueryController";
+constexpr char kStartTimeQueryParameter[] = "qsubts";
+constexpr char kVisualSearchInteractionDataQueryParameterKey[] = "vsint";
 constexpr base::TimeDelta kServerRequestTimeout = base::Minutes(1);
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotationTag =
@@ -127,6 +132,14 @@ std::vector<std::string> CreateOAuthHeader(
   return headers;
 }
 
+std::map<std::string, std::string> AddStartTimeQueryParam(
+    std::map<std::string, std::string> additional_search_query_params) {
+  int64_t current_time_ms = base::Time::Now().InMillisecondsSinceUnixEpoch();
+  additional_search_query_params.insert(
+      {kStartTimeQueryParameter, base::NumberToString(current_time_ms)});
+  return additional_search_query_params;
+}
+
 }  // namespace
 
 LensOverlayQueryController::LensOverlayQueryController(
@@ -182,6 +195,30 @@ LensOverlayQueryController::CreateClientContext() {
   context.mutable_locale_context()->set_language(
       g_browser_process->GetApplicationLocale());
   return context;
+}
+
+std::map<std::string, std::string>
+LensOverlayQueryController::AddVisualSearchInteractionLogData(
+    std::map<std::string, std::string> additional_search_query_params,
+    lens::LensOverlaySelectionType selection_type) {
+  lens::LensOverlayVisualSearchInteractionData interaction_data;
+  interaction_data.mutable_log_data()->mutable_filter_data()->set_filter_type(
+      lens::AUTO_FILTER);
+  interaction_data.mutable_log_data()
+      ->mutable_user_selection_data()
+      ->set_selection_type(selection_type);
+  interaction_data.mutable_log_data()->set_is_parent_query(!parent_query_sent_);
+  parent_query_sent_ = true;
+
+  std::string serialized_proto;
+  CHECK(interaction_data.SerializeToString(&serialized_proto));
+  std::string encoded_proto;
+  base::Base64UrlEncode(serialized_proto,
+                        base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &encoded_proto);
+  additional_search_query_params.insert(
+      {kVisualSearchInteractionDataQueryParameterKey, encoded_proto});
+  return additional_search_query_params;
 }
 
 void LensOverlayQueryController::FetchFullImageRequest(
@@ -286,29 +323,32 @@ void LensOverlayQueryController::SendRegionSearch(
     lens::mojom::CenterRotatedBoxPtr region,
     std::map<std::string, std::string> additional_search_query_params) {
   SendInteraction(/*region=*/std::move(region), /*query_text=*/std::nullopt,
-                  /*object_id=*/std::nullopt, additional_search_query_params);
+                  /*object_id=*/std::nullopt, lens::REGION_SEARCH,
+                  additional_search_query_params);
 }
 
 void LensOverlayQueryController::SendObjectSelection(
     const std::string& object_id,
     std::map<std::string, std::string> additional_search_query_params) {
+  // Object selection should send a REGION_SEARCH interaction type.
   SendInteraction(/*region=*/lens::mojom::CenterRotatedBoxPtr(),
                   /*query_text=*/std::nullopt,
                   /*object_id=*/std::make_optional<std::string>(object_id),
-                  additional_search_query_params);
+                  lens::REGION_SEARCH, additional_search_query_params);
 }
 
 void LensOverlayQueryController::SendMultimodalRequest(
     lens::mojom::CenterRotatedBoxPtr region,
     const std::string& query_text,
+    lens::LensOverlaySelectionType multimodal_selection_type,
     std::map<std::string, std::string> additional_search_query_params) {
   if (base::TrimWhitespaceASCII(query_text, base::TRIM_ALL).empty()) {
     return;
   }
-
   SendInteraction(/*region=*/std::move(region),
                   /*query_text=*/std::make_optional<std::string>(query_text),
-                  /*object_id=*/std::nullopt, additional_search_query_params);
+                  /*object_id=*/std::nullopt, multimodal_selection_type,
+                  additional_search_query_params);
 }
 
 void LensOverlayQueryController::SendTextOnlyQuery(
@@ -316,6 +356,12 @@ void LensOverlayQueryController::SendTextOnlyQuery(
     std::map<std::string, std::string> additional_search_query_params) {
   // Increment the request counter to cancel previously issued fetches.
   request_counter_++;
+
+  // Add the start time to the query params now, so that any additional
+  // client processing time is included.
+  additional_search_query_params =
+      AddStartTimeQueryParam(additional_search_query_params);
+
   lens::proto::LensOverlayUrlResponse lens_overlay_url_response;
   lens_overlay_url_response.set_url(
       lens::BuildTextOnlySearchURL(query_text, page_url_, page_title_,
@@ -329,9 +375,15 @@ void LensOverlayQueryController::SendInteraction(
     lens::mojom::CenterRotatedBoxPtr region,
     std::optional<std::string> query_text,
     std::optional<std::string> object_id,
+    lens::LensOverlaySelectionType selection_type,
     std::map<std::string, std::string> additional_search_query_params) {
   request_counter_++;
   int request_index = request_counter_;
+
+  // Add the start time to the query params now, so that image downscaling
+  // and other client processing time is included.
+  additional_search_query_params =
+      AddStartTimeQueryParam(additional_search_query_params);
 
   // Trigger asynchronous image cropping, then attempt to send the request.
   base::ThreadPool::PostTask(
@@ -343,7 +395,8 @@ void LensOverlayQueryController::SendInteraction(
                   &LensOverlayQueryController::
                       FetchInteractionRequestAndGenerateUrlIfClusterInfoReady,
                   weak_ptr_factory_.GetWeakPtr(), request_index, region.Clone(),
-                  query_text, object_id, additional_search_query_params))));
+                  query_text, object_id, selection_type,
+                  additional_search_query_params))));
 }
 
 void LensOverlayQueryController::
@@ -352,18 +405,20 @@ void LensOverlayQueryController::
         lens::mojom::CenterRotatedBoxPtr region,
         std::optional<std::string> query_text,
         std::optional<std::string> object_id,
+        lens::LensOverlaySelectionType selection_type,
         std::map<std::string, std::string> additional_search_query_params,
         std::optional<lens::ImageCrop> image_crop) {
   if (cluster_info_.has_value()) {
     FetchInteractionRequestAndGenerateLensSearchUrl(
-        request_index, std::move(region), query_text, object_id,
+        request_index, std::move(region), query_text, object_id, selection_type,
         additional_search_query_params, image_crop, *cluster_info_);
   } else {
-    cluster_info_received_callback_ = base::BindOnce(
-        &LensOverlayQueryController::
-            FetchInteractionRequestAndGenerateLensSearchUrl,
-        weak_ptr_factory_.GetWeakPtr(), request_index, std::move(region),
-        query_text, object_id, additional_search_query_params, image_crop);
+    cluster_info_received_callback_ =
+        base::BindOnce(&LensOverlayQueryController::
+                           FetchInteractionRequestAndGenerateLensSearchUrl,
+                       weak_ptr_factory_.GetWeakPtr(), request_index,
+                       std::move(region), query_text, object_id, selection_type,
+                       additional_search_query_params, image_crop);
 
     // If the cluster info is missing but we have already received a full image
     // response, the query must be restarted.
@@ -438,6 +493,7 @@ void LensOverlayQueryController::
         lens::mojom::CenterRotatedBoxPtr region,
         std::optional<std::string> query_text,
         std::optional<std::string> object_id,
+        lens::LensOverlaySelectionType selection_type,
         std::map<std::string, std::string> additional_search_query_params,
         std::optional<lens::ImageCrop> image_crop,
         lens::LensOverlayClusterInfo cluster_info) {
@@ -447,6 +503,12 @@ void LensOverlayQueryController::
   }
   DCHECK_EQ(query_controller_state_,
             QueryControllerState::kReceivedFullImageResponse);
+
+  // The visual search interaction log data should be added as late as possible,
+  // so that is_parent_query can be accurately set if the user issues multiple
+  // interactions in quick succession.
+  additional_search_query_params = AddVisualSearchInteractionLogData(
+      additional_search_query_params, selection_type);
 
   // Fetch the interaction request.
   lens::LensOverlayServerRequest server_request = CreateInteractionRequest(
@@ -516,6 +578,7 @@ void LensOverlayQueryController::ResetRequestFlowState() {
   interaction_endpoint_fetcher_.reset();
   cluster_info_ = std::nullopt;
   request_id_generator_->ResetRequestId();
+  parent_query_sent_ = false;
 }
 
 void LensOverlayQueryController::CreateAndFetchEndpointFetcher(
@@ -533,7 +596,7 @@ void LensOverlayQueryController::CreateAndFetchEndpointFetcher(
                                  std::move(fetcher_created_callback),
                                  std::move(fetched_response_callback)));
     signin::ScopeSet oauth_scopes;
-    oauth_scopes.insert(kLensOAuthScope);
+    oauth_scopes.insert(GaiaConstants::kLensOAuth2Scope);
 
     // If an access token fetcher is already in flight, it is intentionally
     // replaced by this newer one.

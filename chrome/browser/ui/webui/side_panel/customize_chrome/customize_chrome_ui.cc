@@ -49,7 +49,7 @@ namespace {
 
 int64_t RandInt64() {
   int64_t number;
-  base::RandBytes(&number, sizeof(number));
+  base::RandBytes(base::byte_span_from_ref(number));
   return number;
 }
 
@@ -258,8 +258,6 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
               ntp_features::kCustomizeChromeWallpaperSearchButton));
   source->AddBoolean("toolbarCustomizationEnabled",
                      base::FeatureList::IsEnabled(features::kToolbarPinning));
-
-  webui::SetupChromeRefresh2023(source);
 
   webui::SetupWebUIDataSource(
       source,

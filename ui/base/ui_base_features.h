@@ -229,46 +229,17 @@ bool IsLacrosColorManagementEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kCustomizeChromeSidePanel);
 
-// If both kCustomizeChromeSidePanelNoChromeRefresh2023 and
-// kCustomizeChromeSidePanel are enabled, Customize Chrome will be an option in
-// the Unified Side Panel when on the New Tab Page but Chrome Refresh 2023 will
-// be disabled. This state is useful in the Customize Chrome holdback
-// experiment.
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-BASE_DECLARE_FEATURE(kCustomizeChromeSidePanelNoChromeRefresh2023);
-
-// Returns true if Customize Chrome is configured such that it supports Chrome
-// Refresh 2023.
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-bool CustomizeChromeSupportsChromeRefresh2023();
-
 // Exposed for testing and flags integration. For actual checks please use
 // IsChromeRefresh2023().
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kChromeRefresh2023);
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kChromeRefreshSecondary2023);
 
-enum class ChromeRefresh2023NTBVariation {
-  kGM2Full = 0,
-  kGM3OldIconNoBackground = 1,
-  kGM3OldIconWithBackground = 2,
-  kGM3NewIconNoBackground = 3,
-  kGM3NewIconWithBackground = 4,
-  kNoChoice = 5,
-};
-COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kChromeRefresh2023NTB);
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const char kChromeRefresh2023NTBVariationKey[];
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-ChromeRefresh2023NTBVariation GetChromeRefresh2023NTB();
-
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsChromeRefresh2023();
 
 // Exposed for testing and flags integration. For actual checks please use
 // IsChromeWebuiRefresh2023().
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kChromeRefresh2023);
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-BASE_DECLARE_FEATURE(kChromeWebuiRefresh2023);
 
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsChromeWebuiRefresh2023();
 
@@ -296,6 +267,9 @@ BASE_DECLARE_FEATURE(kCr2023MacFontSmoothing);
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kUseGammaContrastRegistrySettings);
 #endif  // BUILDFLAG(IS_WIN)
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kBubbleFrameViewTitleIsHeading);
 
 }  // namespace features
 

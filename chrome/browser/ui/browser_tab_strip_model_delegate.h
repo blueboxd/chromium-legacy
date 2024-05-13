@@ -50,6 +50,7 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   std::optional<SessionID> CreateHistoricalTab(
       content::WebContents* contents) override;
   void CreateHistoricalGroup(const tab_groups::TabGroupId& group) override;
+  void GroupAdded(const tab_groups::TabGroupId& group) override;
   void WillCloseGroup(const tab_groups::TabGroupId& group) override;
   void GroupCloseStopped(const tab_groups::TabGroupId& group) override;
   bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
@@ -66,6 +67,9 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   bool IsNormalWindow() override;
   BrowserWindowInterface* GetBrowserWindowInterface() override;
   bool ConfirmDestroyingGroups(
+      const std::vector<tab_groups::TabGroupId>& group_ids,
+      base::OnceCallback<void()> callback) override;
+  bool ConfirmRemovingAllTabsFromGroups(
       const std::vector<tab_groups::TabGroupId>& group_ids,
       base::OnceCallback<void()> callback) override;
 

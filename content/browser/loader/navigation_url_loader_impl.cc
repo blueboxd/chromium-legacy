@@ -88,6 +88,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_util.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -1078,6 +1079,12 @@ void NavigationURLLoaderImpl::CallOnReceivedResponse(
   }
 
   network::mojom::URLResponseHead* head_ptr = head.get();
+  // Record ServiceWorker Static Routing API metrics. This is only recorded
+  // when the API is used.
+  if (head_ptr->service_worker_router_info) {
+    RecordServiceWorkerRouterEvaluationResults(
+        head_ptr->service_worker_router_info.get());
+  }
   auto on_receive_response = base::BindOnce(
       &NavigationURLLoaderImpl::NotifyResponseStarted,
       weak_factory_.GetWeakPtr(), std::move(head),
@@ -1311,7 +1318,7 @@ bool NavigationURLLoaderImpl::MaybeCreateLoaderForResponse(
             new_interceptors;
         new_interceptors.push_back(std::move(interceptor));
         new_interceptors.swap(interceptors_);
-        // Reset the state of ServiceWorkerContainerHost.
+        // Reset the state of ServiceWorkerClient.
         // Currently we don't support Service Worker in Signed Exchange
         // pages. The page will not be controlled by service workers. And
         // Service Worker related APIs will fail with NoDocumentURL error.
@@ -1319,13 +1326,13 @@ bool NavigationURLLoaderImpl::MaybeCreateLoaderForResponse(
         // Service Worker integration. Properly populate all params below, and
         // storage key in particular, when we want to support it.
         if (service_worker_handle_) {
-          base::WeakPtr<ServiceWorkerContainerHost> container_host =
-              service_worker_handle_->container_host();
-          if (container_host) {
-            container_host->SetControllerRegistration(
+          base::WeakPtr<ServiceWorkerClient> service_worker_client =
+              service_worker_handle_->service_worker_client();
+          if (service_worker_client) {
+            service_worker_client->SetControllerRegistration(
                 nullptr, /*notify_controllerchange=*/false);
-            container_host->UpdateUrls(GURL(), std::nullopt,
-                                       blink::StorageKey());
+            service_worker_client->UpdateUrls(GURL(), std::nullopt,
+                                              blink::StorageKey());
           }
         }
       }
@@ -1727,8 +1734,8 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
   // There might be other cases where the controller is lost here, but probably
   // it's fine to reset ServiceWorker subresource interception as well, as the
   // controller is anyway lost.
-  if (!subresource_loader_params_.container_host ||
-      !subresource_loader_params_.container_host->controller()) {
+  if (!subresource_loader_params_.service_worker_client ||
+      !subresource_loader_params_.service_worker_client->controller()) {
     subresource_loader_params_.controller_service_worker_info = nullptr;
     subresource_loader_params_.controller_service_worker_object_host = nullptr;
   }
@@ -1805,6 +1812,38 @@ void NavigationURLLoaderImpl::RecordReceivedResponseUkmForOutermostMainFrame() {
 
   // Reset whether the ACCEPT_CH frame was received for the navigation.
   received_accept_ch_frame_ = false;
+}
+
+void NavigationURLLoaderImpl::RecordServiceWorkerRouterEvaluationResults(
+    network::mojom::ServiceWorkerRouterInfo* router_info) {
+  // Check if `matched_source_type` and `actual_source_type` exists. If
+  // `matched_source_type` exists, `actual_source_type` should also exist.
+  // Likewise, if `matched_source_type` does not exist, `actual_source_type`
+  // should also not exist.
+  CHECK_EQ(router_info->matched_source_type.has_value(),
+           router_info->actual_source_type.has_value());
+  ukm::builders::ServiceWorker_MainResourceLoadCompleted builder(
+      ukm_source_id_);
+
+  if (router_info->evaluation_worker_status) {
+    builder.SetWorkerStatusOnEvaluation(
+        static_cast<int64_t>(*router_info->evaluation_worker_status));
+  }
+
+  if (router_info->matched_source_type) {
+    builder.SetMatchedFirstRouterSourceType(
+        static_cast<int64_t>(*router_info->matched_source_type));
+  }
+
+  if (router_info->actual_source_type) {
+    builder.SetActualRouterSourceType(
+        static_cast<int64_t>(*router_info->actual_source_type));
+  }
+
+  builder
+      .SetRouterRuleCount(ukm::GetExponentialBucketMinForCounts1000(
+          router_info->route_rule_num))
+      .Record(ukm::UkmRecorder::Get());
 }
 
 }  // namespace content

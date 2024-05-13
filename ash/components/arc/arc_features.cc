@@ -19,6 +19,15 @@ BASE_FEATURE(kArcVmGki,
              "ArcVmGki",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls block IO schedulers in ARCVM.
+BASE_FEATURE(kBlockIoScheduler,
+             "ArcBlockIoScheduler",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to enable block IO scheduler for virtio-blk /data.
+const base::FeatureParam<bool> kEnableDataBlockIoScheduler{
+    &kBlockIoScheduler, "data_block_io_scheduler", true};
+
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 BASE_FEATURE(kBootCompletedBroadcastFeature,
@@ -73,12 +82,12 @@ BASE_FEATURE(kDocumentsProviderUnknownSizeFeature,
 // when it is mostly idle - even if Chrome is still active.
 BASE_FEATURE(kEnableArcIdleManager,
              "ArcIdleManager",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // For test purposes, ignore battery status changes, allowing Doze mode to
 // kick in even if we do not receive powerd changes related to battery.
 const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT{
-    &kEnableArcIdleManager, "ignore_battery_for_test", false};
+    &kEnableArcIdleManager, "ignore_battery_for_test", true};
 
 const base::FeatureParam<int> kEnableArcIdleManagerDelayMs{
     &kEnableArcIdleManager, "delay_ms", 60 * 1000};

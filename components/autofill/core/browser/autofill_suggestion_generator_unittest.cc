@@ -57,6 +57,10 @@
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/resources/grit/ui_resources.h"
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#include "ui/native_theme/native_theme.h"  // nogncheck
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
 using gfx::test::AreImagesEqual;
 
 namespace autofill {
@@ -67,6 +71,7 @@ using testing::ElementsAreArray;
 using testing::Field;
 using testing::IsEmpty;
 using testing::Matcher;
+using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 
 constexpr auto kDefaultTriggerSource =
@@ -154,7 +159,10 @@ Matcher<Suggestion> EqualsManagePaymentsMethodsSuggestion(bool with_gpay_logo) {
                                     IDS_AUTOFILL_MANAGE_PAYMENT_METHODS),
                                 Suggestion::Icon::kSettings),
                Field(&Suggestion::trailing_icon,
-                     with_gpay_logo ? Suggestion::Icon::kGooglePay
+                     with_gpay_logo ? (ui::NativeTheme::GetInstanceForNativeUi()
+                                               ->ShouldUseDarkColors()
+                                           ? Suggestion::Icon::kGooglePayDark
+                                           : Suggestion::Icon::kGooglePay)
                                     : Suggestion::Icon::kNoIcon));
 #endif
 }
@@ -1625,9 +1633,8 @@ TEST_F(AutofillChildrenSuggestionGeneratorTest,
 }
 
 // Note that only full form filling has an icon.
-TEST_F(
-    AutofillChildrenSuggestionGeneratorTest,
-    CreateSuggestionsFromProfiles_LastTargetedFieldsAreAllServerFields_FullForm) {
+TEST_F(AutofillChildrenSuggestionGeneratorTest,
+       CreateSuggestionsFromProfiles_LastTargetedFieldsAreAllFields_FullForm) {
   std::vector<Suggestion> suggestions = CreateSuggestionWithChildrenFromProfile(
       profile(), kAllFieldTypes, NAME_FIRST, {NAME_FIRST, NAME_LAST});
 
@@ -2348,6 +2355,37 @@ TEST_F(AutofillSuggestionGeneratorTest,
   constexpr char kHistogramName[] = "Autofill.CreditCardsSuppressedForDisuse";
   histogram_tester.ExpectTotalCount(kHistogramName, 1);
   histogram_tester.ExpectBucketCount(kHistogramName, 1, 1);
+}
+
+// Tests that credit card suggestions are not subject to prefix matching for the
+// credit card number if `kAutofillDontPrefixMatchCreditCardNumbers` is enabled.
+TEST_F(AutofillSuggestionGeneratorTest,
+       NoPrefixMatchingForCreditCardsIfFeatureIsTurnedOn) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillDontPrefixMatchCreditCardNumbers);
+  CreditCard card1 = test::GetCreditCard();
+  card1.set_record_type(CreditCard::RecordType::kLocalCard);
+  personal_data().payments_data_manager().AddCreditCard(card1);
+  CreditCard card2 = test::GetCreditCard2();
+  card2.set_record_type(CreditCard::RecordType::kMaskedServerCard);
+  personal_data().AddServerCreditCard(card2);
+
+  auto get_cards = [&](std::u16string field_value) {
+    FormFieldData field;
+    field.set_value(std::move(field_value));
+    return test_api(suggestion_generator())
+        .GetOrderedCardsToSuggest(field, CREDIT_CARD_NUMBER,
+                                  /*suppress_disused_cards=*/false,
+                                  /*prefix_match=*/true,
+                                  /*include_virtual_cards=*/false);
+  };
+
+  EXPECT_THAT(get_cards(u""), UnorderedElementsAre(card1, card2));
+
+  ASSERT_NE(card1.number(), card2.number());
+  EXPECT_THAT(get_cards(card1.number()), UnorderedElementsAre(card1, card2));
+
+  EXPECT_THAT(get_cards(card2.number()), UnorderedElementsAre(card1, card2));
 }
 
 TEST_F(AutofillSuggestionGeneratorTest,
@@ -3778,7 +3816,7 @@ TEST_F(AutofillCreditCardSuggestionContentTest,
   card_number_field_suggestion =
       test_api(suggestion_generator())
           .CreateCreditCardSuggestion(server_card, CREDIT_CARD_NUMBER,
-                                      /*virtual_card_option=*/false,
+                                      /*virtual_card_option=*/true,
                                       /*card_linked_offer_available=*/false);
 
   // From a virtual credit card, the suggestion should show the card name and

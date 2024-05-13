@@ -41,6 +41,12 @@
           "builder": "android-15-x64-fyi-rel",
           "project": "chromium"
         }
+      ],
+      "mirroring_builder_group_and_names": [
+        {
+          "builder": "android-15-x64-fyi-rel",
+          "group": "tryserver.chromium.android"
+        }
       ]
     }
   },

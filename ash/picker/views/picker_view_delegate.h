@@ -18,6 +18,7 @@ namespace ash {
 class PickerAssetFetcher;
 class PickerSearchResult;
 class PickerSearchResultsSection;
+class PickerSessionMetrics;
 
 // Delegate for `PickerView`.
 class ASH_EXPORT PickerViewDelegate {
@@ -55,8 +56,12 @@ class ASH_EXPORT PickerViewDelegate {
   // the result is dropped silently.
   virtual void InsertResultOnNextFocus(const PickerSearchResult& result) = 0;
 
+  // Opens `result`. The exact behavior varies on the type of result.
+  virtual void OpenResult(const PickerSearchResult& result) = 0;
+
   // Shows the Emoji Picker with `category`.
-  virtual void ShowEmojiPicker(ui::EmojiPickerCategory category) = 0;
+  virtual void ShowEmojiPicker(ui::EmojiPickerCategory category,
+                               std::u16string_view query) = 0;
 
   // Shows the Editor.
   virtual void ShowEditor(std::optional<std::string> preset_query_id,
@@ -69,6 +74,8 @@ class ASH_EXPORT PickerViewDelegate {
       SuggestedEditorResultsCallback callback) = 0;
 
   virtual PickerAssetFetcher* GetAssetFetcher() = 0;
+
+  virtual PickerSessionMetrics& GetSessionMetrics() = 0;
 };
 
 }  // namespace ash

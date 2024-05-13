@@ -759,6 +759,9 @@ class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
     } else if (name == "gpm_connecting") {
       controller_->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kGPMConnecting);
+    } else if (name == "gpm_confirm_incognito_create") {
+      controller_->SetCurrentStepForTesting(
+          AuthenticatorRequestDialogModel::Step::kGPMConfirmOffTheRecordCreate);
     } else {
       NOTREACHED();
     }
@@ -881,6 +884,11 @@ IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
   ShowAndVerifyUi();
 }
 
+IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
+                       InvokeUi_gpm_confirm_incognito_create) {
+  ShowAndVerifyUi();
+}
+
 #if BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest, InvokeUi_touchid) {
   if (__builtin_available(macos 12, *)) {
@@ -983,14 +991,14 @@ document.addEventListener('DOMContentLoaded', function() {
 class QuitBrowserWhenKeysStored : public EnclaveManager::Observer {
  public:
   explicit QuitBrowserWhenKeysStored(Browser* browser) : browser_(browser) {
-    EnclaveManagerFactory::GetForProfile(browser_->profile())
+    EnclaveManagerFactory::GetAsEnclaveManagerForProfile(browser_->profile())
         ->AddObserver(this);
   }
 
   // EnclaveManager::Observer
   void OnKeysStored() override {
     LOG(INFO) << "QuitBrowserWhenKeysStored::OnKeysStored";
-    EnclaveManagerFactory::GetForProfile(browser_->profile())
+    EnclaveManagerFactory::GetAsEnclaveManagerForProfile(browser_->profile())
         ->RemoveObserver(this);
     browser_ = nullptr;
 
@@ -1039,14 +1047,14 @@ class QuitBrowserWhenReauthTokenReceived
   raw_ptr<AuthenticatorRequestDialogModel> model_;
 };
 
-IN_PROC_BROWSER_TEST_F(AuthenticatorWindowTest, Reauth) {
+IN_PROC_BROWSER_TEST_F(AuthenticatorWindowTest, ReauthForPinReset) {
   QuitBrowserWhenReauthTokenReceived observer(model_.get());
 
   // This should open a pop-up to a GAIA reauth page. That page will be faked
   // by this test class and the fake will immediately complete with a token
   // with the value "RAPT". That will cause `QuitBrowserWhenReauthTokenReceived`
   // to close the browser and complete the test.
-  model_->SetStep(AuthenticatorRequestDialogModel::Step::kGPMReauthAccount);
+  model_->SetStep(AuthenticatorRequestDialogModel::Step::kGPMReauthForPinReset);
 
   RunUntilBrowserProcessQuits();
 }

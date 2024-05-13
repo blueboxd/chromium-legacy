@@ -36,9 +36,11 @@ namespace input_method {
 // This includes all current (and future) trigger points, providing the required
 // plumbing to broker mojo connections from WebUIs and other clients, and
 // providing an overall unified interface for the backend of the project.
-class EditorMediator : public EditorEventSink,
+class EditorMediator : public EditorContext::Observer,
+                       public EditorContext::System,
+                       public EditorEventSink,
                        public EditorPanelManager::Delegate,
-                       public EditorSwitch::Delegate,
+                       public EditorSwitch::Observer,
                        public EditorSystemActuator::System,
                        public display::DisplayObserver,
                        public KeyedService {
@@ -56,6 +58,12 @@ class EditorMediator : public EditorEventSink,
   void BindEditorPanelManager(
       mojo::PendingReceiver<crosapi::mojom::EditorPanelManager>
           pending_receiver);
+
+  // EditorContext::Observer
+  void OnContextUpdated() override;
+
+  // EditorContext::System
+  std::optional<ukm::SourceId> GetUkmSourceId() override;
 
   // EditorEventSink overrides
   void OnFocus(int context_id) override;
@@ -91,7 +99,7 @@ class EditorMediator : public EditorEventSink,
   void CloseUI() override;
   size_t GetSelectedTextLength() override;
 
-  // EditorSwitch::Delegate overrides
+  // EditorSwitch::Observer overrides
   void OnEditorModeChanged(const EditorMode& mode) override;
 
   // KeyedService overrides
@@ -130,6 +138,7 @@ class EditorMediator : public EditorEventSink,
 
   EditorPanelManager panel_manager_;
   MakoBubbleCoordinator mako_bubble_coordinator_;
+  EditorContext editor_context_;
 
   std::unique_ptr<EditorSwitch> editor_switch_;
   std::unique_ptr<EditorMetricsRecorder> metrics_recorder_;

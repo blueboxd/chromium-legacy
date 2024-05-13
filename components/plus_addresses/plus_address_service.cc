@@ -60,6 +60,23 @@ base::flat_set<std::string> GetAndParseExcludedSites() {
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
 }
 
+PlusProfile::facet_t OriginToFacet(const url::Origin& origin) {
+  PlusProfile::facet_t facet;
+  if (IsSyncingPlusAddresses()) {
+    // For a valid `origin`, `origin.GetURL().spec()` is always a valid spec.
+    // However, using `FacetURI::FromCanonicalSpec(spec)` can lead to mismatches
+    // in the underlying representation, since it uses the spec verbatim. E.g.,
+    // a trailing "/" is removed by `FacetURI::FromPotentiallyInvalidSpec()`,
+    // but kept by `FacetURI::FromCanonicalSpec(spec)`.
+    // TODO(b/338342346): Revise `FacetURI::FromCanonicalSpec()`.
+    facet = affiliations::FacetURI::FromPotentiallyInvalidSpec(
+        origin.GetURL().spec());
+  } else {
+    facet = GetEtldPlusOne(origin);
+  }
+  return facet;
+}
+
 }  // namespace
 
 PlusAddressService::PlusAddressService(
@@ -117,13 +134,13 @@ bool PlusAddressService::SupportsPlusAddresses(const url::Origin& origin,
   }
   // Prerequisites are met, but it's an off-the-record session. If there's an
   // existing plus_address, it's supported, otherwise it is not.
-  return GetPlusProfile(origin).has_value();
+  return GetPlusProfile(OriginToFacet(origin)).has_value();
 }
 
 std::optional<std::string> PlusAddressService::GetPlusAddress(
-    const url::Origin& origin) const {
+    const PlusProfile::facet_t& facet) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::optional<PlusProfile> profile = GetPlusProfile(origin);
+  std::optional<PlusProfile> profile = GetPlusProfile(facet);
   return profile ? std::make_optional(profile->plus_address) : std::nullopt;
 }
 
@@ -133,21 +150,12 @@ std::vector<PlusProfile> PlusAddressService::GetPlusProfiles() const {
 }
 
 std::optional<PlusProfile> PlusAddressService::GetPlusProfile(
-    const url::Origin& origin) const {
+    const PlusProfile::facet_t& facet) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  PlusProfile::facet_t facet;
-  if (IsSyncingPlusAddresses()) {
-    // Even though `origin.GetURL().spec()` is always a valid spec, using
-    // `FacetURI::FromCanonicalSpec(spec)` can lead to mismatches in the
-    // underlying representation, since it uses the spec verbatim. E.g., a
-    // trailing "/" is removed by `FacetURI::FromPotentiallyInvalidSpec()`, but
-    // kept by `FacetURI::FromCanonicalSpec(spec)`.
-    // TODO(b/338342346): Revise `FacetURI::FromCanonicalSpec()`.
-    facet = affiliations::FacetURI::FromPotentiallyInvalidSpec(
-        origin.GetURL().spec());
-    CHECK(absl::get<affiliations::FacetURI>(facet).is_valid());
-  } else {
-    facet = GetEtldPlusOne(origin);
+  if (auto* facet_uri = absl::get_if<affiliations::FacetURI>(&facet)) {
+    if (!facet_uri->is_valid()) {
+      return std::nullopt;
+    }
   }
   // `facet` is used as the comparator, so the other fields don't matter.
   auto it = plus_profiles_.find(PlusProfile("", facet, "", false));
@@ -157,31 +165,23 @@ std::optional<PlusProfile> PlusAddressService::GetPlusProfile(
   return *it;
 }
 
-void PlusAddressService::SavePlusProfile(url::Origin origin,
-                                         const PlusProfile& profile) {
+void PlusAddressService::SavePlusProfile(const PlusProfile& profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(profile.is_confirmed);
-  // TODO(b/322147254): Once sync support is launched, and the client has thus
-  // migrated from eTLD+1 to origin, remove `profile_to_save` and simply store
-  // `profile`.
-  PlusProfile profile_to_save = profile;
-  if (absl::holds_alternative<std::string>(profile.facet)) {
-    profile_to_save.facet = GetEtldPlusOne(origin);
-  }
   // New plus addresses are requested directly from the PlusAddress backend. If
   // `IsSyncingPlusAddresses()`, these addresses become later available through
   // sync. Until the address shows up in sync, it should still be available
   // through `PlusAddressService`, even after reloading the data. This requires
   // adding the address to the database.
   if (webdata_service_ && IsSyncingPlusAddresses()) {
-    webdata_service_->AddOrUpdatePlusProfile(profile_to_save);
+    webdata_service_->AddOrUpdatePlusProfile(profile);
   }
   // Update the in-memory `plus_profiles_` cache.
-  plus_profiles_.insert(profile_to_save);
-  plus_addresses_.insert(profile_to_save.plus_address);
+  plus_profiles_.insert(profile);
+  plus_addresses_.insert(profile.plus_address);
   for (Observer& o : observers_) {
-    o.OnPlusAddressesChanged({PlusAddressDataChange(
-        PlusAddressDataChange::Type::kAdd, profile_to_save)});
+    o.OnPlusAddressesChanged(
+        {PlusAddressDataChange(PlusAddressDataChange::Type::kAdd, profile)});
   }
 }
 
@@ -205,7 +205,7 @@ std::vector<Suggestion> PlusAddressService::GetSuggestions(
   const std::u16string normalized_field_value =
       autofill::RemoveDiacriticsAndConvertToLowerCase(focused_field_value);
   std::optional<std::string> maybe_address =
-      GetPlusAddress(last_committed_primary_main_frame_origin);
+      GetPlusAddress(OriginToFacet(last_committed_primary_main_frame_origin));
   if (maybe_address == std::nullopt) {
     if (trigger_source != kManualFallbackPlusAddresses &&
         !normalized_field_value.empty()) {
@@ -270,7 +270,8 @@ void PlusAddressService::ConfirmPlusAddress(
     return;
   }
   // Check the local mapping before attempting to confirm plus_address.
-  if (std::optional<PlusProfile> stored_plus_profile = GetPlusProfile(origin);
+  if (std::optional<PlusProfile> stored_plus_profile =
+          GetPlusProfile(OriginToFacet(origin));
       stored_plus_profile) {
     std::move(on_completed).Run(stored_plus_profile.value());
     return;
@@ -288,7 +289,13 @@ void PlusAddressService::HandleCreateOrConfirmResponse(
   if (maybe_profile.has_value()) {
     account_is_forbidden_ = false;
     if (maybe_profile->is_confirmed) {
-      SavePlusProfile(origin, *maybe_profile);
+      if (IsSyncingPlusAddresses()) {
+        SavePlusProfile(*maybe_profile);
+      } else {
+        PlusProfile profile_to_save = *maybe_profile;
+        profile_to_save.facet = GetEtldPlusOne(origin);
+        SavePlusProfile(profile_to_save);
+      }
     }
   } else {
     HandlePlusAddressRequestError(maybe_profile.error());

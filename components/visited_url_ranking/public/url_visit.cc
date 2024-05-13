@@ -4,7 +4,9 @@
 
 #include "components/visited_url_ranking/public/url_visit.h"
 
+#include <set>
 #include <utility>
+#include <variant>
 
 namespace visited_url_ranking {
 
@@ -32,6 +34,21 @@ URLVisitAggregate::URLVisitAggregate(URLVisitAggregate&& other) = default;
 URLVisitAggregate& URLVisitAggregate::operator=(URLVisitAggregate&& other) =
     default;
 
+std::set<const GURL*> URLVisitAggregate::GetAssociatedURLs() const {
+  std::set<const GURL*> urls = {};
+  for (const auto& fetcher_entry : fetcher_data_map) {
+    std::visit(URLVisitVariantHelper{
+                   [&urls](const URLVisitAggregate::TabData& tab_data) {
+                     urls.insert(&tab_data.last_active_tab.visit.url);
+                   },
+                   [&urls](const URLVisitAggregate::HistoryData& history_data) {
+                     urls.insert(&history_data.last_visited.url_row.url());
+                   }},
+               fetcher_entry.second);
+  }
+  return urls;
+}
+
 URLVisitAggregate::Tab::Tab(const int32_t id_arg,
                             URLVisit visit_arg,
                             std::optional<std::string> session_tag_arg,
@@ -52,5 +69,15 @@ URLVisitAggregate::TabData::TabData(const URLVisitAggregate::TabData&) =
     default;
 
 URLVisitAggregate::TabData::~TabData() = default;
+
+URLVisitAggregate::HistoryData::HistoryData(
+    history::AnnotatedVisit annotated_visit)
+    : last_visited(std::move(annotated_visit)) {
+  visit_count = 1;
+  total_foreground_duration =
+      last_visited.context_annotations.total_foreground_duration;
+}
+
+URLVisitAggregate::HistoryData::~HistoryData() = default;
 
 }  // namespace visited_url_ranking

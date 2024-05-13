@@ -1008,12 +1008,12 @@ ash::LoggedInUserMixin::LogInType LogInTypeFor(
       base::ImmediateCrash();
     case kEnterprise:
     case kGoogler:
-      return ash::LoggedInUserMixin::LogInType::kRegular;
+      return ash::LoggedInUserMixin::LogInType::kManaged;
     case kChild:
       return ash::LoggedInUserMixin::LogInType::kChild;
     case kNonManaged:
     case kNonManagedNonOwner:
-      return ash::LoggedInUserMixin::LogInType::kRegular;
+      return ash::LoggedInUserMixin::LogInType::kConsumer;
   }
 }
 
@@ -1024,14 +1024,11 @@ std::optional<AccountId> AccountIdFor(TestAccountType test_account_type) {
                       "LoggedInUserFilesAppBrowserTest";
       // `base::ImmediateCrash` is necessary for https://crbug.com/1061742.
       base::ImmediateCrash();
-    case kEnterprise:
-      return AccountId::FromUserEmailGaiaId(
-          FakeGaiaMixin::kEnterpriseUser1,
-          FakeGaiaMixin::kEnterpriseUser1GaiaId);
     case kGoogler:
       return AccountId::FromUserEmailGaiaId(
           "user@google.com", FakeGaiaMixin::kEnterpriseUser1GaiaId);
     case kChild:
+    case kEnterprise:
     case kNonManaged:
     case kNonManagedNonOwner:
       // Use the default account provided by `LoggedInUserMixin`.
@@ -2441,7 +2438,7 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   if (options.enable_local_image_search) {
     enabled_features.push_back(ash::features::kFilesLocalImageSearch);
     enabled_features.push_back(
-        search_features::kFeatureManagementLocalImageSearch);
+        ash::features::kFeatureManagementLocalImageSearch);
     enabled_features.push_back(search_features::kICASupportedByHardware);
     enabled_features.push_back(search_features::kLauncherImageSearch);
     enabled_features.push_back(search_features::kLauncherImageSearchIca);
@@ -2449,7 +2446,7 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   } else {
     disabled_features.push_back(ash::features::kFilesLocalImageSearch);
     disabled_features.push_back(
-        search_features::kFeatureManagementLocalImageSearch);
+        ash::features::kFeatureManagementLocalImageSearch);
     disabled_features.push_back(search_features::kICASupportedByHardware);
     disabled_features.push_back(search_features::kLauncherImageSearch);
     disabled_features.push_back(search_features::kLauncherImageSearchIca);
@@ -2494,12 +2491,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.push_back(ash::features::kFilesMaterializedViews);
   } else {
     disabled_features.push_back(ash::features::kFilesMaterializedViews);
-  }
-
-  if (options.enable_new_directory_tree) {
-    enabled_features.push_back(ash::features::kFilesNewDirectoryTree);
-  } else {
-    disabled_features.push_back(ash::features::kFilesNewDirectoryTree);
   }
 
   if (options.enable_skyvault) {
@@ -3843,11 +3834,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isFilesExperimentalEnabled") {
     *output = options.files_experimental ? "true" : "false";
-    return;
-  }
-
-  if (name == "isNewDirectoryTreeEnabled") {
-    *output = options.enable_new_directory_tree ? "true" : "false";
     return;
   }
 

@@ -83,6 +83,11 @@
     margin: 10px 4px;
     background: var(--color-side-panel-divider);
   }
+  .spinner {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+  }
   .md-select {
     --md-select-text-color: var(--cr-primary-text-color);
     --md-select-width: fit-content;
@@ -101,6 +106,14 @@
      on-toolbar-overflow="onToolbarOverflow_">
   <template id="read-aloud-container" is="dom-if" if="[[isReadAloudEnabled_]]">
     <span id="audio-controls" class$="audio-background-when-paused-[[paused]]">
+      <span hidden="[[hideSpinner]]">
+        <picture class="spinner toolbar-button audio-controls">
+          <source media="(prefers-color-scheme: dark)"
+            srcset="//resources/images/throbber_small_dark.svg">
+          <img srcset="//resources/images/throbber_small.svg" alt="">
+        </picture>
+      </span>
+
       <cr-icon-button
         class="toolbar-button audio-controls"
         id="play-pause"
@@ -139,7 +152,7 @@
     <cr-icon-button
       class="toolbar-button"
       id="rate"
-      tabindex="-1"
+      tabindex$="[[getRateTabIndex_(isReadAloudPlayable)]]"
       aria-label="$i18n{voiceSpeedLabel}"
       title="$i18n{voiceSpeedLabel}"
       aria-haspopup="menu"
@@ -248,7 +261,8 @@
 
   <cr-lazy-render id="moreOptionsMenu">
     <template>
-      <cr-action-menu on-keydown="onToolbarKeyDown_">
+      <cr-action-menu on-keydown="onToolbarKeyDown_"
+                      role-description="$i18n{menu}">
         <template is="dom-repeat"
                   items="[[moreOptionsButtons_]]"
                   inital-count="0">
@@ -267,7 +281,8 @@
   </cr-lazy-render>
   <cr-lazy-render id="rateMenu">
     <template>
-      <cr-action-menu accessibility-label="$i18n{voiceSpeedLabel}">
+      <cr-action-menu accessibility-label="$i18n{voiceSpeedLabel}"
+                      role-description="$i18n{menu}">
         <template is="dom-repeat" items="[[rateOptions_]]" index-as="index"
                   initial-count="8">
           <button class="dropdown-item" on-click="onRateClick_">
@@ -283,9 +298,11 @@
   <cr-lazy-render id="fontSizeMenu">
     <template>
       <cr-action-menu on-keydown="onFontSizeMenuKeyDown_"
-          accessibility-label="$i18n{fontSizeTitle}">
+          accessibility-label="$i18n{fontSizeTitle}"
+          role-description="$i18n{menu}">
         <cr-icon-button
             class="font-size"
+            role="menuitem"
             id="font-size-decrease"
             aria-label="$i18n{decreaseFontSizeLabel}"
             title="$i18n{decreaseFontSizeLabel}"
@@ -294,6 +311,7 @@
         </cr-icon-button>
         <cr-icon-button
             class="font-size"
+            role="menuitem"
             id="font-size-increase"
             aria-label="$i18n{increaseFontSizeLabel}"
             title="$i18n{increaseFontSizeLabel}"
@@ -302,6 +320,7 @@
         </cr-icon-button>
         <cr-button
             class="text-button"
+            role="menuitem"
             id="font-size-reset"
             on-click="onFontResetClick_">
           $i18n{fontResetTitle}
@@ -311,7 +330,8 @@
   </cr-lazy-render>
   <cr-lazy-render id="colorMenu">
     <template>
-      <cr-action-menu accessibility-label="$i18n{themeTitle}">
+      <cr-action-menu accessibility-label="$i18n{themeTitle}"
+                      role-description="$i18n{menu}">
         <template is="dom-repeat" items="[[colorOptions_]]" index-as="index"
                   initial-count="5">
           <button class="dropdown-item" on-click="onColorClick_">
@@ -327,7 +347,8 @@
   </cr-lazy-render>
   <cr-lazy-render id="lineSpacingMenu">
     <template>
-      <cr-action-menu accessibility-label="$i18n{lineSpacingTitle}">
+      <cr-action-menu accessibility-label="$i18n{lineSpacingTitle}"
+                      role-description="$i18n{menu}">
         <template is="dom-repeat"
                   items="[[lineSpacingOptions_]]" index-as="index"
                   initial-count="3">
@@ -344,7 +365,8 @@
   </cr-lazy-render>
   <cr-lazy-render id="letterSpacingMenu">
     <template>
-      <cr-action-menu accessibility-label="$i18n{letterSpacingTitle}">
+      <cr-action-menu accessibility-label="$i18n{letterSpacingTitle}"
+                      role-description="$i18n{menu}">
         <template is="dom-repeat"
                   items="[[letterSpacingOptions_]]" index-as="index"
                   initial-count="3">
@@ -361,7 +383,8 @@
   </cr-lazy-render>
   <cr-lazy-render id="fontMenu">
     <template>
-      <cr-action-menu accessibility-label="$i18n{fontNameTitle}">
+      <cr-action-menu accessibility-label="$i18n{fontNameTitle}"
+                      role-description="$i18n{menu}">
         <template is="dom-repeat" items="[[fontOptions_]]" index-as="index"
                   initial-count="8">
           <button class="dropdown-item" on-click="onFontClick_"

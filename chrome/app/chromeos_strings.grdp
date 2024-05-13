@@ -280,9 +280,6 @@
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_RETRY" desc="Label for button informing user to retry rescan of QR Codes.">
     Try again
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_LOADING" desc="Label informing the user that the activation code is currently being verified.">
-    Verifying activation code...
-  </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PROFILE_INSTALLING_MESSAGE" desc="Label informing the user that an eSIM profile is being added, and that it may take a couple of minutes before it is complete.">
     Adding eSIM profile. This may take a few minutes.
   </message>
@@ -1376,6 +1373,19 @@
    <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_MANAGE_SYNC_SUBTITLE" desc="Subtitle of the dialog that displays sync options and allows user to control them.">
     Selected items will be available on this Chromebook. If you're new to Chromebook, sync all items so your preferences will be backed up. Make changes anytime in Settings &gt; Accounts.
   </message>
+  <!-- string for categories selection screen-->
+  <message name="IDS_LOGIN_CATEGORIES_SCREEN_LOADING" translateable="false" desc="Message shown while the categories are being fetched for the server.">
+    Please wait...
+  </message>
+   <message name="IDS_LOGIN_CATEGORIES_SCREEN_TITLE" translateable="false" desc="The title of the categories selection screeb for the user to select main use of the device">
+    What will you use your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> for?
+  </message>
+  <message name="IDS_LOGIN_CATEGORIES_SCREEN_SUBTITLE" translateable="false" desc="The description of the categories selection screen">
+    Select your main uses for the device and we will customize your onboarding experience
+  </message>
+  <message name="IDS_LOGIN_CATEGORIES_SCREEN_SKIP" translateable="false" desc="The label on the button that skips the categories screen">
+    Skip
+  </message>
   <!-- Strings for recommend apps screen -->
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps to user">
     Install apps for your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> from the Google Play Store
@@ -1747,9 +1757,6 @@
     Turn on
   </message>
 
-  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SUCCESS_TITLE" desc="The title message when Cryptohome recovery succeeded.">
-    Your password has been updated
-  </message>
   <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SETUP_ERROR_TITLE" desc="The title message when Cryptohome recovery setup failed.">
     Failed to enable local data recovery
   </message>
@@ -1762,23 +1769,11 @@
   <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SETUP_SKIP_BUTTON" desc="Label for the skip button to skip the Cryptohome recovery setup flow.">
     Skip
   </message>
-  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_ERROR_TITLE" desc="The title message when Cryptohome recovery failed.">
-    Failed to recover local data
-  </message>
   <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_REAUTH_NOTIFICATION_TITLE" desc="The title message when reauth is required during Cryptohome recovery.">
     Your password has changed since the last time you signed in
   </message>
   <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_REAUTH_NOTIFICATION_SUBTITLE" desc="The subtitle message when reauth is required during Cryptohome recovery.">
     Enter your Google Account password again on the next screen to finish recovery
-  </message>
-  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_MANUAL_RECOVERY_BUTTON" desc="Label for the button to enter old password when Cryptohome recovery failed.">
-    Enter the old password
-  </message>
-  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_RETRY_BUTTON" desc="Label for the button to retry when Cryptohome recovery failed.">
-    Retry
-  </message>
-  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_DONE_BUTTON" desc="Label for the done button to finish the Cryptohome recovery flow.">
-    Done
   </message>
   <message name="IDS_LOGIN_GENERIC_RETRY_BUTTON" desc="Label for the button to retry operation during login process.">
     Retry

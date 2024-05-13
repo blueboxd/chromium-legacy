@@ -40,7 +40,8 @@ public class PopupOnClickPageStation extends WebPageStation {
         super.declareElements(elements);
 
         mLinkToPopup =
-                elements.declareElementInState(new HtmlElementInState(LINK_TO_POPUP, mWebContents));
+                elements.declareElementInState(
+                        new HtmlElementInState(LINK_TO_POPUP, mWebContentsSupplier));
     }
 
     /** Opens the same page as a pop-up (in Android, this means in a new tab). */
@@ -48,8 +49,8 @@ public class PopupOnClickPageStation extends WebPageStation {
         PopupOnClickPageStation newPage =
                 new Builder<PopupOnClickPageStation>(PopupOnClickPageStation::new)
                         .initFrom(this)
-                        .withIsOpeningTab(true)
-                        .withIsSelectingTab(true)
+                        .withIsOpeningTabs(1)
+                        .withIsSelectingTabs(1)
                         .build();
         return Trip.travelSync(this, newPage, Transition.retryOption(), mLinkToPopup::click);
     }

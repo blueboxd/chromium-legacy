@@ -2246,7 +2246,7 @@ TEST_P(PasswordFormManagerTest, Update) {
   EXPECT_CALL(client_, UpdateFormManagers());
 
   const base::Time kNow = base::Time::Now();
-  form_manager_->Update(saved_match_);
+  form_manager_->Save();
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
   EXPECT_EQ(new_password, updated_form.password_value);
@@ -2888,10 +2888,7 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
 
     base::HistogramTester histogram_tester;
 
-    if (!is_password_update)
-      form_manager_->Save();
-    else
-      form_manager_->Update(saved_match_);
+    form_manager_->Save();
 
 #if !BUILDFLAG(IS_ANDROID)
     histogram_tester.ExpectUniqueSample(
@@ -4392,10 +4389,6 @@ class MockPasswordSaveManager : public PasswordSaveManager {
                     bool));
   MOCK_METHOD0(ResetPendingCredentials, void());
   MOCK_METHOD2(Save, void(const autofill::FormData*, const PasswordForm&));
-  MOCK_METHOD3(Update,
-               void(const PasswordForm&,
-                    const autofill::FormData*,
-                    const PasswordForm&));
   MOCK_METHOD1(Blocklist, void(const PasswordFormDigest&));
   MOCK_METHOD1(Unblocklist, void(const PasswordFormDigest&));
   MOCK_METHOD1(PresaveGeneratedPassword, void(PasswordForm));
@@ -4414,6 +4407,10 @@ class MockPasswordSaveManager : public PasswordSaveManager {
   MOCK_METHOD1(MoveCredentialsToAccountStore,
                void(metrics_util::MoveToAccountStoreTrigger));
   MOCK_METHOD1(BlockMovingToAccountStoreFor, void(const signin::GaiaIdHash&));
+  MOCK_METHOD(PasswordForm::Store,
+              GetPasswordStoreForSaving,
+              (const PasswordForm& password_form),
+              (const override));
 };
 
 class PasswordFormManagerTestWithMockedSaver : public PasswordFormManagerTest {

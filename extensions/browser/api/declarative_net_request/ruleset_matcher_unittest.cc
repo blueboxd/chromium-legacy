@@ -12,6 +12,7 @@
 #include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -235,7 +236,8 @@ TEST_F(RulesetMatcherTest, ModifyHeaders) {
   params.is_third_party = true;
 
   std::vector<RequestAction> modify_header_actions =
-      matcher->GetModifyHeadersActions(params, 0u /* min_priority */);
+      matcher->GetModifyHeadersActions(
+          params, RulesetMatchingStage::kOnBeforeRequest, /*min_priority=*/0u);
 
   RequestAction expected_rule_1_action = CreateRequestActionForTesting(
       RequestAction::Type::MODIFY_HEADERS, *rule_1.id, *rule_1.priority);
@@ -609,7 +611,9 @@ TEST_F(RulesetMatcherTest, RegexRules) {
         matcher->GetAction(params, RulesetMatchingStage::kOnBeforeRequest));
 
     std::vector<RequestAction> modify_header_actions =
-        matcher->GetModifyHeadersActions(params, 0u /* min_priority */);
+        matcher->GetModifyHeadersActions(params,
+                                         RulesetMatchingStage::kOnBeforeRequest,
+                                         /*min_priority=*/0u);
 
     if (test_case.expected_modify_header_action) {
       EXPECT_THAT(modify_header_actions,
@@ -998,7 +1002,10 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_ModifyHeaders) {
     RequestParams params;
     params.url = &url;
 
-    EXPECT_TRUE(matcher->GetModifyHeadersActions(params, 0u /* min_priority */)
+    EXPECT_TRUE(matcher
+                    ->GetModifyHeadersActions(
+                        params, RulesetMatchingStage::kOnBeforeRequest,
+                        /*min_priority=*/0u)
                     .empty());
   }
 
@@ -1008,8 +1015,8 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_ModifyHeaders) {
     RequestParams params;
     params.url = &url;
 
-    std::vector<RequestAction> actions =
-        matcher->GetModifyHeadersActions(params, 0u /* min_priority */);
+    std::vector<RequestAction> actions = matcher->GetModifyHeadersActions(
+        params, RulesetMatchingStage::kOnBeforeRequest, /*min_priority=*/0u);
     EXPECT_THAT(actions, testing::UnorderedElementsAre(
                              testing::Eq(testing::ByRef(action_1))));
   }
@@ -1020,8 +1027,8 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_ModifyHeaders) {
     RequestParams params;
     params.url = &url;
 
-    std::vector<RequestAction> actions =
-        matcher->GetModifyHeadersActions(params, 0u /* min_priority */);
+    std::vector<RequestAction> actions = matcher->GetModifyHeadersActions(
+        params, RulesetMatchingStage::kOnBeforeRequest, /*min_priority=*/0u);
     EXPECT_THAT(actions, testing::UnorderedElementsAre(
                              testing::Eq(testing::ByRef(action_2))));
   }
@@ -1033,19 +1040,19 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_ModifyHeaders) {
     RequestParams params;
     params.url = &url;
 
-    std::vector<RequestAction> actions =
-        matcher->GetModifyHeadersActions(params, 0u /* min_priority */);
+    std::vector<RequestAction> actions = matcher->GetModifyHeadersActions(
+        params, RulesetMatchingStage::kOnBeforeRequest, /*min_priority=*/0u);
     EXPECT_THAT(actions, testing::UnorderedElementsAre(
                              testing::Eq(testing::ByRef(action_1)),
                              testing::Eq(testing::ByRef(action_2))));
 
     // GetModifyHeadersActions specifies a minimum priority greater than the
     // rules' priority, so no actions should be returned.
-    EXPECT_TRUE(
-        matcher
-            ->GetModifyHeadersActions(
-                params, std::numeric_limits<uint64_t>::max() /* min_priority */)
-            .empty());
+    EXPECT_TRUE(matcher
+                    ->GetModifyHeadersActions(
+                        params, RulesetMatchingStage::kOnBeforeRequest,
+                        /*min_priority=*/std::numeric_limits<uint64_t>::max())
+                    .empty());
   }
 }
 
@@ -1138,7 +1145,7 @@ TEST_F(RulesetMatcherTest, RulesCount) {
   for (size_t i = 0; i < kNumNonRegexRules; ++i, ++id) {
     TestRule rule = CreateGenericRule();
     rule.id = id;
-    rule.condition->url_filter = std::to_string(id);
+    rule.condition->url_filter = base::NumberToString(id);
     if (i < kNumUnsafeNonRegexRules) {
       rule.action->type = "redirect";
       rule.action->redirect.emplace();
@@ -1151,7 +1158,7 @@ TEST_F(RulesetMatcherTest, RulesCount) {
     TestRule rule = CreateGenericRule();
     rule.id = id;
     rule.condition->url_filter.reset();
-    rule.condition->regex_filter = std::to_string(id);
+    rule.condition->regex_filter = base::NumberToString(id);
     if (i < kNumUnsafeRegexRules) {
       rule.action->type = std::string("modifyHeaders");
       rule.action->response_headers = std::vector<TestHeaderInfo>(

@@ -5,6 +5,7 @@
 import 'chrome-untrusted://lens/post_selection_renderer.js';
 
 import {BrowserProxyImpl} from 'chrome-untrusted://lens/browser_proxy.js';
+import type {LensPageRemote} from 'chrome-untrusted://lens/lens.mojom-webui.js';
 import type {PostSelectionBoundingBox, PostSelectionRendererElement} from 'chrome-untrusted://lens/post_selection_renderer.js';
 import {PERIMETER_SELECTION_PADDING_PX, RESTING_CORNER_LENGTH_PX} from 'chrome-untrusted://lens/post_selection_renderer.js';
 import type {GestureEvent} from 'chrome-untrusted://lens/selection_utils.js';
@@ -39,6 +40,7 @@ interface BoxDrag {
 suite('PostSelectionRenderer', () => {
   let postSelectionRenderer: PostSelectionRendererElement;
   let testBrowserProxy: TestLensOverlayBrowserProxy;
+  let callbackRouterRemote: LensPageRemote;
 
   setup(() => {
     // Resetting the HTML needs to be the first thing we do in setup to
@@ -48,6 +50,8 @@ suite('PostSelectionRenderer', () => {
 
     testBrowserProxy = new TestLensOverlayBrowserProxy();
     BrowserProxyImpl.setInstance(testBrowserProxy);
+    callbackRouterRemote =
+        testBrowserProxy.callbackRouter.$.bindNewPipeAndPassRemote();
 
     postSelectionRenderer = document.createElement('post-selection-renderer');
 
@@ -475,7 +479,29 @@ suite('PostSelectionRenderer', () => {
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
+  test('PostSelectionDraggingDisabled', async () => {
+    await triggerPostSelectionRender({
+      top: normalizeY(10),
+      left: normalizeX(10),
+      width: normalizeX(100),
+      height: normalizeY(70),
+    });
+    assertTrue(isVisible(postSelectionRenderer.$.postSelection));
+
+    const dragGesture: GestureEvent = {
+      state: GestureState.DRAGGING,
+      startX: 60,
+      startY: 45,
+      clientX: 60,
+      clientY: 45,
+    };
+
+    assertFalse(postSelectionRenderer.handleDownGesture(dragGesture));
+  });
+
   test('PostSelectionWholeBox', async () => {
+    postSelectionRenderer.enableSelectionDraggingForTesting();
+
     await triggerPostSelectionRender({
       top: normalizeY(10),
       left: normalizeX(10),
@@ -498,6 +524,8 @@ suite('PostSelectionRenderer', () => {
   });
 
   test('PostSelectionOutOfBounds', async () => {
+    postSelectionRenderer.enableSelectionDraggingForTesting();
+
     await triggerPostSelectionRender({
       top: normalizeY(10),
       left: normalizeX(10),
@@ -558,6 +586,8 @@ suite('PostSelectionRenderer', () => {
   });
 
   test('PostSelectionNoMeaningfulDrag', async () => {
+    postSelectionRenderer.enableSelectionDraggingForTesting();
+
     await triggerPostSelectionRender({
       top: normalizeY(10),
       left: normalizeX(10),
@@ -570,5 +600,37 @@ suite('PostSelectionRenderer', () => {
 
     // Drag that didn't change the bounds shouldn't issue a Lens request.
     assertEquals(0, testBrowserProxy.handler.getCallCount('issueLensRequest'));
+  });
+
+  test('PostSelectionClearAllSelectionsCallback', async () => {
+    await triggerPostSelectionRender({
+      top: normalizeY(10),
+      left: normalizeX(10),
+      width: normalizeX(100),
+      height: normalizeY(70),
+    });
+    assertTrue(isVisible(postSelectionRenderer.$.postSelection));
+
+    callbackRouterRemote.clearAllSelections();
+    await waitAfterNextRender(postSelectionRenderer);
+    assertFalse(isVisible(postSelectionRenderer.$.postSelection));
+  });
+
+
+  test('PostSelectionSetPostRegionSelectionCallback', async () => {
+    assertFalse(isVisible(postSelectionRenderer.$.postSelection));
+
+    callbackRouterRemote.setPostRegionSelection({
+      box: {
+        x: normalizeX(10),
+        y: normalizeY(10),
+        width: normalizeX(100),
+        height: normalizeY(70),
+      },
+      rotation: 0.0,
+      coordinateType: 1,
+    });
+    await waitAfterNextRender(postSelectionRenderer);
+    assertTrue(isVisible(postSelectionRenderer.$.postSelection));
   });
 });

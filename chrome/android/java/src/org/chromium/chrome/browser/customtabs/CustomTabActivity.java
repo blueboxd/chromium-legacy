@@ -33,6 +33,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.cached_flags.AllCachedFieldTrialParameters;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -74,6 +75,7 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     private CustomTabsSessionToken mSession;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
+    private int mNumOmniboxNavigationEventsPerSession;
 
     /** Contains all the parameters of the EXPERIMENTS_FOR_AGSA feature. */
     public static final AllCachedFieldTrialParameters EXPERIMENTS_FOR_AGSA_PARAMS =
@@ -193,11 +195,11 @@ public class CustomTabActivity extends BaseCustomTabActivity {
 
         if (googleBottomBarCoordinator != null) {
             View googleBottomBarView = googleBottomBarCoordinator.createGoogleBottomBarView();
-            getComponent()
-                    .resolveBottomBarDelegate()
-                    .setBottomBarHeight(GoogleBottomBarCoordinator.getBottomBarHeightInPx(this));
-            getComponent().resolveBottomBarDelegate().setKeepContentView(true);
-            getComponent().resolveBottomBarDelegate().setBottomBarContentView(googleBottomBarView);
+            CustomTabBottomBarDelegate delegate = getComponent().resolveBottomBarDelegate();
+            delegate.setBottomBarHeight(GoogleBottomBarCoordinator.getBottomBarHeightInPx(this));
+            delegate.setKeepContentView(true);
+            delegate.setBottomBarContentView(googleBottomBarView);
+            delegate.setCustomButtonsUpdater(googleBottomBarCoordinator::updateBottomBarButton);
         }
 
         getComponent().resolveBottomBarDelegate().showBottomBarIfNecessary();
@@ -348,6 +350,18 @@ public class CustomTabActivity extends BaseCustomTabActivity {
         return super.dispatchTouchEvent(ev);
     }
 
+    @Override
+    public void finish() {
+        RecordHistogram.recordLinearCountHistogram(
+                "CustomTabs.Omnibox.NumNavigationsPerSession",
+                mNumOmniboxNavigationEventsPerSession,
+                1,
+                10,
+                10);
+
+        super.finish();
+    }
+
     @VisibleForTesting(otherwise = PRIVATE)
     boolean shouldPreventTouch(MotionEvent ev) {
         if (ApplicationStatus.getStateForActivity(this) == ActivityState.RESUMED) return false;
@@ -374,7 +388,8 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     @Override
     protected BrowserServicesIntentDataProvider buildIntentDataProvider(
             Intent intent, @CustomTabsIntent.ColorScheme int colorScheme) {
-        if (IncognitoCustomTabIntentDataProvider.isValidIncognitoIntent(intent)) {
+        if (IncognitoCustomTabIntentDataProvider.isValidIncognitoIntent(intent)
+                || IncognitoCustomTabIntentDataProvider.isValidEphemeralTabIntent(intent)) {
             return new IncognitoCustomTabIntentDataProvider(intent, this, colorScheme);
         }
         return new CustomTabIntentDataProvider(intent, this, colorScheme);
@@ -451,7 +466,13 @@ public class CustomTabActivity extends BaseCustomTabActivity {
                 && SearchActivityUtils.isOmniboxResult(requestCode, data)) {
             LoadUrlParams params =
                     SearchActivityUtils.getOmniboxResult(requestCode, resultCode, data);
+
+            RecordHistogram.recordBooleanHistogram(
+                    "CustomTabs.Omnibox.FocusResultedInNavigation", params != null);
+
             if (params == null) return;
+
+            mNumOmniboxNavigationEventsPerSession++;
             // Yield to give the called activity time to close.
             // Loading URL directly will result in Activity closing after URL loading completes.
             PostTask.postTask(TaskTraits.UI_DEFAULT, () -> mTabProvider.getTab().loadUrl(params));

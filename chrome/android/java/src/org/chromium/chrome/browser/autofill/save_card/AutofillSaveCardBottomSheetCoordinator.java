@@ -67,16 +67,6 @@ public class AutofillSaveCardBottomSheetCoordinator {
             NativeDelegate delegate) {
         mContext = context;
         mView = new AutofillSaveCardBottomSheetView(context);
-        mView.mAcceptButton.setOnClickListener(
-                (View button) -> {
-                    delegate.onUiAccepted();
-                    hide(StateChangeReason.INTERACTION_COMPLETE);
-                });
-        mView.mCancelButton.setOnClickListener(
-                (View button) -> {
-                    delegate.onUiCanceled();
-                    hide(StateChangeReason.INTERACTION_COMPLETE);
-                });
 
         mModel =
                 new PropertyModel.Builder(AutofillSaveCardBottomSheetProperties.ALL_KEYS)
@@ -109,6 +99,7 @@ public class AutofillSaveCardBottomSheetCoordinator {
                         .with(
                                 AutofillSaveCardBottomSheetProperties.CANCEL_BUTTON_LABEL,
                                 uiInfo.getCancelText())
+                        .with(AutofillSaveCardBottomSheetProperties.SHOW_LOADING_STATE, false)
                         .build();
         PropertyModelChangeProcessor.create(
                 mModel, mView, AutofillSaveCardBottomSheetViewBinder::bind);
@@ -120,7 +111,18 @@ public class AutofillSaveCardBottomSheetCoordinator {
                         new AutofillSaveCardBottomSheetLifecycle(
                                 bottomSheetController, layoutStateProvider, tabModel),
                         bottomSheetController,
-                        delegate);
+                        mModel,
+                        delegate,
+                        uiInfo.isForUpload());
+
+        mView.mAcceptButton.setOnClickListener(
+                (View button) -> {
+                    mMediator.onAccepted();
+                });
+        mView.mCancelButton.setOnClickListener(
+                (View button) -> {
+                    mMediator.onCanceled();
+                });
     }
 
     /**

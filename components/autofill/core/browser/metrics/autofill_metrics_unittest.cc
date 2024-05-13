@@ -37,6 +37,7 @@
 #include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_encoding.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_test_base.h"
@@ -216,18 +217,42 @@ TEST_F(AutofillMetricsTest, PerfectFilling_Addresses_CreditCards) {
                    .value = u"Elvis Aaron Presley",
                    .is_autofilled = true},
                   {.role = CREDIT_CARD_NUMBER, .value = u"01230123012399"}}});
+  FormData autocompleted_form =
+      test::GetFormData({.fields = {{.role = CREDIT_CARD_NUMBER,
+                                     .value = u"01230123012399",
+                                     .is_autofilled = true},
+                                    {.role = ADDRESS_HOME_CITY,
+                                     .value = u"Munich",
+                                     .is_autofilled = true}}});
   payments_form.fields.back().set_is_user_edited(true);
   autofill_manager().AddSeenForm(address_form, {NAME_FULL, ADDRESS_HOME_LINE1});
   autofill_manager().AddSeenForm(payments_form,
                                  {CREDIT_CARD_NAME_FULL, CREDIT_CARD_NUMBER});
+  autofill_manager()
+      .GetAutofillField(address_form, address_form.fields.front())
+      ->set_filling_product(FillingProduct::kAddress);
+  autofill_manager()
+      .GetAutofillField(payments_form, payments_form.fields.front())
+      ->set_filling_product(FillingProduct::kCreditCard);
 
   base::HistogramTester histogram_tester;
+  // Upon submitting the address form, we expect logging a perfect address
+  // filling.
   SubmitForm(address_form);
   histogram_tester.ExpectUniqueSample("Autofill.PerfectFilling.Addresses", 1,
                                       1);
   histogram_tester.ExpectTotalCount("Autofill.PerfectFilling.CreditCards", 0);
-
+  // Upon submitting the payments form, we expect logging a perfect address
+  // filling, since one of the fields was user edited.
   SubmitForm(payments_form);
+  histogram_tester.ExpectUniqueSample("Autofill.PerfectFilling.Addresses", 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample("Autofill.PerfectFilling.CreditCards", 0,
+                                      1);
+  // Upon submitting the autocompleted form, we expect not logging anything for
+  // both metrics, since the product of filling the form is neither addresses
+  // nor credit cards.
+  SubmitForm(autocompleted_form);
   histogram_tester.ExpectUniqueSample("Autofill.PerfectFilling.Addresses", 1,
                                       1);
   histogram_tester.ExpectUniqueSample("Autofill.PerfectFilling.CreditCards", 0,
@@ -1254,14 +1279,14 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   {
     base::UserActionTester user_action_tester;
     external_delegate().OnQuery(
-        form, form.fields.front(), gfx::RectF(),
+        form, form.fields.front(),
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     external_delegate().DidAcceptSuggestion(
         test::CreateAutofillSuggestion(SuggestionType::kCreditCardEntry,
                                        u"Test",
                                        Suggestion::Guid(kTestLocalCardId)),
-        AutofillPopupDelegate::SuggestionPosition{.row = 0});
+        AutofillSuggestionDelegate::SuggestionPosition{.row = 0});
 
     EXPECT_EQ(1,
               user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
@@ -1282,12 +1307,12 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   {
     base::UserActionTester user_action_tester;
     external_delegate().OnQuery(
-        form, form.fields.front(), gfx::RectF(),
+        form, form.fields.front(),
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     external_delegate().DidAcceptSuggestion(
         Suggestion(SuggestionType::kClearForm),
-        AutofillPopupDelegate::SuggestionPosition{.row = 0});
+        AutofillSuggestionDelegate::SuggestionPosition{.row = 0});
 
     EXPECT_EQ(
         1, user_action_tester.GetActionCount("Autofill_UndoPaymentsAutofill"));
@@ -1308,14 +1333,14 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   {
     base::UserActionTester user_action_tester;
     external_delegate().OnQuery(
-        form, form.fields.front(), gfx::RectF(),
+        form, form.fields.front(),
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     external_delegate().DidAcceptSuggestion(
         test::CreateAutofillSuggestion(SuggestionType::kCreditCardEntry,
                                        u"Test",
                                        Suggestion::Guid(kTestLocalCardId)),
-        AutofillPopupDelegate::SuggestionPosition{.row = 0});
+        AutofillSuggestionDelegate::SuggestionPosition{.row = 0});
 
     EXPECT_EQ(1,
               user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
@@ -1437,14 +1462,14 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   {
     base::UserActionTester user_action_tester;
     external_delegate().OnQuery(
-        form, form.fields.front(), gfx::RectF(),
+        form, form.fields.front(),
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     external_delegate().DidAcceptSuggestion(
         test::CreateAutofillSuggestion(SuggestionType::kCreditCardEntry,
                                        u"Test",
                                        Suggestion::Guid(kTestProfileId)),
-        AutofillPopupDelegate::SuggestionPosition{.row = 0});
+        AutofillSuggestionDelegate::SuggestionPosition{.row = 0});
 
     EXPECT_EQ(1,
               user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
@@ -6531,7 +6556,7 @@ TEST_F(AutofillMetricsFromLogEventsTest, TestShowSuggestionAutofillStatus) {
   {
     // Show autofill suggestions.
     autofill_manager().OnAskForValuesToFillTest(
-        form, form.fields[0], gfx::RectF(),
+        form, form.fields[0],
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     task_environment_.FastForwardBy(base::Milliseconds(9));
@@ -6597,7 +6622,7 @@ TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
     // Simulating submission with filled local data. The third field cannot be
     // autofilled because its type cannot be predicted.
     autofill_manager().OnAskForValuesToFillTest(
-        form, form.fields[0], gfx::RectF(),
+        form, form.fields[0],
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
     FillTestProfile(form);
 

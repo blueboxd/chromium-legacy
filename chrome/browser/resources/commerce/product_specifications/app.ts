@@ -4,6 +4,7 @@
 
 import '../strings.m.js';
 import './header.js';
+import './new_column_selector.js';
 import './product_selector.js';
 import './table.js';
 import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
@@ -12,11 +13,11 @@ import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_
 import type {BrowserProxy} from 'chrome://resources/cr_components/commerce/browser_proxy.js';
 import {BrowserProxyImpl} from 'chrome://resources/cr_components/commerce/browser_proxy.js';
 import type {PageCallbackRouter, ProductSpecificationsSet} from 'chrome://resources/cr_components/commerce/shopping_service.mojom-webui.js';
-import {assert} from 'chrome://resources/js/assert.js';
 import type {Uuid} from 'chrome://resources/mojo/mojo/public/mojom/base/uuid.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
+import type {HeaderElement} from './header.js';
 import type {ProductSelectorElement} from './product_selector.js';
 import {Router} from './router.js';
 import type {ProductInfo, ProductSpecificationsProduct} from './shopping_service.mojom-webui.js';
@@ -42,6 +43,7 @@ function aggregateProductDataByClusterId(
 
 export interface ProductSpecificationsElement {
   $: {
+    header: HeaderElement,
     productSelector: ProductSelectorElement,
     summaryTable: TableElement,
   };
@@ -58,6 +60,8 @@ export class ProductSpecificationsElement extends PolymerElement {
 
   static get properties() {
     return {
+      setName_: String,
+
       showEmptyState_: {
         type: Boolean,
         value: false,
@@ -74,6 +78,7 @@ export class ProductSpecificationsElement extends PolymerElement {
     };
   }
 
+  private setName_: string;
   private showEmptyState_: boolean;
   private specsTable_: {columns: TableColumn[], rows: TableRow[]};
 
@@ -87,7 +92,7 @@ export class ProductSpecificationsElement extends PolymerElement {
     ColorChangeUpdater.forDocument().start();
   }
 
-  override connectedCallback() {
+  override async connectedCallback() {
     super.connectedCallback();
 
     this.listenerIds_.push(
@@ -98,6 +103,16 @@ export class ProductSpecificationsElement extends PolymerElement {
 
     const router = Router.getInstance();
     const params = new URLSearchParams(router.getCurrentQuery());
+    const idParam = params.get('id');
+    if (idParam) {
+      const {set} = await this.shoppingApi_.getProductSpecificationsSetByUuid(
+          {value: idParam});
+      if (set) {
+        this.setName_ = set.name;
+        this.populateTable_(set.urls.map(url => (url.url)));
+        return;
+      }
+    }
     const urlsParam = params.get('urls');
     if (!urlsParam) {
       this.showEmptyState_ = true;
@@ -109,6 +124,16 @@ export class ProductSpecificationsElement extends PolymerElement {
       urls = JSON.parse(urlsParam);
     } catch (_) {
       return;
+    }
+
+    // TODO(b/338427523): Add UI for choosing the name.
+    const setName = 'Product specs';
+    this.setName_ = setName;
+    const {createdSet} = await this.shoppingApi_.addProductSpecificationsSet(
+        setName, urls.map(url => ({url})));
+    if (createdSet) {
+      window.history.replaceState(
+          undefined, '', '?id=' + createdSet.uuid.value);
     }
 
     this.populateTable_(urls);
@@ -166,22 +191,22 @@ export class ProductSpecificationsElement extends PolymerElement {
   }
 
   private onUrlAdd_(e: CustomEvent<{url: string}>) {
-    assert(this.specsTable_.columns.length === 0);
-    this.populateTable_([e.detail.url]);
+    const urls = this.getTableUrls_();
+    urls.push(e.detail.url);
+    this.populateTable_(urls);
   }
 
   private onUrlChange_(e: CustomEvent<{url: string, index: number}>) {
-    let urls;
-    if (this.specsTable_.columns) {
-      // Until b/335637140 is resolved, these will all be the same placeholder
-      // URL and the table will not update as expected.
-      urls = this.specsTable_.columns.map(
-          (column: TableColumn) => column.selectedItem.url);
-      urls[e.detail.index] = e.detail.url;
-    } else {
-      urls = [e.detail.url];
-    }
+    const urls = this.getTableUrls_();
+    urls[e.detail.index] = e.detail.url;
     this.populateTable_(urls);
+  }
+
+  private getTableUrls_(): string[] {
+    // Until b/335637140 is resolved, these will all be the same placeholder
+    // URL and the table will not update as expected.
+    return this.specsTable_.columns.map(
+        (column: TableColumn) => column.selectedItem.url);
   }
 
   private onSetUpdated_(_: ProductSpecificationsSet) {

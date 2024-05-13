@@ -284,11 +284,11 @@
 #include "chrome/browser/new_tab_page/promos/promo_service.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/search/background/ntp_custom_background_service.h"
-#include "chrome/browser/search_engine_choice/search_engine_choice_client_side_trial.h"
 #include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service.h"
 #include "chrome/browser/serial/serial_policy_allowed_ports.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/commerce/commerce_ui_tab_helper.h"
+#include "chrome/browser/ui/lens/lens_overlay_permission_utils.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_prefs.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_utils.h"
@@ -396,7 +396,7 @@
 #include "chrome/browser/ash/login/signin/signin_error_notifier.h"
 #include "chrome/browser/ash/login/signin/token_handle_fetcher.h"
 #include "chrome/browser/ash/login/startup_utils.h"
-#include "chrome/browser/ash/login/users/avatar/user_image_manager.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_prefs.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/ash/net/ash_proxy_monitor.h"
@@ -421,7 +421,7 @@
 #include "chrome/browser/ash/power/power_metrics_reporter.h"
 #include "chrome/browser/ash/preferences.h"
 #include "chrome/browser/ash/printing/cups_printers_manager.h"
-#include "chrome/browser/ash/printing/enterprise_printers_provider.h"
+#include "chrome/browser/ash/printing/enterprise/enterprise_printers_provider.h"
 #include "chrome/browser/ash/release_notes/release_notes_storage.h"
 #include "chrome/browser/ash/scanning/chrome_scanning_app_delegate.h"
 #include "chrome/browser/ash/scheduler_configuration_manager.h"
@@ -522,7 +522,7 @@
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/device_identity/device_oauth2_token_store_desktop.h"
-#include "chrome/browser/ui/startup/default_browser_prompt.h"
+#include "chrome/browser/ui/startup/default_browser_prompt/default_browser_prompt.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -1055,6 +1055,32 @@ inline constexpr char kDIPSTimerLastUpdate[] = "dips_timer_last_update";
 constexpr char kMetricsUserInheritOwnerConsent[] =
     "metrics.user_inherit_owner_consent";
 constexpr char kGlanceablesEnabled[] = "ash.glanceables_enabled";
+
+// Deprecated 05/2024.
+// A preference to keep track of the device registered time.
+constexpr char kDeviceRegisteredTime[] = "DeviceRegisteredTime";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_ANDROID)
+// Deprecated 05/2024
+inline constexpr char kSearchEnginesStudyGroup[] =
+    "search_engines.client_side_study_group";
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+// Deprecated 05/2024
+// Pref name for the whether whats new refresh page has been shown
+// successfully.
+inline constexpr char kHasShownRefreshWhatsNew[] =
+    "browser.has_shown_refresh_2023_whats_new";
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Deprecated 05/2024
+// A boolean pref which determines if you can pause mouse keys with a
+// keyboard shortcut.
+inline constexpr char kAccessibilityMouseKeysShortcutToPauseEnabled[] =
+    "settings.a11y.mouse_keys.ctrl_to_pause_enabled";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Register local state used only for migration (clearing or moving to a new
@@ -1175,12 +1201,25 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Deprecated 03/2024.
   registry->RegisterBooleanPref(kOobeGuestAcceptedTos, false);
+
+  // Deprecated 05/2024.
+  registry->RegisterTimePref(kDeviceRegisteredTime, base::Time());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Deprecated 04/2024.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterDictionaryPref(kLastUploadedEuiccStatusPrefLegacy);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Deprecated 05/2024.
+  registry->RegisterStringPref(kSearchEnginesStudyGroup, std::string());
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Deprecated 05/2024.
+  registry->RegisterBooleanPref(kHasShownRefreshWhatsNew, false);
+#endif
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1505,10 +1544,14 @@ void RegisterProfilePrefsForMigration(
   // Deprecated 04/2024.
   registry->RegisterTimePref(kDIPSTimerLastUpdate, base::Time());
 
-  // Deprecated 04/2024.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Deprecated 04/2024.
   registry->RegisterBooleanPref(kMetricsUserInheritOwnerConsent, true);
   registry->RegisterBooleanPref(kGlanceablesEnabled, true);
+
+  // Deprecated 05/2024.
+  registry->RegisterBooleanPref(kAccessibilityMouseKeysShortcutToPauseEnabled,
+                                true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -1641,7 +1684,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   metrics::TabStatsTracker::RegisterPrefs(registry);
   performance_manager::user_tuning::prefs::RegisterLocalStatePrefs(registry);
   RegisterBrowserPrefs(registry);
-  SearchEngineChoiceClientSideTrial::RegisterLocalStatePrefs(registry);
   speech::SodaInstaller::RegisterLocalStatePrefs(registry);
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
@@ -1709,7 +1751,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::StatsReportingController::RegisterLocalStatePrefs(registry);
   ash::system::AutomaticRebootManager::RegisterPrefs(registry);
   ash::TimeZoneResolver::RegisterPrefs(registry);
-  ash::UserImageManager::RegisterPrefs(registry);
+  ash::UserImageManagerImpl::RegisterPrefs(registry);
   ash::UserSessionManager::RegisterPrefs(registry);
   ash::WebKioskAppManager::RegisterPrefs(registry);
   component_updater::MetadataTable::RegisterPrefs(registry);
@@ -2004,6 +2046,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   first_run::RegisterProfilePrefs(registry);
   gcm::RegisterProfilePrefs(registry);
   HatsServiceDesktop::RegisterProfilePrefs(registry);
+  lens::prefs::RegisterProfilePrefs(registry);
   NtpCustomBackgroundService::RegisterProfilePrefs(registry);
   media_router::RegisterAccessCodeProfilePrefs(registry);
   media_router::RegisterProfilePrefs(registry);
@@ -2254,6 +2297,15 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterIntegerPref(prefs::kChromeDataRegionSetting, 0);
 #endif
+
+  registry->RegisterBooleanPref(prefs::kTabGroupsDeletionSkipDialogOnDelete,
+                                false);
+  registry->RegisterBooleanPref(prefs::kTabGroupsDeletionSkipDialogOnUngroup,
+                                false);
+  registry->RegisterBooleanPref(prefs::kTabGroupsDeletionSkipDialogOnRemoveTab,
+                                false);
+  registry->RegisterBooleanPref(prefs::kTabGroupsDeletionSkipDialogOnCloseTab,
+                                false);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -2410,12 +2462,25 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Added 03/2024.
   local_state->ClearPref(kOobeGuestAcceptedTos);
+
+  // Added 05/2024.
+  local_state->ClearPref(kDeviceRegisteredTime);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Added 04/2024 .
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   local_state->ClearPref(kLastUploadedEuiccStatusPrefLegacy);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Added 05/2024.
+  local_state->ClearPref(kSearchEnginesStudyGroup);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Added 05/2024.
+  local_state->ClearPref(kHasShownRefreshWhatsNew);
+#endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
@@ -2841,10 +2906,13 @@ void MigrateObsoleteProfilePrefs(PrefService* profile_prefs,
   // Added 04/2024.
   profile_prefs->ClearPref(kDIPSTimerLastUpdate);
 
-  // Added 04/2024.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 04/2024.
   profile_prefs->ClearPref(kMetricsUserInheritOwnerConsent);
   profile_prefs->ClearPref(kGlanceablesEnabled);
+
+  // Added 05/2024.
+  profile_prefs->ClearPref(kAccessibilityMouseKeysShortcutToPauseEnabled);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.

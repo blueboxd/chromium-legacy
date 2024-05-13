@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ui.desktop_windowing;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher.ActivityState;
@@ -39,8 +40,26 @@ public class AppHeaderUtils {
         int NUM_ENTRIES = 7;
     }
 
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @IntDef({
+        DesktopWindowModeState.UNAVAILABLE,
+        DesktopWindowModeState.INACTIVE,
+        DesktopWindowModeState.ACTIVE,
+    })
+    public @interface DesktopWindowModeState {
+        int UNAVAILABLE = 0;
+        int INACTIVE = 1;
+        int ACTIVE = 2;
+
+        // Be sure to also update enums.xml when updating these values.
+        int NUM_ENTRIES = 3;
+    }
+
+    private static Boolean sIsAppInDesktopWindowForTesting;
+
     /**
-     * Determine if the currently starting activity is focused, based on the {@link
+     * Determines whether the currently starting activity is focused, based on the {@link
      * ActivityLifecycleDispatcher} instance associated with it. Note that this method is intended
      * to be used during app startup flows and may not return the correct value at other times.
      *
@@ -62,6 +81,7 @@ public class AppHeaderUtils {
      */
     public static boolean isAppInDesktopWindow(
             @Nullable DesktopWindowStateProvider desktopWindowStateProvider) {
+        if (sIsAppInDesktopWindowForTesting != null) return sIsAppInDesktopWindowForTesting;
         if (desktopWindowStateProvider == null) return false;
         var appHeaderState = desktopWindowStateProvider.getAppHeaderState();
 
@@ -69,7 +89,8 @@ public class AppHeaderUtils {
     }
 
     /**
-     * Record the result of the heuristics used to determine whether the app is in a desktop window.
+     * Records the result of the heuristics used to determine whether the app is in a desktop
+     * window.
      *
      * @param result The {@link DesktopWindowHeuristicResult} to record.
      */
@@ -80,5 +101,38 @@ public class AppHeaderUtils {
                 "Android.DesktopWindowHeuristicResult",
                 result,
                 DesktopWindowHeuristicResult.NUM_ENTRIES);
+    }
+
+    /**
+     * Records an enumerated histogram using {@link DesktopWindowModeState}.
+     *
+     * @param desktopWindowStateProvider The {@link DesktopWindowStateProvider} instance.
+     * @param histogramName The name of the histogram.
+     */
+    public static void recordDesktopWindowModeStateEnumHistogram(
+            @Nullable DesktopWindowStateProvider desktopWindowStateProvider, String histogramName) {
+        @DesktopWindowModeState int state;
+        // |desktopWindowStateProvider| will be null on a device that does not support desktop
+        // windowing.
+        if (desktopWindowStateProvider == null) {
+            state = DesktopWindowModeState.UNAVAILABLE;
+        } else {
+            state =
+                    isAppInDesktopWindow(desktopWindowStateProvider)
+                            ? DesktopWindowModeState.ACTIVE
+                            : DesktopWindowModeState.INACTIVE;
+        }
+        RecordHistogram.recordEnumeratedHistogram(
+                histogramName, state, DesktopWindowModeState.NUM_ENTRIES);
+    }
+
+    /**
+     * Sets the desktop windowing mode for tests.
+     *
+     * @param isAppInDesktopWindow Whether desktop windowing mode is activated.
+     */
+    public static void setAppInDesktopWindowForTesting(boolean isAppInDesktopWindow) {
+        sIsAppInDesktopWindowForTesting = isAppInDesktopWindow;
+        ResettersForTesting.register(() -> sIsAppInDesktopWindowForTesting = null);
     }
 }

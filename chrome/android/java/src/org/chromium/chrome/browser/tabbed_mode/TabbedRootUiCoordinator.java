@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ResettersForTesting;
@@ -659,23 +660,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
 
         if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()) {
-            Runnable onDialogAcceptedRunnable =
-                    () -> {
-                        if (!mTabModelSelectorSupplier.get().isIncognitoSelected()) {
-                            TabSwitcher regularTabSwitcher = mTabSwitcherSupplier.get();
-                            if (regularTabSwitcher != null) {
-                                regularTabSwitcher.refreshTabList();
-                            }
-                        } else {
-                            TabSwitcher incognitoTabSwitcher = mIncognitoTabSwitcherSupplier.get();
-                            if (incognitoTabSwitcher != null) {
-                                incognitoTabSwitcher.refreshTabList();
-                            }
-                        }
-                    };
-
-            // TODO(b/330598024): Introduce an alternative method of observing changes to a tab
-            // group's color than refreshing the list through a runnable.
             TabModelUtils.runOnTabStateInitialized(
                     mTabModelSelectorSupplier.get(),
                     (tabModelSelector) -> {
@@ -686,7 +670,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                                                 mActivity,
                                                 mModalDialogManagerSupplier.get(),
                                                 tabModelSelector,
-                                                onDialogAcceptedRunnable);
+                                                () -> {});
                     });
         }
 
@@ -745,7 +729,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                             mTabModelSelectorSupplier.get(),
                             mTabCreatorManagerSupplier.get(),
                             TabGroupSyncServiceFactory.getForProfile(currentlySelectedProfile),
-                            UserPrefs.get(currentlySelectedProfile));
+                            UserPrefs.get(currentlySelectedProfile),
+                            () -> ApplicationStatus.getLastTrackedFocusedActivity() == mActivity);
         }
     }
 

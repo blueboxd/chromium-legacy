@@ -9,11 +9,14 @@
 
 #include "base/check.h"
 #include "base/functional/callback_helpers.h"
+#include "components/autofill/core/browser/data_model/bank_account.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_api_client.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_client.h"
+#include "components/facilitated_payments/core/browser/network_api/facilitated_payments_network_interface.h"
 #include "components/facilitated_payments/core/features/features.h"
+#include "components/facilitated_payments/core/metrics/facilitated_payments_metrics.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace payments::facilitated {
@@ -45,7 +48,8 @@ void FacilitatedPaymentsManager::Reset() {
   pix_code_detection_attempt_count_ = 0;
   ukm_source_id_ = 0;
   pix_code_detection_triggering_timer_.Stop();
-  initiate_payment_request_details_->Reset();
+  initiate_payment_request_details_ =
+      std::make_unique<FacilitatedPaymentsInitiatePaymentRequestDetails>();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -159,12 +163,22 @@ void FacilitatedPaymentsManager::ProcessPixCodeDetectionResult(
 void FacilitatedPaymentsManager::OnPixCodeValidated(
     std::string pix_code,
     base::expected<bool, std::string> is_pix_code_valid) {
-  if (!is_pix_code_valid.has_value() || !is_pix_code_valid.value()) {
+  if (!is_pix_code_valid.has_value()) {
+    // Pix code validator encountered an error.
+    LogPaymentNotOfferedReason(PaymentNotOfferedReason::kCodeValidatorFailed);
+    Reset();
+    return;
+  }
+
+  if (!is_pix_code_valid.value()) {
+    // Pix code is not valid.
+    LogPaymentNotOfferedReason(PaymentNotOfferedReason::kInvalidCode);
     Reset();
     return;
   }
 
   initiate_payment_request_details_->pix_code_ = std::move(pix_code);
+  api_availability_check_latency_ = base::TimeTicks::Now();
   api_client_->IsAvailable(
       base::BindOnce(&FacilitatedPaymentsManager::OnApiAvailabilityReceived,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -182,7 +196,10 @@ int64_t FacilitatedPaymentsManager::GetPixCodeDetectionLatencyInMillis() const {
 
 void FacilitatedPaymentsManager::OnApiAvailabilityReceived(
     bool is_api_available) {
+  LogIsApiAvailableResult(is_api_available, (base::TimeTicks::Now() -
+                                             api_availability_check_latency_));
   if (!is_api_available) {
+    LogPaymentNotOfferedReason(PaymentNotOfferedReason::kApiNotAvailable);
     Reset();
     return;
   }
@@ -213,6 +230,7 @@ void FacilitatedPaymentsManager::OnApiAvailabilityReceived(
 void FacilitatedPaymentsManager::OnRiskDataLoaded(
     const std::string& risk_data) {
   if (risk_data.empty()) {
+    LogPaymentNotOfferedReason(PaymentNotOfferedReason::kRiskDataEmpty);
     Reset();
     return;
   }
@@ -234,7 +252,7 @@ void FacilitatedPaymentsManager::OnPixPaymentPromptResult(
     return;
   }
   initiate_payment_request_details_->instrument_id_ = selected_instrument_id;
-
+  get_client_token_loading_latency_ = base::TimeTicks::Now();
   api_client_->GetClientToken(
       base::BindOnce(&FacilitatedPaymentsManager::OnGetClientToken,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -242,6 +260,9 @@ void FacilitatedPaymentsManager::OnPixPaymentPromptResult(
 
 void FacilitatedPaymentsManager::OnGetClientToken(
     std::vector<uint8_t> client_token) {
+  LogGetClientTokenResult(
+      !client_token.empty(),
+      (base::TimeTicks::Now() - get_client_token_loading_latency_));
   if (client_token.empty()) {
     Reset();
     return;
@@ -254,8 +275,29 @@ void FacilitatedPaymentsManager::OnGetClientToken(
 }
 
 void FacilitatedPaymentsManager::SendInitiatePaymentRequest() {
-  // TODO(b/300334562): Populate the request details and send the initiate
-  // payment request.
+  if (FacilitatedPaymentsNetworkInterface* payments_network_interface =
+          client_->GetFacilitatedPaymentsNetworkInterface()) {
+    payments_network_interface->InitiatePayment(
+        std::move(initiate_payment_request_details_),
+        base::BindOnce(
+            &FacilitatedPaymentsManager::OnInitiatePaymentResponseReceived,
+            weak_ptr_factory_.GetWeakPtr()),
+        client_->GetPersonalDataManager()->app_locale());
+  }
+}
+
+void FacilitatedPaymentsManager::OnInitiatePaymentResponseReceived(
+    autofill::AutofillClient::PaymentsRpcResult result,
+    std::unique_ptr<FacilitatedPaymentsInitiatePaymentResponseDetails>
+        response_details) {
+  // TODO(b/300334855): Send the action token from the InitiatePayment response
+  // into the purchase manager.
+}
+
+void FacilitatedPaymentsManager::ResetForTesting() {
+  is_test_ = false;
+  Reset();
+  is_test_ = true;
 }
 
 }  // namespace payments::facilitated

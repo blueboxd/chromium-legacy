@@ -15,10 +15,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/hit_test/hit_test_data_provider.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
-#include "components/viz/host/host_frame_sink_manager.h"
-#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/common/input/render_input_router.h"
@@ -55,13 +54,11 @@ bool IsMouseButtonDown(const blink::WebMouseEvent& event) {
 namespace content {
 
 // Helper method also used from hit_test_debug_key_event_observer.cc
-viz::HitTestQuery* GetHitTestQuery(
-    viz::HostFrameSinkManager* host_frame_sink_manager,
-    const viz::FrameSinkId& frame_sink_id) {
+viz::HitTestQuery* GetHitTestQuery(viz::HitTestDataProvider* provider,
+                                   const viz::FrameSinkId& frame_sink_id) {
   if (!frame_sink_id.is_valid())
     return nullptr;
-  const auto& display_hit_test_query_map =
-      host_frame_sink_manager->display_hit_test_query();
+  const auto& display_hit_test_query_map = provider->GetDisplayHitTestQuery();
   const auto iter = display_hit_test_query_map.find(frame_sink_id);
   if (iter == display_hit_test_query_map.end())
     return nullptr;
@@ -322,6 +319,16 @@ size_t RenderWidgetHostInputEventRouter::RegisteredViewCountForTesting() const {
   return owner_map_.size();
 }
 
+RenderWidgetHostViewInput*
+RenderWidgetHostInputEventRouter::GetLastMouseMoveTargetForTest() {
+  return last_mouse_move_target_.get();
+}
+
+RenderWidgetHostViewInput*
+RenderWidgetHostInputEventRouter::GetLastMouseMoveRootViewForTest() {
+  return last_mouse_move_root_view_.get();
+}
+
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewInputDestroyed(
     RenderWidgetHostViewInput* view) {
   // RenderWidgetHostViewInput::RemoveObserver() should only ever be called
@@ -418,22 +425,21 @@ void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
       entry.second->RemoveObserver(this);
   }
   owner_map_.clear();
-  viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
-  if (manager)
-    manager->RemoveHitTestRegionObserver(this);
+  hit_test_provider_->RemoveHitTestRegionObserver(this);
 }
 
-RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
+RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter(
+    viz::HitTestDataProvider* provider)
     : last_mouse_move_target_(nullptr),
       last_mouse_move_root_view_(nullptr),
       last_emulated_event_root_view_(nullptr),
       last_device_scale_factor_(1.f),
       active_touches_(0),
+      hit_test_provider_(provider),
       event_targeter_(std::make_unique<RenderWidgetTargeter>(this)),
       touch_event_ack_queue_(new TouchEventAckQueue(this)) {
-  viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
-  DCHECK(manager);
-  manager->AddHitTestRegionObserver(this);
+  DCHECK(hit_test_provider_);
+  hit_test_provider_->AddHitTestRegionObserver(this);
 }
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
@@ -547,8 +553,8 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
 
   viz::FrameSinkId frame_sink_id;
   bool query_renderer = false;
-  viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
-                                             root_view->GetRootFrameSinkId());
+  viz::HitTestQuery* query =
+      GetHitTestQuery(hit_test_provider_, root_view->GetRootFrameSinkId());
   if (!query) {
     *transformed_point = point;
     return {root_view, false, *transformed_point, false};
@@ -986,33 +992,30 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   // as long as they are the only embeddable RWHVs.
   while (cur_view->GetParentViewInput()) {
     cur_view = cur_view->GetParentViewInput();
-    // cur_view can possibly be nullptr for guestviews that are not currently
-    // connected to the webcontents tree.
-    if (!cur_view) {
-      last_mouse_move_target_ = target;
-      last_mouse_move_root_view_ = root_view;
-      return;
-    }
     entered_views.push_back(cur_view);
   }
-
-  // On Windows, it appears to be possible that render widget targeting could
-  // produce a target that is outside of the specified root. For now, we'll
-  // just give up in such a case. See https://crbug.com/851958.
-  if (cur_view != root_view)
+  // There are two cases where cur_view != root_view :
+  // 1. On Windows, render widget targeting could produce a target that is
+  // outside of the specified root. See https://crbug.com/851958. In this case,
+  // we'll just give up.
+  // 2. cur_view's GetParentViewInput() can possibly be nullptr for
+  // guestviews (Chrome App or WebUI) that are not currently connected to
+  // the webcontents tree. It is fine to return early since this would be
+  // attempted again on next mouse event and once guestview is connected, the
+  // ancestors will be notified and state would be updated.
+  if (cur_view != root_view) {
     return;
+  }
 
   cur_view = last_mouse_move_target_;
   if (cur_view) {
     exited_views.push_back(cur_view);
     while (cur_view->GetParentViewInput()) {
       cur_view = cur_view->GetParentViewInput();
-      if (!cur_view) {
-        last_mouse_move_target_ = target;
-        last_mouse_move_root_view_ = root_view;
-        return;
-      }
       exited_views.push_back(cur_view);
+    }
+    if (cur_view != root_view) {
+      return;
     }
     DCHECK_EQ(cur_view, root_view);
   }
@@ -2048,53 +2051,21 @@ void RenderWidgetHostInputEventRouter::ForwardDelegatedInkPoint(
 
   if (IsMoveEvent(input_event.GetTypeAsUiEventType()) && metadata &&
       hovering == metadata.value().delegated_ink_is_hovering) {
-    if (!delegated_ink_point_renderer_.is_bound()) {
-      ui::Compositor* compositor =
-          static_cast<RenderWidgetHostViewBase*>(target_view)->GetCompositor();
-
-      // The remote can't be bound if the compositor is null, so bail if that
-      // is the case so we don't crash by trying to use an unbound remote.
-      if (!compositor)
-        return;
-
-      TRACE_EVENT_INSTANT0("delegated_ink_trails",
-                           "Binding mojo interface for delegated ink points.",
-                           TRACE_EVENT_SCOPE_THREAD);
-      compositor->SetDelegatedInkPointRenderer(
-          delegated_ink_point_renderer_.BindNewPipeAndPassReceiver());
-      delegated_ink_point_renderer_.reset_on_disconnect();
-    }
-
     gfx::PointF position = pointer_properties.PositionInWidget();
     root_view->TransformPointToRootSurface(&position);
     position.Scale(target_view->GetDeviceScaleFactor());
 
     gfx::DelegatedInkPoint delegated_ink_point(
         position, input_event.TimeStamp(), pointer_properties.id);
-    TRACE_EVENT_WITH_FLOW1("delegated_ink_trails",
-                           "Forwarding delegated ink point from browser.",
-                           TRACE_ID_GLOBAL(delegated_ink_point.trace_id()),
-                           TRACE_EVENT_FLAG_FLOW_OUT, "delegated point",
-                           delegated_ink_point.ToString());
 
-    // Calling this will result in IPC calls to get |delegated_ink_point| to
-    // viz. The decision to do this here was made with the understanding that
-    // the IPC overhead will result in a minor increase in latency for getting
-    // this event to the renderer. However, by sending it here, the event is
-    // given the greatest possible chance to make it to viz before
-    // DrawAndSwap() is called, allowing more points to be drawn as part of
-    // the delegated ink trail, and thus reducing user perceived latency.
-    delegated_ink_point_renderer_->StoreDelegatedInkPoint(delegated_ink_point);
-    ended_delegated_ink_trail_ = false;
-  } else if (delegated_ink_point_renderer_.is_bound() &&
-             !ended_delegated_ink_trail_) {
-    // Let viz know that the most recent point it received from us is probably
-    // the last point the user is inking, so it shouldn't predict anything
-    // beyond it.
-    TRACE_EVENT_INSTANT0("delegated_ink_trails", "Delegated ink trail ended",
-                         TRACE_EVENT_SCOPE_THREAD);
-    delegated_ink_point_renderer_->ResetPrediction();
-    ended_delegated_ink_trail_ = true;
+    target_view->GetViewRenderInputRouter()
+        ->delegate()
+        ->ForwardDelegatedInkPoint(delegated_ink_point,
+                                   ended_delegated_ink_trail_);
+  } else {
+    target_view->GetViewRenderInputRouter()
+        ->delegate()
+        ->ResetDelegatedInkPointPrediction(ended_delegated_ink_trail_);
   }
 }
 

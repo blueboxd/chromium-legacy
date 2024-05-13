@@ -63,16 +63,22 @@ class ASH_EXPORT RefreshRateController
   void StopObservingPowerStatusForTest();
 
  private:
+  // The requested state for refresh rate throttling.
+  enum class ThrottleState {
+    kEnabled,
+    kDisabled,
+  };
+
   void UpdateSeamlessRefreshRates(int64_t display_id);
-  void OnSeamlessRefreshRangeReceived(
+  void OnSeamlessRefreshRatesReceived(
       int64_t display_id,
-      const std::optional<std::vector<float>>& refresh_ranges);
+      const std::optional<std::vector<float>>& refresh_rates);
 
   void UpdateStates();
   void RefreshThrottleState();
   void RefreshVrrState();
-  display::RefreshRateThrottleState GetDesiredThrottleState();
-  display::RefreshRateThrottleState GetDynamicThrottleState();
+  ThrottleState GetDesiredThrottleState();
+  ThrottleState GetDynamicThrottleState();
 
   // Not owned.
   raw_ptr<display::DisplayConfigurator> display_configurator_;
@@ -85,6 +91,8 @@ class ASH_EXPORT RefreshRateController
           DisplayPerformanceModeController::ModeState::kDefault;
 
   bool force_throttle_ = false;
+
+  std::unordered_map<int64_t, std::vector<float>> display_refresh_rates_;
 
   base::ScopedObservation<ash::PowerStatus, ash::PowerStatus::Observer>
       power_status_observer_{this};

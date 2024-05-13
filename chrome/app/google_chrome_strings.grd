@@ -830,8 +830,11 @@ Permissions you've already given to websites and apps may apply to this account.
       <message name="IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE_OFF" desc="Alerts the user that the extension is not from the Chrome web store.">
         Off • Chrome can't verify where this extension comes from
       </message>
+      <message name="IDS_EXTENSIONS_SAFETY_CHECK_NO_PRIVACY_PRACTICES" desc="Alerts the user that the extension has not disclosed its privacy practices.">
+        This extension hasn't published privacy practices, such as how it collects and uses data. Chrome recommends that you remove it.
+      </message>
 
-      <!-- chrome://settings/extensions page -->
+      <!-- chrome://extensions page -->
     <message name="IDS_EXTENSIONS_SC_DESCRIPTION" desc="Detailed message displayed in the Safety Check description section.">
       {NUM_EXTENSIONS, plural,
       =1 {Chrome recommends that you remove it}
@@ -843,7 +846,7 @@ Permissions you've already given to websites and apps may apply to this account.
       <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chrome cannot prevent extensions from recording history in Incognito mode. Displayed in extensions management UI after an extension is selected to be run in Incognito mode.">
         Warning: Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in Incognito mode, unselect this option.
       </message>
-      <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
+      <message name="IDS_EXTENSIONS_UNINSTALL" desc="The label for a control that triggers an extension uninstall.">
         Remove from Chrome
       </message>
       <message name="IDS_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME" desc="The label to indicate that a shortcut will be triggerable only from within the Chrome application.">
@@ -1006,6 +1009,9 @@ Permissions you've already given to websites and apps may apply to this account.
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
           Continue in a new Chrome profile?
         </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE_V2" desc="Title of the web signin interception bubble used when Explicit browser Sign in is enabled">
+          Sign in to Chrome in a new profile?
+        </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_SWITCH_BUBBLE_TITLE" desc="Title for the profile switch interception bubble">
           Switch to existing Chrome profile?
         </message>
@@ -1021,16 +1027,16 @@ Permissions you've already given to websites and apps may apply to this account.
          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_DESC_MANAGED_DEVICE" desc="Body of the web signin interception bubble when the new account is personal and the existing account is managed on a managed device">
           This will create a new Chrome profile for <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_DESC_V2" desc="Body of the web signin interception bubble. It is shown when the user signs in on the web while they already have another account present in the current profile.">
-          Another account is already signed in. To keep your browsing separate, Chrome can create your own profile for you.
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_DESC" desc="Body of the web signin interception bubble. It is shown when the user signs in on the web while they already have another account present in the current profile.">
+         <ph name="EXISTING_USER">$1<ex>Elisa</ex></ph> is already signed in.  To keep your browsing separate, sign in to Chrome in your own profile as <ph name="USER_EMAIL_ADDRESS">$2<ex>foo@gmail.com</ex></ph>.
         </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_SUBTITLE" desc="Subtitle of the Chrome Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
           To save and use your passwords and more on all your devices, sign in to Chrome
         </message>
-        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_VERIFY_BODY" translateable="false"  desc="This is the subtitle of an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This subtitle is after the 'Some data isn’t saved yet' string. The tone should be cautionary, because we want to explain to the user that their data is not saved to their Google Account. This string provides a path to resolution because it explains how the user can properly save their data before they sign out of Chrome.">
+        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_VERIFY_BODY" desc="This is the subtitle of an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This subtitle is after the 'Some data isn’t saved yet' string. The tone should be cautionary, because we want to explain to the user that their data is not saved to their Google Account. This string provides a path to resolution because it explains how the user can properly save their data before they sign out of Chrome.">
           Chrome needs to verify it’s you before some data can be saved in your Google Account and used on all your devices. If you sign out, this data will stay on this device.
         </message>
-        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_UNSYNCED_BODY" translateable="false"  desc="This is the subtitle of an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This subtitle is after the 'Some data isn’t saved yet' string. The tone should be cautionary, because we want to explain to the user that their data is not saved to their Google Account. This string provides a path to resolution because it explains how the user can properly save their data before they sign out of Chrome.">
+        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_UNSYNCED_BODY" desc="This is the subtitle of an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user tries to sign out immediately after having saved saved some data (like a password or payment method) to Chrome and Chrome hasn't had time to save that data to the user's Google Account yet. This subtitle is after the 'Some data isn't saved yet' string. The tone should be cautionary, because we want to explain to the user that their data is not saved to their Google Account. This string asks the user to wait a few minutes before trying to sign out again.">
           Some of your Chrome data hasn't been saved in your Google Account yet. Try waiting a few minutes before signing out.
         </message>
         <message name="IDS_CLOSE_WARNING_FOR_CLEAR_COOKIES_ON_EXIT_TEXT" desc="Body of a notice displayed when closing the last Chrome window, to inform the user about a change in the way the 'Clear cookie on exit' setting works.">
@@ -1059,6 +1065,11 @@ Permissions you've already given to websites and apps may apply to this account.
             Use Chrome Without an Account
           </message>
         </if>
+
+        <!-- Autofill Sign In Promo Bubble -->
+        <message name="IDS_AUTOFILL_SIGNIN_PROMO_SUBTITLE_PASSWORD"  desc="This is the body text of a confirmation message and means that the password was only saved locally to the user's device (not in their Google Account). It appears when the user is not signed in to Chrome and is after the 'Password saved to this device' string. If the user wants to save this data to their Google Account, they can click the 'Sign in to Chrome' button at the bottom of this message. The tone should be motivating.">
+          To save and use passwords and more on all your devices, sign in to Chrome. This password will be saved in your Google Account after you sign in.
+        </message>
       </if>
 
       <if expr="not chromeos_ash and not is_android">
@@ -1117,6 +1128,9 @@ Permissions you've already given to websites and apps may apply to this account.
         <message name="IDS_PROFILE_MENU_MANAGE_PROFILES" desc="The text label of the Manage Chrome Profiles item in the Profile Menu.">
           Manage Chrome profiles
         </message>
+        <message name="IDS_PROFILE_MENU_SIGN_OUT" desc="The text label of the Sign out of Chrome button in the Profile Menu.">
+          Sign out of Chrome
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_PROFILE_MENU_CUSTOMIZE_PROFILE_BUTTON" desc="The text label of the Customize Chrome button in the Profile Menu.">
@@ -1127,6 +1141,9 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
         <message name="IDS_PROFILE_MENU_MANAGE_PROFILES" desc="The text label of the Manage Chrome Profiles item in the Profile Menu.">
           Manage Chrome Profiles
+        </message>
+        <message name="IDS_PROFILE_MENU_SIGN_OUT" desc="The text label of the Sign out of Chrome button in the Profile Menu.">
+          Sign Out of Chrome
         </message>
       </if>
 
@@ -1268,6 +1285,170 @@ Permissions you've already given to websites and apps may apply to this account.
         <message name="IDS_SIDE_PANEL_GENERIC_MENU_IPH_SCREENREADER" desc="The screen reader text of the IPH describing how to find side panel entry points in the Chrome menu. The phrase 'top right' should read as 'top left' in rtl languages.">
           You can open bookmarks, reading mode, and more from the Chrome menu at the top right
         </message>
+
+        <!-- Re-Engagement Campaign IPH Strings -->
+        <message name="IDS_REENGAGEMENT_PROMO_ADDRESS_BAR"
+                 desc="Re-engagement promo with information about new features in the address bar.">
+          Perform tasks like translate, calculate, and more directly from the address bar
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_AI_BENEFITS"
+                 desc="Re-engagement promo with information about new AI features (tab organization).">
+          AI in Chrome helps make the web faster, safer and more accessible
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_AI_ORGANIZE_TABS"
+                 desc="Re-engagement promo with information about new AI features (tab organization).">
+          Organize your tabs with help from AI
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_AI_THEME"
+                 desc="Re-engagement promo with information about AI themes.">
+          Create your own theme with AI to give your browser a unique look
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_AI_WRITING"
+                 desc="Re-engagement promo with information about new AI features (writing assistance).">
+          Write with more confidence with help from AI
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_CROSS_PLATFORM_FAMILIAR"
+                 desc="Re-engagement promo with information about using chrome on multiple platforms.">
+          Chrome works across platforms to give you a familiar experience no matter the device
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_CROSS_PLATFORM_SECURE"
+                 desc="Re-engagement promo with information about security benefit of using chrome on multiple platforms.">
+          Chrome is designed to be fast and secure across all your devices — from your phone to your computer.
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_CUSTOMIZE_COLOR"
+                 desc="Re-engagement promo with information about color personalization.">
+          Try out a new color to customize your browser
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_DEFAULT_BROWSER"
+                 desc="Re-engagement promo with information about making Chrome your default browser.">
+          Set Chrome as your default to safely do, create, and explore online
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_ENERGY_MEMORY_SAVER"
+                 desc="Re-engagement promo with information about energy and memory saver.">
+          Chrome is built for performance with features like Energy Saver and Memory Saver
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_EXPLORE_AI"
+                 desc="Re-engagement promo with information about new AI features.">
+          Try out new AI features to create themes, get writing help, and stay organized
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_EXTENSIONS"
+                 desc="Re-engagement promo with information about extensions.">
+          Get more done with extensions for Chrome
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_LATEST_TECHNOLOGY"
+                 desc="Re-engagement promo with information about new technology in Chrome.">
+          Chrome brings you the latest technology for better browsing
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_NEW_FEATURES"
+                 desc="Re-engagement promo with information about new features in Chrome.">
+          Chrome regularly adds new features that help you get things done
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_PASSWORD_MANAGER"
+                 desc="Re-engagement promo with information about managing passwords.">
+          Save your passwords and access them on the go
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_PERFORMANCE"
+                 desc="Re-engagement promo with information about performance settings.">
+          Chrome stays fast with performance-boosting features
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_PERSONALIZE"
+                 desc="Re-engagement promo with information about theme personalization.">
+          Personalize your browser with themes inspired by nature, artists collections and more
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_SAFE_BROWSING"
+                 desc="Re-engagement promo with information about Safe Browsing.">
+          Enhanced Safe Browsing offers Chrome's strongest online protection to keep you safe as you browse
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_SAFETY"
+                 desc="Re-engagement promo with information about how Chrome keeps users safe.">
+          Chrome does more to keep you safe online
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_SIGN_IN"
+                 desc="Re-engagement promo with information about benefits of signing in.">
+          When you sign in to Chrome, you can save bookmarks, passwords and more, then use them on your phone
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_TAB_GROUPS"
+                 desc="Re-engagement promo with information about tab management.">
+          Stay organized and focused with help from tab groups
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_TAB_PIN_AND_GROUP"
+                 desc="Re-engagement promo with information about tab management.">
+          To stay organized, you can pin frequently visited sites and organize tabs into groups
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_THEMES_WEB_STORE"
+                 desc="Re-engagement promo with information about tab management.">
+          Transform your browser with vibrant themes inspired by artists, nature, and more
+        </message>
+        <message name="IDS_REENGAGEMENT_PROMO_TRANSLATE"
+                 desc="Re-engagement promo with information about tab management.">
+          Chrome has Google Translate built in so you can translate when you need it
+        </message>
+
+        <!-- These are all button captions for re-engagement promos and
+             therefore must follow title-case conventions. Some of them happen
+             to have all caps (due to proper nouns) in English but they have
+             been split so that localization knows they require different
+             treatment. -->
+        <if expr="not use_titlecase">
+          <message name="IDS_REENGAGEMENT_PROMO_LEARN_HOW_ACTION"
+                  desc="Re-engagement promo generic 'show me how to do this' action.">
+            Learn how
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_CUSTOMIZE_CHROME_ACTION"
+                  desc="Re-engagement promo with information about customizing Chrome - action button.">
+            Customize Chrome
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_EXPLORE_AI_ACTION"
+                  desc="Re-engagement promo with information about new AI features - action button.">
+            Explore AI
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_SETTINGS_ACTION"
+                  desc="Re-engagement promo with information about new settings - action button.">
+            Settings
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_VIEW_SAFETY_FEATURES_ACTION"
+                  desc="Re-engagement promo with information about how Chrome keeps users safe - action button.">
+            View safety features
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_VIEW_WHATS_NEW_ACTION"
+                  desc="Re-engagement promo with information about new features in chrome - action button.">
+            View What’s New
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_VISIT_CHROME_WEB_STORE_ACTION"
+                  desc="Re-engagement promo with information about extensions - action button.">
+            Visit Chrome Web Store
+          </message>
+        </if>
+        <if expr="use_titlecase">
+          <message name="IDS_REENGAGEMENT_PROMO_CUSTOMIZE_CHROME_ACTION"
+                  desc="Re-engagement promo with information about customizing Chrome - action button.">
+            Customize Chrome
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_EXPLORE_AI_ACTION"
+                  desc="Re-engagement promo with information about new AI features - action button.">
+            Explore AI
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_SETTINGS_ACTION"
+                  desc="Re-engagement promo with information about new settings - action button.">
+            Settings
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_LEARN_HOW_ACTION"
+                  desc="Re-engagement promo generic 'show me how to do this' action.">
+            Learn How
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_VIEW_SAFETY_FEATURES_ACTION"
+                  desc="Re-engagement promo with information about how Chrome keeps users safe - action button.">
+            View Safety Features
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_VIEW_WHATS_NEW_ACTION"
+                  desc="Re-engagement promo with information about new features in chrome - action button.">
+            View What’s New
+          </message>
+          <message name="IDS_REENGAGEMENT_PROMO_VISIT_CHROME_WEB_STORE_ACTION"
+                  desc="Re-engagement promo with information about extensions - action button.">
+            Visit Chrome Web Store
+          </message>
+        </if>
       </if>
 
       <!-- Settings API bubble -->
@@ -1762,10 +1943,10 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
 
         <!-- Web Signout Intercept IPH -->
-        <message name="IDS_SIGNOUT_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNOUT_IPH_TEXT" translateable="false" desc="This confirmation message is intended to help users to understand that signing out of a Google service (like Gmail) will not sign them out of Chrome. It appears in a blue in-product help bubble, which points to the Chrome Profile Menu; it appears after the user signs out of a Google service (like Gmail). The user can open the Profile Menu and sign out of Chrome, if they wish to do so.">
+        <message name="IDS_SIGNOUT_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNOUT_IPH_TEXT" desc="This confirmation message is intended to help users to understand that signing out of a Google service (like Gmail) will not sign them out of Chrome. It appears in a blue in-product help bubble, which points to the Chrome Profile Menu; it appears after the user signs out of a Google service (like Gmail). The user can open the Profile Menu and sign out of Chrome, if they wish to do so.">
           To remove your Google Account from Chrome, sign out
         </message>
-        <message name="IDS_SIGNOUT_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNOUT_IPH_TEXT_SCREENREADER" translateable="false" desc="Text announced by screenreaders related to the confirmation message is intended to help users to understand that signing out of a Google service (like Gmail) will not sign them out of Chrome. It appears in a blue in-product help bubble, which points to the Chrome Profile Menu; it appears after the user signs out of a Google service (like Gmail). The user can open the Profile Menu and sign out of Chrome, if they wish to do so.">
+        <message name="IDS_SIGNOUT_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNOUT_IPH_TEXT_SCREENREADER" desc="Text announced by screenreaders related to the confirmation message is intended to help users to understand that signing out of a Google service (like Gmail) will not sign them out of Chrome. It appears in a blue in-product help bubble, which points to the Chrome Profile Menu; it appears after the user signs out of a Google service (like Gmail). The user can open the Profile Menu and sign out of Chrome, if they wish to do so.">
           To remove your Google Account from Chrome, sign out of Chrome in the Settings page
         </message>
       </if>
@@ -1946,9 +2127,6 @@ Permissions you've already given to websites and apps may apply to this account.
         <message name="IDS_CANCEL_INSTALLATION" desc="For button to cancel the installation.">
           Cancel Installation
         </message>
-        <message name="IDS_SPLASH_SCREEN_MESSAGE" desc="Main message on the splash screen.">
-          On your marks...
-        </message>
         <message name="IDS_BUNDLE_INSTALLED_SUCCESSFULLY" desc="Installation complete message.">
           Installation complete.
         </message>
@@ -2092,6 +2270,11 @@ Permissions you've already given to websites and apps may apply to this account.
       <if expr="not is_android and not is_chromeos">
         <message name="IDS_CREATE_SHORTCUT_NOT_APPS_DIALOG_SUBTITLE" desc="Subtitle of the updated Create Shortcut dialog about how the site opens for Chrome">
           Shortcuts open in Chrome
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_CHROMIUM_SHORCUT_DESCRIPTION" desc="Text to use as description for the '.crwebloc' file format, which is generated by the 'Save and Share' -> 'Create Shortcut' flow.">
+          Chrome Shortcut
         </message>
       </if>
     </messages>

@@ -106,6 +106,7 @@ AutofillTriggerSource TriggerSourceFromSuggestionTriggerSource(
     case AutofillSuggestionTriggerSource::
         kShowPromptAfterDialogClosedNonManualFallback:
     case AutofillSuggestionTriggerSource::kComposeDialogLostFocus:
+    case AutofillSuggestionTriggerSource::kComposeDelayedProactiveNudge:
       // On Android, no popup exists. Instead, the keyboard accessory is used.
 #if BUILDFLAG(IS_ANDROID)
       return AutofillTriggerSource::kKeyboardAccessory;
@@ -219,11 +220,9 @@ bool AutofillExternalDelegate::IsAutofillAndFirstLayerSuggestionId(
 void AutofillExternalDelegate::OnQuery(
     const FormData& form,
     const FormFieldData& field,
-    const gfx::RectF& element_bounds,
     AutofillSuggestionTriggerSource trigger_source) {
   query_form_ = form;
   query_field_ = field;
-  element_bounds_ = element_bounds;
   trigger_source_ = trigger_source;
 }
 
@@ -293,7 +292,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
       return;
     }
     AutofillClient::PopupOpenArgs open_args(
-        element_bounds_, query_field_.text_direction(), suggestions,
+        query_field_.bounds(), query_field_.text_direction(), suggestions,
         trigger_source_, query_field_.form_control_ax_id());
     manager_->client().ShowAutofillSuggestions(open_args, GetWeakPtr());
   }
@@ -337,7 +336,7 @@ AutofillExternalDelegate::GetDriver() {
   return &manager_->driver();
 }
 
-void AutofillExternalDelegate::OnPopupShown() {
+void AutofillExternalDelegate::OnSuggestionsShown() {
   // Popups are expected to be Autofill or Autocomplete.
   DCHECK_NE(GetMainFillingProduct(), FillingProduct::kPassword);
 
@@ -388,8 +387,8 @@ void AutofillExternalDelegate::OnPopupShown() {
   }
 }
 
-void AutofillExternalDelegate::OnPopupHidden() {
-  manager_->OnPopupHidden();
+void AutofillExternalDelegate::OnSuggestionsHidden() {
+  manager_->OnSuggestionsHidden();
 }
 
 void AutofillExternalDelegate::DidSelectSuggestion(
@@ -665,8 +664,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       NOTREACHED_NORETURN();  // Should be handled elsewhere.
   }
   if (suggestion.type == SuggestionType::kShowAccountCards) {
-    manager_->RefetchCardsAndUpdatePopup(query_form_, query_field_,
-                                         element_bounds_);
+    manager_->RefetchCardsAndUpdatePopup(query_form_, query_field_);
   } else {
     manager_->client().HideAutofillSuggestions(
         SuggestionHidingReason::kAcceptSuggestion);

@@ -26,12 +26,27 @@ class PassageEmbedder : public mojom::PassageEmbedder {
 
   // Loads the given text embeddings model and the sentencepiece file for text
   // embedding generation. Return true if successful.
-  bool LoadModels(base::File* embeddings_model_file, base::File* sp_file);
+  //
+  // A TfLiteEngine can be provided to override any defaults.
+  bool LoadModels(base::File* embeddings_model_file,
+                  base::File* sp_file,
+                  std::unique_ptr<tflite::task::core::TfLiteEngine>
+                      tflite_engine = nullptr);
+
+  // Sets the input window size that the loaded embeddings model expects. Needs
+  // to be called before the model can be executed.
+  void SetEmbeddingsModelInputWindowSize(uint32_t size);
+
+  // mojom::PassageEmbedder:
+  void GenerateEmbeddings(const std::vector<std::string>& inputs,
+                          GenerateEmbeddingsCallback callback) override;
 
  private:
   // Loads the text embeddings tflite model from the bytes in the given file.
   // Return true if successful.
-  bool LoadEmbeddingsModelFile(base::File* embeddings_file);
+  bool LoadEmbeddingsModelFile(
+      base::File* embeddings_file,
+      std::unique_ptr<tflite::task::core::TfLiteEngine> tflite_engine);
 
   // Loads the sentencepiece model for tokenization, from the bytes in the given
   // file. Returns true if successful.
@@ -43,10 +58,6 @@ class PassageEmbedder : public mojom::PassageEmbedder {
   // Executes the model to generate text embeddings result for the input.
   std::optional<OutputType> Execute(InputType input);
 
-  // mojom::PassageEmbedder:
-  void GenerateEmbeddings(const std::vector<std::string>& inputs,
-                          GenerateEmbeddingsCallback callback) override;
-
   mojo::Receiver<mojom::PassageEmbedder> receiver_;
 
   std::unique_ptr<sentencepiece::SentencePieceProcessor> sp_processor_;
@@ -55,6 +66,9 @@ class PassageEmbedder : public mojom::PassageEmbedder {
 
   // Holds the bytes of the loaded text embedding model.
   base::HeapArray<uint8_t> embeddings_model_buffer_;
+
+  // The input window size that the embeddings model expects.
+  uint32_t embeddings_input_window_size_;
 };
 
 }  // namespace passage_embeddings

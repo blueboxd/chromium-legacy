@@ -1184,6 +1184,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method compute
 [Worker]     method constructor
 [Worker]     method createBuffer
+[Worker]     method dispatch
 [Worker]     method readBuffer
 [Worker]     method writeBuffer
 [Worker] interface MLGraph
@@ -3833,6 +3834,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter origin
 [Worker]     setter performance
 [Worker]     setter scheduler
+[Worker]     setter translation
 [Worker] interface WorkerLocation
 [Worker]     attribute @@toStringTag
 [Worker]     getter hash

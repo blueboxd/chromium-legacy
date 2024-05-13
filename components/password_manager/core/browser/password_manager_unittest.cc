@@ -1038,6 +1038,38 @@ TEST_P(PasswordManagerTest, AddUserInputToPossibleUsernames) {
               Field(&PossibleUsernameData::last_change, base::Time::Now())))));
 }
 
+// Tests that the user input in a single username form is correctly added to
+// the possible usernames, even when the form ID isn't provided where the
+// corresponding PasswordFormManager can be retrieved based on the unique field
+// ID.
+TEST_P(PasswordManagerTest, AddUserInputToPossibleUsernames_BasedOnFieldId) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kIosDetectUsernameInUff);
+
+  ON_CALL(client_, IsSavingAndFillingEnabled(_)).WillByDefault(Return(true));
+
+  FormData form_data = MakeSingleUsernameFormData();
+  FieldRendererId username_renderer_id = form_data.fields[0].renderer_id();
+
+  ON_CALL(driver_, GetLastCommittedURL).WillByDefault(ReturnRef(form_data.url));
+
+  // Register found form in PasswordManager.
+  manager()->OnPasswordFormsParsed(&driver_, {form_data});
+  task_environment_.RunUntilIdle();
+
+  // Take the user input in the single username form.
+  std::u16string typed_username = u"test_user";
+  manager()->UpdateStateOnUserInput(&driver_, std::nullopt,
+                                    username_renderer_id, typed_username);
+
+  // Do a spot check that the user input state was correctly updated.
+  EXPECT_THAT(
+      manager()->possible_usernames(),
+      ElementsAre(Pair(PossibleUsernameFieldIdentifier(driver_.GetId(),
+                                                       username_renderer_id),
+                       Field(&PossibleUsernameData::value, typed_username))));
+}
+
 // Tests that the `autocomplete_attribute_has_username` bit of the added
 // possible username is correctly set to true when there is a username value in
 // the autocomplete attribute.
@@ -1518,6 +1550,44 @@ TEST_P(PasswordManagerTest, FormSubmitWhenPasswordsCannotBeSaved) {
   OnPasswordFormSubmitted(form_data);
 
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePassword).Times(0);
+
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed);
+  task_environment_.RunUntilIdle();
+  // Objects owned by the manager may keep references to the store - therefore
+  // destroy the manager prior to store destruction.
+  manager_.reset();
+  store->ShutdownOnUIThread();
+}
+
+TEST_P(PasswordManagerTest,
+       PasswordUpdateDoesNotCareAboutIsAbleToSavePasswords) {
+  // Test that a plain form submit doesn't result in offering to save passwords.
+  auto store = base::MakeRefCounted<PasswordStore>(
+      std::make_unique<FailingPasswordStoreBackend>());
+  store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  PasswordForm form(MakeSimpleForm());
+  form.password_value = u"old_password";
+  store->AddLogin(form);
+
+  ON_CALL(client_, GetProfilePasswordStore())
+      .WillByDefault(Return(store.get()));
+
+  FormData form_data(MakeSimpleFormData());
+  std::vector<FormData> observed = {form_data};
+  EXPECT_FALSE(manager()->IsPasswordFieldDetectedOnPage());
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  EXPECT_TRUE(manager()->IsPasswordFieldDetectedOnPage());
+  manager()->OnPasswordFormsRendered(&driver_, observed);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(form_data.url))
+      .WillRepeatedly(Return(true));
+  OnPasswordFormSubmitted(form_data);
+
+  // User is still prompted to update a password.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePassword);
 
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
@@ -2741,7 +2811,7 @@ TEST_P(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     if (found_matched_logins_in_store) {
       // Credentials should be updated only when the user explicitly chooses.
       ASSERT_TRUE(form_manager);
-      form_manager->Update(form_manager->GetPendingCredentials());
+      form_manager->Save();
     }
     task_environment_.RunUntilIdle();
     form.password_element =

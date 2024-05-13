@@ -110,6 +110,11 @@ class MockAutofillPopupController : public AutofillPopupController {
               (override));
   MOCK_METHOD(void, PinView, (), (override));
   MOCK_METHOD(void, SetFilter, (std::optional<SuggestionFilter>), (override));
+  MOCK_METHOD(bool,
+              HandleKeyPressEvent,
+              (const content::NativeWebKeyboardEvent& event),
+              (override));
+  MOCK_METHOD(bool, HasFilteredOutSuggestions, (), (const override));
 
   void set_suggestions(const std::vector<SuggestionType>& ids) {
     suggestions_.clear();
@@ -131,6 +136,7 @@ class MockAutofillPopupController : public AutofillPopupController {
 
  private:
   std::vector<autofill::Suggestion> suggestions_;
+  std::vector<SuggestionFilterMatch> filter_matches_;
   gfx::ScopedDefaultFontDescription default_font_desc_setter_{
       "Arial, Times New Roman, 15px"};
   gfx::RectF element_bounds_ = {100, 100, 250, 50};

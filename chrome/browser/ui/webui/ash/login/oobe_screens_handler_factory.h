@@ -8,7 +8,6 @@
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ui/webui/ash/login/mojom/screens_common.mojom.h"
 #include "chrome/browser/ui/webui/ash/login/mojom/screens_factory.mojom.h"
-#include "chrome/browser/ui/webui/ash/login/mojom/screens_login.mojom.h"
 #include "chrome/browser/ui/webui/ash/login/mojom/screens_oobe.mojom.h"
 #include "chrome/browser/ui/webui/ash/login/mojom/screens_osauth.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -31,12 +30,16 @@ class OobeScreensHandlerFactory
   ~OobeScreensHandlerFactory() override;
 
   void BindScreensHandlerFactory();
+  void UnbindScreensHandlerFactory();
 
  private:
   // screens_factory::mojom::ScreensFactory:
   void CreateDrivePinningScreenHandler(
       mojo::PendingRemote<screens_common::mojom::DrivePinningPage> page,
       mojo::PendingReceiver<screens_common::mojom::DrivePinningPageHandler>
+          receiver) override;
+  void CreateGestureNavigationPageHandler(
+      mojo::PendingReceiver<screens_common::mojom::GestureNavigationPageHandler>
           receiver) override;
 
   void CreateGaiaInfoScreenHandler(
@@ -51,13 +54,6 @@ class OobeScreensHandlerFactory
 
   void CreatePackagedLicensePageHandler(
       mojo::PendingReceiver<screens_oobe::mojom::PackagedLicensePageHandler>
-          receiver) override;
-
-  void CreateLacrosDataBackwardMigrationScreenHandler(
-      mojo::PendingRemote<screens_login::mojom::LacrosDataBackwardMigrationPage>
-          page,
-      mojo::PendingReceiver<
-          screens_login::mojom::LacrosDataBackwardMigrationPageHandler>
           receiver) override;
 
   void CreateLocalDataLossWarningPageHandler(

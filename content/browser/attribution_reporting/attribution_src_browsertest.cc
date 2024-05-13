@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <memory>
 #include <utility>
 #include <vector>
@@ -13,6 +15,7 @@
 #include "base/strings/strcat.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/attribution_reporting/constants.h"
@@ -90,6 +93,9 @@ using ::testing::Property;
 using ::testing::StrictMock;
 
 using attribution_reporting::kAttributionReportingRegisterSourceHeader;
+using attribution_reporting::kAttributionReportingRegisterTriggerHeader;
+
+constexpr char kRegistrationMethod[] = "Conversions.RegistrationMethod2";
 
 }  // namespace
 
@@ -235,6 +241,28 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
 
     run_loop.Run();
   }
+}
+
+IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest, ForegroundRegistration) {
+  base::HistogramTester histograms;
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+  GURL register_url =
+      https_server()->GetURL("c.test", "/register_source_headers.html");
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_attribution_manager(), HandleSource).WillOnce([&run_loop]() {
+    run_loop.Quit();
+  });
+  EXPECT_TRUE(
+      ExecJs(web_contents(),
+             JsReplace("createAttributionEligibleImgSrc($1);", register_url)));
+
+  run_loop.Run();
+
+  // kForegroundBlink = 6
+  histograms.ExpectBucketCount(kRegistrationMethod, 6, /*expected_count=*/1);
 }
 
 IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
@@ -462,6 +490,134 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
 
   // Only the second source is registered.
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
+                       RegistrationWithMultipleHeadersAreRejected) {
+  const char* kTestCases[] = {
+      "createAttributionEligibleImgSrc($1);", "createAttributionSrcScript($1);",
+      "doAttributionEligibleFetch($1);", "doAttributionEligibleXHR($1);",
+      "createAttributionEligibleScriptSrc($1);"};
+  for (const char* registration_js : kTestCases) {
+    SCOPED_TRACE(registration_js);
+
+    // Create a separate server as we cannot register a
+    // `ControllableHttpResponse` after the server starts.
+    std::unique_ptr<EmbeddedTestServer> https_server =
+        CreateAttributionTestHttpsServer();
+
+    auto register_sources_response =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server.get(), "/register_sources");
+    auto register_triggers_response =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server.get(), "/register_triggers");
+    auto register_sources_and_trigger_response =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server.get(), "/register_sources_and_trigger");
+    auto register_source_response =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server.get(), "/register_source");
+
+    ASSERT_TRUE(https_server->Start());
+
+    GURL page_url =
+        https_server->GetURL("d.test", "/page_with_impression_creator.html");
+    EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+    base::RunLoop run_loop;
+
+    EXPECT_CALL(mock_attribution_manager(),
+                HandleSource(SourceRegistrationIs(AllOf(Field(
+                                 &SourceRegistration::source_event_id, 15u))),
+                             _))
+        .Times(1)
+        .WillOnce([&run_loop]() { run_loop.Quit(); });
+
+    EXPECT_CALL(mock_attribution_manager(), HandleTrigger).Times(0);
+
+    GURL register_multiple_sources_url =
+        https_server->GetURL("d.test", "/register_sources");
+    GURL register_multiple_triggers_url =
+        https_server->GetURL("d.test", "/register_triggers");
+    GURL register_multiple_sources_and_triger_url =
+        https_server->GetURL("d.test", "/register_sources_and_trigger");
+    GURL register_single_source_url =
+        https_server->GetURL("d.test", "/register_source");
+
+    // Multiple source headers
+    {
+      EXPECT_TRUE(
+          ExecJs(web_contents(),
+                 JsReplace(registration_js, register_multiple_sources_url)));
+      register_sources_response->WaitForRequest();
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+      http_response->AddCustomHeader("Location", "/register_triggers");
+      for (size_t i = 0; i < 3; ++i) {
+        http_response->AddCustomHeader(
+            kAttributionReportingRegisterSourceHeader,
+            R"({"destination":"https://d.test"})");
+      }
+      register_sources_response->Send(http_response->ToResponseString());
+      register_sources_response->Done();
+    }
+
+    // Multiple trigger headers
+    {
+      register_triggers_response->WaitForRequest();
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+      http_response->AddCustomHeader("Location",
+                                     "/register_sources_and_trigger");
+      for (size_t i = 0; i < 3; ++i) {
+        http_response->AddCustomHeader(
+            kAttributionReportingRegisterTriggerHeader, R"({})");
+      }
+      register_triggers_response->Send(http_response->ToResponseString());
+      register_triggers_response->Done();
+    }
+
+    // Multiple source headers and 1 trigger header
+    {
+      register_sources_and_trigger_response->WaitForRequest();
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+      http_response->AddCustomHeader("Location", "/register_source");
+      for (size_t i = 0; i < 3; ++i) {
+        http_response->AddCustomHeader(
+            kAttributionReportingRegisterSourceHeader,
+            R"({"destination":"https://d.test"})");
+      }
+      http_response->AddCustomHeader(kAttributionReportingRegisterTriggerHeader,
+                                     R"({})");
+      register_sources_and_trigger_response->Send(
+          http_response->ToResponseString());
+      register_sources_and_trigger_response->Done();
+    }
+
+    // Register a single source (success). This allows us to have a hook to
+    // wait on for async operations to complete. Since it is the last request in
+    // the chain, we know that once it is received, if no other registrations
+    // have been received, it means that they were invalid.
+    {
+      register_source_response->WaitForRequest();
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_OK);
+      http_response->AddCustomHeader(
+          kAttributionReportingRegisterSourceHeader,
+          R"({"source_event_id":"15", "destination":"https://d.test"})");
+      register_source_response->Send(http_response->ToResponseString());
+      register_source_response->Done();
+    }
+
+    run_loop.Run();
+    testing::Mock::VerifyAndClear(&mock_attribution_manager());
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
@@ -826,6 +982,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
 // Regression test for https://crbug.com/1520612.
 IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
                        ForegroundNavigationRedirectCancelled_SourceRegistered) {
+  base::HistogramTester histograms;
   TestNavigationThrottleInserter throttle_inserter(
       web_contents(),
       base::BindLambdaForTesting(
@@ -888,6 +1045,9 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
   register_response->Done();
 
   run_loop.Run();
+
+  // kNavForegrounnd = 0
+  histograms.ExpectBucketCount(kRegistrationMethod, 0, /*expected_count=*/1);
 }
 
 IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
@@ -895,6 +1055,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
   const char* kTestCases[] = {"createAttributionSrcImg($1)",
                               "createAttributionSrcScript($1)"};
   for (const char* js_template : kTestCases) {
+    base::HistogramTester histograms;
     SCOPED_TRACE(js_template);
     // Create a separate server as we cannot register a
     // `ControllableHttpResponse` after the server starts.
@@ -952,6 +1113,9 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
     }
 
     run_loop.Run();
+    // kBackgroundBlink = 8, kForegroundOrBackgroundBrowser = 10
+    histograms.ExpectBucketCount(kRegistrationMethod, GetParam() ? 10 : 8,
+                                 /*expected_count=*/2);
   }
 }
 

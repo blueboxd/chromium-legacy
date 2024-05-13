@@ -769,7 +769,7 @@ class BrowserAutofillManagerTest : public testing::Test {
       const FormFieldData& field,
       AutofillSuggestionTriggerSource trigger_source =
           AutofillSuggestionTriggerSource::kTextFieldDidChange) {
-    browser_autofill_manager_->OnAskForValuesToFill(form, field, gfx::RectF(),
+    browser_autofill_manager_->OnAskForValuesToFill(form, field,
                                                     trigger_source);
   }
 
@@ -785,7 +785,7 @@ class BrowserAutofillManagerTest : public testing::Test {
                             const FormFieldData& field,
                             bool form_element_was_clicked) {
     browser_autofill_manager_->OnAskForValuesToFill(
-        form, field, gfx::RectF(),
+        form, field,
         form_element_was_clicked
             ? AutofillSuggestionTriggerSource::kFormControlElementClicked
             : AutofillSuggestionTriggerSource::kTextFieldDidChange);
@@ -810,7 +810,7 @@ class BrowserAutofillManagerTest : public testing::Test {
       AutofillTriggerDetails trigger_details = {
           .trigger_source = AutofillTriggerSource::kPopup}) {
     browser_autofill_manager_->OnAskForValuesToFill(
-        form, field, {},
+        form, field,
         AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown);
     if (const AutofillProfile* profile =
             personal_data().address_data_manager().GetProfileByGUID(guid)) {
@@ -1415,7 +1415,7 @@ TEST_F(BrowserAutofillManagerTest,
     browser_autofill_manager_->AddSeenForm(form, {NAME_FIRST, NAME_LAST});
     GetAutofillSuggestions(form, field);
     // This ensures that the field has `did_trigger_suggestion_` set.
-    external_delegate()->OnPopupShown();
+    external_delegate()->OnSuggestionsShown();
     // Submit the form without calling  DidAcceptSuggestions, meaning the user
     // ignored the suggestions given by Autofill.
     FormSubmitted(form);
@@ -3057,7 +3057,7 @@ TEST_F(BrowserAutofillManagerTest,
   // Receiving a notification that focus is no longer on the form *without* the
   // renderer having a previously-interacted form should not result in
   // any changes to the pending form.
-  browser_autofill_manager_->OnFocusNoLongerOnForm(
+  browser_autofill_manager_->OnFocusOnNonFormField(
       /*had_interacted_form=*/false);
   EXPECT_TRUE(test_api(*browser_autofill_manager_)
                   .pending_form_data()
@@ -3195,7 +3195,7 @@ TEST_P(BrowserAutofillManagerLogAblationTest, TestLogging) {
 
   // Simulate user typing into field (due to the ablation we would not fill).
   field.set_value(u"Unknown User");
-  browser_autofill_manager_->OnTextFieldDidChange(form, field, gfx::RectF(),
+  browser_autofill_manager_->OnTextFieldDidChange(form, field,
                                                   base::TimeTicks::Now());
 
   if (params.second_query_for_suggestions_with_typed_prefix) {
@@ -4213,7 +4213,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtUserTypingInField) {
   FormFieldData field = form.fields[0];
   // Simulate editing the first field.
   field.set_value(u"Michael");
-  browser_autofill_manager_->OnTextFieldDidChange(form, field, gfx::RectF(),
+  browser_autofill_manager_->OnTextFieldDidChange(form, field,
                                                   base::TimeTicks::Now());
 
   // Simulate form submission.
@@ -5391,11 +5391,11 @@ TEST_F(BrowserAutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
   form.fields[1].set_value(u"Presley");
   form.fields[2].set_value(u"theking@gmail.com");
   // Simulate editing a field.
-  browser_autofill_manager_->OnTextFieldDidChange(
-      form, form.fields.front(), gfx::RectF(), base::TimeTicks::Now());
+  browser_autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
+                                                  base::TimeTicks::Now());
 
   // Simulate lost of focus on the form.
-  browser_autofill_manager_->OnFocusNoLongerOnForm(true);
+  browser_autofill_manager_->OnFocusOnNonFormField(true);
 }
 
 // Test that navigating with a filled form sends an upload with types matching
@@ -5441,8 +5441,8 @@ TEST_F(BrowserAutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
   form.fields[1].set_value(u"Presley");
   form.fields[2].set_value(u"theking@gmail.com");
   // Simulate editing a field.
-  browser_autofill_manager_->OnTextFieldDidChange(
-      form, form.fields.front(), gfx::RectF(), base::TimeTicks::Now());
+  browser_autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
+                                                  base::TimeTicks::Now());
 
   // Simulate a navigation so that the pending form is uploaded.
   browser_autofill_manager_->Reset();
@@ -5494,7 +5494,7 @@ TEST_F(BrowserAutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
                                                        base::TimeTicks::Now());
 
   // Simulate lost of focus on the form.
-  browser_autofill_manager_->OnFocusNoLongerOnForm(true);
+  browser_autofill_manager_->OnFocusOnNonFormField(true);
 }
 
 // Test that suggestions are returned for credit card fields with an
@@ -7212,14 +7212,12 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions) {
   FormsSeen({form});
 
   // Suggestions should be returned for the first field.
-  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[0],
-                                                    gfx::RectF());
+  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[0]);
   CheckSuggestionsAvailableIfScreenReaderRunning();
 
   // No suggestions should be provided for the second field because of its
   // unrecognized autocomplete attribute.
-  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
-                                                    gfx::RectF());
+  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1]);
   CheckNoSuggestionsAvailableOnFieldFocus();
 }
 
@@ -7238,8 +7236,7 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_AutocompleteOffNotRespected) {
   form.fields.back().set_should_autocomplete(false);
   FormsSeen({form});
 
-  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
-                                                    gfx::RectF());
+  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1]);
   CheckSuggestionsAvailableIfScreenReaderRunning();
 }
 
@@ -7254,8 +7251,7 @@ TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_Ablation) {
   form.action = GURL();
   FormsSeen({form});
 
-  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
-                                                    gfx::RectF());
+  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1]);
   CheckNoSuggestionsAvailableOnFieldFocus();
 }
 
@@ -7267,8 +7263,7 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_SecureContext) {
   form.action = GURL();
   FormsSeen({form});
 
-  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
-                                                    gfx::RectF());
+  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1]);
   CheckSuggestionsAvailableIfScreenReaderRunning();
 }
 
@@ -7280,8 +7275,7 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_NonSecureContext) {
   form.action = GURL();
   FormsSeen({form});
 
-  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
-                                                    gfx::RectF());
+  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1]);
   // In a non-HTTPS context, there will be a warning indicating the page is
   // insecure.
   CheckSuggestionsAvailableIfScreenReaderRunning();
@@ -7299,8 +7293,7 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_Ablation) {
   form.action = GURL();
   FormsSeen({form});
 
-  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1],
-                                                    gfx::RectF());
+  browser_autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1]);
   CheckNoSuggestionsAvailableOnFieldFocus();
 }
 
@@ -7565,8 +7558,8 @@ class BrowserAutofillManagerVotingTest : public BrowserAutofillManagerTest {
 
   void SimulateTypingFirstNameIntoFirstField() {
     form_.fields[0].set_value(u"Elvis");
-    browser_autofill_manager_->OnTextFieldDidChange(
-        form_, form_.fields[0], gfx::RectF(), base::TimeTicks::Now());
+    browser_autofill_manager_->OnTextFieldDidChange(form_, form_.fields[0],
+                                                    base::TimeTicks::Now());
   }
 
  protected:
@@ -7597,12 +7590,12 @@ TEST_F(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
 
   // 2. Simulate removing focus from the form, which triggers a blur vote.
   FormSignature first_form_signature = CalculateFormSignature(form_);
-  browser_autofill_manager_->OnFocusNoLongerOnForm(true);
+  browser_autofill_manager_->OnFocusOnNonFormField(true);
 
   // 3. Simulate typing into second field
   form_.fields[1].set_value(u"Presley");
-  browser_autofill_manager_->OnTextFieldDidChange(
-      form_, form_.fields[1], gfx::RectF(), base::TimeTicks::Now());
+  browser_autofill_manager_->OnTextFieldDidChange(form_, form_.fields[1],
+                                                  base::TimeTicks::Now());
 
   // 4. Simulate removing the focus from the form, which generates a second blur
   // vote which should be sent.
@@ -7619,7 +7612,7 @@ TEST_F(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
                                        FieldType::NAME_LAST_SECOND})),
               ObservedSubmissionIs(false))),
           _, _, _));
-  browser_autofill_manager_->OnFocusNoLongerOnForm(true);
+  browser_autofill_manager_->OnFocusOnNonFormField(true);
 
   // 5. Grow the form by one field, which changes the form signature.
   form_.fields.push_back(CreateTestFormField(
@@ -7661,7 +7654,7 @@ TEST_F(BrowserAutofillManagerVotingTest, BlurVoteOnNavigation) {
                                 FieldAutofillTypeIs({FieldType::EMPTY_TYPE})),
                       ObservedSubmissionIs(false))),
                   _, _, _));
-  browser_autofill_manager_->OnFocusNoLongerOnForm(true);
+  browser_autofill_manager_->OnFocusOnNonFormField(true);
 
   // Simulate a navigation. This is when the vote is sent.
   browser_autofill_manager_->Reset();
@@ -7674,7 +7667,7 @@ TEST_F(BrowserAutofillManagerVotingTest, NoBlurVoteOnSubmission) {
 
   // Simulate removing focus from form, which enqueues a blur vote. The blur
   // vote will be ignored and only the submission will be sent.
-  browser_autofill_manager_->OnFocusNoLongerOnForm(true);
+  browser_autofill_manager_->OnFocusOnNonFormField(true);
   EXPECT_CALL(*crowdsourcing_manager(),
               StartUploadRequest(
                   FirstElementIs(AllOf(

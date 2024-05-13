@@ -95,7 +95,14 @@ class HTMLPemissionElementTestBase : public PageTestBase {
       base::test::TaskEnvironment::TimeSource time_source)
       : PageTestBase(time_source) {}
 
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kPermissionElement);
+    PageTestBase::SetUp();
+  }
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   ScopedPermissionElementForTest scoped_feature_{true};
 };
 
@@ -233,7 +240,9 @@ class TestPermissionService : public PermissionService {
   void AddPermissionObserver(
       PermissionDescriptorPtr permission,
       MojoPermissionStatus last_known_status,
+      bool should_include_device_status,
       mojo::PendingRemote<PermissionObserver> observer) override {
+    EXPECT_TRUE(should_include_device_status);
     auto inserted_result = observers_.insert(
         permission->name,
         mojo::Remote<PermissionObserver>(std::move(observer)));
@@ -660,6 +669,7 @@ class HTMLPemissionElementSimTest : public SimTest {
  private:
   std::unique_ptr<TestPermissionService> permission_service_;
   ScopedTestingPlatformSupport<LocalePlatformSupport> support;
+  ScopedPermissionElementForTest scoped_feature_{true};
 };
 
 TEST_F(HTMLPemissionElementSimTest, BlockedByPermissionsPolicy) {

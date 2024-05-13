@@ -278,6 +278,7 @@ found in the LICENSE file.
     <dimen name="legacy_sync_promo_view_padding">16dp</dimen>
     <!-- 18dp padding is added to each side of the remove button to limit the image width to 20dp (56dp - 2 * 18dp). -->
     <dimen name="history_item_remove_button_lateral_padding">18dp</dimen>
+    <dimen name="history_item_leading_padding">2dp</dimen>
 
     <!-- Context Menu Dimensions -->
     <!-- Prevent the chip from reaching the edges of the screen for long translations. -->
@@ -408,6 +409,7 @@ found in the LICENSE file.
     <dimen name="autofill_bottom_sheet_credit_card_spacing">16dp</dimen>
     <dimen name="autofill_bottom_sheet_credit_card_width">40dp</dimen>
     <dimen name="autofill_bottom_sheet_drag_handlebar_spacing_top">8dp</dimen>
+    <dimen name="autofill_bottom_sheet_loading_view_bottom_margin">64dp</dimen>
     <dimen name="autofill_bottom_sheet_logo_height">32dp</dimen>
     <dimen name="autofill_bottom_sheet_title_top_margin">24dp</dimen>
 

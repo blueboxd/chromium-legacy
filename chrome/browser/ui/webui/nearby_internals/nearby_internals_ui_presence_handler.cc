@@ -22,6 +22,7 @@ const char kEndpointKey[] = "endpoint_id";
 const char kActionsKey[] = "actions";
 
 // ActionType strings representations.
+const char kCallTransferAction[] = "Call Transfer";
 const char kActiveUnlockAction[] = "Active Unlock";
 const char kNearbyShareAction[] = "Nearby Share";
 const char kInstantTetheringAction[] = "Instant Tethering";
@@ -39,6 +40,8 @@ const char kNotificationClientIdValue[] = "nearby";
 
 std::string PresenceActionToString(nearby::presence::PresenceAction action) {
   switch (nearby::presence::ActionBit(action.GetActionIdentifier())) {
+    case nearby::presence::ActionBit::kCallTransferAction:
+      return kCallTransferAction;
     case nearby::presence::ActionBit::kActiveUnlockAction:
       return kActiveUnlockAction;
     case nearby::presence::ActionBit::kNearbyShareAction:
@@ -150,7 +153,7 @@ void NearbyInternalsPresenceHandler::HandleStartPresenceScan(
     CD_LOG(VERBOSE, Feature::NEARBY_INFRA)
         << __func__ << ": NearbyPresenceService was retrieved successfully";
     ash::nearby::presence::NearbyPresenceService::ScanFilter filter(
-        nearby::internal::IdentityType::IDENTITY_TYPE_PUBLIC,
+        nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE_GROUP,
         /*actions=*/{});
     service->StartScan(
         filter, /*scan_delegate=*/this,

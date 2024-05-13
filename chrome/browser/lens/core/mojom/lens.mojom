@@ -25,9 +25,11 @@ interface LensPageHandlerFactory {
 
 // Browser-side handler for requests from WebUI page. (TypeScript -> C++)
 interface LensPageHandler {
-  // When this method is called, the C++ coordinator will begin the tear-down
-  // flow.
-  CloseRequestedByOverlay();
+  // When either of these methods are called, the C++ coordinator will begin
+  // the tear-down flow. The difference between the two is used to record
+  // metrics about the method used.
+  CloseRequestedByOverlayCloseButton();
+  CloseRequestedByOverlayBackgroundClick();
 
   // When this method is called, the C++ coordinator will add a blur to the
   // tab contents.
@@ -45,8 +47,14 @@ interface LensPageHandler {
   IssueLensRequest(CenterRotatedBox region);
 
   // When this method is called, the C++ coordinator issues a SRP request with
-  // given text string in the side panel.
-  IssueTextSelectionRequest(string query);
+  // given text string in the side panel. This function also passes selection
+  // indices into a list of words maintained in the WebUI and are passed to the
+  // browser-side UI solely for the purposes of maintaining a history stack.
+  // They do not and will not be used to be indexed into anything in the
+  // browser; when the user traverses history, the indices may be passed back to
+  // the WebUI.
+  IssueTextSelectionRequest(string query, int32 selection_start_index,
+      int32 selection_end_index);
 
   // When called, the C++ coordinator closes the lens search bubble. When the
   // user selects text or thumbnail on the WebUI overlay, the search bubble
@@ -70,6 +78,16 @@ interface LensPage {
 
   // Passes Text received from Lens to WebUI for rendering.
   TextReceived(Text text);
+
+  // Sets a post selection region to be rendered as selected on the page.
+  SetPostRegionSelection(CenterRotatedBox region);
+
+  // Sets text to be rendered as selected on the page.
+  SetTextSelection(int32 selection_start_index, int32 selection_end_index);
+
+  // Clears any text or post region selection that is selected on the page.
+  // No-op if none selected.
+  ClearAllSelections();
 };
 
 // Browser-side handler for requests from Side PanelWebUI page.
@@ -81,4 +99,11 @@ interface LensSidePanelPageHandler {};
 interface LensSidePanelPage {
   // Load a provided URL into the side panel results iframe.
   LoadResultsInFrame(url.mojom.Url results_url);
+
+  // Sets whether the results frame is currently loading. This cannot be done
+  // from the renderer because the results iframe is cross-origin. This prevents
+  // load events on the iframe from triggering reliably on every navigation.
+  // Instead, we listen for the start of the navigations in the browser and set
+  // the loading state appropriately.
+  SetIsLoadingResults(bool is_loading);
 };

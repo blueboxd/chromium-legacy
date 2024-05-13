@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/autofill_suggestion_controller_test_base.h"
 #include "chrome/browser/ui/autofill/test_autofill_popup_controller_autofill_client.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_active_popup.h"
@@ -32,6 +33,7 @@ namespace {
 
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
 using ::testing::Matcher;
@@ -42,11 +44,12 @@ using ::testing::Return;
 using SingleEntryRemovalMethod =
     autofill::AutofillMetrics::SingleEntryRemovalMethod;
 
-Matcher<const AutofillPopupDelegate::SuggestionPosition&>
-EqualsSuggestionPosition(AutofillPopupDelegate::SuggestionPosition position) {
+Matcher<const AutofillSuggestionDelegate::SuggestionPosition&>
+EqualsSuggestionPosition(
+    AutofillSuggestionDelegate::SuggestionPosition position) {
   return AllOf(
-      Field(&AutofillPopupDelegate::SuggestionPosition::row, position.row),
-      Field(&AutofillPopupDelegate::SuggestionPosition::sub_popup_level,
+      Field(&AutofillSuggestionDelegate::SuggestionPosition::row, position.row),
+      Field(&AutofillSuggestionDelegate::SuggestionPosition::sub_popup_level,
             position.sub_popup_level));
 }
 
@@ -64,21 +67,21 @@ TEST_F(AutofillPopupControllerImplTest, SubPopupIsCreatedWithViewFromParent) {
 
 TEST_F(AutofillPopupControllerImplTest,
        DelegateMethodsAreCalledOnlyByRootPopup) {
-  EXPECT_CALL(manager().external_delegate(), OnPopupShown()).Times(0);
+  EXPECT_CALL(manager().external_delegate(), OnSuggestionsShown()).Times(0);
   base::WeakPtr<AutofillSuggestionController> sub_controller =
       client().popup_controller(manager()).OpenSubPopup(
           {0, 0, 10, 10}, {}, AutoselectFirstSuggestion(false));
 
-  EXPECT_CALL(manager().external_delegate(), OnPopupHidden()).Times(0);
+  EXPECT_CALL(manager().external_delegate(), OnSuggestionsHidden()).Times(0);
   sub_controller->Hide(SuggestionHidingReason::kUserAborted);
 
-  EXPECT_CALL(manager().external_delegate(), OnPopupHidden());
+  EXPECT_CALL(manager().external_delegate(), OnSuggestionsHidden());
   client().popup_controller(manager()).Hide(
       SuggestionHidingReason::kUserAborted);
 }
 
 TEST_F(AutofillPopupControllerImplTest, EventsAreDelegatedToChildrenAndView) {
-  EXPECT_CALL(manager().external_delegate(), OnPopupShown()).Times(0);
+  EXPECT_CALL(manager().external_delegate(), OnSuggestionsShown()).Times(0);
   base::WeakPtr<AutofillSuggestionController> sub_controller =
       client().popup_controller(manager()).OpenSubPopup(
           {0, 0, 10, 10}, {}, AutoselectFirstSuggestion(false));
@@ -297,7 +300,7 @@ TEST_F(AutofillPopupControllerImplTest, SuggestionFiltration_MatchingMainText) {
   EXPECT_EQ(controller.GetSuggestions().size(), 3u);
   EXPECT_EQ(controller.GetSuggestionFilterMatches().size(), 0u);
 
-  controller.SetFilter(AutofillPopupController::SuggestionFilter(u"ab"));
+  controller.SetFilter(AutofillPopupController::SuggestionFilter(u"Ab"));
   EXPECT_EQ(controller.GetSuggestions().size(), 2u);
   EXPECT_EQ(controller.GetSuggestionFilterMatches().size(), 2u);
   EXPECT_THAT(controller.GetSuggestionFilterMatches(),
@@ -340,6 +343,57 @@ TEST_F(AutofillPopupControllerImplTest,
   controller.SetFilter(std::nullopt);
   EXPECT_EQ(controller.GetSuggestions().size(), 2u);
   EXPECT_EQ(controller.GetSuggestionFilterMatches().size(), 0u);
+}
+
+TEST_F(AutofillPopupControllerImplTest,
+       SuggestionFiltration_FooterSuggestionsAreNotFiltratable) {
+  using enum SuggestionType;
+
+  AutofillPopupController& controller = client().popup_controller(manager());
+  ShowSuggestions(manager(), {
+                                 Suggestion(u"abc", kAddressEntry),
+                                 Suggestion(u"abx", kAddressEntry),
+                                 Suggestion(kSeparator),
+                                 Suggestion(kClearForm),
+                             });
+
+  controller.SetFilter(AutofillPopupController::SuggestionFilter(u"ab"));
+  EXPECT_EQ(controller.GetSuggestions().size(), 4u);
+  EXPECT_THAT(controller.GetSuggestions(),
+              ElementsAre(Field(&Suggestion::type, kAddressEntry),
+                          Field(&Suggestion::type, kAddressEntry),
+                          Field(&Suggestion::type, kSeparator),
+                          Field(&Suggestion::type, kClearForm)));
+
+  controller.SetFilter(AutofillPopupController::SuggestionFilter(u"abc"));
+  EXPECT_EQ(controller.GetSuggestions().size(), 3u);
+  EXPECT_THAT(controller.GetSuggestions(),
+              ElementsAre(Field(&Suggestion::type, kAddressEntry),
+                          Field(&Suggestion::type, kSeparator),
+                          Field(&Suggestion::type, kClearForm)));
+
+  controller.SetFilter(AutofillPopupController::SuggestionFilter(u"abcdef"));
+  EXPECT_EQ(controller.GetSuggestions().size(), 2u);
+  EXPECT_THAT(controller.GetSuggestions(),
+              ElementsAre(Field(&Suggestion::type, kSeparator),
+                          Field(&Suggestion::type, kClearForm)));
+}
+
+TEST_F(AutofillPopupControllerImplTest,
+       SuggestionFiltration_HasFilteredOutSuggestions) {
+  using enum SuggestionType;
+
+  AutofillPopupController& controller = client().popup_controller(manager());
+  ShowSuggestions(manager(), {
+                                 Suggestion(u"abcd", kAddressEntry),
+                                 Suggestion(u"abxy", kAddressEntry),
+                             });
+
+  controller.SetFilter(AutofillPopupController::SuggestionFilter(u"ab"));
+  EXPECT_FALSE(controller.HasFilteredOutSuggestions());
+
+  controller.SetFilter(AutofillPopupController::SuggestionFilter(u"abc"));
+  EXPECT_TRUE(controller.HasFilteredOutSuggestions());
 }
 
 TEST_F(AutofillPopupControllerImplTest, RemoveSuggestion) {

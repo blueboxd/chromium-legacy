@@ -105,7 +105,7 @@ void SendKeyPress(ui::KeyboardCode keyboard_code) {
 }
 
 void TogglePickerByAccelerator() {
-  ui_controls::SendKeyPress(/*window=*/nullptr, ui::VKEY_S,
+  ui_controls::SendKeyPress(/*window=*/nullptr, ui::VKEY_F,
                             /*control=*/false, /*shift=*/false,
                             /*alt=*/false, /*command=*/true);
 }
@@ -245,10 +245,9 @@ IN_PROC_BROWSER_TEST_F(PickerInteractiveUiTest, SearchAndInsertDate) {
 
 // Searches for '1 + 1', checks the top result is '2', and inserts it
 // into a web input field.
-// TODO(crbug.com/40240570): Re-enable once MSan stops failing on Rust-side
+// TODO: crbug.com/40240570 - Re-enable once MSan stops failing on Rust-side
 // allocations.
-// TODO(crbug.com/338153458): Re-enable once LSan stops failing on Chromium OS.
-#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
+#if defined(MEMORY_SANITIZER)
 #define MAYBE_SearchAndInsertMath DISABLED_SearchAndInsertMath
 #else
 #define MAYBE_SearchAndInsertMath SearchAndInsertMath
@@ -385,19 +384,64 @@ IN_PROC_BROWSER_TEST_F(PickerSpokenFeedbackInteractiveUiTest,
 
         sm.ExpectSpeechPattern("*Browsing history*");
         // TODO: b/338142316 - Use correct role for zero state items.
-        sm.ExpectSpeechPattern("*");
+        sm.ExpectSpeechPattern("Button");
         sm.Replay();
 
         SendKeyPress(ui::VKEY_DOWN);
         sm.ExpectSpeechPattern("*Emojis*");
         // TODO: b/338142316 - Use correct role for zero state items.
-        sm.ExpectSpeechPattern("*");
+        sm.ExpectSpeechPattern("Button");
         sm.Replay();
 
         SendKeyPress(ui::VKEY_UP);
         sm.ExpectSpeechPattern("*Browsing history*");
         // TODO: b/338142316 - Use correct role for zero state items.
+        sm.ExpectSpeechPattern("Button");
+        sm.Replay();
+      }));
+}
+
+// TODO(b/328144222): Re-enable this test. Causes build failures with MSAN
+// enabled on CrOS.
+#if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_AnnouncesKeyboardNavigationOnResultsPage \
+  DISABLED_AnnouncesKeyboardNavigationOnResultsPage
+#else
+#define MAYBE_AnnouncesKeyboardNavigationOnResultsPage \
+  AnnouncesKeyboardNavigationOnResultsPage
+#endif
+IN_PROC_BROWSER_TEST_F(PickerSpokenFeedbackInteractiveUiTest,
+                       MAYBE_AnnouncesKeyboardNavigationOnResultsPage) {
+  ASSERT_TRUE(CreateBrowserWindow(
+      GURL("data:text/html,<input type=\"text\" autofocus/>")));
+  const ui::ElementContext browser_context =
+      chrome::FindLastActive()->window()->GetElementContext();
+  views::Textfield* picker_search_field = nullptr;
+
+  RunTestSequence(
+      InContext(browser_context, Steps(InstrumentTab(kWebContentsElementId),
+                                       WaitForWebInputFieldFocus())),
+      Do([]() { TogglePicker(); }),
+      AfterShow(ash::kPickerSearchFieldTextfieldElementId,
+                [&picker_search_field](ui::TrackedElement* el) {
+                  picker_search_field = AsView<views::Textfield>(el);
+                }),
+      ObserveState(kSearchFieldFocusedState, std::ref(picker_search_field)),
+      WaitForState(kSearchFieldFocusedState, true),
+      // Enter a query that is guaranteed to have some results.
+      EnterText(ash::kPickerSearchFieldTextfieldElementId, u"a"),
+      WaitForShow(ash::kPickerSearchResultsListItemElementId),
+      WaitForShow(ash::kPickerSearchResultsPageElementId), Do([&sm = sm_]() {
+        SendKeyPress(ui::VKEY_DOWN);
         sm.ExpectSpeechPattern("*");
+        // TODO: b/338142316 - Use correct role for result items.
+        sm.ExpectSpeechPattern("Button");
+        sm.Replay();
+
+        SendKeyPress(ui::VKEY_UP);
+        sm.ExpectSpeechPattern("*");
+        // TODO: b/338142316 - Use correct role for result items.
+        sm.ExpectSpeechPattern("Button");
         sm.Replay();
       }));
 }

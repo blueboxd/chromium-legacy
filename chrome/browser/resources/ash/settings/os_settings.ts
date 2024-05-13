@@ -141,6 +141,7 @@ export {SettingsToggleButtonElement} from './controls/settings_toggle_button.js'
 export {PrefControlMixinInternal} from './controls/v2/pref_control_mixin_internal.js';
 export {SettingsDropdownV2Element} from './controls/v2/settings_dropdown_v2.js';
 export {SettingsSliderV2Element} from './controls/v2/settings_slider_v2.js';
+export {SettingsToggleV2Element} from './controls/v2/settings_toggle_v2.js';
 export {SettingsAudioElement} from './device_page/audio.js';
 export {setCrosAudioConfigForTesting} from './device_page/cros_audio_config.js';
 export {SettingsDevicePageElement} from './device_page/device_page.js';
@@ -219,6 +220,7 @@ export {OsAboutPageElement} from './os_about_page/os_about_page.js';
 export {AndroidAppsBrowserProxy, AndroidAppsBrowserProxyImpl} from './os_apps_page/android_apps_browser_proxy.js';
 export {AppManagementFileHandlingItemElement} from './os_apps_page/app_management_page/file_handling_item.js';
 export {PluginVmBrowserProxy, PluginVmBrowserProxyImpl} from './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_browser_proxy.js';
+export {AppManagementReadOnlyPermissionItemElement} from './os_apps_page/app_management_page/read_only_permission_item.js';
 export {AppManagementSupportedLinksItemElement} from './os_apps_page/app_management_page/supported_links_item.js';
 export {AppManagementToggleRowElement} from './os_apps_page/app_management_page/toggle_row.js';
 export {setAppNotificationProviderForTesting} from './os_apps_page/app_notifications_page/mojo_interface_provider.js';
@@ -241,7 +243,7 @@ export {setAppPermissionProviderForTesting} from './os_privacy_page/mojo_interfa
 export {OsSettingsPrivacyPageElement} from './os_privacy_page/os_privacy_page.js';
 export {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './os_privacy_page/peripheral_data_access_browser_proxy.js';
 export {SettingsPrivacyHubAppPermissionRow} from './os_privacy_page/privacy_hub_app_permission_row.js';
-export {GeolocationAccessLevel} from './os_privacy_page/privacy_hub_geolocation_subpage.js';
+export {GeolocationAccessLevel, ScheduleType} from './os_privacy_page/privacy_hub_geolocation_subpage.js';
 export {PrivacyHubSensorSubpageUserAction} from './os_privacy_page/privacy_hub_metrics_util.js';
 export {SettingsPrivacyHubSystemServiceRow} from './os_privacy_page/privacy_hub_system_service_row.js';
 export {OsResetBrowserProxy, OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';

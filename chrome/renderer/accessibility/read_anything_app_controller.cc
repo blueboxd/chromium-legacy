@@ -392,6 +392,7 @@ ReadAnythingAppController::ReadAnythingAppController(
 
 ReadAnythingAppController::~ReadAnythingAppController() {
   RecordNumSelections();
+  LogSpeechEventCounts();
 }
 
 void ReadAnythingAppController::AccessibilityEventReceived(
@@ -484,10 +485,12 @@ void ReadAnythingAppController::OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {
 }
 
 void ReadAnythingAppController::Distill() {
-  if (model_.distillation_in_progress()) {
+  if (model_.distillation_in_progress() || model_.speech_playing()) {
     // When distillation is in progress, the model may have queued up tree
     // updates. In those cases, assume we eventually get to `OnAXTreeDistilled`,
-    // where we re-request `Distill`.
+    // where we re-request `Distill`. When speech is playing, assume it will
+    // eventually stop and call `OnSpeechPlayingStateChanged` where we
+    // re-request `Distill`.
     model_.set_requires_distillation(true);
     return;
   }
@@ -522,6 +525,13 @@ void ReadAnythingAppController::Distill() {
 void ReadAnythingAppController::OnAXTreeDistilled(
     const ui::AXTreeID& tree_id,
     const std::vector<ui::AXNodeID>& content_node_ids) {
+  // If speech is playing, we don't want to redraw and disrupt speech. We will
+  // re-distill once speech pauses.
+  if (model_.speech_playing()) {
+    model_.set_requires_distillation(true);
+    model_.SetDistillationInProgress(false);
+    return;
+  }
   // Reset state, including the current side panel selection so we can update
   // it based on the new main panel selection in PostProcessSelection below.
   // This also includes Read Aloud state.
@@ -712,11 +722,15 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetProperty("isChromeOsAsh", &ReadAnythingAppController::IsChromeOsAsh)
       .SetProperty("isAutoVoiceSwitchingEnabled",
                    &ReadAnythingAppController::IsAutoVoiceSwitchingEnabled)
+      .SetProperty("isLanguagePackDownloadingEnabled",
+                   &ReadAnythingAppController::IsLanguagePackDownloadingEnabled)
       .SetProperty(
           "isAutomaticWordHighlightingEnabled",
           &ReadAnythingAppController::IsAutomaticWordHighlightingEnabled)
       .SetProperty("baseLanguageForSpeech",
                    &ReadAnythingAppController::GetLanguageCodeForSpeech)
+      .SetProperty("requiresDistillation",
+                   &ReadAnythingAppController::RequiresDistillation)
       .SetProperty("defaultLanguageForSpeech",
                    &ReadAnythingAppController::GetDefaultLanguageCodeForSpeech)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
@@ -794,6 +808,8 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                  &ReadAnythingAppController::GetCurrentTextEndIndex)
       .SetMethod("getCurrentText", &ReadAnythingAppController::GetCurrentText)
       .SetMethod("shouldShowUi", &ReadAnythingAppController::ShouldShowUI)
+      .SetMethod("onSpeechPlayingStateChanged",
+                 &ReadAnythingAppController::OnSpeechPlayingStateChanged)
       .SetMethod("getAccessibleBoundary",
                  &ReadAnythingAppController::GetAccessibleBoundary)
       .SetMethod("movePositionToNextGranularity",
@@ -805,8 +821,11 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("getImageDataUrl", &ReadAnythingAppController::GetImageDataUrl)
       .SetMethod("getDisplayNameForLocale",
                  &ReadAnythingAppController::GetDisplayNameForLocale)
-      .SetMethod("logMetric",
+      .SetMethod("logMetric", &ReadAnythingAppController::LogUmaHistogramTimes)
+      .SetMethod("logLongMetric",
                  &ReadAnythingAppController::LogUmaHistogramLongTimes)
+      .SetMethod("incrementMetricCount",
+                 &ReadAnythingAppController::IncrementMetricCount)
       .SetMethod("logSpeechError",
                  &ReadAnythingAppController::LogSpeechErrorEvent)
       .SetMethod("sendGetVoicePackInfoRequest",
@@ -878,9 +897,15 @@ float ReadAnythingAppController::SpeechRate() const {
 }
 
 std::string ReadAnythingAppController::GetStoredVoice() const {
-  std::string lang = model_.base_language_code();
-  if (model_.voices().contains(lang)) {
-    return *model_.voices().FindString(lang);
+  if (features::IsReadAloudAutoVoiceSwitchingEnabled()) {
+    std::string lang = model_.base_language_code();
+    if (model_.voices().contains(lang)) {
+      return *model_.voices().FindString(lang);
+    }
+  } else {
+    if (!model_.voices().empty()) {
+      return model_.voices().begin()->second.GetString();
+    }
   }
 
   return string_constants::kReadAnythingPlaceholderVoiceName;
@@ -1176,6 +1201,10 @@ bool ReadAnythingAppController::IsAutoVoiceSwitchingEnabled() const {
   return features::IsReadAloudAutoVoiceSwitchingEnabled();
 }
 
+bool ReadAnythingAppController::IsLanguagePackDownloadingEnabled() const {
+  return features::IsReadAloudLanguagePackDownloadingEnabled();
+}
+
 bool ReadAnythingAppController::IsAutomaticWordHighlightingEnabled() const {
    return features::IsReadAnythingReadAloudAutomaticWordHighlightingEnabled();
 }
@@ -1231,6 +1260,10 @@ const std::string ReadAnythingAppController::GetDisplayNameForLocale(
 
 const std::string& ReadAnythingAppController::GetLanguageCodeForSpeech() const {
   return model_.base_language_code();
+}
+
+bool ReadAnythingAppController::RequiresDistillation() {
+  return model_.requires_distillation();
 }
 
 const std::string& ReadAnythingAppController::GetDefaultLanguageCodeForSpeech()
@@ -1519,6 +1552,14 @@ void ReadAnythingAppController::SetLanguageCode(const std::string& code) {
   ExecuteJavaScript("chrome.readingMode.languageChanged();");
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void ReadAnythingAppController::OnDeviceLocked() {
+  // Signal to the WebUI that the device has been locked. We'll only receive
+  // this callback on ChromeOS.
+  ExecuteJavaScript("chrome.readingMode.onLockScreen();");
+}
+#endif
+
 // TODO(b/336596926): Use the default language code as a fallback when
 // we get a language-unavailable error.
 void ReadAnythingAppController::SetDefaultLanguageCode(
@@ -1573,6 +1614,16 @@ void ReadAnythingAppController::ShouldShowUI() {
   page_handler_factory_->ShouldShowUI();
 }
 
+void ReadAnythingAppController::OnSpeechPlayingStateChanged(bool paused) {
+  model_.set_speech_playing(!paused);
+  if (paused && model_.requires_distillation()) {
+    // TODO: b/40927698 - Do something smarter than completely re-distilling
+    // when the update is small. Right now this resets the speech position to
+    // the beginning which is annoying if the page is mostly the same.
+    Distill();
+  }
+}
+
 int ReadAnythingAppController::GetAccessibleBoundary(const std::u16string& text,
                                                      int max_text_length) {
   std::vector<int> offsets;
@@ -1612,9 +1663,22 @@ int ReadAnythingAppController::GetNextWordHighlightLength(int index) {
   return model_.GetNextWordHighlightLength(index);
 }
 
+void ReadAnythingAppController::LogUmaHistogramTimes(int64_t time,
+                                                     std::string metric) {
+  base::UmaHistogramTimes(metric, base::Milliseconds(time));
+}
+
 void ReadAnythingAppController::LogUmaHistogramLongTimes(int64_t time,
                                                          std::string metric) {
-  base::UmaHistogramTimes(metric, base::Milliseconds(time));
+  base::UmaHistogramLongTimes(metric, base::Milliseconds(time));
+}
+
+void ReadAnythingAppController::IncrementMetricCount(std::string metric) {
+  model_.IncrementMetric(metric);
+}
+
+void ReadAnythingAppController::LogSpeechEventCounts() {
+  model_.LogSpeechEventCounts();
 }
 
 void ReadAnythingAppController::LogSpeechErrorEvent(std::string error_code) {

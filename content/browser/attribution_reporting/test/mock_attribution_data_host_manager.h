@@ -41,7 +41,8 @@ class MockAttributionDataHostManager final : public AttributionDataHostManager {
       RegisterDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
        AttributionSuitableContext,
-       attribution_reporting::mojom::RegistrationEligibility),
+       attribution_reporting::mojom::RegistrationEligibility,
+       bool),
       (override));
 
   MOCK_METHOD(
@@ -93,7 +94,7 @@ class MockAttributionDataHostManager final : public AttributionDataHostManager {
                const net::HttpResponseHeaders* headers,
                GURL reporting_url,
                network::AttributionReportingRuntimeFeatures,
-               std::vector<network::TriggerVerification>),
+               const std::vector<network::TriggerVerification>&),
               (override));
 
   MOCK_METHOD(void,

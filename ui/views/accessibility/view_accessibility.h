@@ -62,6 +62,8 @@ class VIEWS_EXPORT ViewAccessibility {
   // (see OverrideFocus, etc. below).
   virtual void GetAccessibleNodeData(ui::AXNodeData* node_data) const;
 
+  void NotifyEvent(ax::mojom::Event event_type, bool send_native_event = true);
+
   // Made to be overridden on platforms that need the temporary
   // `AtomicViewAXTreeManager` to enable more accessibility functionalities for
   // Views. See crbug.com/1468416 for more info.
@@ -226,7 +228,7 @@ class VIEWS_EXPORT ViewAccessibility {
 
   // Hides this view from the accessibility APIs. Keep in mind that this is not
   // the sole determinant of whether the ignored state is set. See
-  // `AdjustIgnoredState`.
+  // `UpdateIgnoredState`.
   void SetIsIgnored(bool is_ignored);
   virtual bool GetIsIgnored() const;
 
@@ -296,6 +298,25 @@ class VIEWS_EXPORT ViewAccessibility {
   void SetPreviousFocus(Widget* widget);
   Widget* GetNextWindowFocus() const;
   Widget* GetPreviousWindowFocus() const;
+
+  void SetShowContextMenu(bool show_context_menu);
+
+  void SetState(ax::mojom::State state, bool is_enabled);
+
+  // Updates the focusable state of the `data_` object.
+  // The view is considered focusable if it is not set to never receive focus
+  // This function must be called whenever an attribute that can affect the
+  // focusable state changes
+  void UpdateFocusableState();
+
+  // This function recursively updates the focusable state of the `data_` member
+  // and that of the view's children. Then it updates the focusable state of the
+  // current view.
+  void UpdateFocusableStateRecursive();
+
+  // Updates the invisible state of the `data_` object. The view is considered
+  // invisible if it is not visible and its role is not kAlert.
+  void UpdateInvisibleState();
 
   // Override the child tree id.
   void OverrideChildTreeID(ui::AXTreeID tree_id);
@@ -384,14 +405,24 @@ class VIEWS_EXPORT ViewAccessibility {
  protected:
   explicit ViewAccessibility(View* view);
 
-  // Used internally and by View.
-  virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type);
+  virtual void FireNativeEvent(ax::mojom::Event event_type);
 
   // Used for testing. Called every time an accessibility event is fired.
   AccessibilityEventsCallback accessibility_events_callback_;
 
  private:
-  friend class View;
+  // Prune/Unprune all descendant views from the accessibility tree. We prune
+  // for two reasons: 1) The view has been explicitly marked as a leaf node, 2)
+  // The view is focusable and lacks focusable descendants (e.g. a button with a
+  // label and/or an image).
+  void PruneSubtree();
+  void UnpruneSubtree();
+
+  // Updates the ignored state of the `data_` object.
+  // The view is considered ignored if it should be ignored as per
+  // `should_be_ignored_`, or if it has been pruned (`pruned_`), or if its role
+  // is 'kNone'.
+  void UpdateIgnoredState();
 
   // Weak. Owns this.
   const raw_ptr<View> view_;
@@ -433,7 +464,7 @@ class VIEWS_EXPORT ViewAccessibility {
   // This is set to true when the view is explicitly marked as ignored by
   // `SetIsIgnored`. It is not the only condition that will cause a view to have
   // the ignored accessible state, as `pruned_` and `is_leaf_` can also cause
-  // this. See `AdjustIgnoredState`.
+  // this. See `UpdateIgnoredState`.
   bool should_be_ignored_ = false;
 
   // Used by the Views system to help some assistive technologies, such as
@@ -451,24 +482,15 @@ class VIEWS_EXPORT ViewAccessibility {
   // View.
   bool needs_ax_tree_manager_ = false;
 
+  // Prevents accessibility events from being fired during initialization of
+  // the owning View.
+  bool pause_accessibility_events_ = false;
+
 #if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Each instance of ViewAccessibility that's associated with a root View
   // owns an ViewsAXTreeManager. For other Views, this should be nullptr.
   std::unique_ptr<views::ViewsAXTreeManager> ax_tree_manager_;
 #endif
-
-  void SetShowContextMenu(bool show_context_menu);
-
-  // Prune/Unprune all descendant views from the accessibility tree. We prune
-  // for two reasons: 1) The view has been explicitly marked as a leaf node, 2)
-  // The view is focusable and lacks focusable descendants (e.g. a button with a
-  // label and/or an image).
-  void PruneSubtree();
-  void UnpruneSubtree();
-
-  void SetState(ax::mojom::State state, bool is_enabled);
-
-  void AdjustIgnoredState();
 
   bool ignore_missing_widget_for_testing_ = false;
 };

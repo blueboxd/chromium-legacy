@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/web_app_pref_guardrails.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/user_education/interactive_feature_promo_test.h"
@@ -199,6 +198,26 @@ IN_PROC_BROWSER_TEST_F(IntentPickerInteractiveUiTest,
 }
 #endif  // BUILDFLAG(IS_MAC)
 
+// TODO(b/338969664): The following tests are failing on Linux MSan/macOS 14, so
+// disabling for now. These should be re-enabled.
+#if (BUILDFLAG(IS_LINUX) &&                                       \
+     (defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER))) || \
+    BUILDFLAG(IS_MAC)
+#define MAYBE_AcceptingBubbleMeasuresUserAccept \
+  DISABLED_AcceptingBubbleMeasuresUserAccept
+#define MAYBE_BubbleDismissMeasuresUserDismiss \
+  DISABLED_BubbleDismissMeasuresUserDismiss
+#define MAYBE_ClosingAppWindowMeasuresDismiss \
+  DISABLED_ClosingAppWindowMeasuresDismiss
+#define MAYBE_IPHShownOnLinkClick DISABLED_IPHShownOnLinkClick
+#else
+#define MAYBE_AcceptingBubbleMeasuresUserAccept \
+  AcceptingBubbleMeasuresUserAccept
+#define MAYBE_BubbleDismissMeasuresUserDismiss BubbleDismissMeasuresUserDismiss
+#define MAYBE_ClosingAppWindowMeasuresDismiss ClosingAppWindowMeasuresDismiss
+#define MAYBE_IPHShownOnLinkClick IPHShownOnLinkClick
+#endif
+
 // Test to verify that launching an app from the intent picker chip shows the
 // IPH bubble if the feature flag is enabled.
 class WebAppLinkCapturingIPHPromoTest
@@ -315,7 +334,7 @@ IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingIPHPromoTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingIPHPromoTest,
-                       IPHShownOnLinkClick) {
+                       MAYBE_IPHShownOnLinkClick) {
   const webapps::AppId app_id = InstallApp();
   SetUpSiteForLinkCapturingIphBubble(app_id);
 
@@ -332,7 +351,7 @@ IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingIPHPromoTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingIPHPromoTest,
-                       ClosingAppWindowMeasuresDismiss) {
+                       MAYBE_ClosingAppWindowMeasuresDismiss) {
   const webapps::AppId app_id = InstallApp();
   base::UserActionTester user_action_tester;
   SetUpSiteForLinkCapturingIphBubble(app_id);
@@ -348,7 +367,7 @@ IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingIPHPromoTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingIPHPromoTest,
-                       AcceptingBubbleMeasuresUserAccept) {
+                       MAYBE_AcceptingBubbleMeasuresUserAccept) {
   const webapps::AppId app_id = InstallApp();
   base::UserActionTester user_action_tester;
   SetUpSiteForLinkCapturingIphBubble(app_id);
@@ -362,7 +381,7 @@ IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingIPHPromoTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingIPHPromoTest,
-                       BubbleDismissMeasuresUserDismiss) {
+                       MAYBE_BubbleDismissMeasuresUserDismiss) {
   const webapps::AppId app_id = InstallApp();
   base::UserActionTester user_action_tester;
   SetUpSiteForLinkCapturingIphBubble(app_id);

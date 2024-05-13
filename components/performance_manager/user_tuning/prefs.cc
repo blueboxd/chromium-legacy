@@ -30,6 +30,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       kMemorySaverModeState, static_cast<int>(MemorySaverModeState::kDisabled));
   registry->RegisterIntegerPref(
+      kMemorySaverModeAggressiveness,
+      static_cast<int>(MemorySaverModeAggressiveness::kMedium));
+  registry->RegisterIntegerPref(
       kBatterySaverModeState,
       static_cast<int>(BatterySaverModeState::kEnabledBelowThreshold));
   registry->RegisterTimePref(kLastBatteryUseTimestamp, base::Time());
@@ -55,6 +58,19 @@ MemorySaverModeState GetCurrentMemorySaverModeState(PrefService* pref_service) {
   }
 
   return static_cast<MemorySaverModeState>(state);
+}
+
+MemorySaverModeAggressiveness GetCurrentMemorySaverMode(
+    PrefService* pref_service) {
+  int mode = pref_service->GetInteger(kMemorySaverModeAggressiveness);
+  if (mode < static_cast<int>(MemorySaverModeAggressiveness::kConservative) ||
+      mode > static_cast<int>(MemorySaverModeAggressiveness::kAggressive)) {
+    int medium_mode = static_cast<int>(MemorySaverModeAggressiveness::kMedium);
+    pref_service->SetInteger(kMemorySaverModeAggressiveness, medium_mode);
+    mode = medium_mode;
+  }
+
+  return static_cast<MemorySaverModeAggressiveness>(mode);
 }
 
 base::TimeDelta GetCurrentMemorySaverModeTimeBeforeDiscard(

@@ -957,6 +957,11 @@ interface CSSVariableReferenceValue
     getter variable
     method constructor
     setter variable
+interface CSSViewTransitionRule : CSSRule
+    attribute @@toStringTag
+    getter navigation
+    getter types
+    method constructor
 interface Cache
     attribute @@toStringTag
     method add
@@ -1145,6 +1150,16 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface CloseWatcher : EventTarget
+    attribute @@toStringTag
+    getter oncancel
+    getter onclose
+    method close
+    method constructor
+    method destroy
+    method requestClose
+    setter oncancel
+    setter onclose
 interface Comment : CharacterData
     attribute @@toStringTag
     method constructor
@@ -1761,6 +1776,7 @@ interface Document : Node
     getter xmlVersion
     method adoptNode
     method append
+    method browsingTopics
     method captureEvents
     method caretRangeFromPoint
     method clear
@@ -2432,6 +2448,18 @@ interface FederatedCredential : Credential
     getter protocol
     getter provider
     method constructor
+interface Fence
+    attribute @@toStringTag
+    method constructor
+    method getNestedConfigs
+    method reportEvent
+    method setReportEventDataForAutomaticBeacons
+interface FencedFrameConfig
+    attribute @@toStringTag
+    getter height
+    getter width
+    method constructor
+    method setSharedStorageContext
 interface File : Blob
     attribute @@toStringTag
     getter lastModified
@@ -3558,6 +3586,20 @@ interface HTMLEmbedElement : HTMLElement
     setter src
     setter type
     setter width
+interface HTMLFencedFrameElement : HTMLElement
+    static method canLoadOpaqueURL
+    attribute @@toStringTag
+    getter allow
+    getter config
+    getter height
+    getter sandbox
+    getter width
+    method constructor
+    setter allow
+    setter config
+    setter height
+    setter sandbox
+    setter width
 interface HTMLFieldSetElement : HTMLElement
     attribute @@toStringTag
     getter disabled
@@ -3726,6 +3768,7 @@ interface HTMLIFrameElement : HTMLElement
     getter allow
     getter allowFullscreen
     getter allowPaymentRequest
+    getter browsingTopics
     getter contentDocument
     getter contentWindow
     getter credentialless
@@ -3753,6 +3796,7 @@ interface HTMLIFrameElement : HTMLElement
     setter allow
     setter allowFullscreen
     setter allowPaymentRequest
+    setter browsingTopics
     setter credentialless
     setter csp
     setter frameBorder
@@ -6252,10 +6296,12 @@ interface OverconstrainedError : DOMException
     method constructor
 interface PageRevealEvent : Event
     attribute @@toStringTag
+    getter viewTransition
     method constructor
 interface PageSwapEvent : Event
     attribute @@toStringTag
     getter activation
+    getter viewTransition
     method constructor
 interface PageTransitionEvent : Event
     attribute @@toStringTag
@@ -8582,7 +8628,24 @@ interface ShadowRoot : DocumentFragment
     setter fullscreenElement
     setter innerHTML
     setter onslotchange
-    setter serializable
+interface SharedStorage
+    attribute @@toStringTag
+    getter worklet
+    method append
+    method clear
+    method constructor
+    method createWorklet
+    method delete
+    method get
+    method run
+    method selectURL
+    method set
+interface SharedStorageWorklet
+    attribute @@toStringTag
+    method addModule
+    method constructor
+    method run
+    method selectURL
 interface SharedWorker : EventTarget
     attribute @@toStringTag
     getter onerror
@@ -11587,6 +11650,7 @@ namespace console
     getter documentPictureInPicture
     getter event
     getter external
+    getter fence
     getter frameElement
     getter frames
     getter history
@@ -11748,6 +11812,7 @@ namespace console
     getter scrollbars
     getter self
     getter sessionStorage
+    getter sharedStorage
     getter speechSynthesis
     getter status
     getter statusbar

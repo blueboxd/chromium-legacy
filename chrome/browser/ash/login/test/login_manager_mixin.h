@@ -116,19 +116,20 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   // Should be called before mixin SetUp() is called to take effect.
   void set_session_restore_enabled() { session_restore_enabled_ = true; }
 
-  // By default, LoginManagerMixin will set up user session manager not to
-  // launch browser as part of user session setup - use this to override that
-  // behavior.
-  void set_should_launch_browser(bool value) { should_launch_browser_ = value; }
 
   // By default, LoginManagerMixin will set wait for successful profile
   // initialization. If test expects some errors during profile initialization
   // this gives an option to bypass the wait.
   void set_should_wait_for_profile(bool value) { wait_for_profile_ = value; }
 
-  void set_should_obtain_handles(bool value) { should_obtain_handles_ = value; }
-
   const UserList& users() const { return initial_users_; }
+
+  // By default, LoginManagerMixin will set up user session manager not to
+  // launch browser as part of user session setup - use this to override that
+  // behavior.
+  void SetShouldLaunchBrowser(bool value);
+
+  void SetShouldObtainHandle(bool value);
 
   // Sets the list of default policy switches to be added to command line on the
   // login screen.
@@ -151,9 +152,15 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
       std::unique_ptr<StubAuthenticatorBuilder> authenticator_builder);
 
   // Starts login attempt for a user, using actual authenticator backed by
-  // FakeUserDataAuthClient.
-  // Note that this will not wait for the login attempt to finish.
+  // FakeUserDataAuthClient. It is assumed that user already exists on the
+  // device. Note that this will not wait for the login attempt to finish.
   void AttemptLoginUsingFakeDataAuthClient(const UserContext& user_context);
+
+  // Starts login attempt for a user, assuming that user is a new user that have
+  // just completed GAIA authentication.
+  // Note that this will not wait for the login attempt to finish.
+  void AttemptNewUserLoginUsingFakeDataAuthClient(
+      const UserContext& user_context);
 
   // Waits for the session state to change to ACTIVE. Returns immediately if the
   // session is already active.
@@ -180,7 +187,11 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   void LoginAsNewRegularUser(
       std::optional<UserContext> user_context = std::nullopt);
 
-  // Logs in as a child user with default user context.Should be used for
+  // Logs in as an enterprise user with default user context. Should be used
+  // for proceeding into the session from the login screen.
+  void LoginAsNewEnterpriseUser();
+
+  // Logs in as a child user with default user context. Should be used for
   // proceeding into the session from the login screen.
   void LoginAsNewChildUser();
 
@@ -195,6 +206,9 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   // browser tests).
   bool session_restore_enabled_ = false;
   test::SessionFlagsManager session_flags_manager_;
+
+  // Whether `SetUpOnMainThread` was already called.
+  bool set_up_on_main_thread_ = false;
 
   // Whether the user session manager should skip browser launch steps for
   // testing.

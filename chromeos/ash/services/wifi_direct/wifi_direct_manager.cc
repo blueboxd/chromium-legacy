@@ -4,11 +4,13 @@
 
 #include "chromeos/ash/services/wifi_direct/wifi_direct_manager.h"
 
+#include "chromeos/ash/components/wifi_p2p/wifi_p2p_group.h"
 #include "chromeos/ash/services/wifi_direct/wifi_direct_connection.h"
 #include "components/device_event_log/device_event_log.h"
 
 namespace ash::wifi_direct {
 
+using wifi_direct::mojom::WifiCredentialsPtr;
 using wifi_direct::mojom::WifiDirectOperationResult;
 
 namespace {
@@ -64,22 +66,22 @@ void WifiDirectManager::BindPendingReceiver(
 }
 
 void WifiDirectManager::CreateWifiDirectGroup(
-    const std::string& ssid,
-    const std::string& passphrase,
+    WifiCredentialsPtr credentials,
     CreateWifiDirectGroupCallback callback) {
   WifiP2PController::Get()->CreateWifiP2PGroup(
-      ssid, passphrase,
+      credentials ? std::optional{credentials->ssid} : std::nullopt,
+      credentials ? std::optional{credentials->passphrase} : std::nullopt,
       base::BindOnce(&WifiDirectManager::OnCreateOrConnectWifiDirectGroup,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WifiDirectManager::ConnectToWifiDirectGroup(
-    const std::string& ssid,
-    const std::string& passphrase,
+    WifiCredentialsPtr credentials,
     std::optional<uint32_t> frequency,
     ConnectToWifiDirectGroupCallback callback) {
+  CHECK(credentials);
   WifiP2PController::Get()->ConnectToWifiP2PGroup(
-      ssid, passphrase, frequency,
+      credentials->ssid, credentials->passphrase, frequency,
       base::BindOnce(&WifiDirectManager::OnCreateOrConnectWifiDirectGroup,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -99,21 +101,20 @@ void WifiDirectManager::GetWifiP2PCapabilities(
 void WifiDirectManager::OnCreateOrConnectWifiDirectGroup(
     CreateWifiDirectGroupCallback callback,
     WifiP2PController::OperationResult result,
-    std::optional<WifiP2PController::WifiDirectConnectionMetadata> metadata) {
+    std::optional<WifiP2PGroup> group_metadata) {
   WifiDirectOperationResult mojo_result = GetMojoOperationResult(result);
   if (mojo_result != WifiDirectOperationResult::kSuccess) {
     std::move(callback).Run(mojo_result, mojo::NullRemote());
     return;
   }
 
-  CHECK(metadata);
-  const int shill_id = metadata->shill_id;
+  CHECK(group_metadata);
+  const int shill_id = group_metadata->shill_id();
   NET_LOG(EVENT) << "Creating Wifi direct connection with Shill id: "
                  << shill_id;
 
-  // TODO: set disconnect handler when Destroy/Disconnect group is implemented.
   auto wifi_direct_connection_pair = WifiDirectConnection::Create(
-      shill_id, metadata->frequency, metadata->network_id,
+      *group_metadata,
       base::BindOnce(&WifiDirectManager::OnClientRequestedDisconnection,
                      weak_ptr_factory_.GetWeakPtr(), shill_id));
   if (base::Contains(shill_id_to_wifi_direct_connection_, shill_id)) {
@@ -127,6 +128,20 @@ void WifiDirectManager::OnCreateOrConnectWifiDirectGroup(
                           std::move(wifi_direct_connection_pair.second));
 }
 
+void WifiDirectManager::OnDestroyOrDisconnectWifiDirectGroup(
+    WifiP2PController::OperationResult result) {
+  WifiDirectOperationResult mojo_result = GetMojoOperationResult(result);
+
+  if (mojo_result != WifiDirectOperationResult::kSuccess) {
+    NET_LOG(ERROR) << "Disconnect or Destroy operation failed with the code: "
+                   << mojo_result;
+    return;
+  }
+
+  NET_LOG(EVENT)
+      << "Successfully disconnected or destroyed the wifi direct group";
+}
+
 void WifiDirectManager::OnClientRequestedDisconnection(int shill_id) {
   NET_LOG(EVENT)
       << "Request diconnection for the Wifi direct group with Shill id: "
@@ -136,6 +151,17 @@ void WifiDirectManager::OnClientRequestedDisconnection(int shill_id) {
     NET_LOG(ERROR) << "Couldn't find the Wifi direct connection with shill id: "
                    << shill_id << " in map";
     return;
+  }
+  if (shill_id_to_wifi_direct_connection_[shill_id]->IsOwner()) {
+    WifiP2PController::Get()->DestroyWifiP2PGroup(
+        shill_id,
+        base::BindOnce(&WifiDirectManager::OnDestroyOrDisconnectWifiDirectGroup,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    WifiP2PController::Get()->DisconnectFromWifiP2PGroup(
+        shill_id,
+        base::BindOnce(&WifiDirectManager::OnDestroyOrDisconnectWifiDirectGroup,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
   shill_id_to_wifi_direct_connection_.erase(it);
 }

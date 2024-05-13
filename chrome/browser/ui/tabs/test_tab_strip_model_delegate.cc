@@ -73,6 +73,9 @@ std::optional<SessionID> TestTabStripModelDelegate::CreateHistoricalTab(
 void TestTabStripModelDelegate::CreateHistoricalGroup(
     const tab_groups::TabGroupId& group) {}
 
+void TestTabStripModelDelegate::GroupAdded(
+    const tab_groups::TabGroupId& group) {}
+
 void TestTabStripModelDelegate::WillCloseGroup(
     const tab_groups::TabGroupId& group) {}
 
@@ -126,6 +129,12 @@ BrowserWindowInterface* TestTabStripModelDelegate::GetBrowserWindowInterface() {
 }
 
 bool TestTabStripModelDelegate::ConfirmDestroyingGroups(
+    const std::vector<tab_groups::TabGroupId>& group_ids,
+    base::OnceCallback<void()> callback) {
+  return true;
+}
+
+bool TestTabStripModelDelegate::ConfirmRemovingAllTabsFromGroups(
     const std::vector<tab_groups::TabGroupId>& group_ids,
     base::OnceCallback<void()> callback) {
   return true;

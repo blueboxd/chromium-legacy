@@ -218,6 +218,13 @@ enum class AccessPoint : int {
   // signed-in avatars - interactions with the signed-out avatar are instead
   // counted under ACCESS_POINT_NTP_SIGNED_OUT_ICON.
   ACCESS_POINT_NTP_IDENTITY_DISC = 63,
+  // The identity is received through an interception of a 3rd party OIDC auth
+  // redirection.
+  ACCESS_POINT_OIDC_REDIRECTION_INTERCEPTION = 64,
+  // The "Sign in again" button on a Web Authentication modal dialog when
+  // reauthentication is necessary to sign in with or save a passkey from the
+  // Google Password Manager.
+  ACCESS_POINT_WEBAUTHN_MODAL_DIALOG = 65,
 
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in
@@ -450,8 +457,9 @@ enum class SourceForRefreshTokenOperation {
   kLogoutTabHelper_PrimaryPageChanged = 19,
   kForceSigninReauthWithDifferentAccount = 20,
   kAccountReconcilor_RevokeTokensNotInCookies = 21,
+  kDiceResponseHandler_PasswordPromoSignin = 22,
 
-  kMaxValue = kAccountReconcilor_RevokeTokensNotInCookies,
+  kMaxValue = kDiceResponseHandler_PasswordPromoSignin,
 };
 
 // Different types of reporting. This is used as a histogram suffix.

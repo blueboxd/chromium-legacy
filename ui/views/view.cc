@@ -636,6 +636,12 @@ void View::SetVisible(bool visible) {
     }
 
     visible_ = visible;
+    // The visible state of a view can affect both its own focusability and that
+    // of its descendants.
+    GetViewAccessibility().UpdateFocusableStateRecursive();
+    GetViewAccessibility().UpdateInvisibleState();
+    AdvanceFocusIfNecessary();
+
     AdvanceFocusIfNecessary();
 
     // Notify the parent.
@@ -1950,6 +1956,11 @@ void View::SetFocusBehavior(FocusBehavior focus_behavior) {
   }
 
   focus_behavior_ = focus_behavior;
+  // We don't have to update the focusable state here recursively because a
+  // view's focus behavior does not affect its children's focus behavior. For
+  // example, a container view may have a focus behavior of NEVER, but its
+  // children may still be focusable.
+  GetViewAccessibility().UpdateFocusableState();
   AdvanceFocusIfNecessary();
 
   OnPropertyChanged(&focus_behavior_, kPropertyEffectsNone);
@@ -2089,6 +2100,8 @@ void View::SetAccessibilityProperties(
     std::optional<std::u16string> role_description,
     std::optional<ax::mojom::NameFrom> name_from,
     std::optional<ax::mojom::DescriptionFrom> description_from) {
+  // TODO(accessibility): Remove this attribute once we migrate the
+  // SetAccessibilityProperties function to ViewAccessibility.
   base::AutoReset<bool> initializing(&pause_accessibility_events_, true);
   if (role.has_value()) {
     if (role_description.has_value()) {
@@ -2287,13 +2300,9 @@ gfx::NativeViewAccessible View::GetNativeViewAccessible() {
 
 void View::NotifyAccessibilityEvent(ax::mojom::Event event_type,
                                     bool send_native_event) {
-  // If it belongs to a widget but its native widget is already destructed, do
-  // not send such accessibility event as it's unexpected to send such events
-  // during destruction, and is likely to lead to crashes/problems.
-  if (GetWidget() && !GetWidget()->GetNativeView()) {
-    return;
-  }
-
+  // TODO(accessibility): Remove this condition once we migrate the
+  // SetAccessibilityProperties function to ViewAccessibility.
+  //
   // If `pause_accessibility_events_` is true, it means we are initializing
   // property values. In this specific case, we do not want to notify platform
   // assistive technologies that a property has changed.
@@ -2301,13 +2310,7 @@ void View::NotifyAccessibilityEvent(ax::mojom::Event event_type,
     return;
   }
 
-  AXEventManager::Get()->NotifyViewEvent(this, event_type);
-
-  if (send_native_event && GetWidget()) {
-    GetViewAccessibility().NotifyAccessibilityEvent(event_type);
-  }
-
-  OnAccessibilityEvent(event_type);
+  GetViewAccessibility().NotifyEvent(event_type, send_native_event);
 }
 
 void View::OnAccessibilityEvent(ax::mojom::Event event_type) {}
@@ -3111,6 +3114,10 @@ void View::AddChildViewAtImpl(View* view, size_t index) {
   // rooted at |this| should be hidden. Otherwise, all the child layers should
   // inherit the visibility of the owner View.
   view->UpdateLayerVisibility();
+
+  // Make sure that the accessible focusable state of the descendants of the
+  // `view` is correct.
+  view->GetViewAccessibility().UpdateFocusableStateRecursive();
 
   // Need to notify the layout manager because one of the callbacks below might
   // want to know the view's new preferred size, minimum size, etc.

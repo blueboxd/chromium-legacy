@@ -477,12 +477,12 @@ public class HistoryUITest {
         performMenuAction(R.id.search_menu_id);
 
         // Verify the button starts disabled.
-        Assert.assertFalse(mAdapter.getAppFilterButtonForTest().isEnabled());
+        Assert.assertFalse(isAppFilterButtonEnabled());
 
         // Verify the button remains disabled if the query app result is empty.
         var result = new ArrayList<String>();
         mAdapter.onQueryAppsComplete(result);
-        Assert.assertFalse(mAdapter.getAppFilterButtonForTest().isEnabled());
+        Assert.assertFalse(isAppFilterButtonEnabled());
 
         // Verify the button becomes enabled if the app result is non-empty.
         final String app1 = "org.chromium.chrome.Ernie";
@@ -493,7 +493,12 @@ public class HistoryUITest {
         when(mPackageManager.getApplicationInfo(eq(app2), anyInt()))
                 .thenThrow(NameNotFoundException.class);
         mAdapter.onQueryAppsComplete(result);
-        Assert.assertTrue(mAdapter.getAppFilterButtonForTest().isEnabled());
+        Assert.assertTrue(isAppFilterButtonEnabled());
+    }
+
+    private boolean isAppFilterButtonEnabled() {
+        return mAdapter.isAppFilterHeaderItemVisible()
+                && mAdapter.getAppFilterButtonForTest().isEnabled();
     }
 
     @EnableFeatures(ChromeFeatureList.APP_SPECIFIC_HISTORY)
@@ -727,7 +732,9 @@ public class HistoryUITest {
 
     @Test
     @SmallTest
-    public void testAppSpecificToolbar() {
+    public void testAppSpecificToolbar() throws Exception {
+        final String appId = "org.chromium.app.AwesomeApp";
+        when(mPackageManager.getApplicationInfo(eq(appId), anyInt())).thenReturn(mPackageAppInfo);
         mHistoryManager =
                 new HistoryManager(
                         mActivity,
@@ -738,7 +745,7 @@ public class HistoryUITest {
                         /* Supplier<Tab>= */ null,
                         mHistoryProvider,
                         new HistoryUmaRecorder(),
-                        null,
+                        appId,
                         true,
                         true,
                         false);
@@ -760,7 +767,9 @@ public class HistoryUITest {
 
     @Test
     @SmallTest
-    public void testAppSpecificToolbarHeaderStateNotPersisted() {
+    public void testAppSpecificToolbarHeaderStateNotPersisted() throws Exception {
+        final String appId = "org.chromium.app.AwesomeApp";
+        when(mPackageManager.getApplicationInfo(eq(appId), anyInt())).thenReturn(mPackageAppInfo);
         mHistoryManager =
                 new HistoryManager(
                         mActivity,
@@ -771,7 +780,7 @@ public class HistoryUITest {
                         /* Supplier<Tab>= */ null,
                         mHistoryProvider,
                         new HistoryUmaRecorder(),
-                        null,
+                        appId,
                         true,
                         true,
                         false);

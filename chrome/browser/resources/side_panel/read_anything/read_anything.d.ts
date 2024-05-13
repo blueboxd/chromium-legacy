@@ -67,6 +67,9 @@ declare namespace chrome {
     // Whether the automatic voice switching feature flag is enabled.
     let isAutoVoiceSwitchingEnabled: boolean;
 
+    // Whether the language pack download feature flag is enabled.
+    let isLanguagePackDownloadingEnabled: boolean;
+
     let isAutomaticWordHighlightingEnabled: boolean;
 
     // Indicates if this page is a Google doc.
@@ -84,6 +87,9 @@ declare namespace chrome {
 
     // If the current platform is ChromeOS Ash.
     let isChromeOsAsh: boolean;
+
+    // If distillations have been queued up.
+    let requiresDistillation: boolean;
 
     // Returns the stored user voice preference for the current language
     function getStoredVoice(): string;
@@ -137,6 +143,9 @@ declare namespace chrome {
     // Called when a user tries to copy text from reading mode with keyboard
     // shortcuts.
     function onCopy(): void;
+
+    // Called when speech is paused or played.
+    function onSpeechPlayingStateChanged(paused: boolean): void;
 
     // Called when the Read Anything panel is scrolled.
     function onScroll(onSelection: boolean): void;
@@ -265,6 +274,9 @@ declare namespace chrome {
     // toolbar and are ready to consume.
     function updateTheme(): void;
 
+    // Read Aloud state should be updated if the lock screen state changes.
+    function onLockScreen(): void;
+
     // Called with the response of sendGetVoicePackInfoRequest()
     function updateVoicePackStatus(lang: string, status: string): void;
 
@@ -334,8 +346,14 @@ declare namespace chrome {
     // updateVoicePackStatusFromInstallResponse()
     function sendInstallVoicePackRequest(language: string): void;
 
-    // Log UmaHistogramLong
+    // Log UmaHistogram
     function logMetric(time: number, metricName: string): void;
+
+    // Log UmaHistogramLong
+    function logLongMetric(time: number, metricName: string): void;
+
+    // Log UmaHistogramCount
+    function incrementMetricCount(metricName: string): void;
 
     // Log speech errors.
     function logSpeechError(errorCode: string): void;

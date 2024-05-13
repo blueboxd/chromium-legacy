@@ -18,6 +18,9 @@ targets.legacy_basic_suite(
     name = "android_12_fieldtrial_webview_tests",
     tests = {
         "webview_trichrome_64_cts_tests_no_field_trial": targets.legacy_test_config(
+            args = [
+                "--store-tombstones",
+            ],
             ci_only = True,
             swarming = targets.swarming(
                 shards = 2,
@@ -405,11 +408,8 @@ targets.legacy_basic_suite(
     tests = {
         "chrome_sizes": targets.legacy_test_config(
             remove_mixins = [
-                "android_r",
                 "bullhead",
-                "flame",
                 "marshmallow",
-                "mdarcy",
                 "oreo_fleet",
                 "oreo_mr1_fleet",
                 "pie_fleet",
@@ -1716,11 +1716,8 @@ targets.legacy_basic_suite(
     tests = {
         "cronet_sizes": targets.legacy_test_config(
             remove_mixins = [
-                "android_r",
                 "bullhead",
-                "flame",
                 "marshmallow",
-                "mdarcy",
                 "oreo_fleet",
                 "oreo_mr1_fleet",
                 "pie_fleet",
@@ -3418,6 +3415,26 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "gpu_webgl_conformance_gles_passthrough_graphite_telemetry_tests",
+    tests = {
+        "webgl_conformance_gles_passthrough_graphite_tests": targets.legacy_test_config(
+            mixins = [
+                "gpu_integration_test_common_args",
+            ],
+            args = [
+                # On dual-GPU devices we want the high-performance GPU to be active
+                "--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu --enable-features=SkiaGraphite",
+                "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+            ],
+            ci_only = True,
+            swarming = targets.swarming(
+                shards = 3,
+            ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests",
     tests = {
         "webgl_conformance_metal_passthrough_ganesh_tests": targets.legacy_test_config(
@@ -4152,6 +4169,20 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "model_validation_tests_light_suite",
+    tests = {
+        "model_validation_tests_light": targets.legacy_test_config(
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            args = [
+                "--out_dir=.",
+            ],
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "model_validation_tests_suite",
     tests = {
         "model_validation_tests": targets.legacy_test_config(
@@ -4160,6 +4191,24 @@ targets.legacy_basic_suite(
             ],
             args = [
                 "--out_dir=.",
+            ],
+            linux_args = [
+                "--chromedriver",
+                "chromedriver",
+                "--binary",
+                "chrome",
+            ],
+            mac_args = [
+                "--chromedriver",
+                "chromedriver",
+                "--binary",
+                "Google Chrome.app/Contents/MacOS/Google Chrome",
+            ],
+            win_args = [
+                "--chromedriver",
+                "chromedriver.exe",
+                "--binary",
+                "Chrome.exe",
             ],
         ),
     },
@@ -4177,11 +4226,8 @@ targets.legacy_basic_suite(
     tests = {
         "monochrome_public_apk_checker": targets.legacy_test_config(
             remove_mixins = [
-                "android_r",
                 "bullhead",
-                "flame",
                 "marshmallow",
-                "mdarcy",
                 "oreo_fleet",
                 "oreo_mr1_fleet",
                 "pie_fleet",
@@ -4388,6 +4434,11 @@ targets.legacy_basic_suite(
                 "chromedriver.exe",
                 "--binary",
                 "Chrome.exe",
+            ],
+        ),
+        "ondevice_stability_tests_light": targets.legacy_test_config(
+            mixins = [
+                "has_native_resultdb_integration",
             ],
         ),
     },
@@ -4972,6 +5023,9 @@ targets.legacy_basic_suite(
     name = "webview_64_cts_tests_gtest",
     tests = {
         "webview_64_cts_tests": targets.legacy_test_config(
+            args = [
+                "--store-tombstones",
+            ],
             swarming = targets.swarming(
                 shards = 2,
             ),
@@ -5026,6 +5080,9 @@ targets.legacy_basic_suite(
     name = "webview_cts_tests_gtest",
     tests = {
         "webview_cts_tests": targets.legacy_test_config(
+            args = [
+                "--store-tombstones",
+            ],
             swarming = targets.swarming(
                 shards = 2,
             ),
@@ -5037,6 +5094,9 @@ targets.legacy_basic_suite(
     name = "webview_cts_tests_gtest_no_field_trial",
     tests = {
         "webview_cts_tests_no_field_trial": targets.legacy_test_config(
+            args = [
+                "--store-tombstones",
+            ],
             swarming = targets.swarming(
                 shards = 2,
             ),
@@ -5050,6 +5110,7 @@ targets.legacy_basic_suite(
         "webview_trichrome_64_cts_tests": targets.legacy_test_config(
             args = [
                 "--store-data-dependencies-in-temp",
+                "--store-tombstones",
             ],
             swarming = targets.swarming(
                 shards = 2,
@@ -5069,6 +5130,9 @@ targets.legacy_basic_suite(
     name = "webview_trichrome_64_cts_tests_suite",
     tests = {
         "webview_trichrome_64_cts_tests": targets.legacy_test_config(
+            args = [
+                "--store-tombstones",
+            ],
             swarming = targets.swarming(
                 shards = 2,
             ),
@@ -5080,6 +5144,9 @@ targets.legacy_basic_suite(
     name = "webview_trichrome_64_cts_tests_no_field_trial_suite",
     tests = {
         "webview_trichrome_64_cts_tests_no_field_trial": targets.legacy_test_config(
+            args = [
+                "--store-tombstones",
+            ],
             swarming = targets.swarming(
                 shards = 2,
             ),
@@ -5090,7 +5157,11 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "webview_trichrome_cts_tests_suite",
     tests = {
-        "webview_trichrome_cts_tests": targets.legacy_test_config(),
+        "webview_trichrome_cts_tests": targets.legacy_test_config(
+            args = [
+                "--store-tombstones",
+            ],
+        ),
     },
 )
 

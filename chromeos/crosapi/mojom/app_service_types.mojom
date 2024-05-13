@@ -156,6 +156,7 @@ enum Readiness {
   kRemoved,
   // This is used for all non-user initiated uninstallation.
   [MinVersion=1] kUninstalledByNonUser,
+  [MinVersion=2] kDisabledByLocalSettings,  // Disabled by local settings.
 };
 
 // The reason why the app was installed.
@@ -663,7 +664,7 @@ struct InstallAppParams {
   Surface surface@0;
 
   // Represents which package_id to fetch from Almanac to be installed.
-  string? package_id@1;
+  string? serialized_package_id@1;
 
   // Instance ID of a parent window to anchor the app install dialog to. If not
   // provided or a corresponding window is not found, the app install dialog is

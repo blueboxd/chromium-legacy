@@ -21,7 +21,7 @@ import {WebUiListenerMixin} from '//resources/cr_elements/web_ui_listener_mixin.
 import {assert} from '//resources/js/assert.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import type {DomRepeatEvent} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Debouncer, PolymerElement, timeOut} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {minOverflowLengthToScroll, openMenu, validatedFontName} from './common.js';
 import {getTemplate} from './read_anything_toolbar.html.js';
@@ -127,6 +127,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
       textStyleOptions_: Array,
       textStyleToggles_: Array,
       paused: Boolean,
+      speechActuallyPlaying: Boolean,
       isReadAloudPlayable: Boolean,
       selectedVoice: Object,
       voicePackInstallStatus: Map,
@@ -136,6 +137,10 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
       previewVoicePlaying: Object,
       areFontsLoaded_: Boolean,
     };
+  }
+
+  static get observers() {
+    return ['onSpeechPlayingStateChanged_(paused, speechActuallyPlaying)'];
   }
 
   // This function has to be static because it's called from the ResizeObserver
@@ -151,7 +156,10 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
         Array.from(toolbar.querySelectorAll<HTMLElement>('.text-style-button'));
     assert(buttons, 'no toolbar buttons');
     buttons.forEach(btn => ReadAnythingToolbarElement.showElement(btn));
-    toolbar.dispatchEvent(new CustomEvent('reset-toolbar'));
+    toolbar.dispatchEvent(new CustomEvent('reset-toolbar', {
+      bubbles: true,
+      composed: true,
+    }));
 
     if (!toolbar.offsetParent) {
       return;
@@ -347,12 +355,17 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
   private areFontsLoaded_: boolean = false;
   private colorSuffix_: string = '';
 
+  private currentFocusId_: string = '';
   private toolbarContainerObserver_: ResizeObserver|null;
   private windowResizeCallback_: () => void;
 
   // If Read Aloud is in the paused state. This is set from the parent element
   // via one way data binding.
   private readonly paused: boolean;
+
+  private hideSpinner: boolean = true;
+
+  private debouncer_: Debouncer|null = null;
 
   // If Read Aloud is playable. Certain states, such as when Read Anything does
   // not have content or when the speech engine is loading should disable
@@ -840,10 +853,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
   }
 
   private onToolbarKeyDown_(e: KeyboardEvent) {
-    const shadowRoot = this.shadowRoot;
-    assert(shadowRoot);
-    const toolbar = shadowRoot.getElementById('toolbarContainer');
-    assert(toolbar);
+    const toolbar = this.$.toolbarContainer;
     const buttons = Array.from(toolbar.querySelectorAll('.toolbar-button')) as
         HTMLElement[];
     assert(buttons, 'no toolbar buttons');
@@ -858,8 +868,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
 
     // Allow focusing the font selection if it's visible.
     if (!this.isReadAloudEnabled_) {
-      const select = this.$.toolbarContainer.querySelector<HTMLSelectElement>(
-          '#font-select');
+      const select = toolbar.querySelector<HTMLSelectElement>('#font-select');
       assert(select, 'no font select menu');
       focusableElements.unshift(select);
     }
@@ -911,6 +920,11 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
     elementToFocus.focus();
   }
 
+  private getMoreOptionsButtons_(): HTMLElement[] {
+    return Array.from(
+        this.$.toolbarContainer.querySelectorAll(moreOptionsClass));
+  }
+
   private onKeyDown_(e: KeyboardEvent, focusableElements: HTMLElement[]) {
     if (!['ArrowRight', 'ArrowLeft'].includes(e.key)) {
       return;
@@ -926,17 +940,53 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
     // focused by tabbing while the menu is open and we want the arrow key
     // behavior to continue smoothly.
     if (focusableElements[newIndex].id === 'more') {
+      const moreOptionsRendered = this.$.moreOptionsMenu.getIfExists();
+      // If the more options menu has not been rendered yet, render it and wait
+      // for it to be drawn so we can get the number of elements in the menu.
+      if (!moreOptionsRendered || !moreOptionsRendered.open) {
+        openMenu(this.$.moreOptionsMenu.get(), this.$.more);
+        requestAnimationFrame(() => {
+          const moreOptions = this.getMoreOptionsButtons_();
+          focusableElements = focusableElements.concat(moreOptions);
+          newIndex = (direction === 1) ? (newIndex + 1) :
+                                         (focusableElements.length - 1);
+          this.updateFocus_(focusableElements, newIndex);
+        });
+        return;
+      }
       newIndex += direction;
     }
+    this.updateFocus_(focusableElements, newIndex);
+  }
 
-    // Open the overflow menu if the next button is in that menu. Close it
-    // otherwise.
+
+  private onSpeechPlayingStateChanged_(
+      paused: boolean, speechActuallyPlaying: boolean) {
+    // Use a debouncer to reduce glitches. Even when audio is fast to respond to
+    // the play button, there are still milliseconds of delay. To prevent the
+    // spinner from quickly appearing and disappearing, we use a debouncer. If
+    // either the values of `paused` or `speechActuallyPlaying` change, the
+    // previously scheduled callback is canceled and a new callback is
+    // scheduled.
+    // TODO (b/339860819) improve debouncer logic so that the spinner disappears
+    // immediately when speech starts playing, or when the paused button is hit.
+    this.debouncer_ =
+        Debouncer.debounce(this.debouncer_, timeOut.after(150), () => {
+          if (paused) {
+            this.hideSpinner = true;
+          } else {
+            this.hideSpinner = speechActuallyPlaying;
+          }
+        });
+  }
+
+
+  private updateFocus_(focusableElements: HTMLElement[], newIndex: number) {
+    // Close the overflow menu if the next button is not in the menu.
     const elementToFocus = focusableElements[newIndex];
     assert(elementToFocus, 'no element to focus');
     if (elementToFocus.className !== moreOptionsClass.slice(1)) {
       this.$.moreOptionsMenu.getIfExists()?.close();
-    } else if (!this.$.moreOptionsMenu.getIfExists()?.open) {
-      openMenu(this.$.moreOptionsMenu.get(), this.$.more);
     }
 
     // When the user tabs away from the toolbar and then tabs back, we want to
@@ -945,11 +995,16 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
       el.tabIndex = -1;
     });
     elementToFocus.tabIndex = 0;
+    this.currentFocusId_ = elementToFocus.id;
 
     // Wait for the next animation frame for the overflow menu to show or hide.
     requestAnimationFrame(() => {
       elementToFocus.focus();
     });
+  }
+
+  private getRateTabIndex_(isReadAloudPlayable: boolean): number {
+    return (!isReadAloudPlayable || this.currentFocusId_ === 'rate') ? 0 : -1;
   }
 
   private onFontSelectKeyDown_(e: KeyboardEvent) {

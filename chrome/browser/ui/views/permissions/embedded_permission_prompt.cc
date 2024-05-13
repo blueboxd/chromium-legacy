@@ -19,6 +19,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/color/color_id.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
@@ -131,24 +132,30 @@ EmbeddedPermissionPrompt::DeterminePromptVariant(
     ContentSetting setting,
     const content_settings::SettingInfo& info,
     ContentSettingsType type) {
-  // First determine if we can directly show one of the OS views, if the
-  // permission was granted (previously or by Administrator).
-  if (setting == CONTENT_SETTING_ALLOW) {
-    // TODO(crbug.com/40275129): Handle going to Windows settings.
-#if BUILDFLAG(IS_MAC)
-    if (ShouldShowSystemSettingsViewOnMacOS(type)) {
-      return Variant::kOsSystemSettings;
-    }
-
-    if (ShouldShowOSPromptViewOnMacOS(type)) {
-      return Variant::kOsPrompt;
-    }
-#endif
+  // If the administrator blocked the permission, there is nothing the user can
+  // do. Presenting them with a different screen in unproductive.
+  if (IsPermissionSetByAdministator(setting, info) &&
+      setting == CONTENT_SETTING_BLOCK) {
+    return Variant::kAdministratorDenied;
   }
 
+  // Determine if we can directly show one of the OS views. The "System
+  // Settings" view is higher priority then all the other remaining options,
+  // whereas the "OS Prompt" view is only higher priority then the views that
+  // are associated with a site-level allowed state.
+  // TODO(crbug.com/40275129): Handle going to Windows settings.
+#if BUILDFLAG(IS_MAC)
+  if (ShouldShowSystemSettingsViewOnMacOS(type)) {
+    return Variant::kOsSystemSettings;
+  }
+
+  if (setting == CONTENT_SETTING_ALLOW && ShouldShowOSPromptViewOnMacOS(type)) {
+    return Variant::kOsPrompt;
+  }
+#endif
+
   if (IsPermissionSetByAdministator(setting, info)) {
-    return setting == CONTENT_SETTING_ALLOW ? Variant::kAdministratorGranted
-                                            : Variant::kAdministratorDenied;
+    return Variant::kAdministratorGranted;
   }
 
   switch (setting) {
@@ -262,7 +269,9 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
     content_scrim_widget_ =
         EmbeddedPermissionPromptContentScrimView::CreateScrimWidget(
             weak_factory_.GetWeakPtr(),
-            SkColorSetA(gfx::kGoogleGrey700, SK_AlphaOPAQUE * 0.5f));
+            SkColorSetA(web_contents()->GetColorProvider().GetColor(
+                            ui::kColorRefNeutral20),
+                        0.8 * SK_AlphaOPAQUE));
     prompt_view->UpdateAnchor(content_scrim_widget_.get());
     prompt_view->Show();
   }
@@ -352,6 +361,10 @@ EmbeddedPermissionPrompt::GetPromptVariants() const {
 #endif  // BUILDFLAG(IS_MAC)
 
   return variants;
+}
+
+bool EmbeddedPermissionPrompt::IsAskPrompt() const {
+  return (embedded_prompt_variant_ == Variant::kAsk);
 }
 
 void EmbeddedPermissionPrompt::Allow() {
@@ -474,19 +487,23 @@ void EmbeddedPermissionPrompt::OnRequestSystemMediaPermissionResponse(
 
   switch (permission) {
     case system_media_permissions::SystemPermission::kRestricted:
-    case system_media_permissions::SystemPermission::kDenied:
-    case system_media_permissions::SystemPermission::kAllowed:
-      // Do not finalize request until all the necessary system permissions are
-      // granted.
-      if (!grouped_permissions ||
-          other_permission !=
-              system_media_permissions::SystemPermission::kNotDetermined) {
-        CloseView();
-        delegate_->FinalizeCurrentRequests();
-      }
       break;
-    default:
+    case system_media_permissions::SystemPermission::kDenied:
+      RecordOsMetrics(permissions::OsScreenAction::OS_PROMPT_DENIED);
+      break;
+    case system_media_permissions::SystemPermission::kAllowed:
+      RecordOsMetrics(permissions::OsScreenAction::OS_PROMPT_ALLOWED);
+      break;
+    case system_media_permissions::SystemPermission::kNotDetermined:
       NOTREACHED();
+  }
+  // Do not finalize request until all the necessary system permissions are
+  // granted.
+  if (!grouped_permissions ||
+      other_permission !=
+          system_media_permissions::SystemPermission::kNotDetermined) {
+    CloseView();
+    delegate_->FinalizeCurrentRequests();
   }
 }
 

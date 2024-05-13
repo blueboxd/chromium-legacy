@@ -164,22 +164,17 @@ class AutofillAgent::DeferringAutofillDriver : public mojom::AutofillDriver {
   }
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,
-                          const gfx::RectF& bounding_box,
                           base::TimeTicks timestamp) override {
     DeferMsg(&mojom::AutofillDriver::TextFieldDidChange, form, field,
-             bounding_box, timestamp);
+             timestamp);
   }
   void TextFieldDidScroll(const FormData& form,
-                          const FormFieldData& field,
-                          const gfx::RectF& bounding_box) override {
-    DeferMsg(&mojom::AutofillDriver::TextFieldDidScroll, form, field,
-             bounding_box);
+                          const FormFieldData& field) override {
+    DeferMsg(&mojom::AutofillDriver::TextFieldDidScroll, form, field);
   }
   void SelectControlDidChange(const FormData& form,
-                              const FormFieldData& field,
-                              const gfx::RectF& bounding_box) override {
-    DeferMsg(&mojom::AutofillDriver::SelectControlDidChange, form, field,
-             bounding_box);
+                              const FormFieldData& field) override {
+    DeferMsg(&mojom::AutofillDriver::SelectControlDidChange, form, field);
   }
   void SelectOrSelectListFieldOptionsDidChange(const FormData& form) override {
     DeferMsg(&mojom::AutofillDriver::SelectOrSelectListFieldOptionsDidChange,
@@ -188,20 +183,17 @@ class AutofillAgent::DeferringAutofillDriver : public mojom::AutofillDriver {
   void AskForValuesToFill(
       const FormData& form,
       const FormFieldData& field,
-      const gfx::RectF& bounding_box,
       AutofillSuggestionTriggerSource trigger_source) override {
     DeferMsg(&mojom::AutofillDriver::AskForValuesToFill, form, field,
-             bounding_box, trigger_source);
+             trigger_source);
   }
   void HidePopup() override { DeferMsg(&mojom::AutofillDriver::HidePopup); }
-  void FocusNoLongerOnForm(bool had_interacted_form) override {
-    DeferMsg(&mojom::AutofillDriver::FocusNoLongerOnForm, had_interacted_form);
+  void FocusOnNonFormField(bool had_interacted_form) override {
+    DeferMsg(&mojom::AutofillDriver::FocusOnNonFormField, had_interacted_form);
   }
   void FocusOnFormField(const FormData& form,
-                        const FormFieldData& field,
-                        const gfx::RectF& bounding_box) override {
-    DeferMsg(&mojom::AutofillDriver::FocusOnFormField, form, field,
-             bounding_box);
+                        const FormFieldData& field) override {
+    DeferMsg(&mojom::AutofillDriver::FocusOnFormField, form, field);
   }
   void DidFillAutofillFormData(const FormData& form,
                                base::TimeTicks timestamp) override {
@@ -399,7 +391,7 @@ void AutofillAgent::DidChangeScrollOffsetImpl(FieldRendererId element_id) {
               MaybeExtractDatalist({form_util::ExtractOption::kBounds}))) {
     auto& [form, field] = *form_and_field;
     if (auto* autofill_driver = unsafe_autofill_driver()) {
-      autofill_driver->TextFieldDidScroll(form, field, field.bounds());
+      autofill_driver->TextFieldDidScroll(form, field);
     }
   }
 
@@ -416,7 +408,7 @@ void AutofillAgent::FocusedElementChangedDeprecated(const WebElement& element) {
     // Focus moved away from the last interacted form (if any) to somewhere else
     // on the page.
     if (auto* autofill_driver = unsafe_autofill_driver()) {
-      autofill_driver->FocusNoLongerOnForm(!last_focused_form.IsNull());
+      autofill_driver->FocusOnNonFormField(!last_focused_form.IsNull());
     }
     return;
   }
@@ -431,15 +423,14 @@ void AutofillAgent::FocusedElementChangedDeprecated(const WebElement& element) {
     // The focused element is not part of the last interacted form (could be
     // in a different form).
     if (auto* autofill_driver = unsafe_autofill_driver()) {
-      autofill_driver->FocusNoLongerOnForm(/*had_interacted_form=*/true);
+      autofill_driver->FocusOnNonFormField(/*had_interacted_form=*/true);
     }
     focus_moved_to_new_form = true;
   }
 
   // Calls HandleFocusChangeComplete() after notifying the focus is no longer on
   // the previous form, then early return. No need to notify the newly focused
-  // element because that will be done by HandleFocusChangeComplete() which
-  // triggers FormControlElementClicked().
+  // element because that will be done by HandleFocusChangeComplete().
   // Refer to http://crbug.com/1105254
   if ((config_.uses_keyboard_accessory_for_suggestions ||
        !config_.focus_requires_scroll) &&
@@ -477,7 +468,7 @@ void AutofillAgent::FocusedElementChangedDeprecated(const WebElement& element) {
               MaybeExtractDatalist({form_util::ExtractOption::kBounds}))) {
     auto& [form, field] = *form_and_field;
     if (auto* autofill_driver = unsafe_autofill_driver()) {
-      autofill_driver->FocusOnFormField(form, field, field.bounds());
+      autofill_driver->FocusOnFormField(form, field);
     }
   }
 }
@@ -522,7 +513,7 @@ void AutofillAgent::FocusedElementChanged(
       auto& [form, field] = *form_and_field;
       if (auto* autofill_driver = unsafe_autofill_driver()) {
         last_queried_element_ = FieldRef(control);
-        autofill_driver->FocusOnFormField(form, field, field.bounds());
+        autofill_driver->FocusOnFormField(form, field);
         handle_focus_change();
         return;
       }
@@ -536,8 +527,7 @@ void AutofillAgent::FocusedElementChanged(
       CHECK_EQ(form->fields.size(), 1u);
       if (auto* autofill_driver = unsafe_autofill_driver()) {
         last_queried_element_ = FieldRef(new_focused_element);
-        autofill_driver->FocusOnFormField(*form, form->fields.front(),
-                                          form->fields.front().bounds());
+        autofill_driver->FocusOnFormField(*form, form->fields.front());
         handle_focus_change();
         return;
       }
@@ -545,7 +535,7 @@ void AutofillAgent::FocusedElementChanged(
   }
 
   if (auto* autofill_driver = unsafe_autofill_driver()) {
-    autofill_driver->FocusNoLongerOnForm(true);
+    autofill_driver->FocusOnNonFormField(true);
     handle_focus_change();
   }
 }
@@ -617,7 +607,6 @@ void AutofillAgent::ContentEditableDidChange(const WebElement& element) {
     CHECK_EQ(form->fields.size(), 1u);
     if (auto* autofill_driver = unsafe_autofill_driver()) {
       autofill_driver->TextFieldDidChange(*form, form->fields.front(),
-                                          form->fields.front().bounds(),
                                           base::TimeTicks::Now());
     }
   }
@@ -660,8 +649,7 @@ void AutofillAgent::OnTextFieldDidChange(const WebFormControlElement& element) {
               MaybeExtractDatalist({form_util::ExtractOption::kBounds}))) {
     auto& [form, field] = *form_and_field;
     if (auto* autofill_driver = unsafe_autofill_driver()) {
-      autofill_driver->TextFieldDidChange(form, field, field.bounds(),
-                                          base::TimeTicks::Now());
+      autofill_driver->TextFieldDidChange(form, field, base::TimeTicks::Now());
     }
   }
 }
@@ -890,7 +878,9 @@ void AutofillAgent::TriggerSuggestions(
     return;
   }
   if (trigger_source ==
-      AutofillSuggestionTriggerSource::kComposeDialogLostFocus) {
+          AutofillSuggestionTriggerSource::kComposeDialogLostFocus ||
+      trigger_source ==
+          AutofillSuggestionTriggerSource::kComposeDelayedProactiveNudge) {
     if (WebElement content_editable =
             form_util::GetContentEditableByRendererId(field_id);
         !content_editable.IsNull()) {
@@ -1174,8 +1164,7 @@ void AutofillAgent::ShowSuggestionsForContentEditable(
   CHECK_EQ(form->fields.size(), 1u);
   if (auto* autofill_driver = unsafe_autofill_driver()) {
     is_popup_possibly_visible_ = true;
-    autofill_driver->AskForValuesToFill(
-        *form, form->fields[0], form->fields[0].bounds(), trigger_source);
+    autofill_driver->AskForValuesToFill(*form, form->fields[0], trigger_source);
   }
 }
 
@@ -1233,8 +1222,7 @@ void AutofillAgent::QueryAutofillSuggestions(
 
   is_popup_possibly_visible_ = true;
   if (auto* autofill_driver = unsafe_autofill_driver()) {
-    autofill_driver->AskForValuesToFill(form, field, field.bounds(),
-                                        trigger_source);
+    autofill_driver->AskForValuesToFill(form, field, trigger_source);
   }
 }
 
@@ -1508,26 +1496,6 @@ bool AutofillAgent::IsPrerendering() const {
          unsafe_render_frame()->GetWebFrame()->GetDocument().IsPrerendering();
 }
 
-void AutofillAgent::FormControlElementClicked(
-    const WebFormControlElement& element) {
-  was_last_action_fill_ = false;
-
-  const WebInputElement input_element = element.DynamicTo<WebInputElement>();
-  if (input_element.IsNull() && !form_util::IsTextAreaElement(element)) {
-    return;
-  }
-
-#if BUILDFLAG(IS_ANDROID)
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordSuggestionBottomSheetV2)) {
-    password_autofill_agent_->TryToShowKeyboardReplacingSurface(element);
-  }
-#endif
-
-  ShowSuggestions(element,
-                  AutofillSuggestionTriggerSource::kFormControlElementClicked);
-}
-
 void AutofillAgent::HandleFocusChangeComplete(
     bool focused_node_was_last_clicked) {
   if (!unsafe_render_frame()) {
@@ -1536,37 +1504,39 @@ void AutofillAgent::HandleFocusChangeComplete(
 
   // When using Talkback on Android, and possibly others, traversing to and
   // focusing a field will not register as a click. Thus, when screen readers
-  // are used, treat the focused node as if it was the last clicked. Also check
-  // to ensure focus is on a field where text can be entered.
-  // When the focus is on a non-input field on Android, keyboard accessory may
-  // be shown if autofill data is available. Make sure to hide the accessory if
-  // focus changes to another element.
+  // are used, treat the focused node as if it was the last clicked.
   focused_node_was_last_clicked |= is_screen_reader_enabled_;
 
   WebElement focused_element =
       unsafe_render_frame()->GetWebFrame()->GetDocument().FocusedElement();
-  [&] {
-    if (focused_element.IsNull() || !focused_element.IsFormControlElement()) {
-      return;
-    }
-    WebFormControlElement focused_form_control_element =
-        focused_element.To<WebFormControlElement>();
-    if (!form_util::IsTextAreaElementOrTextInput(
-            focused_form_control_element)) {
-      return;
-    }
+  if (focused_element.IsNull()) {
+    return;
+  }
+
+  if (auto focused_control = focused_element.DynamicTo<WebFormControlElement>();
+      form_util::IsTextAreaElementOrTextInput(focused_control)) {
     if (focused_node_was_last_clicked) {
-      FormControlElementClicked(focused_form_control_element);
-      return;
-    }
-    if (form_util::IsTextAreaElement(focused_form_control_element)) {
+      was_last_action_fill_ = false;
+#if BUILDFLAG(IS_ANDROID)
+      if (!base::FeatureList::IsEnabled(
+              password_manager::features::kPasswordSuggestionBottomSheetV2)) {
+        password_autofill_agent_->TryToShowKeyboardReplacingSurface(
+            focused_control);
+      }
+#endif
+      ShowSuggestions(
+          focused_control,
+          AutofillSuggestionTriggerSource::kFormControlElementClicked);
+    } else if (form_util::IsTextAreaElement(focused_control)) {
+#if !BUILDFLAG(IS_ANDROID)
       // Compose reacts to tab area focus even when not triggered by a click -
       // therefore call `ShowSuggestions` with a separate trigger source.
       ShowSuggestions(
-          focused_form_control_element,
+          focused_control,
           AutofillSuggestionTriggerSource::kTextareaFocusedWithoutClick);
+#endif
     }
-  }();
+  }
 
   // TODO(crbug.com/1490372, b/308811729): This is not conditioned on
   // `focused_node_was_last_clicked`. This has two advantages:
@@ -1578,11 +1548,9 @@ void AutofillAgent::HandleFocusChangeComplete(
   //   false. The call comes from DidCompleteFocusChangeInFrame() which passes
   //   false since at the preceding DidReceiveLeftMouseDownOrGestureTapInNode()
   //   call `node.Focused()` was false.
-  if (!focused_element.IsNull()) {
-    ShowSuggestionsForContentEditable(
-        focused_element,
-        AutofillSuggestionTriggerSource::kContentEditableClicked);
-  }
+  ShowSuggestionsForContentEditable(
+      focused_element,
+      AutofillSuggestionTriggerSource::kContentEditableClicked);
 }
 
 void AutofillAgent::SendFocusedInputChangedNotificationToBrowser(
@@ -1729,7 +1697,7 @@ void AutofillAgent::OnProvisionallySaveForm(
                   MaybeExtractDatalist({form_util::ExtractOption::kBounds}))) {
         auto& [form, field] = *form_and_field;
         if (auto* autofill_driver = unsafe_autofill_driver()) {
-          autofill_driver->SelectControlDidChange(form, field, field.bounds());
+          autofill_driver->SelectControlDidChange(form, field);
         }
       }
       break;
@@ -1789,7 +1757,9 @@ void AutofillAgent::OnInferredFormSubmission(mojom::SubmissionSource source) {
       // submission from it (and the relevant use cases will most probably be
       // handled by other sources), therefore we only consider detached
       // subframes.
-      if (!unsafe_render_frame()->GetWebFrame()->IsOutermostMainFrame() &&
+      if ((!unsafe_render_frame()->GetWebFrame()->IsOutermostMainFrame() ||
+           base::FeatureList::IsEnabled(
+               features::kAutofillUnifyAndFixFormTracking)) &&
           provisionally_saved_form()) {
         // Should not access the frame because it is now detached. Instead, use
         // `provisionally_saved_form()`.

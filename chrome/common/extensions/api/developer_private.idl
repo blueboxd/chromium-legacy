@@ -96,6 +96,15 @@ namespace developerPrivate {
     CHROME
   };
 
+  enum SafetyCheckWarningReason {
+    UNPUBLISHED,
+    POLICY,
+    MALWARE,
+    OFFSTORE,
+    UNWANTED,
+    NO_PRIVACY_PRACTICE
+  };
+
   dictionary AccessModifier {
     boolean isEnabled;
     boolean isActive;
@@ -267,9 +276,11 @@ namespace developerPrivate {
     ExtensionView[] views;
     DOMString webStoreUrl;
     boolean showSafeBrowsingAllowlistWarning;
+    SafetyCheckWarningReason? safetyCheckWarningReason;
     boolean showAccessRequestsInToolbar;
     boolean acknowledgeSafetyCheckWarning;
     boolean? pinnedToToolbar;
+    boolean isAffectedByMV2Deprecation;
   };
 
   dictionary ProfileInfo {
@@ -329,7 +340,9 @@ namespace developerPrivate {
     boolean? errorCollection;
     HostAccess? hostAccess;
     boolean? showAccessRequestsInToolbar;
+    SafetyCheckWarningReason? acknowledgeSafetyCheckWarningReason;
     boolean? acknowledgeSafetyCheckWarning;
+    boolean? acknowledgeMv2DeprecationWarning;
     boolean? pinnedToToolbar;
   };
 

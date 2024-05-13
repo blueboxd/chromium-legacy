@@ -151,6 +151,38 @@ TEST(UpdateLcppStringFrequencyStatDataTest, Base) {
       << updater.Data();
 }
 
+TEST(UpdateLcppStringFrequencyStatDataTest, AddNewEntryToFullBuckets) {
+  Updater updater(/*sliding_window_size=*/4u,
+                  /*max_histogram_buckets=*/2u);
+
+  std::optional<std::string> dropped_entry;
+  updater.Update("foo", dropped_entry);
+  EXPECT_FALSE(dropped_entry.has_value());
+  updater.Update("foo", dropped_entry);
+  EXPECT_FALSE(dropped_entry.has_value());
+  updater.Update("bar", dropped_entry);
+  EXPECT_FALSE(dropped_entry.has_value());
+  updater.Update("bar", dropped_entry);
+  EXPECT_FALSE(dropped_entry.has_value());
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 2}, {"bar", 2}}, 0))
+      << updater.Data();
+
+  updater.Update("qux", dropped_entry);
+  EXPECT_EQ(*dropped_entry, "qux");
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 1.5}, {"bar", 1.5}}, 1))
+      << updater.Data();
+
+  updater.Update("qux", dropped_entry);
+  EXPECT_EQ(*dropped_entry, "qux");
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 1.125}, {"bar", 1.125}}, 1.75))
+      << updater.Data();
+
+  updater.Update("qux", dropped_entry);
+  EXPECT_EQ(*dropped_entry, "bar");
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 0.84375}, {"qux", 1}}, 2.15625))
+      << updater.Data();
+}
+
 TEST(IsValidLcppStatTest, Empty) {
   LcppStat lcpp_stat;
   EXPECT_TRUE(IsValidLcppStat(lcpp_stat));
@@ -914,10 +946,7 @@ class LcppDataMapTest : public testing::Test {
     mock_tables_ =
         base::MakeRefCounted<StrictMock<MockResourcePrefetchPredictorTables>>(
             db_task_runner_);
-    lcpp_data_map_ = std::make_unique<LcppDataMap>(
-        mock_tables_, mock_tables_->lcpp_table(),
-        config.max_hosts_to_track_for_lcpp,
-        base::Seconds(config.flush_data_to_disk_delay_seconds));
+    lcpp_data_map_ = std::make_unique<LcppDataMap>(*mock_tables_, config);
     db_task_runner_->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
                                 lcpp_data_map_->InitializeOnDBSequence();
                               }));
@@ -935,7 +964,7 @@ class LcppDataMapTest : public testing::Test {
   }
 
   void LearnLcpp(const GURL& url, const LcppDataInputs& inputs) {
-    predictors::LearnLcpp(config_, url, inputs, *lcpp_data_map_);
+    lcpp_data_map_->LearnLcpp(url, inputs);
   }
 
   void LearnElementLocator(
@@ -963,7 +992,7 @@ class LcppDataMapTest : public testing::Test {
   }
 
   std::optional<LcppStat> GetLcppStat(const GURL& url) {
-    return predictors::GetLcppStat(*lcpp_data_map_, url);
+    return lcpp_data_map_->GetLcppStat(url);
   }
 
   void TestLearnLcppURL(
@@ -975,8 +1004,7 @@ class LcppDataMapTest : public testing::Test {
       const std::string& key = url_key.second;
       LearnElementLocator(GURL(url), "/#a", {});
       // Confirm 'url' was learned as 'key'.
-      auto stat =
-          predictors::GetLcppStat(*lcpp_data_map_, GURL("http://" + key));
+      auto stat = lcpp_data_map_->GetLcppStat(GURL("http://" + key));
       EXPECT_TRUE(stat) << location.ToString() << url;
       LcppData expected;
       InitializeLcpElementLocatorBucket(expected, "/#a", ++frequency[key]);
@@ -986,12 +1014,13 @@ class LcppDataMapTest : public testing::Test {
   }
 
   static LcppStat MakeLcppStatWithLCPElementLocator(
-      const std::string& lcp_element_locator) {
+      const std::string& lcp_element_locator,
+      double frequency = 1) {
     LcppStat stat;
     LcpElementLocatorBucket& bucket = *stat.mutable_lcp_element_locator_stat()
                                            ->add_lcp_element_locator_buckets();
     bucket.set_lcp_element_locator(lcp_element_locator);
-    bucket.set_frequency(1);
+    bucket.set_frequency(frequency);
     return stat;
   }
 
@@ -1284,6 +1313,29 @@ TEST_F(LcppDataMapTest, LcppLearnURL) {
   TestLearnLcppURL(url_keys);
 }
 
+TEST_F(LcppDataMapTest, DeleteUrls) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  config.max_hosts_to_track_for_lcpp = 10u;
+  InitializeDB(config);
+
+  const GURL url_a("http://a.test");
+  const GURL url_b("http://b.test");
+  const GURL url_c("http://c.test");
+
+  LearnElementLocator(url_a, "/#a");
+  LearnElementLocator(url_b, "/#a");
+  LearnElementLocator(url_c, "/#a");
+  EXPECT_TRUE(GetLcppStat(url_a));
+  EXPECT_TRUE(GetLcppStat(url_b));
+  EXPECT_TRUE(GetLcppStat(url_c));
+
+  lcpp_data_map_->DeleteUrls({url_a, url_b});
+  EXPECT_FALSE(GetLcppStat(url_a));
+  EXPECT_FALSE(GetLcppStat(url_b));
+  EXPECT_TRUE(GetLcppStat(url_c));
+}
+
 class LcppMultipleKeyTest : public LcppDataMapTest,
                             public testing::WithParamInterface<
                                 blink::features::LcppMultipleKeyTypes> {
@@ -1359,6 +1411,33 @@ TEST_P(LcppMultipleKeyTest, ShouldNotLearnTooLongLocators) {
       url, "/#" + std::string(ResourcePrefetchPredictorTables::kMaxStringLength,
                               'a'));
   EXPECT_EQ(*GetLcppStat(url), expected);
+}
+
+TEST_P(LcppMultipleKeyTest, DeleteUrls) {
+  const bool kIsDefault =
+      GetParam() == blink::features::LcppMultipleKeyTypes::kDefault;
+  const GURL url_a_1("http://a.test");
+  const GURL url_a_2("http://a.test/foo");
+  const GURL url_a_3("http://a.test/bar");
+  const GURL url_b("http://b.test/baz");
+  const GURL url_c("http://c.test");
+
+  const std::vector<GURL> urls = {url_a_1, url_a_2, url_a_3, url_b, url_c};
+  for (const GURL& url : urls) {
+    LearnElementLocator(url, "/#a");
+  }
+  for (const GURL& url : urls) {
+    EXPECT_TRUE(GetLcppStat(url));
+  }
+
+  lcpp_data_map_->DeleteUrls({url_a_2, url_b});
+  // In kDefault, only exact match entry is removed.
+  // In kLcppKeyStat, all entries having same host are removed.
+  EXPECT_EQ(!!GetLcppStat(url_a_1), kIsDefault);
+  EXPECT_FALSE(GetLcppStat(url_a_2));
+  EXPECT_EQ(!!GetLcppStat(url_a_3), kIsDefault);
+  EXPECT_FALSE(GetLcppStat(url_b));
+  EXPECT_TRUE(GetLcppStat(url_c));
 }
 
 class LcppMultipleKeyTestDefault : public LcppDataMapTest {
@@ -1508,6 +1587,41 @@ TEST_F(LcppDataMapTest, LcppStatShouldBeClearedOverFlagReset) {
   LcppData data = CreateLcppData("a.test", 10);
   InitializeLcpElementLocatorBucket(data, "/#base", 2);
   EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+}
+
+TEST_F(LcppMultipleKeyTestKeyStat, AddNewEntryToFullBucketKeyStat) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  config.max_hosts_to_track_for_lcpp = 2u;
+  config.lcpp_multiple_key_histogram_sliding_window_size = 4u;
+  config.lcpp_multiple_key_max_histogram_buckets = 2u;
+  InitializeDB(config);
+
+  const std::string host = "http://a.test";
+  const GURL url_1(host + "/foo1");
+  const GURL url_2(host + "/foo2");
+  const GURL url_3(host + "/foo3");
+  LearnElementLocator(url_1, "/#lcp1");
+  LearnElementLocator(url_1, "/#lcp1");
+  LearnElementLocator(url_2, "/#lcp2");
+  LearnElementLocator(url_2, "/#lcp2");
+  EXPECT_EQ(*GetLcppStat(url_1),
+            MakeLcppStatWithLCPElementLocator("/#lcp1", 2));
+  EXPECT_EQ(*GetLcppStat(url_2),
+            MakeLcppStatWithLCPElementLocator("/#lcp2", 2));
+
+  LearnElementLocator(url_3, "/#lcp3");
+  EXPECT_FALSE(GetLcppStat(url_3));
+
+  LearnElementLocator(url_3, "/#lcp3");
+  EXPECT_FALSE(GetLcppStat(url_3));
+
+  LearnElementLocator(url_3, "/#lcp3");
+  EXPECT_EQ(*GetLcppStat(url_3),
+            MakeLcppStatWithLCPElementLocator("/#lcp3", 1));
+  EXPECT_FALSE(GetLcppStat(url_1));
+  EXPECT_EQ(*GetLcppStat(url_2),
+            MakeLcppStatWithLCPElementLocator("/#lcp2", 2));
 }
 
 }  // namespace predictors

@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/chromeos_buildflags.h"
 #include "components/account_id/account_id.h"
@@ -19,6 +21,7 @@
 #include "components/manta/mahi_provider.h"
 #include "components/manta/orca_provider.h"
 #include "components/manta/snapper_provider.h"
+#include "components/manta/sparky/sparky_provider.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace manta {
@@ -35,6 +38,19 @@ FeatureSupportStatus ConvertToMantaFeatureSupportStatus(signin::Tribool value) {
       return FeatureSupportStatus::kUnsupported;
   }
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+constexpr auto kAllowedLanguagesForAddingLocaleToRequest =
+    base::MakeFixedFlatSet<std::string_view>({"de", "en", "en-GB", "fr", "ja"});
+
+bool ShouldIncludeLocaleInRequest(std::string_view locale) {
+  return chromeos::features::IsOrcaUseL10nStringsEnabled() ||
+         (chromeos::features::IsOrcaInternationalizeEnabled() &&
+          base::Contains(kAllowedLanguagesForAddingLocaleToRequest, locale));
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -88,8 +104,7 @@ std::unique_ptr<OrcaProvider> MantaService::CreateOrcaProvider() {
       shared_url_loader_factory_, identity_manager_, is_demo_mode_,
       chrome_version_,
       /*locale=*/
-      chromeos::features::IsOrcaUseL10nStringsEnabled() ? locale_
-                                                        : std::string());
+      ShouldIncludeLocaleInRequest(locale_) ? locale_ : std::string());
 }
 
 std::unique_ptr<SnapperProvider> MantaService::CreateSnapperProvider() {
@@ -108,6 +123,16 @@ std::unique_ptr<MahiProvider> MantaService::CreateMahiProvider() {
   return std::make_unique<MahiProvider>(shared_url_loader_factory_,
                                         identity_manager_, is_demo_mode_,
                                         chrome_version_);
+}
+
+std::unique_ptr<SparkyProvider> MantaService::CreateSparkyProvider(
+    std::unique_ptr<SparkyDelegate> sparky_delegate) {
+  if (!identity_manager_ or !sparky_delegate) {
+    return nullptr;
+  }
+  return std::make_unique<SparkyProvider>(
+      shared_url_loader_factory_, identity_manager_, is_demo_mode_,
+      chrome_version_, std::move(sparky_delegate));
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

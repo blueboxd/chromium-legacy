@@ -4,6 +4,7 @@
 
 #include "net/base/file_stream_context.h"
 
+#include <dlfcn.h>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -207,12 +208,20 @@ FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
 #if BUILDFLAG(IS_MAC)
   // https://crbug.com/330771755: Guard against a file descriptor being closed
   // out from underneath the file.
-  if (file_.IsValid()) {
-    guardid_t guardid = reinterpret_cast<guardid_t>(this);
-    PCHECK(change_fdguard_np(file_.GetPlatformFile(), &guardid,
-                             GUARD_CLOSE | GUARD_DUP,
-                             /*nguard=*/nullptr, /*nguardflags=*/0,
-                             /*fdflagsp=*/nullptr) == 0);
+  typedef int (*change_fdguard_np_ptr_t)(
+      int fd, const guardid_t* guard, u_int guardflags, const guardid_t* nguard,
+      u_int nguardflags, int* fdflagsp);
+  static const change_fdguard_np_ptr_t change_fdguard_np_ptr =
+      reinterpret_cast<change_fdguard_np_ptr_t>(
+          dlsym(((void*)-2), "change_fdguard_np"));
+  if (change_fdguard_np_ptr) {
+    if (file_.IsValid()) {
+      guardid_t guardid = reinterpret_cast<guardid_t>(this);
+      PCHECK(change_fdguard_np_ptr(file_.GetPlatformFile(), &guardid,
+                               GUARD_CLOSE | GUARD_DUP,
+                               /*nguard=*/nullptr, /*nguardflags=*/0,
+                               /*fdflagsp=*/nullptr) == 0);
+    }
   }
 #endif
   file_.Close();
@@ -235,12 +244,20 @@ void FileStream::Context::OnOpenCompleted(CompletionOnceCallback callback,
 #if BUILDFLAG(IS_MAC)
   // https://crbug.com/330771755: Guard against a file descriptor being closed
   // out from underneath the file.
-  if (file_.IsValid()) {
-    guardid_t guardid = reinterpret_cast<guardid_t>(this);
-    PCHECK(change_fdguard_np(file_.GetPlatformFile(), /*guard=*/nullptr,
-                             /*guardflags=*/0, &guardid,
-                             GUARD_CLOSE | GUARD_DUP,
-                             /*fdflagsp=*/nullptr) == 0);
+  typedef int (*change_fdguard_np_ptr_t)(
+      int fd, const guardid_t* guard, u_int guardflags, const guardid_t* nguard,
+      u_int nguardflags, int* fdflagsp);
+  static const change_fdguard_np_ptr_t change_fdguard_np_ptr =
+      reinterpret_cast<change_fdguard_np_ptr_t>(
+          dlsym(((void*)-2), "change_fdguard_np"));
+  if (change_fdguard_np_ptr) {
+    if (file_.IsValid()) {
+      guardid_t guardid = reinterpret_cast<guardid_t>(this);
+      PCHECK(change_fdguard_np_ptr(file_.GetPlatformFile(), /*guard=*/nullptr,
+                               /*guardflags=*/0, &guardid,
+                               GUARD_CLOSE | GUARD_DUP,
+                               /*fdflagsp=*/nullptr) == 0);
+    }
   }
 #endif
 

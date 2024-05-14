@@ -305,7 +305,7 @@ class UnexportableKeyProviderMac : public UnexportableKeyProvider {
 
 std::unique_ptr<UnexportableKeyProvider> GetUnexportableKeyProviderMac(
     UnexportableKeyProvider::Config config) {
-  if (!base::FeatureList::IsEnabled(crypto::kEnableMacUnexportableKeys)) {
+  if (!base::FeatureList::IsEnabled(crypto::kEnableMacUnexportableKeys) || !@available(macOS 10.12.2, *)) {
     return nullptr;
   }
   CHECK(!config.keychain_access_group.empty())

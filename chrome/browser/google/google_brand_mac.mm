@@ -21,7 +21,7 @@ namespace {
 std::string ReadBrandFile(NSString* path) {
   NSURL* path_url = [NSURL fileURLWithPath:path];
   NSDictionary* brand_dictionary =
-      [NSDictionary dictionaryWithContentsOfURL:path_url error:nil];
+      [NSDictionary dictionaryWithContentsOfURL:path_url];
   return base::SysNSStringToUTF8(
       base::apple::ObjCCast<NSString>(brand_dictionary[@"KSBrandID"]));
 }
